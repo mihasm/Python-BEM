@@ -20,6 +20,7 @@ class Optimizer:
     Class used for optimizing blade geometry.
     TODO: add input arguments to init, so that user will have to pass geometry data and functions for initialisation.
     """
+
     def __init__(self):
         sections_radius, chord_lengths, chord_angles, dr = parse_sections()
 
@@ -164,7 +165,6 @@ class Optimizer:
         print("Old angles", self.chord_angles_orig)
         print("New angles", self.chord_angles)
 
-    
     def optimize_pitch(self, min_add_angle=-30, max_add_angle=30, step=0.5):
         """
         This function calculates the optimum pitch angle of the blade for the given wind speed and rotational velocity.
@@ -177,10 +177,11 @@ class Optimizer:
         print("\nOptimizing for wind speed of ", self.target_speed, "m/s... and rpm ", self.target_rpm)
         power_orig = \
             calculate_power(speed_wind=self.target_speed, rpm=self.target_rpm, sections_radius=self.sections_radius,
-                chord_lengths=self.chord_lengths,
-                chord_angles=self.chord_angles_orig, dr=self.dr, R=self.R, B=self.B, f_c_L=self.f_c_L,
-                f_c_D=self.f_c_D, Rhub=self.Rhub)["power"]
-        print("Without turning the blade, the power is:", "%.2f" % round(power_orig), "Watts at wind speed", self.target_speed,
+                            chord_lengths=self.chord_lengths,
+                            chord_angles=self.chord_angles_orig, dr=self.dr, R=self.R, B=self.B, f_c_L=self.f_c_L,
+                            f_c_D=self.f_c_D, Rhub=self.Rhub)["power"]
+        print("Without turning the blade, the power is:", "%.2f" % round(power_orig), "Watts at wind speed",
+              self.target_speed,
               "m/s and rotational velocity", self.target_rpm, "rpm")
         current_add_angle = min_add_angle
         results = []
@@ -188,9 +189,9 @@ class Optimizer:
             print("Testing pitch:", current_add_angle, "° at rpm", self.target_rpm)
             power = \
                 calculate_power(speed_wind=self.target_speed, rpm=self.target_rpm, sections_radius=self.sections_radius,
-                chord_lengths=self.chord_lengths,
-                chord_angles=self.chord_angles_orig, dr=self.dr, R=self.R, B=self.B, f_c_L=self.f_c_L,
-                f_c_D=self.f_c_D, Rhub=self.Rhub,add_angle=current_add_angle)["power"]
+                                chord_lengths=self.chord_lengths,
+                                chord_angles=self.chord_angles_orig, dr=self.dr, R=self.R, B=self.B, f_c_L=self.f_c_L,
+                                f_c_D=self.f_c_D, Rhub=self.Rhub, add_angle=current_add_angle)["power"]
             results.append((current_add_angle, power))
             current_add_angle += step
             print("---")
@@ -202,5 +203,5 @@ class Optimizer:
         return best_angle
 
 
-#Optimizer().optimize_pitch()
+# Optimizer().optimize_pitch()
 Optimizer().optimize_angles()

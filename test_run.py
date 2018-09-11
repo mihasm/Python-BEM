@@ -11,39 +11,14 @@ from scipy import interpolate
 import numbers
 from openpyxl import Workbook
 import csv
+from cp_curve import run, calculate_power, run_main
+from parse_data import parse_podatki, parse_sections
 
-from cp_curve import run, calculate_power
+podatki = parse_podatki()
+f_c_L = interpolate.interp1d(podatki['cL_x'], podatki['cL_y'], fill_value=(podatki['cL_y'][0], podatki['cL_y'][-1]),bounds_error=False)
+f_c_D = interpolate.interp1d(podatki['cD_x'], podatki['cD_y'], fill_value=(podatki['cD_y'][0], podatki['cD_y'][-1]),bounds_error=False)
+res = run_main(*parse_sections(), B=5, R=0.776, Rhub=0.1, f_c_L=f_c_L, f_c_D=f_c_D)
 
-
-def transpose(a):
-  o=[]
-  for i in range(len(a[0])):
-    o.append([])
-    for r in a:
-      o[i].append(r[i])
-  return o
-
-def dict_to_csv(inp_dict):
-  prep=[]
-  out=""
-  i=0
-  for k,v in inp_dict.items():
-    prep.append([k])
-    for j in v:
-      if isinstance(j,numpy.ndarray):
-        j=numpy.array2string(j,max_line_width=1e10)
-      #out+=str(j)+";"
-      prep[i].append(j)
-    i+=1
-  prep = transpose(prep)
-  for r in prep:
-    for e in r:
-      out+=str(e)+";"
-    out+="\n"
-  return out
-
-from parse_data import f_c_L, f_c_D, parse_sections
-res = run(*parse_sections(),B=5,R=0.776,Rhub=0.1,f_c_L=f_c_L,f_c_D=f_c_D)
 # optimize_runner(5,*parse_sections(),B=5,R=0.776,Rhub=0.1,rpm=450,f_c_L=f_c_L,f_c_D=f_c_D)
 
 # PODATKI NORVEŽAN
@@ -59,6 +34,7 @@ delta_r = numpy.array(
 c = numpy.array(
     [0.050, 0.081, 0.080, 0.077, 0.073, 0.069, 0.065, 0.061, 0.058, 0.054, 0.051, 0.048, 0.046, 0.044, 0.040, 0.038,
      0.036, 0.035, 0.032, 0.031, 0.030, 0.029, 0.028, 0.027, 0.026, 0.026])
+
 alfa = [-20, -19.5, -19, -18.5, -18, -17.5, -17, -16.5, -16, -15.5, -15, -14.5, -14, -13.5, -13, -12.5, -12, -11.5, -11,
         -10.5, -10, -9.5, -9, -8.5, -8, -7.5, -7, -6.5, -6, -5.5, -5, -4.5, -4, -3, -2.5, -2, -1.5, -1, -0.5, 0, 0.5, 1,
         1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6, 6.5, 7, 8, 8.5, 9, 9.5, 10, 10.5, 11, 11.5, 12, 12.5, 13, 13.5, 14,
@@ -77,11 +53,12 @@ cd = [0.23497, 0.229, 0.22313, 0.21734, 0.21158, 0.20593, 0.20044, 0.19509, 0.18
       0.04948, 0.05624, 0.06421, 0.07323, 0.08338, 0.09493, 0.10775, 0.1209, 0.1356, 0.15183, 0.1694, 0.18803, 0.20837,
       0.2317, 0.27961]
 
-#f_c_L = interpolate.interp1d(alfa, cl, fill_value=(cl[0], cl[-1]), bounds_error=False)
+##f_c_L = interpolate.interp1d(alfa, cl, fill_value=(cl[0], cl[-1]), bounds_error=False)
 #f_c_D = interpolate.interp1d(alfa, cd, fill_value=(cd[0], cd[-1]), bounds_error=False)
-#res = run(r, c, theta, delta_r, B=3, R=0.45, Rhub=0.05, f_c_L=f_c_L, f_c_D=f_c_D)
+#res = run_main(r, c, theta, delta_r, B=3, R=0.45, Rhub=0.05, f_c_L=f_c_L, f_c_D=f_c_D)
 
+#from table import draw_table
+#draw_table(dict_to_ar(res))
 
-
-f = dict_to_csv(res)
-#print(f)
+#f = dict_to_csv(res)
+# print(f)

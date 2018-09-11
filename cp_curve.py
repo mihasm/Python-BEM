@@ -20,10 +20,16 @@ import matplotlib.pyplot as plt
 import numpy
 from mpl_toolkits.mplot3d import Axes3D
 import numbers
+from PyQt5 import QtGui, QtCore, QtWidgets
+import sys
+from table import Table
+from utils import dict_to_ar, transpose
 
 from induction_factors import Calculator
+from main import mainWindow
 
 a = Axes3D  # only for passing code inspection -> Axes3D needs to be imported
+
 
 def calculate_power(speed_wind, rpm, sections_radius, chord_lengths, chord_angles, dr, R, Rhub, B, f_c_L, f_c_D,
                     add_angle=0.0):
@@ -76,12 +82,14 @@ def calculate_power_3d(sections_radius, chord_lengths, chord_angles, dr, R, Rhub
 
     results_3d = {}
 
-    for v in list(numpy.linspace(start=3, stop=20, num=10)):
-        for rpm in list(numpy.linspace(start=100, stop=3000, num=10)):
+    for v in list(numpy.linspace(start=3, stop=20, num=20)):
+        for rpm in list(numpy.linspace(start=100, stop=3000, num=20)):
+            print("Calculating power for v",v,"rpm",rpm)
             _results = calculate_power(v, rpm, sections_radius, chord_lengths, chord_angles, dr, add_angle=add_angle,
                                        R=R, B=B, f_c_L=f_c_L, f_c_D=f_c_D, Rhub=Rhub)
+            print("    Power:",_results["power"],"Cp:",_results["cp"])
             if _results != None and _results["power"]:
-                if _results["cp"] > 0.0 and _results["cp"] <= 0.6:
+                if 0.0 < _results["cp"] <= 0.6:
                     for key, value in _results.items():
                         if key not in results_3d:
                             results_3d[key] = []
@@ -171,8 +179,9 @@ def run(sections_radius, chord_lengths, chord_angles, dr, B, R, Rhub, f_c_L, f_c
     :param B: number of blades
     :param f_c_L: function for calculating lift coefficient
     :param f_c_D: function for calculating drag coefficient
+    :return dictionary with results
     """
-    
+
     results_3d = calculate_power_3d(sections_radius, chord_lengths, chord_angles, dr, B=B, R=R, Rhub=Rhub,
                                     f_c_D=f_c_D, f_c_L=f_c_L)
 
@@ -218,10 +227,72 @@ def run(sections_radius, chord_lengths, chord_angles, dr, B, R, Rhub, f_c_L, f_c
     ax_ct.scatter(A, CT)
     plt.title('Ct curve')
 
-    plt.show()
+    #plt.show()
     return results_3d
 
 
-#test = {'a': numpy.array([1, 2, 3]), 'b': 1, 'c': 2, 'd': numpy.array([5, 6, 7])}
+def run_main(sections_radius, chord_lengths, chord_angles, dr, B, R, Rhub, f_c_L, f_c_D):
+    """
+    Main function of this .py file.
 
-#print(save_results_as_csv(test))
+    Runs power calculation for given wind turbine geometry and draws results in three graphs.
+
+    :param sections_radius: np array of section sections_radius [m]
+    :param chord_lengths: np array of section chord lengths [m]
+    :param chord_angles: np array of chord angles [degrees]
+    :param dr: np array of section heights [m]
+    :param R: outer (tip) radius [m]
+    :param Rhub: hub radius [m]
+    :param B: number of blades
+    :param f_c_L: function for calculating lift coefficient
+    :param f_c_D: function for calculating drag coefficient
+    :return dictionary with results
+    """
+
+    results_3d = calculate_power_3d(sections_radius, chord_lengths, chord_angles, dr, B=B, R=R, Rhub=Rhub,
+                                    f_c_D=f_c_D, f_c_L=f_c_L)
+
+    X, Y, Z = results_3d["v"], results_3d["rpm"], results_3d["power"]
+    max_x, max_y, max_z = max_calculate(X, Y, Z)
+
+    app = QtWidgets.QApplication([])
+    screen = app.primaryScreen()
+    size = screen.size()
+    main = mainWindow(size.width(),size.height())
+
+    geom=[
+            ["r"]+list(sections_radius),
+            ["c"]+list(chord_lengths),
+            ["theta"]+list(chord_angles),
+            ["dr"]+list(dr)
+         ]
+    geom = transpose(geom)
+    t_geom = Table(geom)
+    main.add_tab_widget(t_geom,"Geom")
+
+    alpha=numpy.linspace(-25,25,100)
+    cL=f_c_L(alpha)
+    cD=f_c_D(alpha)
+
+    f=main.add_tab_figure("Cl/Cd")
+    main.add_2d_plot_to_figure(f,alpha,cL,121,"cL","alpha","cL")
+    main.add_2d_plot_to_figure(f,alpha,cD,122,"cD","alpha","cD")
+
+    
+    f2=main.add_tab_figure("Moč in Cp")
+    main.add_2d_plot_to_figure(f2,max_x,max_z,121,"Moč vs veter","veter [m/s]","moč [W]")
+    
+    TSR,CP = sort_xy(results_3d["TSR"],results_3d["cp"])
+    main.add_2d_plot_to_figure(f2,TSR,CP,122,"Cp krivulja","lambda","Cp")
+    
+    f3=main.add_tab_figure("3D moč")
+    main.add_surface_plot(f3,X,Y,Z,111,"Moč (veter,rpm)","veter[m/s]","rpm","moč [W]")
+
+    f4=main.add_tab_figure("Ct krivulja")
+    main.add_2d_plot_to_figure(f4,results_3d["a"],results_3d["Ct"],111,"ct krivulja","a","ct",look="o")
+
+    t = Table(dict_to_ar(results_3d))
+    main.add_tab_widget(t,"Data")
+
+    main.show()
+    sys.exit(app.exec_())

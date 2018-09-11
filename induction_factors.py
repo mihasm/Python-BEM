@@ -225,7 +225,7 @@ def fInductionCoefficients8(Ct, F, phi, sigma, cn, Cl, *args, **kwargs):
         a = (sigma * cn) / (4 * F * sin(phi) ** 2 + sigma * cn)
     else:
         if F == 0:
-            F=1e-5
+            F = 1e-5
         a = (1 / F) * (0.143 + sqrt(0.0203 - 0.6427 * (0.889 - Ct)))
     aprime = 1 / ((4 * F * cos(phi) / (sigma * Cl)) - 1)
     return a, aprime
@@ -237,6 +237,8 @@ def fInductionCoefficients7(aprime_last, F, lambda_r, phi, sigma, Cl, B, c, psi,
     Calculates induction coefficients using method from
     PROPX: Definitions, Derivations and Data Flow, C. Harman, 1994
 
+    :param omega: rotational velocity [rad/s]
+    :param v: wind speed [m/s]
     :param R: tip radius [m]
     :param r: section radius [m]
     :param psi: coning angle [rad]
@@ -253,7 +255,7 @@ def fInductionCoefficients7(aprime_last, F, lambda_r, phi, sigma, Cl, B, c, psi,
 
     K = B * c * Cl * cos(phi) * cos(psi) / (8 * pi * r * sin(phi) ** 2)
     a = K / (1 + K)
-    
+
     """
     if a > 0.2:
         ac = 0.2
@@ -278,10 +280,10 @@ def fInductionCoefficients7(aprime_last, F, lambda_r, phi, sigma, Cl, B, c, psi,
                   (1 - ac)
         a = ac - (CTL_ac - CTL) / dCTL_da
     """
-    XL=(r*cos(psi)*omega)/v
-    to_sqrt=abs(1+(4*a*(1-a))/(XL**2))
-    aprime=0.5*( sqrt(to_sqrt) - 1 )
-    #aprime=0
+    XL = (r * cos(psi) * omega) / v
+    to_sqrt = abs(1 + (4 * a * (1 - a)) / (XL ** 2))
+    aprime = 0.5 * (sqrt(to_sqrt) - 1)
+    # aprime=0
     # aprime = 1 / ((4 * F * cos(phi) / (sigma * Cl)) - 1)
     return a, aprime
 
@@ -366,16 +368,16 @@ def cascadeEffectsCorrection(alpha, v, omega, r, R, c, B, a, aprime):
     """
     Calculates cascade effects and corresponding change in angle of attack.
     Method from PROPX: Definitions, Derivations and Data Flow, C. Harman, 1994
-    :param alpha:
-    :param v:
-    :param omega:
-    :param r:
-    :param R:
-    :param c:
-    :param B:
-    :param a:
-    :param aprime:
-    :return:
+    :param alpha: angle of attack [rad]
+    :param v: wind speed [m/s]
+    :param omega: rotational velocity [rad/s]
+    :param r: section radius [m]
+    :param R: tip radius [m]
+    :param c: section chord length [m]
+    :param B: number of blades [int]
+    :param a: axial induction
+    :param aprime: tangential induction
+    :return: new angle of attack [rad]
     """
 
     tmax = 0.02
@@ -436,27 +438,14 @@ class Calculator:
         :return: dicitonary with results
         """
 
-        """
-        
-        """
-        if print_out:
-            TSR = rpm * pi / 30 * R / v
-            print("Running iterative method for v", v, "rpm", rpm, "TSR", TSR)
-
-        results = {
-            'a': numpy.array([]),
-            "a'": numpy.array([]),
-            "cL": numpy.array([]),
-            "alpha": numpy.array([]),
-            "phi": numpy.array([]),
-            "F": numpy.array([]),
-            "dFt": numpy.array([]),
-            "M": numpy.array([]),
-            "TSR": numpy.array([]),
-            "Ct":numpy.array([])
-        }
-
+        # convert numbers to arrays
         chord_angle, c, r = self.convert_to_array(chord_angle, c, r)
+
+        # create results array placeholders
+        results = {}
+        arrays = ["a", "a'", "cL", "alpha", "phi", "F", "dFt", "M", "TSR", "Ct"]
+        for array in arrays:
+            results[array] = numpy.array([])
 
         # set constants that are section-independent
         rho = 1.225
@@ -467,7 +456,11 @@ class Calculator:
         max_iterations = 100
         convergence_limit = 0.001
 
+        if print_out:
+            print("Running iterative method for v", v, "rpm", rpm, "TSR", TSR)
+
         for n in range(len(chord_angle)):
+            # grab local radius, chord length and twist angle
             _r = r[n]
             _c = c[n]
             theta = radians(chord_angle[n])
@@ -512,8 +505,8 @@ class Calculator:
 
                 # Prandtl hub loss
                 if Rhub:
-                    Fh=fHubLoss(B,_r,Rhub,phi)
-                    F=F*Fh
+                    Fh = fHubLoss(B, _r, Rhub, phi)
+                    F = F * Fh
 
                 # angle of attack
                 alpha = phi - theta
@@ -539,7 +532,7 @@ class Calculator:
                 # cn,ct=newLosses(cn,ct,B,_r,R,phi,lambda_r)
 
                 # local thrust coefficient
-                Ct = sigma * (1 - a) ** 2 * cn / (sin(phi) ** 2) #Qblade
+                Ct = sigma * (1 - a) ** 2 * cn / (sin(phi) ** 2)  # Qblade
 
                 # save old values, calculate new values of induction factors
                 a_last = a
@@ -593,8 +586,8 @@ class Calculator:
                 print(prepend + "        a:", str(a), "a'", aprime)
                 print(prepend + "        dFt:", dFt)
                 print(prepend + "        LSR:", lambda_r)
-                print(prepend + "        Ct:",Ct)
-                print(prepend + "        Vrel_norm",Vrel_norm)
+                print(prepend + "        Ct:", Ct)
+                print(prepend + "        Vrel_norm", Vrel_norm)
 
             results["a"] = numpy.append(results["a"], a)
             results["a'"] = numpy.append(results["a'"], aprime)
@@ -603,7 +596,7 @@ class Calculator:
             results["phi"] = numpy.append(results["phi"], phi)
             results["F"] = numpy.append(results["F"], F)
             results["dFt"] = numpy.append(results["dFt"], dFt)
-            results["Ct"] = numpy.append(results["Ct"],Ct)
+            results["Ct"] = numpy.append(results["Ct"], Ct)
 
         dFt = results["dFt"]
         Ft = numpy.sum(dFt)
@@ -626,6 +619,6 @@ class Calculator:
         results["Rhub"] = Rhub
         results["B"] = B
         results["dr"] = dr
-        results["c"]=c
-        results["theta"]=chord_angle
+        results["c"] = c
+        results["theta"] = chord_angle
         return results

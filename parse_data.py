@@ -98,10 +98,3 @@ def parse_sections():
     chord_angles = numpy.array(chord_angles)
     chord_angles = 90.0 - chord_angles
     return sections_radius, chord_lengths, chord_angles, dr
-
-
-podatki = parse_podatki()
-f_c_L = interpolate.interp1d(podatki['cL_x'], podatki['cL_y'], fill_value=(podatki['cL_y'][0], podatki['cL_y'][-1]),
-                             bounds_error=False)
-f_c_D = interpolate.interp1d(podatki['cD_x'], podatki['cD_y'], fill_value=(podatki['cD_y'][0], podatki['cD_y'][-1]),
-                             bounds_error=False)
