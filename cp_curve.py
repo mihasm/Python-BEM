@@ -15,39 +15,15 @@ $pyinstaller preracun_vetrnica.py
 >>--hidden-import='scipy._lib.messagestream'
 """
 
-import tkinter as tk
-from tkinter import filedialog
-
 import matplotlib
 import matplotlib.pyplot as plt
 import numpy
-from matplotlib.widgets import Button
 from mpl_toolkits.mplot3d import Axes3D
+import numbers
 
 from induction_factors import Calculator
 
-matplotlib.use('TkAgg')
 a = Axes3D  # only for passing code inspection -> Axes3D needs to be imported
-root = tk.Tk()
-root.withdraw()
-
-
-def save_file_dialog(text2save):
-    """
-    Opens window dialog for saving file.
-    :param text2save: File contents.
-    :return:
-    """
-    f = filedialog.asksaveasfile(
-        title="Select where to export",
-        defaultextension=".csv",
-        filetypes=(("Comma-separated values", "*.csv"), ("all files", "*.*")))
-    if f is None:
-        return
-    f.write(text2save)
-    f.close()
-    return
-
 
 def calculate_power(speed_wind, rpm, sections_radius, chord_lengths, chord_angles, dr, R, Rhub, B, f_c_L, f_c_D,
                     add_angle=0.0):
@@ -83,7 +59,7 @@ def calculate_power_3d(sections_radius, chord_lengths, chord_angles, dr, R, Rhub
     """
     Calculates power for given geometry and data for every windspeed and rpm.
 
-    Returns arrays with data for every point.
+    Returns dictionary with arrays with data for every point.
 
     :param sections_radius: np array of section sections_radius [m]
     :param chord_lengths: np array of section chord lengths [m]
@@ -95,39 +71,26 @@ def calculate_power_3d(sections_radius, chord_lengths, chord_angles, dr, R, Rhub
     :param f_c_L: function for calculating lift coefficient
     :param f_c_D: function for calculating drag coefficient
     :param add_angle: [degrees]
-    :return: wind_speed,rpm,power,cp,TSR for every point
+    :return: dictionary with all results stored as numpy arrays
     """
-    x = []
-    y = []
-    z = []
-    cp_ar = []
-    tsr_ar = []
+
+    results_3d = {}
+
     for v in list(numpy.linspace(start=3, stop=20, num=10)):
         for rpm in list(numpy.linspace(start=100, stop=3000, num=10)):
             _results = calculate_power(v, rpm, sections_radius, chord_lengths, chord_angles, dr, add_angle=add_angle,
-                                       R=R, B=B,
-                                       f_c_L=f_c_L, f_c_D=f_c_D, Rhub=Rhub)
-            if _results != None:
-                power = _results["power"]
-                cp = _results["cp"]
-                TSR = _results["TSR"]
-                print("v:", "%.2f" % round(v, 2), "m/s", "rpm:", "%.2f" % round(rpm, 2), "RPM", "power:",
-                      "%.2f" % round(power, 2), "W", "TSR:", "%.2f" % round(TSR, 2), "Cp:", "%.2f" % round(cp, 2))
-                if power != None:
-                    if 0.0 <= cp <= 1.0:
-                        x.append(v)
-                        y.append(rpm)
-                        z.append(power)
-                        cp_ar.append(cp)
-                        tsr_ar.append(TSR)
+                                       R=R, B=B, f_c_L=f_c_L, f_c_D=f_c_D, Rhub=Rhub)
+            if _results != None and _results["power"]:
+                if _results["cp"] > 0.0 and _results["cp"] <= 0.6:
+                    for key, value in _results.items():
+                        if key not in results_3d:
+                            results_3d[key] = []
+                        results_3d[key].append(value)
 
-    X = numpy.array(x)
-    Y = numpy.array(y)
-    Z = numpy.array(z)
-    CP_AR = numpy.array(cp_ar)
-    TSR_AR = numpy.array(tsr_ar)
+    for k, v in results_3d.items():
+        results_3d[k] = v
 
-    return X, Y, Z, CP_AR, TSR_AR
+    return results_3d
 
 
 def max_calculate(X, Y, Z):
@@ -209,10 +172,11 @@ def run(sections_radius, chord_lengths, chord_angles, dr, B, R, Rhub, f_c_L, f_c
     :param f_c_L: function for calculating lift coefficient
     :param f_c_D: function for calculating drag coefficient
     """
+    
+    results_3d = calculate_power_3d(sections_radius, chord_lengths, chord_angles, dr, B=B, R=R, Rhub=Rhub,
+                                    f_c_D=f_c_D, f_c_L=f_c_L)
 
-    X, Y, Z, CP, TSR = calculate_power_3d(sections_radius, chord_lengths, chord_angles, dr, B=B, R=R, Rhub=Rhub,
-                                          f_c_D=f_c_D, f_c_L=f_c_L)
-
+    X, Y, Z = results_3d["v"], results_3d["rpm"], results_3d["power"]
     max_x, max_y, max_z = max_calculate(X, Y, Z)  # dodajanje tock maksimalne poweri
 
     # RISANJE 3D SCATTER PLOT
@@ -226,23 +190,6 @@ def run(sections_radius, chord_lengths, chord_angles, dr, B, R, Rhub, f_c_L, f_c
     ax_3D.set_ylabel('Rotational velocity [rpm]')
     ax_3D.set_zlabel('Power [W]')
     ax_3D.set_zlim(0, 2e3)
-    axcut = plt.axes([0.9, 0.0, 0.1, 0.075], label="test")
-
-    def save_ax_3D():
-        """
-        Helper function that handles export button
-        """
-        out = "wind_speed[m/s],rpm,power[W]\n"
-        for i in range(len(X)):
-            out += "%s,%s,%s,\n" % (X[i], Y[i], Z[i])
-        return save_file_dialog(out)
-
-    button = Button(axcut, 'Export')
-    button.on_clicked(save_ax_3D)
-
-    # ax_3D.scatter(X2, Y2, Z2, c='g',marker='^',label='tocke za Cp krivuljo')
-
-    # ax_3D.scatter(max_x, max_y, max_z, c='r',label='power (max per v)')
 
     # RISANJE GRAF P-V
     fig2 = plt.figure()
@@ -252,26 +199,11 @@ def run(sections_radius, chord_lengths, chord_angles, dr, B, R, Rhub, f_c_L, f_c
     plt.title("power vs. wind")
     ax_pv.set_xlabel("Wind speed [m/s]")
     ax_pv.set_ylabel("Power [W]")
-    axcut2 = plt.axes([0.4, 0.0, 0.08, 0.04], label="test2")
-
-    def save_ax_pv():
-        """
-        Helper function that handles export button
-        """
-        out = "wind_speed[m/s],power[W],\n"
-        for i in range(len(X)):
-            out += "%s,%s,\n" % (max_x, max_z)
-        return save_file_dialog(out)
-
-    button2 = Button(axcut2, 'Export')
-    button2.on_clicked(save_ax_pv)
 
     # RISANJE CP curve
-    # X1,Y1 = cp_xy
-    # print_sort_xy(X1,Y1)
-    # fig2=plt.figure()
-    # ax_cp=fig2.gca()
+    CP, TSR = results_3d["cp"], results_3d["TSR"]
     X1, Y1 = sort_xy(TSR, CP)
+
     ax_cp = fig2.add_subplot(1, 2, 2)
     ax_cp.plot(X1, Y1, '-')
     ax_cp.set_xlabel('lambda')
@@ -279,70 +211,17 @@ def run(sections_radius, chord_lengths, chord_angles, dr, B, R, Rhub, f_c_L, f_c
     ax_cp.set_xlim(0, 15)
     ax_cp.set_ylim(0.0, 1.0)
 
-    axcut3 = plt.axes([0.9, 0.0, 0.08, 0.04], label="test3")
-
-    def save_ax_cp():
-        """
-        Helper function that handles export button
-        """
-        out = "lambda,Cp,\n"
-        for i in range(len(X)):
-            out += "%s,%s,\n" % (X1, Y1)
-        return save_file_dialog(out)
-
-    button3 = Button(axcut3, 'Export')
-    button3.on_clicked(save_ax_cp)
-
-    # Risanje ct curve
-    # fig4=plt.figure()
-    # ax_ct=fig4.gca()
-    # ax_ct.scatter(TSR_A,CTL_A)
-    # plt.title('Ct curve')
+    CT, A = results_3d["Ct"], results_3d["a"]
+    # RISANJE CT CURVE
+    fig4 = plt.figure()
+    ax_ct = fig4.gca()
+    ax_ct.scatter(A, CT)
+    plt.title('Ct curve')
 
     plt.show()
+    return results_3d
 
 
-def optimize_runner(target_speed, sections_radius, chord_lengths, chord_angles, dr, R, Rhub, B, f_c_L, f_c_D, rpm,
-                    min_add_angle=-30, max_add_angle=30, step=0.5):
-    """
-    This function calculates the optimum pitch angle of the blade for the given wind speed and rotational velocity.
+#test = {'a': numpy.array([1, 2, 3]), 'b': 1, 'c': 2, 'd': numpy.array([5, 6, 7])}
 
-    :param target_speed: target speed [m/s]
-    :param sections_radius: np array of section sections_radius [m]
-    :param chord_lengths: np array of section chord lengths [m]
-    :param chord_angles: np array of chord angles [degrees]
-    :param dr: np array of section heights [m]
-    :param R: outer (tip) radius [m]
-    :param Rhub: hub radius [m]
-    :param B: number of blades
-    :param f_c_L: function for calculating lift coefficient
-    :param f_c_D: function for calculating drag coefficient
-    :param rpm: rotational velocity [RPM]
-    :param min_add_angle: lower limit [degrees]. Default: -30
-    :param max_add_angle: upper limit [degrees]. Default: +30
-    :param step: step for changing angle [degrees]
-    :return: best angle [degrees]
-    """
-    print("\nOptimizing for wind speed of ", target_speed, "m/s...")
-    power_orig = \
-        calculate_power(target_speed, rpm, sections_radius, chord_lengths, chord_angles, dr, R, B=B, Rhub=Rhub, f_c_D=f_c_D,
-                        f_c_L=f_c_L)["power"]
-    print("Without turning the blade, the power is:", "%.2f" % round(power_orig), "Watts at wind speed", target_speed,
-          "m/s and rotational velocity", rpm, "rpm")
-    current_add_angle = min_add_angle
-    results = []
-    while current_add_angle <= max_add_angle:
-        print("Testing pitch:", current_add_angle, "° at rpm", rpm)
-        power = \
-            calculate_power(target_speed, rpm, sections_radius, chord_lengths, chord_angles, dr, add_angle=current_add_angle,
-                            R=R,
-                            Rhub=Rhub, B=B, f_c_D=f_c_D, f_c_L=f_c_L)["power"]
-        results.append((current_add_angle, power))
-        current_add_angle += step
-        print("---")
-    best_angle, best_power = sorted(results, key=lambda x: x[1], reverse=True)[0]
-    print("The best angle to turn would be:", "%.3f" % round(best_angle, 2), "°, at this pitch angle the power is:",
-          "%.2f" % round(best_power), "Watts")
-    print("That is a power gain of ", "%.2f" % round(best_power - power_orig, 2), "Watts, or",
-          round(((best_power - power_orig) / power_orig) * 100, 2), "% better than the original version.")
-    return best_angle
+#print(save_results_as_csv(test))

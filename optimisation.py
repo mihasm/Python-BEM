@@ -29,8 +29,8 @@ class Optimizer:
         self.dr = dr
 
         self.chord_angles_orig = numpy.copy(chord_angles)
-        self.target_speed = 5
-        self.target_rpm = 400
+        self.target_speed = 7
+        self.target_rpm = 500
         self.R = .776
         self.Rhub = 0.1
         self.B = 5
@@ -96,7 +96,7 @@ class Optimizer:
         else:
             raise Exception("r and delta have to be provided.")
 
-    def optimizer(self):
+    def optimize_angles(self):
         """
         Optimizes angles of attack by changing twist angles.
         Prints results.
@@ -163,3 +163,44 @@ class Optimizer:
         print("Percentage increase", percentage_increase)
         print("Old angles", self.chord_angles_orig)
         print("New angles", self.chord_angles)
+
+    
+    def optimize_pitch(self, min_add_angle=-30, max_add_angle=30, step=0.5):
+        """
+        This function calculates the optimum pitch angle of the blade for the given wind speed and rotational velocity.
+
+        :param min_add_angle: lower limit [degrees]. Default: -30
+        :param max_add_angle: upper limit [degrees]. Default: +30
+        :param step: step for changing angle [degrees]
+        :return: best angle change [degrees]
+        """
+        print("\nOptimizing for wind speed of ", self.target_speed, "m/s... and rpm ", self.target_rpm)
+        power_orig = \
+            calculate_power(speed_wind=self.target_speed, rpm=self.target_rpm, sections_radius=self.sections_radius,
+                chord_lengths=self.chord_lengths,
+                chord_angles=self.chord_angles_orig, dr=self.dr, R=self.R, B=self.B, f_c_L=self.f_c_L,
+                f_c_D=self.f_c_D, Rhub=self.Rhub)["power"]
+        print("Without turning the blade, the power is:", "%.2f" % round(power_orig), "Watts at wind speed", self.target_speed,
+              "m/s and rotational velocity", self.target_rpm, "rpm")
+        current_add_angle = min_add_angle
+        results = []
+        while current_add_angle <= max_add_angle:
+            print("Testing pitch:", current_add_angle, "° at rpm", self.target_rpm)
+            power = \
+                calculate_power(speed_wind=self.target_speed, rpm=self.target_rpm, sections_radius=self.sections_radius,
+                chord_lengths=self.chord_lengths,
+                chord_angles=self.chord_angles_orig, dr=self.dr, R=self.R, B=self.B, f_c_L=self.f_c_L,
+                f_c_D=self.f_c_D, Rhub=self.Rhub,add_angle=current_add_angle)["power"]
+            results.append((current_add_angle, power))
+            current_add_angle += step
+            print("---")
+        best_angle, best_power = sorted(results, key=lambda x: x[1], reverse=True)[0]
+        print("The best angle to turn would be:", "%.3f" % round(best_angle, 2), "°, at this pitch angle the power is:",
+              "%.2f" % round(best_power), "Watts")
+        print("That is a power gain of ", "%.2f" % round(best_power - power_orig, 2), "Watts, or",
+              round(((best_power - power_orig) / power_orig) * 100, 2), "% better than the original version.")
+        return best_angle
+
+
+#Optimizer().optimize_pitch()
+Optimizer().optimize_angles()

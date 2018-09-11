@@ -8,13 +8,43 @@ __status__ = "Development"
 
 import numpy
 from scipy import interpolate
+import numbers
+from openpyxl import Workbook
+import csv
 
-from cp_curve import run
+from cp_curve import run, calculate_power
 
-# from parse_podatki import f_c_L, f_c_D, parse_sections
-# run(*parse_sections(),B=5,R=0.776,Rhub=0.1,f_c_L=f_c_L,f_c_D=f_c_D)
+
+def transpose(a):
+  o=[]
+  for i in range(len(a[0])):
+    o.append([])
+    for r in a:
+      o[i].append(r[i])
+  return o
+
+def dict_to_csv(inp_dict):
+  prep=[]
+  out=""
+  i=0
+  for k,v in inp_dict.items():
+    prep.append([k])
+    for j in v:
+      if isinstance(j,numpy.ndarray):
+        j=numpy.array2string(j,max_line_width=1e10)
+      #out+=str(j)+";"
+      prep[i].append(j)
+    i+=1
+  prep = transpose(prep)
+  for r in prep:
+    for e in r:
+      out+=str(e)+";"
+    out+="\n"
+  return out
+
+from parse_data import f_c_L, f_c_D, parse_sections
+res = run(*parse_sections(),B=5,R=0.776,Rhub=0.1,f_c_L=f_c_L,f_c_D=f_c_D)
 # optimize_runner(5,*parse_sections(),B=5,R=0.776,Rhub=0.1,rpm=450,f_c_L=f_c_L,f_c_D=f_c_D)
-
 
 # PODATKI NORVEŽAN
 r = numpy.array(
@@ -47,8 +77,11 @@ cd = [0.23497, 0.229, 0.22313, 0.21734, 0.21158, 0.20593, 0.20044, 0.19509, 0.18
       0.04948, 0.05624, 0.06421, 0.07323, 0.08338, 0.09493, 0.10775, 0.1209, 0.1356, 0.15183, 0.1694, 0.18803, 0.20837,
       0.2317, 0.27961]
 
-f_c_L = interpolate.interp1d(alfa, cl, fill_value=(cl[0], cl[-1]), bounds_error=False)
-f_c_D = interpolate.interp1d(alfa, cd, fill_value=(cd[0], cd[-1]), bounds_error=False)
-run(r, c, theta, delta_r, B=3, R=0.45, Rhub=0.05, f_c_L=f_c_L, f_c_D=f_c_D)
-# print(calculate_power(speed_wind=3,rpm=1300,sections_radius=r,chord_lengths=c,chord_angles=theta,
-# dr=delta_r,R=0.45,B=3,f_c_L=f_c_L,f_c_D=f_c_D))
+#f_c_L = interpolate.interp1d(alfa, cl, fill_value=(cl[0], cl[-1]), bounds_error=False)
+#f_c_D = interpolate.interp1d(alfa, cd, fill_value=(cd[0], cd[-1]), bounds_error=False)
+#res = run(r, c, theta, delta_r, B=3, R=0.45, Rhub=0.05, f_c_L=f_c_L, f_c_D=f_c_D)
+
+
+
+f = dict_to_csv(res)
+#print(f)

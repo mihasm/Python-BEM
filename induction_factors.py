@@ -224,13 +224,15 @@ def fInductionCoefficients8(Ct, F, phi, sigma, cn, Cl, *args, **kwargs):
     if Ct < 0.96:
         a = (sigma * cn) / (4 * F * sin(phi) ** 2 + sigma * cn)
     else:
+        if F == 0:
+            F=1e-5
         a = (1 / F) * (0.143 + sqrt(0.0203 - 0.6427 * (0.889 - Ct)))
     aprime = 1 / ((4 * F * cos(phi) / (sigma * Cl)) - 1)
     return a, aprime
 
 
 # noinspection PyUnusedLocal,PyUnusedLocal,PyUnusedLocal
-def fInductionCoefficients7(aprime_last, F, lambda_r, phi, sigma, Cl, B, c, psi, r, R, *args, **kwargs):
+def fInductionCoefficients7(aprime_last, F, lambda_r, phi, sigma, Cl, B, c, psi, r, R, v, omega, *args, **kwargs):
     """
     Calculates induction coefficients using method from
     PROPX: Definitions, Derivations and Data Flow, C. Harman, 1994
@@ -251,26 +253,36 @@ def fInductionCoefficients7(aprime_last, F, lambda_r, phi, sigma, Cl, B, c, psi,
 
     K = B * c * Cl * cos(phi) * cos(psi) / (8 * pi * r * sin(phi) ** 2)
     a = K / (1 + K)
-
+    
+    """
     if a > 0.2:
         ac = 0.2
-        acprime = 1.0
-        Fc = 1.0
+        acprime = 0.01
+        Fc = F
+        if Fc == 0.0:
+            Fc = 0.1
         X = lambda_r
         CTL = B * c * Cl * X * (1 + aprime_last) * cos(psi) / (2 * pi * R) * sqrt(
             (1 - a) ** 2 + (1 + aprime_last) ** 2 * X ** 2)
         CTL_ac = 4 * ac * Fc * (1 - ac)
         cpsi = cos(psi)
-        dCTL_da = 4 * Fc * (1 - 2 * ac) + 4 * ac * B / pi * 1 / tan(pi * Fc / 2) * \
+        #clen_4 = (1 + (acprime * (1 - 2 * ac)) / ((1 + 2 * acprime) * ac * cos(psi) ** 2))
+        #clen_2 = 4 * ac * B / pi * 1 / tan(pi * Fc / 2) 
+        #clen_3 = ((R * cpsi - r * cpsi) / (R * cpsi))
+        #clen_5 = (1 - ac)
+        dCTL_da = 4 * Fc * (1 - 2 * ac) + \
+                  4 * ac * B / pi * 1 / tan(pi * Fc / 2) * \
                   ((R * cpsi - r * cpsi) / (R * cpsi)) * \
-                  (cos(phi * cpsi) ** 2 / sin(phi * cpsi)) * \
+                  (cos(phi) ** 2 / sin(phi)) * \
                   (1 + (acprime * (1 - 2 * ac)) / ((1 + 2 * acprime) * ac * cos(psi) ** 2)) * \
                   (1 - ac)
         a = ac - (CTL_ac - CTL) / dCTL_da
-    # XL=(r*cos(psi)*omega)/v
-    # to_sqrt=abs(1+(4*a*(1-a))/(XL**2))
-    # aprime=0.5*( sqrt(to_sqrt) - 1 )
-    aprime = 1 / ((4 * F * cos(phi) / (sigma * Cl)) - 1)
+    """
+    XL=(r*cos(psi)*omega)/v
+    to_sqrt=abs(1+(4*a*(1-a))/(XL**2))
+    aprime=0.5*( sqrt(to_sqrt) - 1 )
+    #aprime=0
+    # aprime = 1 / ((4 * F * cos(phi) / (sigma * Cl)) - 1)
     return a, aprime
 
 
@@ -405,6 +417,12 @@ class Calculator:
 
         Different methods are available as different fInductionCoefficients functions. TODO: implement diff methods
 
+        ANGLES REPRESENTATION SHOWN IN
+        https://cmm2017.sciencesconf.org/129068/document
+        alpha - angle of attack
+        phi - angle of relative wind
+        beta - theta
+
         :param print_out: bool; if true, prints iteration data, default: False
         :param v: wind speed [m]
         :param r: sections radiuses [m]
@@ -419,11 +437,7 @@ class Calculator:
         """
 
         """
-        ANGLES REPRESENTATION SHOWN IN
-        https://cmm2017.sciencesconf.org/129068/document
-        alpha - angle of attack
-        phi - angle of relative wind
-        beta - theta
+        
         """
         if print_out:
             TSR = rpm * pi / 30 * R / v
@@ -433,12 +447,13 @@ class Calculator:
             'a': numpy.array([]),
             "a'": numpy.array([]),
             "cL": numpy.array([]),
-            "napadni_angle": numpy.array([]),
-            "relativni_angle_wind": numpy.array([]),
+            "alpha": numpy.array([]),
+            "phi": numpy.array([]),
             "F": numpy.array([]),
             "dFt": numpy.array([]),
             "M": numpy.array([]),
-            "TSR": numpy.array([])
+            "TSR": numpy.array([]),
+            "Ct":numpy.array([])
         }
 
         chord_angle, c, r = self.convert_to_array(chord_angle, c, r)
@@ -496,9 +511,9 @@ class Calculator:
                 F = fTipLoss(B, _r, R, phi)
 
                 # Prandtl hub loss
-                # if Rhub:
-                #    Fh=fHubLoss(B,_r,Rhub,phi)
-                #    F=F*Fh
+                if Rhub:
+                    Fh=fHubLoss(B,_r,Rhub,phi)
+                    F=F*Fh
 
                 # angle of attack
                 alpha = phi - theta
@@ -524,7 +539,7 @@ class Calculator:
                 # cn,ct=newLosses(cn,ct,B,_r,R,phi,lambda_r)
 
                 # local thrust coefficient
-                Ct = sigma * (1 - a) ** 2 * cn / (sin(phi) ** 2)
+                Ct = sigma * (1 - a) ** 2 * cn / (sin(phi) ** 2) #Qblade
 
                 # save old values, calculate new values of induction factors
                 a_last = a
@@ -536,7 +551,17 @@ class Calculator:
                                                      lambda_r=lambda_r,
                                                      phi=phi,
                                                      sigma=sigma,
-                                                     cn=cn)
+                                                     cn=cn,
+                                                     ct=ct,
+                                                     Cl=Cl,
+                                                     B=B,
+                                                     c=_c,
+                                                     r=_r,
+                                                     R=R,
+                                                     psi=0.0,
+                                                     aprime_last=aprime,
+                                                     omega=omega,
+                                                     v=v)
 
                 # force calculation
                 dFL = Cl * 0.5 * rho * Vrel_norm ** 2 * _c * dr[n]  # lift force
@@ -568,14 +593,17 @@ class Calculator:
                 print(prepend + "        a:", str(a), "a'", aprime)
                 print(prepend + "        dFt:", dFt)
                 print(prepend + "        LSR:", lambda_r)
+                print(prepend + "        Ct:",Ct)
+                print(prepend + "        Vrel_norm",Vrel_norm)
 
             results["a"] = numpy.append(results["a"], a)
             results["a'"] = numpy.append(results["a'"], aprime)
             results["cL"] = numpy.append(results["cL"], Cl)
-            results["napadni_angle"] = numpy.append(results["napadni_angle"], alpha)
-            results["relativni_angle_wind"] = numpy.append(results["relativni_angle_wind"], phi)
+            results["alpha"] = numpy.append(results["alpha"], alpha)
+            results["phi"] = numpy.append(results["phi"], phi)
             results["F"] = numpy.append(results["F"], F)
             results["dFt"] = numpy.append(results["dFt"], dFt)
+            results["Ct"] = numpy.append(results["Ct"],Ct)
 
         dFt = results["dFt"]
         Ft = numpy.sum(dFt)
@@ -584,6 +612,9 @@ class Calculator:
         Pmax = 0.5 * rho * v ** 3 * pi * R ** 2
         cp = power / Pmax
 
+        results["R"] = R
+        results["rpm"] = rpm
+        results["v"] = v
         results["cp"] = cp
         results["TSR"] = TSR
         results["Ft"] = Ft
@@ -592,5 +623,9 @@ class Calculator:
         results["M"] = M
         results["power"] = power
         results["dFt"] = dFt
-
+        results["Rhub"] = Rhub
+        results["B"] = B
+        results["dr"] = dr
+        results["c"]=c
+        results["theta"]=chord_angle
         return results
