@@ -44,8 +44,8 @@ class Table(QWidget):
         for r in self.array:
             j = 0
             for c in r:
-                if not isinstance(c,str):
-                    c=str(c)
+                if not isinstance(c, str):
+                    c = str(c)
                 self.tableWidget.setItem(i, j, QTableWidgetItem(c))
                 j += 1
             i += 1
@@ -60,7 +60,7 @@ class Table(QWidget):
         self.get_selected()
 
     def get_selected(self):
-        self.selected_array=[]
+        self.selected_array = []
 
         rows_added = []
         columns_added = []
@@ -92,7 +92,7 @@ class Table(QWidget):
             column = currentQTableWidgetItem.column()
             text = currentQTableWidgetItem.text()
             self.selected_array[remap_row[row]][remap_column[column]] = text
-        #print(self.selected_array)
+        # print(self.selected_array)
         return self.selected_array
 
     def keyPressEvent(self, e):

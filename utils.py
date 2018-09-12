@@ -73,4 +73,3 @@ def array_to_csv(in_ar, delimiter="\t"):
         out = out[0:-1]
         out += "\n"
     return out
-

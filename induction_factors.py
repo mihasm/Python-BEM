@@ -417,7 +417,8 @@ class Calculator:
         """
         Calculates induction factors using standard iteration methods.
 
-        Different methods are available as different fInductionCoefficients functions. TODO: implement diff methods
+        Different methods are available as different fInductionCoefficients functions.
+        TODO: implement diff methods
 
         ANGLES REPRESENTATION SHOWN IN
         https://cmm2017.sciencesconf.org/129068/document

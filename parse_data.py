@@ -12,11 +12,12 @@ from scipy import interpolate
 from scipy.ndimage.interpolation import shift
 
 try:
-    wb = load_workbook('program_v3.xlsm')
-    ws = wb['program']
+    wb = load_workbook('program_v4.xlsx')
+    ws = wb['geometrija']
+    ws2 = wb["podatki"]
 except FileNotFoundError:
     print(
-        "File 'program_v3.xlsm' was not found, please rename your excel file to 'program_v3.xlsm' and move it to the "
+        "File 'program_v4.xlsx' was not found, please rename your excel file to 'program_v3.xlsm' and move it to the "
         "folder of this file.")
 
 
@@ -26,7 +27,6 @@ def parse_podatki():
     Extracts cL and cD curve data.
     :return: Returns dictionary with resulting points as arrays.
     """
-    ws2 = wb['podatki']
 
     COLUMN_CL_X = 1
     COLUMN_CL_Y = 2
@@ -79,22 +79,32 @@ def parse_sections():
     Parses turbine geometry data from excel file program_v3.xlsm.
     :return: Returns section radiuses, chord lengths, chord angles and section heights.
     """
-    sections_radius = []
-    chord_lengths = []
-    chord_angles = []
+    r = []
+    c = []
+    theta = []
+    dr = []
 
-    for row in range(9, 31):
-        sections_radius.append(ws.cell(row=row, column=1).value)  # mm
-        chord_lengths.append(ws.cell(row=row, column=2).value)  # mm
-        chord_angles.append(ws.cell(row=row, column=3).value)  # degrees
+    i = 4
+    while True:
+        _r = ws.cell(row=i, column=1).value
+        _c = ws.cell(row=i, column=2).value
+        _theta = ws.cell(row=i, column=3).value
+        _dr = ws.cell(row=i, column=4).value
+        if _r != None and _c != None and _theta != None and _dr != None:
+            r.append(_r)
+            c.append(_c)
+            theta.append(_theta)
+            dr.append(_dr)
+        elif _r != None or _c != None or _theta != None or _dr != None:
+            pass
+        else:
+            break
 
-    sections_radius = numpy.array(sections_radius)
-    sections_radius_shifted = shift(sections_radius, +1, cval=sections_radius[0] - 30)
-    dr = sections_radius - sections_radius_shifted
-    dr = dr * 1e-3  # m
-    sections_radius = sections_radius * 1e-3
+        i += 1
 
-    chord_lengths = numpy.array(chord_lengths) * 1e-3  # m
-    chord_angles = numpy.array(chord_angles)
-    chord_angles = 90.0 - chord_angles
-    return sections_radius, chord_lengths, chord_angles, dr
+    r = numpy.array(r) * 1e-3  #
+    c = numpy.array(c) * 1e-3  # m
+    theta = numpy.array(theta)
+    dr = numpy.array(dr) * 1e-3  # m
+
+    return r, c, theta, dr

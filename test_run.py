@@ -13,13 +13,28 @@ from openpyxl import Workbook
 import csv
 from cp_curve import run, calculate_power, run_main
 from parse_data import parse_podatki, parse_sections
+from optimisation import Optimizer
+import multiprocessing as mp
 
 podatki = parse_podatki()
-f_c_L = interpolate.interp1d(podatki['cL_x'], podatki['cL_y'], fill_value=(podatki['cL_y'][0], podatki['cL_y'][-1]),bounds_error=False)
-f_c_D = interpolate.interp1d(podatki['cD_x'], podatki['cD_y'], fill_value=(podatki['cD_y'][0], podatki['cD_y'][-1]),bounds_error=False)
-res = run_main(*parse_sections(), B=5, R=0.776, Rhub=0.1, f_c_L=f_c_L, f_c_D=f_c_D)
 
-# optimize_runner(5,*parse_sections(),B=5,R=0.776,Rhub=0.1,rpm=450,f_c_L=f_c_L,f_c_D=f_c_D)
+f_c_L = interpolate.interp1d(podatki['cL_x'], podatki['cL_y'], fill_value=(podatki['cL_y'][0], podatki['cL_y'][-1]),
+                             bounds_error=False)
+f_c_D = interpolate.interp1d(podatki['cD_x'], podatki['cD_y'], fill_value=(podatki['cD_y'][0], podatki['cD_y'][-1]),
+                             bounds_error=False)
+
+sections_radius, chord_lengths, chord_angles, dr = parse_sections()
+
+run_main(sections_radius, chord_lengths, chord_angles, dr, B=5, R=0.776, Rhub=0.1, f_c_L=f_c_L, f_c_D=f_c_D)
+
+# o =  Optimizer(sections_radius, chord_lengths, chord_angles, dr, B=5, R=0.776, Rhub=0.1, f_c_L=f_c_L, f_c_D=f_c_D)
+
+# angles_new_pitch = o.optimize_pitch(7)
+# run_main(sections_radius, chord_lengths, angles_new_pitch, dr, B=5, R=0.776, Rhub=0.1, f_c_L=f_c_L, f_c_D=f_c_D)
+
+# angles_optimized = o.optimize_angles(7,300)
+# run_main(sections_radius, chord_lengths, angles_optimized, dr, B=5, R=0.776, Rhub=0.1, f_c_L=f_c_L, f_c_D=f_c_D)
+
 
 # PODATKI NORVEŽAN
 r = numpy.array(
@@ -53,12 +68,6 @@ cd = [0.23497, 0.229, 0.22313, 0.21734, 0.21158, 0.20593, 0.20044, 0.19509, 0.18
       0.04948, 0.05624, 0.06421, 0.07323, 0.08338, 0.09493, 0.10775, 0.1209, 0.1356, 0.15183, 0.1694, 0.18803, 0.20837,
       0.2317, 0.27961]
 
-##f_c_L = interpolate.interp1d(alfa, cl, fill_value=(cl[0], cl[-1]), bounds_error=False)
-#f_c_D = interpolate.interp1d(alfa, cd, fill_value=(cd[0], cd[-1]), bounds_error=False)
-#res = run_main(r, c, theta, delta_r, B=3, R=0.45, Rhub=0.05, f_c_L=f_c_L, f_c_D=f_c_D)
-
-#from table import draw_table
-#draw_table(dict_to_ar(res))
-
-#f = dict_to_csv(res)
-# print(f)
+# f_c_L = interpolate.interp1d(alfa, cl, fill_value=(cl[0], cl[-1]), bounds_error=False)
+# f_c_D = interpolate.interp1d(alfa, cd, fill_value=(cd[0], cd[-1]), bounds_error=False)
+# res = run_main(r, c, theta, delta_r, B=3, R=0.45, Rhub=0.05, f_c_L=f_c_L, f_c_D=f_c_D)

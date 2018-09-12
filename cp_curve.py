@@ -26,13 +26,13 @@ from table import Table
 from utils import dict_to_ar, transpose
 
 from induction_factors import Calculator
-from main import mainWindow
+from main import MainWindow
 
 a = Axes3D  # only for passing code inspection -> Axes3D needs to be imported
 
 
 def calculate_power(speed_wind, rpm, sections_radius, chord_lengths, chord_angles, dr, R, Rhub, B, f_c_L, f_c_D,
-                    add_angle=0.0):
+                    add_angle=None):
     """
     Returns calculated power using BEM analysis.
 
@@ -55,7 +55,8 @@ def calculate_power(speed_wind, rpm, sections_radius, chord_lengths, chord_angle
     :param add_angle: [degrees]
     :return: dict with results
     """
-    chord_angles = chord_angles + add_angle
+    if add_angle != None:
+        chord_angles = chord_angles + add_angle
     results = Calculator(f_c_L, f_c_D).run_array(chord_angle=chord_angles, B=B, c=chord_lengths, r=sections_radius,
                                                  dr=dr, rpm=rpm, v=speed_wind, R=R, Rhub=Rhub)
     return results
@@ -82,12 +83,12 @@ def calculate_power_3d(sections_radius, chord_lengths, chord_angles, dr, R, Rhub
 
     results_3d = {}
 
-    for v in list(numpy.linspace(start=3, stop=20, num=20)):
-        for rpm in list(numpy.linspace(start=100, stop=3000, num=20)):
-            print("Calculating power for v",v,"rpm",rpm)
+    for v in list(numpy.linspace(start=3, stop=20, num=10)):
+        for rpm in list(numpy.linspace(start=100, stop=3000, num=10)):
+            print("Calculating power for v", v, "rpm", rpm)
             _results = calculate_power(v, rpm, sections_radius, chord_lengths, chord_angles, dr, add_angle=add_angle,
                                        R=R, B=B, f_c_L=f_c_L, f_c_D=f_c_D, Rhub=Rhub)
-            print("    Power:",_results["power"],"Cp:",_results["cp"])
+            print("    Power:", _results["power"], "Cp:", _results["cp"])
             if _results != None and _results["power"]:
                 if 0.0 < _results["cp"] <= 0.6:
                     for key, value in _results.items():
@@ -227,7 +228,7 @@ def run(sections_radius, chord_lengths, chord_angles, dr, B, R, Rhub, f_c_L, f_c
     ax_ct.scatter(A, CT)
     plt.title('Ct curve')
 
-    #plt.show()
+    # plt.show()
     return results_3d
 
 
@@ -258,41 +259,42 @@ def run_main(sections_radius, chord_lengths, chord_angles, dr, B, R, Rhub, f_c_L
     app = QtWidgets.QApplication([])
     screen = app.primaryScreen()
     size = screen.size()
-    main = mainWindow(size.width(),size.height())
+    main = MainWindow(size.width(), size.height())
 
-    geom=[
-            ["r"]+list(sections_radius),
-            ["c"]+list(chord_lengths),
-            ["theta"]+list(chord_angles),
-            ["dr"]+list(dr)
-         ]
+    geom = [
+        ["r"] + list(sections_radius),
+        ["c"] + list(chord_lengths),
+        ["theta"] + list(chord_angles),
+        ["dr"] + list(dr)
+    ]
+
     geom = transpose(geom)
     t_geom = Table(geom)
-    main.add_tab_widget(t_geom,"Geom")
+    main.tab_widget.add_tab_widget(t_geom, "Geom")
 
-    alpha=numpy.linspace(-25,25,100)
-    cL=f_c_L(alpha)
-    cD=f_c_D(alpha)
+    alpha = numpy.linspace(-25, 25, 100)
+    cL = f_c_L(alpha)
+    cD = f_c_D(alpha)
 
-    f=main.add_tab_figure("Cl/Cd")
-    main.add_2d_plot_to_figure(f,alpha,cL,121,"cL","alpha","cL")
-    main.add_2d_plot_to_figure(f,alpha,cD,122,"cD","alpha","cD")
+    f = main.tab_widget.add_tab_figure("Cl/Cd")
+    main.tab_widget.add_2d_plot_to_figure(f, alpha, cL, 121, "cL", "alpha", "cL")
+    main.tab_widget.add_2d_plot_to_figure(f, alpha, cD, 122, "cD", "alpha", "cD")
 
-    
-    f2=main.add_tab_figure("Moč in Cp")
-    main.add_2d_plot_to_figure(f2,max_x,max_z,121,"Moč vs veter","veter [m/s]","moč [W]")
-    
-    TSR,CP = sort_xy(results_3d["TSR"],results_3d["cp"])
-    main.add_2d_plot_to_figure(f2,TSR,CP,122,"Cp krivulja","lambda","Cp")
-    
-    f3=main.add_tab_figure("3D moč")
-    main.add_surface_plot(f3,X,Y,Z,111,"Moč (veter,rpm)","veter[m/s]","rpm","moč [W]")
+    f2 = main.tab_widget.add_tab_figure("Moč in Cp")
+    main.tab_widget.add_2d_plot_to_figure(f2, max_x, max_z, 121, "Moč vs veter", "veter [m/s]", "moč [W]")
 
-    f4=main.add_tab_figure("Ct krivulja")
-    main.add_2d_plot_to_figure(f4,results_3d["a"],results_3d["Ct"],111,"ct krivulja","a","ct",look="o")
+    TSR, CP = sort_xy(results_3d["TSR"], results_3d["cp"])
+    main.tab_widget.add_2d_plot_to_figure(f2, TSR, CP, 122, "Cp krivulja", "lambda", "Cp")
+
+    f3 = main.tab_widget.add_tab_figure("3D moč")
+    main.tab_widget.add_surface_plot(f3, X, Y, Z, 111, "Moč (veter,rpm)", "veter[m/s]", "rpm", "moč [W]")
+
+    f4 = main.tab_widget.add_tab_figure("Ct krivulja")
+    main.tab_widget.add_2d_plot_to_figure(f4, results_3d["a"], results_3d["Ct"], 111, "ct krivulja", "a", "ct",
+                                          look="o")
 
     t = Table(dict_to_ar(results_3d))
-    main.add_tab_widget(t,"Data")
+    main.tab_widget.add_tab_widget(t, "Data")
 
-    main.show()
-    sys.exit(app.exec_())
+    app.exec_()
+    return results_3d
