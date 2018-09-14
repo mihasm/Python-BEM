@@ -110,7 +110,7 @@ def newLosses(cn, ct, B, r, R, phi, lambda_r, Rhub=None):
 
 
 # noinspection PyUnusedLocal,PyUnusedLocal
-def fInductionCoefficients(F, phi, sigma, cn, ct, *args, **kwargs):
+def fInductionCoefficients1(F, phi, sigma, cn, ct, *args, **kwargs):
     """
     Calculates induction coefficients using method from
     https://cmm2017.sciencesconf.org/129068/document
@@ -338,6 +338,7 @@ def fInductionCoefficients10(Ct, F, lambda_r, phi, sigma, cn, *args, **kwargs):
         a = (18 * F - 20 - 3 * abs(Ct * (50 - 36 * F) + 12 * F * (3 * F - 4)) ** 0.5) / (36 * F - 50)
 
     aprime = 0.5 * (abs(1 + 4 / (lambda_r ** 2) * a * (1 - a)) ** 0.5 - 1)
+
     return a, aprime
 
 
@@ -388,6 +389,29 @@ def cascadeEffectsCorrection(alpha, v, omega, r, R, c, B, a, aprime):
     return out
 
 
+def calculate_coefficients(method, input_arguments):
+    if method == 1:
+        return fInductionCoefficients1(**input_arguments)
+    # if method == 2:
+    #   fInductionCoefficients2(**input_arguments)
+    # if method == 3:
+    #   fInductionCoefficients3(**input_arguments)
+    if method == 4:
+        return fInductionCoefficients4(**input_arguments)
+    if method == 5:
+        return fInductionCoefficients5(**input_arguments)
+    if method == 6:
+        return fInductionCoefficients6(**input_arguments)
+    if method == 7:
+        return fInductionCoefficients7(**input_arguments)
+    if method == 8:
+        return fInductionCoefficients8(**input_arguments)
+    if method == 9:
+        return fInductionCoefficients9(**input_arguments)
+    if method == 10:
+        return fInductionCoefficients10(**input_arguments)
+
+
 class Calculator:
     """
     Class for calculation of induction factors using BEM theory.
@@ -413,7 +437,9 @@ class Calculator:
             return None
 
     # noinspection PyUnusedLocal,PyUnusedLocal
-    def run_array(self, chord_angle, B, c, r, dr, R, Rhub, rpm, v, print_out=False):
+    def run_array(self, chord_angle, B, c, r, dr, R, Rhub, rpm, v, print_out=False, tip_loss=False, hub_loss=False,
+                  new_tip_loss=False, new_hub_loss=False, cascade_correction=False, max_iterations=100,
+                  convergence_limit=0.001, rho=1.225, method=10, relaxation_factor=0.3,print_all=False):
         """
         Calculates induction factors using standard iteration methods.
 
@@ -425,7 +451,16 @@ class Calculator:
         alpha - angle of attack
         phi - angle of relative wind
         beta - theta
-
+        :param relaxation_factor: relaxation factor
+        :param method: method of calculating induction factors
+        :param rho: air density [kg/m^3]
+        :param convergence_limit: convergence criterion
+        :param max_iterations: maximum number of iterations
+        :param cascade_correction: uses cascade correction
+        :param new_hub_loss: uses new tip loss correction
+        :param new_tip_loss: uses new tip loss correction
+        :param hub_loss: uses Prandtl tip loss correction
+        :param tip_loss: uses Prandtl tip loss correction
         :param print_out: bool; if true, prints iteration data, default: False
         :param v: wind speed [m]
         :param r: sections radiuses [m]
@@ -449,13 +484,13 @@ class Calculator:
             results[array] = numpy.array([])
 
         # set constants that are section-independent
-        rho = 1.225
+        # rho = 1.225
         omega = rpm * 2 * pi / 60
         TSR = omega * R / v  # tip speed ratio
 
         # algorithm constants
-        max_iterations = 100
-        convergence_limit = 0.001
+        # max_iterations = 100
+        # convergence_limit = 0.001
 
         if print_out:
             print("Running iterative method for v", v, "rpm", rpm, "TSR", TSR)
@@ -501,26 +536,37 @@ class Calculator:
                 # relative wind
                 phi = atan2(Un, Ut)
 
+                F = 1
                 # Prandtl tip loss
-                F = fTipLoss(B, _r, R, phi)
+                if tip_loss:
+                    F = F * fTipLoss(B, _r, R, phi)
 
                 # Prandtl hub loss
-                if Rhub:
-                    Fh = fHubLoss(B, _r, Rhub, phi)
-                    F = F * Fh
+                if hub_loss:
+                    F = F * fHubLoss(B, _r, Rhub, phi)
+
+                # New tip loss
+                if new_tip_loss:
+                    F = F * newTipLoss(B, _r, R, phi, lambda_r)
+
+                # New hub loss
+                if new_hub_loss:
+                    F = F * newHubLoss(B, _r, R, phi, lambda_r)
 
                 # angle of attack
                 alpha = phi - theta
-                # alpha = cascadeEffectsCorrection(              #PROPX
-                #                                  alpha=alpha,
-                #                                  v=v,
-                #                                  omega=omega,
-                #                                  r=_r,
-                #                                  R=R,
-                #                                  c=_c,
-                #                                  B=B,
-                #                                  a=a,
-                #                                  aprime=aprime)
+
+                if cascade_correction:
+                    alpha = cascadeEffectsCorrection(
+                        alpha=alpha,
+                        v=v,
+                        omega=omega,
+                        r=_r,
+                        R=R,
+                        c=_c,
+                        B=B,
+                        a=a,
+                        aprime=aprime)
 
                 # lift and drag coefficients
                 Cl, Cd = self.f_c_L(degrees(alpha)), self.f_c_D(degrees(alpha))
@@ -529,9 +575,6 @@ class Calculator:
                 cn = Cl * cos(phi) + Cd * sin(phi)
                 ct = Cl * sin(phi) - Cd * cos(phi)
 
-                # Prandtl/corrected tip and hub losses
-                # cn,ct=newLosses(cn,ct,B,_r,R,phi,lambda_r)
-
                 # local thrust coefficient
                 Ct = sigma * (1 - a) ** 2 * cn / (sin(phi) ** 2)  # Qblade
 
@@ -539,23 +582,32 @@ class Calculator:
                 a_last = a
                 aprime_last = aprime
 
+                input_arguments = {"Ct": Ct,
+                                   "F": F,
+                                   "lambda_r": lambda_r,
+                                   "phi": phi,
+                                   "sigma": sigma,
+                                   "cn": cn,
+                                   "ct": ct,
+                                   "Cl": Cl,
+                                   "B": B,
+                                   "c": _c,
+                                   "r": _r,
+                                   "R": R,
+                                   "psi": 0.0,
+                                   "aprime_last": aprime,
+                                   "omega": omega,
+                                   "v": v,
+                                   "a_last": a_last
+                                   }
+                if print_all:
+                    args_to_print = sorted([key for key,value in input_arguments.items()])
+                    print("            i",i)
+                    for a in args_to_print:
+                        print("            "+a,input_arguments[a])
+                    print("             "+"--------")
                 # calculate induction coefficients
-                a, aprime = fInductionCoefficients10(Ct=Ct,
-                                                     F=F,
-                                                     lambda_r=lambda_r,
-                                                     phi=phi,
-                                                     sigma=sigma,
-                                                     cn=cn,
-                                                     ct=ct,
-                                                     Cl=Cl,
-                                                     B=B,
-                                                     c=_c,
-                                                     r=_r,
-                                                     R=R,
-                                                     psi=0.0,
-                                                     aprime_last=aprime,
-                                                     omega=omega,
-                                                     v=v)
+                a, aprime = calculate_coefficients(method, input_arguments)
 
                 # force calculation
                 dFL = Cl * 0.5 * rho * Vrel_norm ** 2 * _c * dr[n]  # lift force
@@ -569,13 +621,14 @@ class Calculator:
                 # check iterations limit
                 if i >= max_iterations:
                     if print_out:
-                        print("max iterations exceeded")
-                        print("------->a:", a, "aprime", aprime)
+                        print("---------------------------")
+                        print("|max iterations exceeded")
+                        print("|------>a:", a, "aprime", aprime)
                         prepend = '|'
                     break
 
                 # relaxation
-                a = a_last + 0.3 * (a - a_last)
+                a = a_last + relaxation_factor * (a - a_last)
                 # aprime=aprime_last+0.3*(aprime-aprime_last)
 
             if print_out:
@@ -589,6 +642,7 @@ class Calculator:
                 print(prepend + "        LSR:", lambda_r)
                 print(prepend + "        Ct:", Ct)
                 print(prepend + "        Vrel_norm", Vrel_norm)
+                print(prepend + "----------------------------")
 
             results["a"] = numpy.append(results["a"], a)
             results["a'"] = numpy.append(results["a'"], aprime)

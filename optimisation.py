@@ -6,11 +6,41 @@ __maintainer__ = "Miha Smrekar"
 __email__ = "miha.smrekar9@gmail.com"
 __status__ = "Development"
 
-import numbers
-
 import numpy
 
-from cp_curve import calculate_power
+from induction_factors import Calculator
+
+
+# from cp_curve import calculate_power
+def calculate_power(speed_wind, rpm, sections_radius, chord_lengths, chord_angles, dr, R, Rhub, B, f_c_L, f_c_D,
+                    add_angle=None):
+    """
+    Returns calculated power using BEM analysis.
+
+    Inputs are wind speed, rotational velocity, blade geometry, number of blades, and
+    functions for calculating lift and drag coefficients.
+
+    Output is a dictionary with all results.
+
+    :param speed_wind: wind speed [m/s]
+    :param rpm: rotational velocity [rpm]
+    :param sections_radius: np array of section sections_radius [m]
+    :param chord_lengths: np array of section chord lengths [m]
+    :param chord_angles: np array of chord angles [degrees]
+    :param dr: np array of section heights [m]
+    :param R: outer (tip) radius [m]
+    :param Rhub: hub radius [m]
+    :param B: number of blades
+    :param f_c_L: function for calculating lift coefficient
+    :param f_c_D: function for calculating drag coefficient
+    :param add_angle: [degrees]
+    :return: dict with results
+    """
+    if add_angle != None:
+        chord_angles = chord_angles + add_angle
+    results = Calculator(f_c_L, f_c_D).run_array(chord_angle=chord_angles, B=B, c=chord_lengths, r=sections_radius,
+                                                 dr=dr, rpm=rpm, v=speed_wind, R=R, Rhub=Rhub)
+    return results
 
 
 class Optimizer:
@@ -82,6 +112,8 @@ class Optimizer:
         If better power is gained through decreasing twist (twist=twist-_delta), returns False.
         If better power cannot be provided through increasing or decreasing, returns None.
 
+        :param rpm: rotational velocity [RPM]
+        :param wind_speed: wind speed [m/s]
         :param _r: blade section number (int)
         :param _delta: change of twist - theta - for given section [deg]
         :return: True, False or None

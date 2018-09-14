@@ -69,7 +69,36 @@ def array_to_csv(in_ar, delimiter="\t"):
     out = ""
     for r in range(len(in_ar)):
         for c in in_ar[r]:
+            if c == None:
+                c = ""
             out += c + delimiter
         out = out[0:-1]
         out += "\n"
     return out
+
+
+def sort_xy(array_x, array_y):
+    """
+    Sorts two arrays by values in the first array.
+    Useful for sorting pairs of x,y points.
+
+    Returns sorted arrays.
+
+    Arrays have to be the same length.
+
+    :param array_x: x values
+    :param array_y: y values
+    :return: x,y (sorted)
+    """
+    out = []
+    if len(array_x) == len(array_y):
+        for i in range(len(array_x)):
+            out.append((array_x[i], array_y[i]))
+        out = sorted(out, key=lambda k: k[0])
+        out_x, out_y = [], []
+        for n in range(len(out)):
+            out_x.append(out[n][0])
+            out_y.append(out[n][1])
+        return out_x, out_y
+    else:
+        raise Exception("Cannot create XY pairs with arrays with different num of elements")
