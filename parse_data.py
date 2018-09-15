@@ -1,7 +1,7 @@
 __author__ = "Miha Smrekar"
 __credits__ = ["Miha Smrekar"]
 __license__ = "GPL"
-__version__ = "0.1"
+__version__ = "0.2"
 __maintainer__ = "Miha Smrekar"
 __email__ = "miha.smrekar9@gmail.com"
 __status__ = "Development"
@@ -12,13 +12,14 @@ from scipy import interpolate
 from scipy.ndimage.interpolation import shift
 
 try:
-    wb = load_workbook('program_v4.xlsx')
-    ws = wb['geometrija']
+    wb = load_workbook("program_v4.xlsx")
+    ws = wb["geometrija"]
     ws2 = wb["podatki"]
 except FileNotFoundError:
     print(
         "File 'program_v4.xlsx' was not found, please rename your excel file to 'program_v3.xlsm' and move it to the "
-        "folder of this file.")
+        "folder of this file."
+    )
 
 
 def parse_podatki():
@@ -67,10 +68,10 @@ def parse_podatki():
             i += 1
 
     return {
-        'cL_x': numpy.array(cL_x),
-        'cL_y': numpy.array(cL_y),
-        'cD_x': numpy.array(cD_x),
-        'cD_y': numpy.array(cD_y)
+        "cL_x": numpy.array(cL_x),
+        "cL_y": numpy.array(cL_y),
+        "cD_x": numpy.array(cD_x),
+        "cD_y": numpy.array(cD_y),
     }
 
 

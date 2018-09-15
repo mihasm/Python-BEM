@@ -23,10 +23,34 @@ from induction_factors import Calculator
 a = Axes3D  # only for passing code inspection -> Axes3D needs to be imported
 
 
-def calculate_power(speed_wind, rpm, sections_radius, chord_lengths, chord_angles, dr, R, Rhub, B, f_c_L, f_c_D,
-                    add_angle=None, print_out=False, tip_loss=False, hub_loss=False, new_tip_loss=False,
-                    new_hub_loss=False, cascade_correction=False, max_iterations=100, convergence_limit=0.001,
-                    rho=1.225, method=10, relaxation_factor=0.3,print_all=False):
+def calculate_power(
+    speed_wind,
+    rpm,
+    sections_radius,
+    chord_lengths,
+    chord_angles,
+    dr,
+    R,
+    Rhub,
+    B,
+    f_c_L,
+    f_c_D,
+    add_angle=None,
+    print_out=False,
+    tip_loss=False,
+    hub_loss=False,
+    new_tip_loss=False,
+    new_hub_loss=False,
+    cascade_correction=False,
+    max_iterations=100,
+    convergence_limit=0.001,
+    rho=1.225,
+    method=10,
+    relaxation_factor=0.3,
+    print_all=False,
+    return_print=None,
+    return_results=None,
+):
     """
     Returns calculated power using BEM analysis.
 
@@ -35,6 +59,9 @@ def calculate_power(speed_wind, rpm, sections_radius, chord_lengths, chord_angle
 
     Output is a dictionary with all results.
 
+    :param return_results: lst, used for returning results to main class
+    :param return_print: lst, used for printing using main class
+    :param print_all: prints every iteration
     :param relaxation_factor: relaxation factor
     :param method: method of calculating induction factors
     :param rho: air density [kg/m^3]
@@ -60,27 +87,81 @@ def calculate_power(speed_wind, rpm, sections_radius, chord_lengths, chord_angle
     :param add_angle: [degrees]
     :return: dict with results
     """
+    if return_results is None:
+        return_results = []
+    if return_print is None:
+        return_print = []
     if add_angle != None:
         chord_angles = chord_angles + add_angle
-    results = Calculator(f_c_L, f_c_D).run_array(chord_angle=chord_angles, B=B, c=chord_lengths, r=sections_radius,
-                                                 dr=dr, rpm=rpm, v=speed_wind, R=R, Rhub=Rhub, print_out=print_out,
-                                                 tip_loss=tip_loss, hub_loss=hub_loss, new_tip_loss=new_tip_loss,
-                                                 new_hub_loss=new_hub_loss, cascade_correction=cascade_correction,
-                                                 max_iterations=max_iterations, convergence_limit=convergence_limit,
-                                                 rho=rho, method=method, relaxation_factor=relaxation_factor, print_all=print_all)
+    results = Calculator(f_c_L, f_c_D).run_array(
+        chord_angle=chord_angles,
+        B=B,
+        c=chord_lengths,
+        r=sections_radius,
+        dr=dr,
+        rpm=rpm,
+        v=speed_wind,
+        R=R,
+        Rhub=Rhub,
+        print_out=print_out,
+        tip_loss=tip_loss,
+        hub_loss=hub_loss,
+        new_tip_loss=new_tip_loss,
+        new_hub_loss=new_hub_loss,
+        cascade_correction=cascade_correction,
+        max_iterations=max_iterations,
+        convergence_limit=convergence_limit,
+        rho=rho,
+        method=method,
+        relaxation_factor=relaxation_factor,
+        print_all=print_all,
+        return_print=return_print,
+        return_results=return_results,
+    )
     return results
 
 
-def calculate_power_3d(r, c, theta, dr, R, Rhub, B, f_c_L, f_c_D, add_angle=0.0,
-                       print_out=False, tip_loss=False, hub_loss=False, new_tip_loss=False,
-                       new_hub_loss=False, cascade_correction=False, max_iterations=100, convergence_limit=0.001,
-                       rho=1.225, method=10, v_min=3, v_max=20, v_num=10, rpm_min=100, rpm_max=3000,
-                       rpm_num=10, relaxation_factor=0.3, print_all=False, *args, **kwargs):
+def calculate_power_3d(
+    r,
+    c,
+    theta,
+    dr,
+    R,
+    Rhub,
+    B,
+    f_c_L,
+    f_c_D,
+    add_angle=0.0,
+    print_out=False,
+    tip_loss=False,
+    hub_loss=False,
+    new_tip_loss=False,
+    new_hub_loss=False,
+    cascade_correction=False,
+    max_iterations=100,
+    convergence_limit=0.001,
+    rho=1.225,
+    method=10,
+    v_min=3,
+    v_max=20,
+    v_num=10,
+    rpm_min=100,
+    rpm_max=3000,
+    rpm_num=10,
+    relaxation_factor=0.3,
+    print_all=False,
+    return_print=None,
+    return_results=None,
+    *args,
+    **kwargs
+):
     """
     Calculates power for given geometry and data for every windspeed and rpm.
 
     Returns dictionary with arrays with data for every point.
-
+    :param return_results: lst, used for returning results to main class
+    :param return_print: lst, used for printing using main class
+    :param print_all: prints every iteration
     :param rpm_num: number of rpm points
     :param rpm_max: maximum rpm [RPM]
     :param rpm_min: minimum rpm [RPM]
@@ -110,43 +191,163 @@ def calculate_power_3d(r, c, theta, dr, R, Rhub, B, f_c_L, f_c_D, add_angle=0.0,
     :param add_angle: [degrees]
     :return: dictionary with all results stored as numpy arrays
     """
-    print("--------- RUNNING CALCULATION FOR FOLLOWING PARAMETERS --------")
-    print("r", r)
-    print("c", c)
-    print("theta", theta)
-    print("dr", dr)
-    print("R", R)
-    print("Rhub", Rhub)
-    print("B", B)
-    print("print_out", print_out)
-    print("tip_loss", tip_loss)
-    print("hub_loss", hub_loss)
-    print("new_tip_loss", new_tip_loss)
-    print("new_hub_loss", new_hub_loss)
-    print("cascade_correction", cascade_correction)
-    print("max_iterations", max_iterations)
-    print("convergence_limit", convergence_limit)
-    print("rho", rho)
-    print("method", method)
-    print("v_min", v_min)
-    print("v_max", v_max)
-    print("v_num", v_num)
-    print("rpm_min", rpm_min)
-    print("rpm_max", rpm_max)
-    print("rpm_num", rpm_num)
-    print("---------------------------------------------------------------")
+    if return_results is None:
+        return_results = []
+    if return_print is None:
+        return_print = []
+    _p = (
+        "--------- RUNNING CALCULATION FOR FOLLOWING PARAMETERS --------"
+        + "\n"
+        + "r"
+        + " "
+        + str(r)
+        + "\n"
+        + "c"
+        + " "
+        + str(c)
+        + "\n"
+        + "theta"
+        + " "
+        + str(theta)
+        + "\n"
+        + "dr"
+        + " "
+        + str(dr)
+        + "\n"
+        + "R"
+        + " "
+        + str(R)
+        + "\n"
+        + "Rhub"
+        + " "
+        + str(Rhub)
+        + "\n"
+        + "B"
+        + " "
+        + str(B)
+        + "\n"
+        + "print_out"
+        + " "
+        + str(print_out)
+        + "\n"
+        + "tip_loss"
+        + " "
+        + str(tip_loss)
+        + "\n"
+        + "hub_loss"
+        + " "
+        + str(hub_loss)
+        + "\n"
+        + "new_tip_loss"
+        + " "
+        + str(new_tip_loss)
+        + "\n"
+        + "new_hub_loss"
+        + " "
+        + str(new_hub_loss)
+        + "\n"
+        + "cascade_correction"
+        + " "
+        + str(cascade_correction)
+        + "\n"
+        + "max_iterations"
+        + " "
+        + str(max_iterations)
+        + "\n"
+        + "convergence_limit"
+        + " "
+        + str(convergence_limit)
+        + "\n"
+        + "rho"
+        + " "
+        + str(rho)
+        + "\n"
+        + "method"
+        + " "
+        + str(method)
+        + "\n"
+        + "v_min"
+        + " "
+        + str(v_min)
+        + "\n"
+        + "v_max"
+        + " "
+        + str(v_max)
+        + "\n"
+        + "v_num"
+        + " "
+        + str(v_num)
+        + "\n"
+        + "rpm_min"
+        + " "
+        + str(rpm_min)
+        + "\n"
+        + "rpm_max"
+        + " "
+        + str(rpm_max)
+        + "\n"
+        + "rpm_num"
+        + " "
+        + str(rpm_num)
+        + "\n"
+        + "---------------------------------------------------------------"
+        + "\n"
+    )
+    return_print.append(_p)
     results_3d = {}
 
     for v in list(numpy.linspace(start=v_min, stop=v_max, num=v_num)):
         for rpm in list(numpy.linspace(start=rpm_min, stop=rpm_max, num=rpm_num)):
-            print("Calculating power for v", v, "rpm", rpm)
-            _results = calculate_power(v, rpm, r, c, theta, dr, add_angle=add_angle,
-                                       R=R, B=B, f_c_L=f_c_L, f_c_D=f_c_D, Rhub=Rhub, print_out=print_out,
-                                       tip_loss=tip_loss, hub_loss=hub_loss, new_tip_loss=new_tip_loss,
-                                       new_hub_loss=new_hub_loss, cascade_correction=cascade_correction,
-                                       max_iterations=max_iterations, convergence_limit=convergence_limit,
-                                       rho=rho, method=method, relaxation_factor=relaxation_factor,print_all=print_all)
-            print("    Power:", _results["power"], "Cp:", _results["cp"])
+            # print("Calculating power for v", v, "rpm", rpm)
+            _p = (
+                "\nCalculating power for v: "
+                + str(v)
+                + "[m/s] rpm: "
+                + str(rpm)
+                + "[RPM]\n"
+            )
+            # parent.analysis.textEdit.insertPlainText(_p)
+            # parent.results_out.append(_p)
+            return_print.append(_p)
+            _results = calculate_power(
+                v,
+                rpm,
+                r,
+                c,
+                theta,
+                dr,
+                add_angle=add_angle,
+                R=R,
+                B=B,
+                f_c_L=f_c_L,
+                f_c_D=f_c_D,
+                Rhub=Rhub,
+                print_out=print_out,
+                tip_loss=tip_loss,
+                hub_loss=hub_loss,
+                new_tip_loss=new_tip_loss,
+                new_hub_loss=new_hub_loss,
+                cascade_correction=cascade_correction,
+                max_iterations=max_iterations,
+                convergence_limit=convergence_limit,
+                rho=rho,
+                method=method,
+                relaxation_factor=relaxation_factor,
+                print_all=print_all,
+                return_print=return_print,
+                return_results=return_results,
+            )
+            # print("    Power:",str(_results["power"], "Cp:", _results["cp"])
+            _p = (
+                "    Power: "
+                + str(_results["power"])
+                + "[W] Cp: "
+                + str(_results["cp"])
+                + "\n"
+            )
+            return_print.append(_p)
+            # parent.analysis.textEdit.insertPlainText(_p)
+            # parent.results_out.append(_p)
             if _results != None and _results["power"]:
                 if 0.0 < _results["cp"] <= 0.6:
                     for key, value in _results.items():
@@ -157,6 +358,8 @@ def calculate_power_3d(r, c, theta, dr, R, Rhub, B, f_c_L, f_c_D, add_angle=0.0,
     for k, v in results_3d.items():
         results_3d[k] = v
 
+    return_results.append(results_3d)
+    return_print.append("!!!!EOF!!!!")
     return results_3d
 
 

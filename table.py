@@ -1,16 +1,29 @@
+__author__ = "Miha Smrekar"
+__credits__ = ["Miha Smrekar"]
+__license__ = "GPL"
+__version__ = "0.2"
+__maintainer__ = "Miha Smrekar"
+__email__ = "miha.smrekar9@gmail.com"
+__status__ = "Development"
+
 import csv
 import sys
 
 from PyQt5 import QtCore
 from PyQt5.QtCore import pyqtSlot
-from PyQt5.QtWidgets import QApplication, QWidget, QTableWidget, QTableWidgetItem, QVBoxLayout
+from PyQt5.QtWidgets import (
+    QApplication,
+    QWidget,
+    QTableWidget,
+    QTableWidgetItem,
+    QVBoxLayout,
+)
 
 from utils import array_to_csv
 
 
 # noinspection PyArgumentList
 class Table(QWidget):
-
     def __init__(self):
         super().__init__()
         self.selected_array = []
@@ -69,10 +82,12 @@ class Table(QWidget):
     def get_selected(self):
         self.selected_array = []
 
-        rows_added = sorted(set(index.row() for index in
-                                self.tableWidget.selectedIndexes()))
-        columns_added = sorted(set(index.column() for index in
-                                   self.tableWidget.selectedIndexes()))
+        rows_added = sorted(
+            set(index.row() for index in self.tableWidget.selectedIndexes())
+        )
+        columns_added = sorted(
+            set(index.column() for index in self.tableWidget.selectedIndexes())
+        )
 
         delta_r = rows_added[0]
         delta_c = columns_added[0]
@@ -105,15 +120,19 @@ class Table(QWidget):
 
     def paste(self):
         results = []
-        reader = csv.reader(self.clip.text().splitlines(), delimiter="\t")  # change contents to floats
+        reader = csv.reader(
+            self.clip.text().splitlines(), delimiter="\t"
+        )  # change contents to floats
         for row in reader:  # each row is a list
             results.append(row)
         numrows = len(results)
         numcolumns = len(results[0])
-        selected_row = sorted(set(index.row() for index in
-                                  self.tableWidget.selectedIndexes()))[0]
-        selected_column = sorted(set(index.column() for index in
-                                     self.tableWidget.selectedIndexes()))[0]
+        selected_row = sorted(
+            set(index.row() for index in self.tableWidget.selectedIndexes())
+        )[0]
+        selected_column = sorted(
+            set(index.column() for index in self.tableWidget.selectedIndexes())
+        )[0]
         if selected_row + numrows >= self.tableWidget.rowCount():
             self.tableWidget.setRowCount(selected_row + numrows)
         if selected_column + numcolumns >= self.tableWidget.columnCount():
@@ -128,10 +147,10 @@ class Table(QWidget):
         return
 
     def select_next_row(self):
-        rows = sorted(set(index.row() for index in
-                          self.tableWidget.selectedIndexes()))
-        columns = sorted(set(index.column() for index in
-                             self.tableWidget.selectedIndexes()))
+        rows = sorted(set(index.row() for index in self.tableWidget.selectedIndexes()))
+        columns = sorted(
+            set(index.column() for index in self.tableWidget.selectedIndexes())
+        )
         last_selected_row = rows[-1]
         first_selected_column = columns[0]
         num_rows = self.tableWidget.rowCount()
@@ -158,5 +177,6 @@ def draw_table():
     ex = Table()
     ex.setGeometry(300, 300, 1280, 800)
     sys.exit(app.exec_())
+
 
 # draw_table()

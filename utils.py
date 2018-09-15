@@ -1,3 +1,11 @@
+__author__ = "Miha Smrekar"
+__credits__ = ["Miha Smrekar"]
+__license__ = "GPL"
+__version__ = "0.2"
+__maintainer__ = "Miha Smrekar"
+__email__ = "miha.smrekar9@gmail.com"
+__status__ = "Development"
+
 import numpy
 
 
@@ -101,4 +109,6 @@ def sort_xy(array_x, array_y):
             out_y.append(out[n][1])
         return out_x, out_y
     else:
-        raise Exception("Cannot create XY pairs with arrays with different num of elements")
+        raise Exception(
+            "Cannot create XY pairs with arrays with different num of elements"
+        )
