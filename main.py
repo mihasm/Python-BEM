@@ -1,7 +1,7 @@
 __author__ = "Miha Smrekar"
 __credits__ = ["Miha Smrekar"]
 __license__ = "GPL"
-__version__ = "0.2"
+__version__ = "0.2.3"
 __maintainer__ = "Miha Smrekar"
 __email__ = "miha.smrekar9@gmail.com"
 __status__ = "Development"
@@ -23,6 +23,8 @@ from PyQt5.QtWidgets import (
     QLineEdit,
     QGridLayout,
     QCheckBox,
+    QStyleFactory,
+    QMessageBox
 )
 from numpy import array
 from scipy import interpolate
@@ -31,512 +33,23 @@ from cp_curve import calculate_power_3d
 from results import ResultsWindow
 from table import Table
 import time
+from turbine_data import SET_INIT
+from optimisation import Optimizer
 
 from multiprocessing import Process, Manager
-
-SET_INIT = {
-    "Rhub": 0.1,
-    "R": 0.776,
-    "B": 5,
-    "r": array(
-        [
-            0.15,
-            0.18,
-            0.21,
-            0.24,
-            0.27,
-            0.3,
-            0.33,
-            0.36,
-            0.39,
-            0.42,
-            0.45,
-            0.48,
-            0.51,
-            0.54,
-            0.57,
-            0.6,
-            0.63,
-            0.66,
-            0.69,
-            0.72,
-            0.75,
-            0.76,
-        ]
-    ),
-    "c": array(
-        [
-            0.12429,
-            0.14448,
-            0.15224,
-            0.14968,
-            0.14213,
-            0.13129,
-            0.12198,
-            0.1136,
-            0.10666,
-            0.10015,
-            0.09487,
-            0.08959,
-            0.08441,
-            0.08029,
-            0.07728,
-            0.07371,
-            0.07097,
-            0.06797,
-            0.06637,
-            0.06337,
-            0.06072,
-            0.05984,
-        ]
-    ),
-    "theta": array(
-        [
-            29.24,
-            33.41,
-            34.9,
-            34.6,
-            32.39,
-            20.96,
-            21.71,
-            13.33,
-            11.04,
-            8.18,
-            7.05,
-            5.88,
-            3.41,
-            1.09,
-            0.57,
-            -0.2,
-            -0.66,
-            -2.05,
-            -2.29,
-            -2.6,
-            -2.92,
-            -2.37,
-        ]
-    ),
-    "dr": array(
-        [
-            0.03,
-            0.03,
-            0.03,
-            0.03,
-            0.03,
-            0.03,
-            0.03,
-            0.03,
-            0.03,
-            0.03,
-            0.03,
-            0.03,
-            0.03,
-            0.03,
-            0.03,
-            0.03,
-            0.03,
-            0.03,
-            0.03,
-            0.03,
-            0.03,
-            0.01,
-        ]
-    ),
-    "AoA_cL": [
-        "-22.5",
-        "-22",
-        "-21.5",
-        "-21",
-        "-20.5",
-        "-20",
-        "-19.5",
-        "-19",
-        "-18.5",
-        "-18",
-        "-17.5",
-        "-17",
-        "-16.5",
-        "-16",
-        "-15.5",
-        "-15",
-        "-14.5",
-        "-14",
-        "-13.5",
-        "-13",
-        "-12.5",
-        "-12",
-        "-11.5",
-        "-10.5",
-        "-10",
-        "-9.5",
-        "-9",
-        "-8.5",
-        "-8",
-        "-7.5",
-        "-7",
-        "-6.5",
-        "-6",
-        "-5.5",
-        "-5",
-        "-4.5",
-        "-4",
-        "-3.5",
-        "-3",
-        "-2.5",
-        "-2",
-        "-1.5",
-        "-1",
-        "0",
-        "0.5",
-        "1",
-        "1.5",
-        "2",
-        "2.5",
-        "3.5",
-        "4",
-        "4.5",
-        "5",
-        "5.5",
-        "6",
-        "6.5",
-        "7",
-        "7.5",
-        "8",
-        "8.5",
-        "9",
-        "9.5",
-        "10",
-        "10.5",
-        "11",
-        "11.5",
-        "12",
-        "12.5",
-        "13",
-        "13.5",
-        "14",
-        "14.5",
-        "15",
-        "15.5",
-        "16",
-        "16.5",
-        "17",
-        "17.5",
-        "18",
-        "18.5",
-        "19",
-        "19.5",
-        "20",
-        "20.5",
-        "21",
-        "21.5",
-        "22",
-        "22.5",
-        "23",
-    ],
-    "AoA_cD": [
-        "-22.5",
-        "-22",
-        "-21.5",
-        "-21",
-        "-20.5",
-        "-20",
-        "-19.5",
-        "-19",
-        "-18.5",
-        "-18",
-        "-17.5",
-        "-17",
-        "-16.5",
-        "-16",
-        "-15.5",
-        "-15",
-        "-14.5",
-        "-14",
-        "-13.5",
-        "-13",
-        "-12.5",
-        "-12",
-        "-11.5",
-        "-10.5",
-        "-10",
-        "-9.5",
-        "-9",
-        "-8.5",
-        "-8",
-        "-7.5",
-        "-7",
-        "-6.5",
-        "-6",
-        "-5.5",
-        "-5",
-        "-4.5",
-        "-4",
-        "-3.5",
-        "-3",
-        "-2.5",
-        "-2",
-        "-1.5",
-        "-1",
-        "0",
-        "0.5",
-        "1",
-        "1.5",
-        "2",
-        "2.5",
-        "3.5",
-        "4",
-        "4.5",
-        "5",
-        "5.5",
-        "6",
-        "6.5",
-        "7",
-        "7.5",
-        "8",
-        "8.5",
-        "9",
-        "9.5",
-        "10",
-        "10.5",
-        "11",
-        "11.5",
-        "12",
-        "12.5",
-        "13",
-        "13.5",
-        "14",
-        "14.5",
-        "15",
-        "15.5",
-        "16",
-        "16.5",
-        "17",
-        "17.5",
-        "18",
-        "18.5",
-        "19",
-        "19.5",
-        "20",
-        "20.5",
-        "21",
-        "21.5",
-        "22",
-        "22.5",
-        "23",
-    ],
-    "cL": [
-        "-0.7256",
-        "-0.709",
-        "-0.6931",
-        "-0.6773",
-        "-0.6615",
-        "-0.6454",
-        "-0.6293",
-        "-0.613",
-        "-0.5967",
-        "-0.5801",
-        "-0.5632",
-        "-0.5496",
-        "-0.5375",
-        "-0.525",
-        "-0.5122",
-        "-0.4998",
-        "-0.4879",
-        "-0.4764",
-        "-0.4657",
-        "-0.4555",
-        "-0.4461",
-        "-0.4381",
-        "-0.44",
-        "-0.7456",
-        "-0.7976",
-        "-0.7721",
-        "-0.7264",
-        "-0.6877",
-        "-0.6486",
-        "-0.6122",
-        "-0.5484",
-        "-0.4816",
-        "-0.4063",
-        "-0.3301",
-        "-0.2503",
-        "-0.1748",
-        "-0.095",
-        "-0.025",
-        "0.0543",
-        "0.1214",
-        "0.1899",
-        "0.2577",
-        "0.3317",
-        "0.3828",
-        "0.4392",
-        "0.4958",
-        "0.5526",
-        "0.6092",
-        "0.6658",
-        "0.7753",
-        "0.8283",
-        "0.8781",
-        "0.9256",
-        "0.9635",
-        "0.9946",
-        "1.0353",
-        "1.0764",
-        "1.1103",
-        "1.1517",
-        "1.1913",
-        "1.2229",
-        "1.2573",
-        "1.2778",
-        "1.2813",
-        "1.292",
-        "1.3016",
-        "1.3101",
-        "1.3165",
-        "1.3134",
-        "1.295",
-        "1.2607",
-        "1.2106",
-        "1.1565",
-        "1.1301",
-        "1.0992",
-        "1.0525",
-        "0.9139",
-        "0.9223",
-        "0.9316",
-        "0.9415",
-        "0.9517",
-        "0.9622",
-        "0.9727",
-        "0.9833",
-        "0.9939",
-        "1.0044",
-        "1.0137",
-        "1.0225",
-        "1.033",
-    ],
-    "cD": [
-        "0.27666",
-        "0.26956",
-        "0.2632",
-        "0.25678",
-        "0.25043",
-        "0.24415",
-        "0.23798",
-        "0.2319",
-        "0.22592",
-        "0.22012",
-        "0.21539",
-        "0.21116",
-        "0.20595",
-        "0.19986",
-        "0.19321",
-        "0.18622",
-        "0.17896",
-        "0.17146",
-        "0.16379",
-        "0.15574",
-        "0.14752",
-        "0.13893",
-        "0.12623",
-        "0.0473",
-        "0.03114",
-        "0.02624",
-        "0.02735",
-        "0.02669",
-        "0.02768",
-        "0.0283",
-        "0.03041",
-        "0.02477",
-        "0.02581",
-        "0.02416",
-        "0.02044",
-        "0.01818",
-        "0.01565",
-        "0.0147",
-        "0.01362",
-        "0.01264",
-        "0.0117",
-        "0.01043",
-        "0.00939",
-        "0.00853",
-        "0.00865",
-        "0.00883",
-        "0.00906",
-        "0.00943",
-        "0.00979",
-        "0.01066",
-        "0.01114",
-        "0.01174",
-        "0.01254",
-        "0.014",
-        "0.01613",
-        "0.01735",
-        "0.01837",
-        "0.01978",
-        "0.0205",
-        "0.02128",
-        "0.02248",
-        "0.02344",
-        "0.02549",
-        "0.02892",
-        "0.03215",
-        "0.03591",
-        "0.04016",
-        "0.04507",
-        "0.0513",
-        "0.05917",
-        "0.0693",
-        "0.08243",
-        "0.09766",
-        "0.11011",
-        "0.12521",
-        "0.14697",
-        "0.21055",
-        "0.22036",
-        "0.22996",
-        "0.23939",
-        "0.24868",
-        "0.25783",
-        "0.26684",
-        "0.27568",
-        "0.28434",
-        "0.29282",
-        "0.30075",
-        "0.30803",
-        "0.31537",
-    ],
-    "print_out": False,
-    "tip_loss": False,
-    "hub_loss": False,
-    "new_tip_loss": False,
-    "new_hub_loss": False,
-    "cascade_correction": False,
-    "max_iterations": 100.0,
-    "convergence_limit": 0.001,
-    "rho": 1.225,
-    "method": 10.0,
-    "v_min": 3.0,
-    "v_max": 20.0,
-    "v_num": 10.0,
-    "rpm_min": 100.0,
-    "rpm_max": 3000.0,
-    "rpm_num": 10.0,
-}
-
-SET_INIT["r"] = numpy.array(SET_INIT["r"])
-SET_INIT["c"] = numpy.array(SET_INIT["c"])
-SET_INIT["dr"] = numpy.array(SET_INIT["dr"])
-SET_INIT["theta"] = numpy.array(SET_INIT["theta"])
+import multiprocessing
 
 
 class MainWindow(QMainWindow):
+    emitter_add = pyqtSignal(str)
+    emitter_done = pyqtSignal()
+
     def __init__(self, width, height):
         super().__init__()
         self.screen_width = width
         self.screen_height = height
         self.setGeometry(width * 0.125, height * 0.125, width * 0.75, height * 0.75)
-        self.setWindowTitle("BEM analiza v0.2")
+        self.setWindowTitle("BEM analiza v0.2.3")
         self.tab_widget = TabWidget(self)
         self.setCentralWidget(self.tab_widget)
 
@@ -549,7 +62,13 @@ class MainWindow(QMainWindow):
         self.analysis = Analysis(self)
         self.tab_widget.add_tab(self.analysis, "Analysis")
 
-        self.analysis.getter = ThreadGetter(self)
+        self.getter = ThreadGetter(self)
+
+        self.optimization = Optimization(self)
+        self.tab_widget.add_tab(self.optimization,"Optimization")
+
+        self.running = False
+        self.manager = Manager()
 
         self.show()
 
@@ -557,8 +76,32 @@ class MainWindow(QMainWindow):
         properties = self.wind_turbine_properties.get_properties()
         curves = self.curves.get_curves()
         settings = self.analysis.get_settings()
-        out = {**properties, **curves, **settings}
+        opt_settings = self.optimization.get_settings()
+        out = {**properties, **curves, **settings, **opt_settings}
         return out
+
+    def get_input_params(self):
+        settings = self.get_all_settings()
+        inp_params = {
+            **settings,
+            "return_print": self.return_print,
+            "return_results": self.return_results,
+        }
+        return inp_params
+
+    def set_buttons_running(self):
+        self.analysis.buttonRun.setEnabled(False)
+        self.optimization.buttonAngles.setEnabled(False)
+        self.optimization.buttonPitch.setEnabled(False)
+        self.analysis.buttonStop.setEnabled(True)
+        self.optimization.buttonStop.setEnabled(True)
+    
+    def set_buttons_await(self):
+        self.analysis.buttonRun.setEnabled(True)
+        self.optimization.buttonAngles.setEnabled(True)
+        self.optimization.buttonPitch.setEnabled(True)
+        self.analysis.buttonStop.setEnabled(False)
+        self.optimization.buttonStop.setEnabled(False)
 
 
 class WindTurbineProperties(QWidget):
@@ -721,14 +264,9 @@ class Curves(QWidget):
 
 
 class Analysis(QWidget):
-    emitter_add = pyqtSignal(str)
-    emitter_done = pyqtSignal()
 
     def __init__(self, parent=None):
         super(Analysis, self).__init__(parent)
-
-        self.running = False
-        self.running_getter = False
 
         self.settings = {
             "tip_loss": False,
@@ -786,12 +324,14 @@ class Analysis(QWidget):
         self.grid.addWidget(self.left, 1, 1)
 
         self.textEdit = QTextEdit()
+        self.textEdit.setReadOnly(True)
         self.grid.addWidget(self.textEdit, 1, 2)
 
-        self.buttonSettings = QPushButton("Get Settings")
         self.buttonRun = QPushButton("Run")
 
         self.form_list = []
+        self.validator = QtGui.QDoubleValidator()
+
         for key, value in self.settings.items():
             if key == "method":
                 form = QComboBox()
@@ -801,30 +341,58 @@ class Analysis(QWidget):
                 form.setTristate(value)
             else:
                 form = QLineEdit()
+                form.setValidator(self.validator)
+                form.textChanged.connect(self.check_state)
+                form.textChanged.emit(form.text())
                 form.insert(str(value))
+
             key = self.settings_to_name[key]
             self.fbox.addRow(key, form)
             self.form_list.append([key, form])
 
-        self.buttonSettings.clicked.connect(self.parent().get_all_settings)
+        self.emptyLabel = QLabel(" ")
         self.buttonRun.clicked.connect(self.run)
         self.buttonClear = QPushButton("Clear screen")
         self.buttonClear.clicked.connect(self.clear)
-        self.buttonEOF = QCheckBox("Jump to end of screen")
+        self.buttonEOF = QCheckBox()
+        self.buttonEOFdescription = QLabel("Scroll to end of screen")
         self.buttonStop = QPushButton("Stop")
         self.buttonStop.clicked.connect(self.terminate)
-        self.buttonStop.setEnabled(False)
 
-        self.fbox.addRow(self.buttonEOF)
-        self.fbox.addRow(self.buttonSettings, self.buttonClear)
-        self.fbox.addRow(self.buttonRun, self.buttonStop)
+        self.fbox.addRow(self.emptyLabel, self.buttonRun)
+        self.fbox.addRow(self.buttonClear, self.buttonStop)
+        self.fbox.addRow(self.buttonEOFdescription,self.buttonEOF)
 
-        self.manager = Manager()
-        self.return_print = self.manager.list()
-        self.return_results = self.manager.list()
+        #self.manager = Manager()
+        #self.return_print = self.manager.list()
+        #self.return_results = self.manager.list()
 
-        self.emitter_add.connect(self.add_text)
-        self.emitter_done.connect(self.done)
+    def check_forms(self):
+        out = ""
+        for n,f in self.form_list:
+            if isinstance(f,QLineEdit):
+                state = self.validator.validate(f.text(), 0)[0]
+                if state == QtGui.QValidator.Acceptable:
+                    pass
+                elif state == QtGui.QValidator.Intermediate:
+                    out+=("Form %s appears not to be valid.\n" % n)
+                else:
+                    out+=("Form %s is not of the valid type.\n" % n)
+        if out == "":
+            return True
+        return out
+
+    def check_state(self, *args, **kwargs):
+        sender = self.sender()
+        validator = sender.validator()
+        state = validator.validate(sender.text(), 0)[0]
+        if state == QtGui.QValidator.Acceptable:
+            color = '#edf5e1' # green
+        elif state == QtGui.QValidator.Intermediate:
+            color = '#fff79a' # yellow
+        else:
+            color = '#f6989d' # red
+        sender.setStyleSheet('QLineEdit { background-color: %s }' % color)
 
     def get_settings(self):
         out_settings = {}
@@ -839,19 +407,39 @@ class Analysis(QWidget):
             out_settings[name] = value
         return out_settings
 
+
     def run(self):
-        self.buttonRun.setEnabled(False)
-        self.buttonStop.setEnabled(True)
-        self.running = True
-        self.getter.start()
-        inp_params = self.parent().parent().parent().get_all_settings()
-        self.runner_input = {
-            **inp_params,
-            "return_print": self.return_print,
-            "return_results": self.return_results,
-        }
-        self.p = Process(target=calculate_power_3d, kwargs=self.runner_input)
-        self.p.start()
+        check = self.check_forms()
+        if check != True:
+            msg = QMessageBox()
+            msg.setIcon(QMessageBox.Warning)
+            msg.setText("Input validation error.")
+            msg.setDetailedText(check)
+            msg.exec_()
+            return
+
+        self.parent().parent().parent().emitter_add.connect(self.add_text)
+        self.parent().parent().parent().emitter_done.connect(self.done)
+
+        if not self.parent().parent().parent().running:
+            self.parent().parent().parent().return_print = self.parent().parent().parent().manager.list([])
+            self.parent().parent().parent().return_results = self.parent().parent().parent().manager.list([])
+            self.parent().parent().parent().set_buttons_running()
+            self.parent().parent().parent().running = True
+            self.runner_input  = self.parent().parent().parent().get_input_params()
+            self.parent().parent().parent().getter.start()
+            self.p = Process(target=calculate_power_3d, kwargs=self.runner_input)
+            self.p.start()
+        else:
+            msg = QMessageBox()
+            msg.setIcon(QMessageBox.Warning)
+            msg.setText("Cannot run while existing operation is running")
+            msg.setInformativeText("The program detected that an existing operation is running.")
+            msg.setWindowTitle("Runtime error")
+            msg.setDetailedText("Currently tha value MainWindow.running is %s, \
+                it should be False." % str(self.parent().parent().parent().running))
+            msg.exec_()
+
 
     def add_text(self, string):
         self.textEdit.insertPlainText(string)
@@ -859,12 +447,14 @@ class Analysis(QWidget):
             self.textEdit.moveCursor(QtGui.QTextCursor.End)
 
     def done(self, terminated=False):
-        self.buttonRun.setEnabled(True)
-        self.buttonStop.setEnabled(False)
-        self.running = False
+        self.parent().parent().parent().emitter_add.disconnect()
+        self.parent().parent().parent().emitter_done.disconnect()
+        self.parent().parent().parent().set_buttons_await()
+        self.parent().parent().parent().running = False
+        self.parent().parent().parent().getter.__del__()
         if not terminated:
             self.p.join()
-            results = self.return_results[0]
+            results = self.parent().parent().parent().return_results[0]
             inp_params = self.runner_input
             r = ResultsWindow(
                 self,
@@ -878,8 +468,276 @@ class Analysis(QWidget):
         self.textEdit.clear()
 
     def terminate(self):
-        self.p.terminate()
-        self.done(True)
+        if hasattr(self,"p"):
+            if self.p.is_alive():
+                self.p.terminate()
+                self.parent().parent().parent().running = False
+                self.parent().parent().parent().getter.__del__()
+                self.done(True)
+
+
+class Optimization(QWidget):
+    def __init__(self, parent=None):
+        super(Optimization, self).__init__(parent)
+        self.validator = QtGui.QDoubleValidator()
+        self.left = QWidget()
+        self.textEdit = QTextEdit()
+        self.textEdit.setReadOnly(True)
+
+        self.form_list = []
+
+        self.target_speed = QLineEdit()
+        self.target_speed.setValidator(self.validator)
+        self.target_speed.textChanged.connect(self.check_state)
+        self.target_speed.textChanged.emit(self.target_speed.text())
+        self._target_speed = QLabel("Target speed [m/s]")
+        self.form_list.append([self._target_speed,self.target_speed])
+
+        self.target_rpm = QLineEdit()
+        self.target_rpm.setValidator(self.validator)
+        self.target_rpm.textChanged.connect(self.check_state)
+        self.target_rpm.textChanged.emit(self.target_rpm.text())
+        self._target_rpm = QLabel("Target rpm [RPM]")
+        self.form_list.append([self._target_rpm,self.target_rpm])
+
+        
+        self.delta_start     = QLineEdit()
+        self.delta_start.setValidator(self.validator)
+        self.delta_start.textChanged.connect(self.check_state)
+        self.delta_start.textChanged.emit(self.delta_start.text())
+        self._delta_start    = QLabel("delta_start")
+        self.form_list.append([self._delta_start,self.delta_start])
+
+        self.decrease_factor = QLineEdit()
+        self.decrease_factor.setValidator(self.validator)
+        self.decrease_factor.textChanged.connect(self.check_state)
+        self.decrease_factor.textChanged.emit(self.decrease_factor.text())
+        self._decrease_factor= QLabel("decrease_factor")
+        self.form_list.append([self._decrease_factor,self.decrease_factor])
+
+        self.min_delta       = QLineEdit()
+        self.min_delta.setValidator(self.validator)
+        self.min_delta.textChanged.connect(self.check_state)
+        self.min_delta.textChanged.emit(self.min_delta.text())
+        self._min_delta      = QLabel("min_delta")
+        self.form_list.append([self._min_delta,self.min_delta])
+
+        self.min_add_angle   = QLineEdit()
+        self.min_add_angle.setValidator(self.validator)
+        self.min_add_angle.textChanged.connect(self.check_state)
+        self.min_add_angle.textChanged.emit(self.min_add_angle.text())
+        self._min_add_angle  = QLabel("min_add_angle")
+        self.form_list.append([self._min_add_angle,self.min_add_angle])
+
+        self.max_add_angle   = QLineEdit()
+        self.max_add_angle.setValidator(self.validator)
+        self.max_add_angle.textChanged.connect(self.check_state)
+        self.max_add_angle.textChanged.emit(self.max_add_angle.text())
+        self._max_add_angle  = QLabel("max_add_angle")
+        self.form_list.append([self._max_add_angle,self.max_add_angle])
+
+        self.angle_step      = QLineEdit()
+        self.angle_step.setValidator(self.validator)
+        self.angle_step.textChanged.connect(self.check_state)
+        self.angle_step.textChanged.emit(self.angle_step.text())
+        self._angle_step     = QLabel("angle_step")
+        self.form_list.append([self._angle_step,self.angle_step])
+
+        self.buttonAngles = QPushButton("Run angle optimization")
+        self.buttonAngles.clicked.connect(self.run)
+
+        self.buttonPitch = QPushButton("Run pitch optimization")
+        self.buttonPitch.clicked.connect(self.run_pitch)
+
+        self.buttonStop = QPushButton("Stop")
+        self.buttonStop.clicked.connect(self.terminate)
+
+        self.buttonClear = QPushButton("Clear screen")
+        self.buttonClear.clicked.connect(self.clear)
+
+        self.buttonEOF = QCheckBox()
+        self.buttonEOFdescription = QLabel("Scroll to end of screen")
+
+        self.grid = QGridLayout()
+        self.setLayout(self.grid)
+        self.grid.addWidget(self.left,1,1)
+        self.grid.addWidget(self.textEdit,1,2)
+
+        self.fbox = QFormLayout()
+        self.left.setLayout(self.fbox)
+        self.fbox.addRow(self._target_speed,self.target_speed)
+        self.fbox.addRow(self._target_rpm,self.target_rpm)
+
+        rpmtext = QTextEdit("Target RPM can be empty for pitch calc.")
+        rpmtext.setReadOnly(True)
+        self.fbox.addRow(QLabel(" "),rpmtext)
+
+
+        self.fbox.addRow(QLabel("--------"))
+        self.fbox.addRow(self._delta_start,self.delta_start)
+        self.fbox.addRow(self._min_delta,self.min_delta)
+        self.fbox.addRow(self._decrease_factor,self.decrease_factor)
+        self.fbox.addRow(self.buttonAngles)
+
+        self.fbox.addRow(QLabel("--------"))
+        self.fbox.addRow(self._min_add_angle,self.min_add_angle)
+        self.fbox.addRow(self._max_add_angle,self.max_add_angle)
+        self.fbox.addRow(self._angle_step,self.angle_step)
+        self.fbox.addRow(self.buttonPitch)
+        self.fbox.addRow(self.buttonClear,self.buttonStop)
+        self.fbox.addRow(self.buttonEOFdescription,self.buttonEOF)
+
+        self.set_settings(SET_INIT)
+
+    def check_forms_angles(self):
+        out = ""
+        _needed_vars=[[self._target_speed,self.target_speed],[self._target_rpm,self.target_rpm],[self._delta_start,self.delta_start],[self._decrease_factor,self.decrease_factor],[self._min_delta,self.min_delta]]
+        for n,f in _needed_vars:
+            if isinstance(f,QLineEdit):
+                state = self.validator.validate(f.text(), 0)[0]
+                if state == QtGui.QValidator.Acceptable:
+                    pass
+                elif state == QtGui.QValidator.Intermediate:
+                    out+=("Form %s appears not to be valid.\n" % n.text())
+                else:
+                    out+=("Form %s is not of the valid type.\n" % n.text())
+        if out == "":
+            return True
+        return out
+
+    def check_forms_pitch(self):
+        out = ""
+        _needed_vars=[[self._target_speed,self.target_speed],[self._min_add_angle,self.min_add_angle],[self._max_add_angle,self.max_add_angle],[self._angle_step,self.angle_step]]
+        for n,f in _needed_vars:
+            if isinstance(f,QLineEdit):
+                state = self.validator.validate(f.text(), 0)[0]
+                if state == QtGui.QValidator.Acceptable:
+                    pass
+                elif state == QtGui.QValidator.Intermediate:
+                    out+=("Form %s appears not to be valid.\n" % n.text())
+                else:
+                    out+=("Form %s is not of the valid type.\n" % n.text())
+        if out == "":
+            return True
+        return out
+
+    def check_state(self, *args, **kwargs):
+        sender = self.sender()
+        validator = sender.validator()
+        state = validator.validate(sender.text(), 0)[0]
+        if state == QtGui.QValidator.Acceptable:
+            color = '#edf5e1' # green
+        elif state == QtGui.QValidator.Intermediate:
+            color = '#fff79a' # yellow
+        else:
+            color = '#f6989d' # red
+        sender.setStyleSheet('QLineEdit { background-color: %s }' % color)
+
+    def run(self,run_pitch=False):
+        if run_pitch:
+            check = self.check_forms_pitch()
+        else:
+            check = self.check_forms_angles()
+        check_analysis = self.parent().parent().parent().analysis.check_forms()
+        if check != True or check_analysis != True:
+            if check == True:
+                check = ""
+            if check_analysis == True:
+                check_analysis = ""
+            check = check+check_analysis
+            msg = QMessageBox()
+            msg.setIcon(QMessageBox.Warning)
+            msg.setText("Input validation error")
+            msg.setDetailedText(check)
+            msg.exec_()
+            return
+
+        self.parent().parent().parent().emitter_add.connect(self.add_text)
+        self.parent().parent().parent().emitter_done.connect(self.done)
+
+        if not self.parent().parent().parent().running:
+            self.parent().parent().parent().return_print = self.parent().parent().parent().manager.list([])
+            self.parent().parent().parent().return_results = self.parent().parent().parent().manager.list([])
+            self.parent().parent().parent().set_buttons_running()
+            self.parent().parent().parent().running = True
+            self.runner_input  = self.parent().parent().parent().get_input_params()
+            self.parent().parent().parent().getter.start()
+            self.o = Optimizer(**self.runner_input)
+            if run_pitch:
+                self.p = Process(target=self.o.optimize_pitch, kwargs=self.runner_input)
+            else:
+                self.p = Process(target=self.o.optimize_angles, kwargs=self.runner_input)
+            self.p.start()
+        else:
+            msg = QMessageBox()
+            msg.setIcon(QMessageBox.Warning)
+            msg.setText("Cannot run while existing operation is running")
+            msg.setInformativeText("The program detected that an existing operation is running.")
+            msg.setWindowTitle("Runtime error")
+            msg.setDetailedText("Currently tha value MainWindow.running is %s, \
+                it should be False." % str(self.parent().parent().parent().running))
+
+    def clear(self):
+        self.textEdit.clear()
+
+    def add_text(self, string):
+        self.textEdit.insertPlainText(string)
+        if self.buttonEOF.checkState() == 2:
+            self.textEdit.moveCursor(QtGui.QTextCursor.End)
+
+    def run_pitch(self):
+        self.run(True)
+
+    def terminate(self):
+        if hasattr(self,"p"):
+            if self.p.is_alive():
+                self.p.terminate()
+                self.parent().parent().parent().running = False
+                self.parent().parent().parent().getter.__del__()
+                self.done(True)
+
+    def done(self, terminated=False):
+        self.parent().parent().parent().emitter_add.disconnect()
+        self.parent().parent().parent().emitter_done.disconnect()
+        self.parent().parent().parent().set_buttons_await()
+        self.parent().parent().parent().running = False
+        self.parent().parent().parent().getter.__del__()
+        if not terminated:
+            self.p.join()
+
+    def get_settings(self):
+        out = {}
+        if self.target_rpm.text() == "":
+            out["target_rpm"] = None
+        else:
+            out["target_rpm"] = self.target_rpm.text()
+        out["target_speed"] = self.target_speed.text()
+        out["delta_start"]=self.delta_start.text()
+        out["decrease_factor"]=self.decrease_factor.text()
+        out["min_delta"]=self.min_delta.text()
+        out["min_add_angle"]=self.min_add_angle.text()
+        out["max_add_angle"]=self.max_add_angle.text()
+        out["angle_step"]=self.angle_step.text()
+        for k,v in out.items():
+            if v == "":
+                v = None
+            elif v == None:
+                pass
+            else:
+                v = float(v)
+            out[k] = v
+        #print(out)
+        return out
+
+    def set_settings(self,inp_dict):
+        self.target_rpm.setText(str(inp_dict["target_rpm"]))
+        self.target_speed.setText(str(inp_dict["target_speed"]))
+        self.delta_start.setText(str(inp_dict["delta_start"]))
+        self.decrease_factor.setText(str(inp_dict["decrease_factor"]))
+        self.min_delta.setText(str(inp_dict["min_delta"]))
+        self.min_add_angle.setText(str(inp_dict["min_add_angle"]))
+        self.max_add_angle.setText(str(inp_dict["max_add_angle"]))
+        self.angle_step.setText(str(inp_dict["angle_step"]))
 
 
 class ThreadGetter(QThread):
@@ -890,15 +748,18 @@ class ThreadGetter(QThread):
         self.wait()
 
     def run(self):
+        print("Running Getter.")
+        #print("This was already in:",self.parent().return_print)
         while True:
-            if len(self.parent().analysis.return_print) > 0:
-                t = self.parent().analysis.return_print.pop(0)
-                self.parent().analysis.emitter_add.emit(str(t))
+            if len(self.parent().return_print) > 0:
+                t = self.parent().return_print.pop(0)
+                self.parent().emitter_add.emit(str(t))
                 if t == "!!!!EOF!!!!":
-                    self.parent().analysis.emitter_done.emit()
+                    self.parent().emitter_done.emit()
                     break
-            if self.parent().analysis.running == False:
+            if self.parent().running == False:
                 break
+        print("Getter finished.")
         return
 
 
@@ -913,7 +774,11 @@ class TabWidget(QtWidgets.QTabWidget):
 
 
 if __name__ == "__main__":
+    if sys.platform.startswith('win'):
+        # On Windows calling this function is necessary.
+        multiprocessing.freeze_support()
     app = QtWidgets.QApplication([])
+    app.setStyle(QStyleFactory.create('Fusion'))
     screen = app.primaryScreen()
     size = screen.size()
     main = MainWindow(size.width(), size.height())
