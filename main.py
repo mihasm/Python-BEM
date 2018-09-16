@@ -24,7 +24,7 @@ from PyQt5.QtWidgets import (
     QGridLayout,
     QCheckBox,
     QStyleFactory,
-    QMessageBox
+    QMessageBox,
 )
 from numpy import array
 from scipy import interpolate
@@ -65,7 +65,7 @@ class MainWindow(QMainWindow):
         self.getter = ThreadGetter(self)
 
         self.optimization = Optimization(self)
-        self.tab_widget.add_tab(self.optimization,"Optimization")
+        self.tab_widget.add_tab(self.optimization, "Optimization")
 
         self.running = False
         self.manager = Manager()
@@ -95,7 +95,7 @@ class MainWindow(QMainWindow):
         self.optimization.buttonPitch.setEnabled(False)
         self.analysis.buttonStop.setEnabled(True)
         self.optimization.buttonStop.setEnabled(True)
-    
+
     def set_buttons_await(self):
         self.analysis.buttonRun.setEnabled(True)
         self.optimization.buttonAngles.setEnabled(True)
@@ -264,7 +264,6 @@ class Curves(QWidget):
 
 
 class Analysis(QWidget):
-
     def __init__(self, parent=None):
         super(Analysis, self).__init__(parent)
 
@@ -361,23 +360,23 @@ class Analysis(QWidget):
 
         self.fbox.addRow(self.emptyLabel, self.buttonRun)
         self.fbox.addRow(self.buttonClear, self.buttonStop)
-        self.fbox.addRow(self.buttonEOFdescription,self.buttonEOF)
+        self.fbox.addRow(self.buttonEOFdescription, self.buttonEOF)
 
-        #self.manager = Manager()
-        #self.return_print = self.manager.list()
-        #self.return_results = self.manager.list()
+        # self.manager = Manager()
+        # self.return_print = self.manager.list()
+        # self.return_results = self.manager.list()
 
     def check_forms(self):
         out = ""
-        for n,f in self.form_list:
-            if isinstance(f,QLineEdit):
+        for n, f in self.form_list:
+            if isinstance(f, QLineEdit):
                 state = self.validator.validate(f.text(), 0)[0]
                 if state == QtGui.QValidator.Acceptable:
                     pass
                 elif state == QtGui.QValidator.Intermediate:
-                    out+=("Form %s appears not to be valid.\n" % n)
+                    out += "Form %s appears not to be valid.\n" % n
                 else:
-                    out+=("Form %s is not of the valid type.\n" % n)
+                    out += "Form %s is not of the valid type.\n" % n
         if out == "":
             return True
         return out
@@ -387,12 +386,12 @@ class Analysis(QWidget):
         validator = sender.validator()
         state = validator.validate(sender.text(), 0)[0]
         if state == QtGui.QValidator.Acceptable:
-            color = '#edf5e1' # green
+            color = "#edf5e1"  # green
         elif state == QtGui.QValidator.Intermediate:
-            color = '#fff79a' # yellow
+            color = "#fff79a"  # yellow
         else:
-            color = '#f6989d' # red
-        sender.setStyleSheet('QLineEdit { background-color: %s }' % color)
+            color = "#f6989d"  # red
+        sender.setStyleSheet("QLineEdit { background-color: %s }" % color)
 
     def get_settings(self):
         out_settings = {}
@@ -406,7 +405,6 @@ class Analysis(QWidget):
                 value = int(value.currentText())
             out_settings[name] = value
         return out_settings
-
 
     def run(self):
         check = self.check_forms()
@@ -422,11 +420,15 @@ class Analysis(QWidget):
         self.parent().parent().parent().emitter_done.connect(self.done)
 
         if not self.parent().parent().parent().running:
-            self.parent().parent().parent().return_print = self.parent().parent().parent().manager.list([])
-            self.parent().parent().parent().return_results = self.parent().parent().parent().manager.list([])
+            self.parent().parent().parent().return_print = (
+                self.parent().parent().parent().manager.list([])
+            )
+            self.parent().parent().parent().return_results = (
+                self.parent().parent().parent().manager.list([])
+            )
             self.parent().parent().parent().set_buttons_running()
             self.parent().parent().parent().running = True
-            self.runner_input  = self.parent().parent().parent().get_input_params()
+            self.runner_input = self.parent().parent().parent().get_input_params()
             self.parent().parent().parent().getter.start()
             self.p = Process(target=calculate_power_3d, kwargs=self.runner_input)
             self.p.start()
@@ -434,12 +436,16 @@ class Analysis(QWidget):
             msg = QMessageBox()
             msg.setIcon(QMessageBox.Warning)
             msg.setText("Cannot run while existing operation is running")
-            msg.setInformativeText("The program detected that an existing operation is running.")
+            msg.setInformativeText(
+                "The program detected that an existing operation is running."
+            )
             msg.setWindowTitle("Runtime error")
-            msg.setDetailedText("Currently tha value MainWindow.running is %s, \
-                it should be False." % str(self.parent().parent().parent().running))
+            msg.setDetailedText(
+                "Currently tha value MainWindow.running is %s, \
+                it should be False."
+                % str(self.parent().parent().parent().running)
+            )
             msg.exec_()
-
 
     def add_text(self, string):
         self.textEdit.insertPlainText(string)
@@ -468,7 +474,7 @@ class Analysis(QWidget):
         self.textEdit.clear()
 
     def terminate(self):
-        if hasattr(self,"p"):
+        if hasattr(self, "p"):
             if self.p.is_alive():
                 self.p.terminate()
                 self.parent().parent().parent().running = False
@@ -491,57 +497,56 @@ class Optimization(QWidget):
         self.target_speed.textChanged.connect(self.check_state)
         self.target_speed.textChanged.emit(self.target_speed.text())
         self._target_speed = QLabel("Target speed [m/s]")
-        self.form_list.append([self._target_speed,self.target_speed])
+        self.form_list.append([self._target_speed, self.target_speed])
 
         self.target_rpm = QLineEdit()
         self.target_rpm.setValidator(self.validator)
         self.target_rpm.textChanged.connect(self.check_state)
         self.target_rpm.textChanged.emit(self.target_rpm.text())
         self._target_rpm = QLabel("Target rpm [RPM]")
-        self.form_list.append([self._target_rpm,self.target_rpm])
+        self.form_list.append([self._target_rpm, self.target_rpm])
 
-        
-        self.delta_start     = QLineEdit()
+        self.delta_start = QLineEdit()
         self.delta_start.setValidator(self.validator)
         self.delta_start.textChanged.connect(self.check_state)
         self.delta_start.textChanged.emit(self.delta_start.text())
-        self._delta_start    = QLabel("delta_start")
-        self.form_list.append([self._delta_start,self.delta_start])
+        self._delta_start = QLabel("delta_start")
+        self.form_list.append([self._delta_start, self.delta_start])
 
         self.decrease_factor = QLineEdit()
         self.decrease_factor.setValidator(self.validator)
         self.decrease_factor.textChanged.connect(self.check_state)
         self.decrease_factor.textChanged.emit(self.decrease_factor.text())
-        self._decrease_factor= QLabel("decrease_factor")
-        self.form_list.append([self._decrease_factor,self.decrease_factor])
+        self._decrease_factor = QLabel("decrease_factor")
+        self.form_list.append([self._decrease_factor, self.decrease_factor])
 
-        self.min_delta       = QLineEdit()
+        self.min_delta = QLineEdit()
         self.min_delta.setValidator(self.validator)
         self.min_delta.textChanged.connect(self.check_state)
         self.min_delta.textChanged.emit(self.min_delta.text())
-        self._min_delta      = QLabel("min_delta")
-        self.form_list.append([self._min_delta,self.min_delta])
+        self._min_delta = QLabel("min_delta")
+        self.form_list.append([self._min_delta, self.min_delta])
 
-        self.min_add_angle   = QLineEdit()
+        self.min_add_angle = QLineEdit()
         self.min_add_angle.setValidator(self.validator)
         self.min_add_angle.textChanged.connect(self.check_state)
         self.min_add_angle.textChanged.emit(self.min_add_angle.text())
-        self._min_add_angle  = QLabel("min_add_angle")
-        self.form_list.append([self._min_add_angle,self.min_add_angle])
+        self._min_add_angle = QLabel("min_add_angle")
+        self.form_list.append([self._min_add_angle, self.min_add_angle])
 
-        self.max_add_angle   = QLineEdit()
+        self.max_add_angle = QLineEdit()
         self.max_add_angle.setValidator(self.validator)
         self.max_add_angle.textChanged.connect(self.check_state)
         self.max_add_angle.textChanged.emit(self.max_add_angle.text())
-        self._max_add_angle  = QLabel("max_add_angle")
-        self.form_list.append([self._max_add_angle,self.max_add_angle])
+        self._max_add_angle = QLabel("max_add_angle")
+        self.form_list.append([self._max_add_angle, self.max_add_angle])
 
-        self.angle_step      = QLineEdit()
+        self.angle_step = QLineEdit()
         self.angle_step.setValidator(self.validator)
         self.angle_step.textChanged.connect(self.check_state)
         self.angle_step.textChanged.emit(self.angle_step.text())
-        self._angle_step     = QLabel("angle_step")
-        self.form_list.append([self._angle_step,self.angle_step])
+        self._angle_step = QLabel("angle_step")
+        self.form_list.append([self._angle_step, self.angle_step])
 
         self.buttonAngles = QPushButton("Run angle optimization")
         self.buttonAngles.clicked.connect(self.run)
@@ -560,63 +565,73 @@ class Optimization(QWidget):
 
         self.grid = QGridLayout()
         self.setLayout(self.grid)
-        self.grid.addWidget(self.left,1,1)
-        self.grid.addWidget(self.textEdit,1,2)
+        self.grid.addWidget(self.left, 1, 1)
+        self.grid.addWidget(self.textEdit, 1, 2)
 
         self.fbox = QFormLayout()
         self.left.setLayout(self.fbox)
-        self.fbox.addRow(self._target_speed,self.target_speed)
-        self.fbox.addRow(self._target_rpm,self.target_rpm)
+        self.fbox.addRow(self._target_speed, self.target_speed)
+        self.fbox.addRow(self._target_rpm, self.target_rpm)
 
         rpmtext = QTextEdit("Target RPM can be empty for pitch calc.")
         rpmtext.setReadOnly(True)
-        self.fbox.addRow(QLabel(" "),rpmtext)
-
+        self.fbox.addRow(QLabel(" "), rpmtext)
 
         self.fbox.addRow(QLabel("--------"))
-        self.fbox.addRow(self._delta_start,self.delta_start)
-        self.fbox.addRow(self._min_delta,self.min_delta)
-        self.fbox.addRow(self._decrease_factor,self.decrease_factor)
+        self.fbox.addRow(self._delta_start, self.delta_start)
+        self.fbox.addRow(self._min_delta, self.min_delta)
+        self.fbox.addRow(self._decrease_factor, self.decrease_factor)
         self.fbox.addRow(self.buttonAngles)
 
         self.fbox.addRow(QLabel("--------"))
-        self.fbox.addRow(self._min_add_angle,self.min_add_angle)
-        self.fbox.addRow(self._max_add_angle,self.max_add_angle)
-        self.fbox.addRow(self._angle_step,self.angle_step)
+        self.fbox.addRow(self._min_add_angle, self.min_add_angle)
+        self.fbox.addRow(self._max_add_angle, self.max_add_angle)
+        self.fbox.addRow(self._angle_step, self.angle_step)
         self.fbox.addRow(self.buttonPitch)
-        self.fbox.addRow(self.buttonClear,self.buttonStop)
-        self.fbox.addRow(self.buttonEOFdescription,self.buttonEOF)
+        self.fbox.addRow(self.buttonClear, self.buttonStop)
+        self.fbox.addRow(self.buttonEOFdescription, self.buttonEOF)
 
         self.set_settings(SET_INIT)
 
     def check_forms_angles(self):
         out = ""
-        _needed_vars=[[self._target_speed,self.target_speed],[self._target_rpm,self.target_rpm],[self._delta_start,self.delta_start],[self._decrease_factor,self.decrease_factor],[self._min_delta,self.min_delta]]
-        for n,f in _needed_vars:
-            if isinstance(f,QLineEdit):
+        _needed_vars = [
+            [self._target_speed, self.target_speed],
+            [self._target_rpm, self.target_rpm],
+            [self._delta_start, self.delta_start],
+            [self._decrease_factor, self.decrease_factor],
+            [self._min_delta, self.min_delta],
+        ]
+        for n, f in _needed_vars:
+            if isinstance(f, QLineEdit):
                 state = self.validator.validate(f.text(), 0)[0]
                 if state == QtGui.QValidator.Acceptable:
                     pass
                 elif state == QtGui.QValidator.Intermediate:
-                    out+=("Form %s appears not to be valid.\n" % n.text())
+                    out += "Form %s appears not to be valid.\n" % n.text()
                 else:
-                    out+=("Form %s is not of the valid type.\n" % n.text())
+                    out += "Form %s is not of the valid type.\n" % n.text()
         if out == "":
             return True
         return out
 
     def check_forms_pitch(self):
         out = ""
-        _needed_vars=[[self._target_speed,self.target_speed],[self._min_add_angle,self.min_add_angle],[self._max_add_angle,self.max_add_angle],[self._angle_step,self.angle_step]]
-        for n,f in _needed_vars:
-            if isinstance(f,QLineEdit):
+        _needed_vars = [
+            [self._target_speed, self.target_speed],
+            [self._min_add_angle, self.min_add_angle],
+            [self._max_add_angle, self.max_add_angle],
+            [self._angle_step, self.angle_step],
+        ]
+        for n, f in _needed_vars:
+            if isinstance(f, QLineEdit):
                 state = self.validator.validate(f.text(), 0)[0]
                 if state == QtGui.QValidator.Acceptable:
                     pass
                 elif state == QtGui.QValidator.Intermediate:
-                    out+=("Form %s appears not to be valid.\n" % n.text())
+                    out += "Form %s appears not to be valid.\n" % n.text()
                 else:
-                    out+=("Form %s is not of the valid type.\n" % n.text())
+                    out += "Form %s is not of the valid type.\n" % n.text()
         if out == "":
             return True
         return out
@@ -626,14 +641,14 @@ class Optimization(QWidget):
         validator = sender.validator()
         state = validator.validate(sender.text(), 0)[0]
         if state == QtGui.QValidator.Acceptable:
-            color = '#edf5e1' # green
+            color = "#edf5e1"  # green
         elif state == QtGui.QValidator.Intermediate:
-            color = '#fff79a' # yellow
+            color = "#fff79a"  # yellow
         else:
-            color = '#f6989d' # red
-        sender.setStyleSheet('QLineEdit { background-color: %s }' % color)
+            color = "#f6989d"  # red
+        sender.setStyleSheet("QLineEdit { background-color: %s }" % color)
 
-    def run(self,run_pitch=False):
+    def run(self, run_pitch=False):
         if run_pitch:
             check = self.check_forms_pitch()
         else:
@@ -644,7 +659,7 @@ class Optimization(QWidget):
                 check = ""
             if check_analysis == True:
                 check_analysis = ""
-            check = check+check_analysis
+            check = check + check_analysis
             msg = QMessageBox()
             msg.setIcon(QMessageBox.Warning)
             msg.setText("Input validation error")
@@ -656,26 +671,37 @@ class Optimization(QWidget):
         self.parent().parent().parent().emitter_done.connect(self.done)
 
         if not self.parent().parent().parent().running:
-            self.parent().parent().parent().return_print = self.parent().parent().parent().manager.list([])
-            self.parent().parent().parent().return_results = self.parent().parent().parent().manager.list([])
+            self.parent().parent().parent().return_print = (
+                self.parent().parent().parent().manager.list([])
+            )
+            self.parent().parent().parent().return_results = (
+                self.parent().parent().parent().manager.list([])
+            )
             self.parent().parent().parent().set_buttons_running()
             self.parent().parent().parent().running = True
-            self.runner_input  = self.parent().parent().parent().get_input_params()
+            self.runner_input = self.parent().parent().parent().get_input_params()
             self.parent().parent().parent().getter.start()
             self.o = Optimizer(**self.runner_input)
             if run_pitch:
                 self.p = Process(target=self.o.optimize_pitch, kwargs=self.runner_input)
             else:
-                self.p = Process(target=self.o.optimize_angles, kwargs=self.runner_input)
+                self.p = Process(
+                    target=self.o.optimize_angles, kwargs=self.runner_input
+                )
             self.p.start()
         else:
             msg = QMessageBox()
             msg.setIcon(QMessageBox.Warning)
             msg.setText("Cannot run while existing operation is running")
-            msg.setInformativeText("The program detected that an existing operation is running.")
+            msg.setInformativeText(
+                "The program detected that an existing operation is running."
+            )
             msg.setWindowTitle("Runtime error")
-            msg.setDetailedText("Currently tha value MainWindow.running is %s, \
-                it should be False." % str(self.parent().parent().parent().running))
+            msg.setDetailedText(
+                "Currently tha value MainWindow.running is %s, \
+                it should be False."
+                % str(self.parent().parent().parent().running)
+            )
 
     def clear(self):
         self.textEdit.clear()
@@ -689,7 +715,7 @@ class Optimization(QWidget):
         self.run(True)
 
     def terminate(self):
-        if hasattr(self,"p"):
+        if hasattr(self, "p"):
             if self.p.is_alive():
                 self.p.terminate()
                 self.parent().parent().parent().running = False
@@ -712,13 +738,13 @@ class Optimization(QWidget):
         else:
             out["target_rpm"] = self.target_rpm.text()
         out["target_speed"] = self.target_speed.text()
-        out["delta_start"]=self.delta_start.text()
-        out["decrease_factor"]=self.decrease_factor.text()
-        out["min_delta"]=self.min_delta.text()
-        out["min_add_angle"]=self.min_add_angle.text()
-        out["max_add_angle"]=self.max_add_angle.text()
-        out["angle_step"]=self.angle_step.text()
-        for k,v in out.items():
+        out["delta_start"] = self.delta_start.text()
+        out["decrease_factor"] = self.decrease_factor.text()
+        out["min_delta"] = self.min_delta.text()
+        out["min_add_angle"] = self.min_add_angle.text()
+        out["max_add_angle"] = self.max_add_angle.text()
+        out["angle_step"] = self.angle_step.text()
+        for k, v in out.items():
             if v == "":
                 v = None
             elif v == None:
@@ -726,10 +752,10 @@ class Optimization(QWidget):
             else:
                 v = float(v)
             out[k] = v
-        #print(out)
+        # print(out)
         return out
 
-    def set_settings(self,inp_dict):
+    def set_settings(self, inp_dict):
         self.target_rpm.setText(str(inp_dict["target_rpm"]))
         self.target_speed.setText(str(inp_dict["target_speed"]))
         self.delta_start.setText(str(inp_dict["delta_start"]))
@@ -749,7 +775,7 @@ class ThreadGetter(QThread):
 
     def run(self):
         print("Running Getter.")
-        #print("This was already in:",self.parent().return_print)
+        # print("This was already in:",self.parent().return_print)
         while True:
             if len(self.parent().return_print) > 0:
                 t = self.parent().return_print.pop(0)
@@ -774,11 +800,11 @@ class TabWidget(QtWidgets.QTabWidget):
 
 
 if __name__ == "__main__":
-    if sys.platform.startswith('win'):
+    if sys.platform.startswith("win"):
         # On Windows calling this function is necessary.
         multiprocessing.freeze_support()
     app = QtWidgets.QApplication([])
-    app.setStyle(QStyleFactory.create('Fusion'))
+    app.setStyle(QStyleFactory.create("Fusion"))
     screen = app.primaryScreen()
     size = screen.size()
     main = MainWindow(size.width(), size.height())
