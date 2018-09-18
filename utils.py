@@ -1,12 +1,14 @@
 __author__ = "Miha Smrekar"
 __credits__ = ["Miha Smrekar"]
 __license__ = "GPL"
-__version__ = "0.2.4"
+__version__ = "0.2.5"
 __maintainer__ = "Miha Smrekar"
 __email__ = "miha.smrekar9@gmail.com"
 __status__ = "Development"
 
 import numpy
+from scipy import interpolate
+from numpy import array
 
 
 def transpose(a):
@@ -112,3 +114,22 @@ def sort_xy(array_x, array_y):
         raise Exception(
             "Cannot create XY pairs with arrays with different num of elements"
         )
+
+def interpolate_geom(r,c,theta,num=None,linspace_interp=False):
+    """
+    interpolates c,r,theta with num elements:
+    """
+    c_interpolator = interpolate.interp1d(r,c)
+    theta_interpolator = interpolate.interp1d(r,theta)
+    if linspace_interp:
+        r = numpy.linspace(start=r[0], stop=r[-1], num=num+1)
+    
+    c = c_interpolator(r)
+    theta = theta_interpolator(r)
+    r_shifted = [r[0]]
+    for _r in r:
+        r_shifted.append(_r)
+    r_shifted = array(r_shifted[:-1])
+    dr = r-r_shifted
+    return r,c,theta,dr
+

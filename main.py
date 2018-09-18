@@ -1,7 +1,7 @@
 __author__ = "Miha Smrekar"
 __credits__ = ["Miha Smrekar"]
 __license__ = "GPL"
-__version__ = "0.2.4"
+__version__ = "0.2.5"
 __maintainer__ = "Miha Smrekar"
 __email__ = "miha.smrekar9@gmail.com"
 __status__ = "Development"
@@ -35,6 +35,7 @@ from table import Table
 import time
 from turbine_data import SET_INIT
 from optimisation import Optimizer
+from utils import interpolate_geom
 
 from multiprocessing import Process, Manager
 import multiprocessing
@@ -49,7 +50,7 @@ class MainWindow(QMainWindow):
         self.screen_width = width
         self.screen_height = height
         self.setGeometry(width * 0.125, height * 0.125, width * 0.75, height * 0.75)
-        self.setWindowTitle("BEM analiza v0.2.3")
+        self.setWindowTitle("BEM analiza v%s"%__version__)
         self.tab_widget = TabWidget(self)
         self.setCentralWidget(self.tab_widget)
 
@@ -78,6 +79,12 @@ class MainWindow(QMainWindow):
         settings = self.analysis.get_settings()
         opt_settings = self.optimization.get_settings()
         out = {**properties, **curves, **settings, **opt_settings}
+        _r=out["r"]
+        _c=out["c"]
+        _theta=out["theta"]
+        r,c,theta,dr = interpolate_geom(_r,_c,_theta,out["num_interp"],out["linspace_interp"])
+        out["r"],out["c"],out["theta"],out["dr"] = r,c,theta,dr
+        out["r_in"],out["c_in"],out["theta_in"] = _r,_c,_theta
         return out
 
     def get_input_params(self):
@@ -116,8 +123,8 @@ class WindTurbineProperties(QWidget):
         left.setLayout(fbox)
 
         self.table_properties = Table()
-        self.table_properties.createEmpty(4, 30)
-        self.table_properties.set_labels(["r [m]", "c [m]", "theta [deg]", "dr [m]"])
+        self.table_properties.createEmpty(3, 30)
+        self.table_properties.set_labels(["r [m]", "c [m]", "theta [deg]"])
 
         grid.addWidget(left, 1, 1)
         grid.addWidget(self.table_properties, 1, 2)
@@ -153,15 +160,14 @@ class WindTurbineProperties(QWidget):
         geom_array = self.table_properties.get_values()
         r, c, theta, dr = [], [], [], []
         for row in geom_array:
-            if row[0] != "" and row[1] != "" and row[2] != "" and row[3] != "":
+            if row[0] != "" and row[1] != "" and row[2] != "":
                 r.append(float(row[0]))
                 c.append(float(row[1]))
                 theta.append(float(row[2]))
-                dr.append(float(row[3]))
         out_properties["r"] = numpy.array(r)
         out_properties["c"] = numpy.array(c)
         out_properties["theta"] = numpy.array(theta)
-        out_properties["dr"] = numpy.array(dr)
+        #out_properties["dr"] = numpy.array(dr)
         return out_properties
 
     def set_properties(self, dict_settings):
@@ -178,20 +184,20 @@ class WindTurbineProperties(QWidget):
             "r" in dict_settings
             and "c" in dict_settings
             and "theta" in dict_settings
-            and "dr" in dict_settings
+            #and "dr" in dict_settings
         ):
             _array = []
             for r in range(len(dict_settings["r"])):
                 _r = dict_settings["r"][r]
                 _c = dict_settings["c"][r]
                 _theta = dict_settings["theta"][r]
-                _dr = dict_settings["dr"][r]
+                #_dr = dict_settings["dr"][r]
                 _array.append(
                     [
                         dict_settings["r"][r],
                         dict_settings["c"][r],
                         dict_settings["theta"][r],
-                        dict_settings["dr"][r],
+                        #dict_settings["dr"][r],
                     ]
                 )
             self.table_properties.createTable(_array)
@@ -277,6 +283,8 @@ class Analysis(QWidget):
             "convergence_limit": 0.001,
             "rho": 1.225,
             "method": 10,
+            "linspace_interp":False,
+            "num_interp":25,
             "v_min": 3,
             "v_max": 20,
             "v_num": 10,
@@ -307,6 +315,8 @@ class Analysis(QWidget):
             "rpm_num": "Number of RPM points",
             "relaxation_factor": "Relaxation factor",
             "print_all": "Print every iteration [debug]",
+            "num_interp": "Number of sections (interp)",
+            "linspace_interp":"Custom number of sections",
         }
 
         self.name_to_settings = {}
