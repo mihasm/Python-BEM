@@ -38,16 +38,19 @@ class Optimizer:
         :param _delta: change of twist - theta - for given section [deg]
         :return: power [W]
         """
-        self.inp_args["v"] = wind_speed
-        self.inp_args["rpm"] = rpm
+        _inp_args = {**self.inp_args}
+        _inp_args["v"] = wind_speed
+        _inp_args["rpm"] = rpm
+        if add_angle != None:
+            self.inp_args["add_angle"] = add_angle
+
         if _r and _delta:
             chord_angles_copy = numpy.copy(self.inp_args["theta"])
             chord_angles_copy[_r] += _delta
-            _inp_args = {**self.inp_args}
             _inp_args["theta"] = chord_angles_copy
             res = calculate_power(_inp_args)
         else:
-            res = calculate_power(self.inp_args)
+            res = calculate_power(_inp_args)
 
         if power_only:
             return res["power"]
@@ -208,16 +211,7 @@ class Optimizer:
         return new_angles
 
     def optimize_pitch(
-        self,
-        target_speed,
-        target_rpm=None,
-        min_add_angle=-10,
-        max_add_angle=10,
-        step=0.5,
-        return_print=None,
-        return_results=None,
-        *args,
-        **kwargs,
+        self,inp_args
     ):
         """
         This function calculates the optimum pitch angle of the blade for the given wind speed and rotational velocity.
@@ -231,6 +225,7 @@ class Optimizer:
         """
         return_print = inp_args["return_print"]
         return_results = inp_args["return_results"]
+        chord_angles_orig = inp_args["theta"]
 
         if inp_args["target_rpm"] != None:
             return_print.append(
@@ -241,12 +236,12 @@ class Optimizer:
                 + " RPM\n"
             )
 
-            power_orig = self._power(
+            _power_orig = self._power(
                 wind_speed=inp_args["target_speed"], rpm=inp_args["target_rpm"]
             )
             return_print.append(
                 "Without turning the blade, the power is: "
-                + "%.2f" % round(power_orig)
+                + "%.2f" % round(_power_orig)
                 + " [W] at wind speed "
                 + str(inp_args["target_speed"])
                 + "[m/s] and rotational velocity "
@@ -255,9 +250,9 @@ class Optimizer:
                 + "\n"
             )
 
-            current_add_angle = min_add_angle
+            current_add_angle = inp_args["min_add_angle"]
             results = []
-            while current_add_angle <= max_add_angle:
+            while current_add_angle <= inp_args["max_add_angle"]:
                 return_print.append(
                     "Testing pitch: "
                     + str(current_add_angle)
@@ -271,7 +266,7 @@ class Optimizer:
                     rpm=inp_args["target_rpm"],
                 )
                 results.append((current_add_angle, power))
-                current_add_angle += step
+                current_add_angle += inp_args["angle_step"]
                 return_print.append("    power:" + str(power) + "\n")
                 return_print.append("---\n")
 
@@ -310,10 +305,11 @@ class Optimizer:
                     elif p > power_orig[0]:
                         power_orig = (p, rpm)
             return_print.append("Original power" + str(power_orig) + "\n")
-            current_add_angle = min_add_angle
+            current_add_angle = inp_args["min_add_angle"]
             results = []
             return_print.append("Getting power for different pitches" + "\n")
-            while current_add_angle <= max_add_angle:
+            
+            while current_add_angle <= inp_args["max_add_angle"]:
                 return_print.append(
                     "    Current add angle:" + str(current_add_angle) + "\n"
                 )
@@ -348,7 +344,7 @@ class Optimizer:
                             + "\n"
                         )
                 results.append(best_result_angle)
-                current_add_angle += step
+                current_add_angle += inp_args["angle_step"]
             best = sorted(results, key=lambda x: x[0], reverse=True)[0]
             return_print.append(
                 "Best power is "
@@ -365,6 +361,6 @@ class Optimizer:
                 + " Watts."
                 + "\n"
             )
-        best_chord_angles = self.chord_angles_orig + best[2]
+        best_chord_angles = chord_angles_orig + best[2]
         return_print.append("!!!!EOF!!!!")
         return best_chord_angles

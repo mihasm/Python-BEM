@@ -132,7 +132,7 @@ class MainWindow(QMainWindow):
         )
         out["r"], out["c"], out["theta"], out["dr"] = r, c, theta, dr
         out["r_in"], out["c_in"], out["theta_in"] = _r, _c, _theta
-        print(out)
+        #print(out)
         return out
 
     def set_all_settings(self,inp_dict):

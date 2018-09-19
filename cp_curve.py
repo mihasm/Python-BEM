@@ -36,7 +36,7 @@ def calculate_power(inp_args):
     """
     if "add_angle" in inp_args:
         if inp_args["add_angle"] != None:
-            inp_args["chord_angles"] = inp_args["chord_angles"] + inp_args["add_angle"]
+            inp_args["theta"] = inp_args["theta"] + inp_args["add_angle"]
     results = Calculator(
         inp_args["f_c_L"], inp_args["f_c_D"], inp_args["inverse_f_c_L"]
     ).run_array(**inp_args)
