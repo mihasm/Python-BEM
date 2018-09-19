@@ -1,7 +1,7 @@
 __author__ = "Miha Smrekar"
 __credits__ = ["Miha Smrekar"]
 __license__ = "GPL"
-__version__ = "0.2.5"
+__version__ = "0.2.6"
 __maintainer__ = "Miha Smrekar"
 __email__ = "miha.smrekar9@gmail.com"
 __status__ = "Development"
@@ -61,15 +61,19 @@ class ResultsWindow(QMainWindow):
         t_geom.set_labels(["r", "c", "theta", "dr"])
         self.tab_widget.add_tab_widget(t_geom, "Geometry check")
 
-        alpha = numpy.linspace(-25, 25, 100)
-        f_c_L = input_data["f_c_L"]
-        f_c_D = input_data["f_c_D"]
-        cL = f_c_L(alpha)
-        cD = f_c_D(alpha)
+        #alpha = numpy.linspace(-90, 90, 100)
+        #f_c_L = input_data["f_c_L"]
+        #f_c_D = input_data["f_c_D"]
+        #cL = f_c_L(alpha)
+        #cD = f_c_D(alpha)
+        AoA_cL=input_data["AoA_cL"]
+        AoA_cD=input_data["AoA_cD"]
+        cL=input_data["cL"]
+        cD=input_data["cD"]
 
         f = self.tab_widget.add_tab_figure("Cl/Cd check")
-        self.tab_widget.add_2d_plot_to_figure(f, alpha, cL, 121, "cL", "alpha", "cL")
-        self.tab_widget.add_2d_plot_to_figure(f, alpha, cD, 122, "cD", "alpha", "cD")
+        self.tab_widget.add_2d_plot_to_figure(f, AoA_cL, cL, 121, "cL", "alpha", "cL",look="og")
+        self.tab_widget.add_2d_plot_to_figure(f, AoA_cD, cD, 122, "cD", "alpha", "cD",look="or")
 
         f2 = self.tab_widget.add_tab_figure("Moč in Cp")
         self.tab_widget.add_2d_plot_to_figure(
@@ -78,14 +82,16 @@ class ResultsWindow(QMainWindow):
 
         TSR, CP = sort_xy(results_3d["TSR"], results_3d["cp"])
         self.tab_widget.add_2d_plot_to_figure(
-            f2, TSR, CP, 122, "Cp krivulja", "lambda", "Cp"
+            f2, TSR, CP, 122, "Cp krivulja", "lambda", "Cp",look="o"
         )
-
-        if len(X) >= 3 and len(Y) >= 3:
-            f3 = self.tab_widget.add_tab_figure("3D moč")
-            self.tab_widget.add_surface_plot(
-                f3, X, Y, Z, 111, "Moč (veter,rpm)", "veter[m/s]", "rpm", "moč [W]"
-            )
+        try:
+            if len(X) >= 3 and len(Y) >= 3:
+                f3 = self.tab_widget.add_tab_figure("3D moč")
+                self.tab_widget.add_surface_plot(
+                    f3, X, Y, Z, 111, "Moč (veter,rpm)", "veter[m/s]", "rpm", "moč [W]"
+                )
+        except:
+            print("Could not create 3D surface plot...")
 
         f4 = self.tab_widget.add_tab_figure("Ct krivulja")
         self.tab_widget.add_2d_plot_to_figure(
@@ -106,6 +112,11 @@ class ResultsWindow(QMainWindow):
         self.tab_widget.add_tab_widget(t, "Data")
 
         self.show()
+
+    def closeEvent(self, event):
+        for f in self.tab_widget.figures:
+            f.clear()
+        event.accept() # let the window close
 
     def set_menubar(self):
         mainMenu = self.menuBar()

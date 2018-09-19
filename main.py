@@ -1,7 +1,7 @@
 __author__ = "Miha Smrekar"
 __credits__ = ["Miha Smrekar"]
 __license__ = "GPL"
-__version__ = "0.2.5"
+__version__ = "0.2.6"
 __maintainer__ = "Miha Smrekar"
 __email__ = "miha.smrekar9@gmail.com"
 __status__ = "Development"
@@ -35,7 +35,7 @@ from table import Table
 import time
 from turbine_data import SET_INIT
 from optimisation import Optimizer
-from utils import interpolate_geom
+from utils import interpolate_geom, to_float
 
 from multiprocessing import Process, Manager
 import multiprocessing
@@ -73,6 +73,8 @@ class MainWindow(QMainWindow):
 
         self.show()
 
+        
+
     def get_all_settings(self):
         properties = self.wind_turbine_properties.get_properties()
         curves = self.curves.get_curves()
@@ -85,6 +87,7 @@ class MainWindow(QMainWindow):
         r,c,theta,dr = interpolate_geom(_r,_c,_theta,out["num_interp"],out["linspace_interp"])
         out["r"],out["c"],out["theta"],out["dr"] = r,c,theta,dr
         out["r_in"],out["c_in"],out["theta_in"] = _r,_c,_theta
+        print(out)
         return out
 
     def get_input_params(self):
@@ -153,17 +156,17 @@ class WindTurbineProperties(QWidget):
 
     def get_properties(self):
         out_properties = {
-            "Rhub": float(self.Rhub.text()),
-            "R": float(self.R.text()),
+            "Rhub": to_float(self.Rhub.text()),
+            "R": to_float(self.R.text()),
             "B": int(self.B.text()),
         }
         geom_array = self.table_properties.get_values()
         r, c, theta, dr = [], [], [], []
         for row in geom_array:
             if row[0] != "" and row[1] != "" and row[2] != "":
-                r.append(float(row[0]))
-                c.append(float(row[1]))
-                theta.append(float(row[2]))
+                r.append(to_float(row[0]))
+                c.append(to_float(row[1]))
+                theta.append(to_float(row[2]))
         out_properties["r"] = numpy.array(r)
         out_properties["c"] = numpy.array(c)
         out_properties["theta"] = numpy.array(theta)
@@ -184,20 +187,17 @@ class WindTurbineProperties(QWidget):
             "r" in dict_settings
             and "c" in dict_settings
             and "theta" in dict_settings
-            #and "dr" in dict_settings
         ):
             _array = []
             for r in range(len(dict_settings["r"])):
                 _r = dict_settings["r"][r]
                 _c = dict_settings["c"][r]
                 _theta = dict_settings["theta"][r]
-                #_dr = dict_settings["dr"][r]
                 _array.append(
                     [
                         dict_settings["r"][r],
                         dict_settings["c"][r],
                         dict_settings["theta"][r],
-                        #dict_settings["dr"][r],
                     ]
                 )
             self.table_properties.createTable(_array)
@@ -230,20 +230,31 @@ class Curves(QWidget):
         array_cl = self.table_cl.get_values()
         for r in array_cl:
             if r[0] != "" and r[1] != "":
-                AoA_cL.append(float(r[0]))
-                cL.append(float(r[1]))
+                _AoA = to_float(r[0])
+                _cL = to_float(r[1])
+                if _AoA > 90:
+                    _AoA = _AoA-180
+                AoA_cL.append(_AoA)
+                cL.append(_cL)
 
         array_cd = self.table_cd.get_values()
         for r in array_cd:
             if r[0] != "" and r[1] != "":
-                AoA_cD.append(float(r[0]))
-                cD.append(float(r[1]))
+                _AoA = to_float(r[0])
+                _cD = to_float(r[1])
+                if _AoA > 90:
+                    _AoA = _AoA-180
+                AoA_cD.append(_AoA)
+                cD.append(_cD)
 
         f_c_L = interpolate.interp1d(
             AoA_cL, cL, fill_value=(cL[0], cL[-1]), bounds_error=False
         )
         f_c_D = interpolate.interp1d(
             AoA_cD, cD, fill_value=(cD[0], cD[-1]), bounds_error=False
+        )
+        inverse_f_c_L = interpolate.interp1d(
+            cL, AoA_cL, fill_value=(AoA_cL[0], AoA_cL[-1]), bounds_error=False
         )
         return {
             "f_c_L": f_c_L,
@@ -252,6 +263,7 @@ class Curves(QWidget):
             "AoA_cD": AoA_cD,
             "cL": cL,
             "cD": cD,
+            "inverse_f_c_L" : inverse_f_c_L,
         }
 
     def set_curves(self, dict_settings):
@@ -273,12 +285,16 @@ class Analysis(QWidget):
     def __init__(self, parent=None):
         super(Analysis, self).__init__(parent)
 
+        self.main = self.parent()
+
         self.settings = {
             "tip_loss": False,
             "hub_loss": False,
             "new_tip_loss": False,
             "new_hub_loss": False,
             "cascade_correction": False,
+            "rotational_augmentation_correction":False,
+            "rotational_augmentation_correction_method":1,
             "max_iterations": 100,
             "convergence_limit": 0.001,
             "rho": 1.225,
@@ -317,6 +333,8 @@ class Analysis(QWidget):
             "print_all": "Print every iteration [debug]",
             "num_interp": "Number of sections (interp)",
             "linspace_interp":"Custom number of sections",
+            "rotational_augmentation_correction":"Rot. augmentation cor.",
+            "rotational_augmentation_correction_method":"Rot. augmentation cor. method"
         }
 
         self.name_to_settings = {}
@@ -345,6 +363,10 @@ class Analysis(QWidget):
             if key == "method":
                 form = QComboBox()
                 form.addItems(["1", "4", "5", "6", "7", "8", "9", "10"])
+                form.setCurrentIndex(7)
+            elif key == "rotational_augmentation_correction_method":
+                form = QComboBox()
+                form.addItems(["1", "2", "3", "4", "5"])
             elif isinstance(value, bool):
                 form = QCheckBox()
                 form.setTristate(value)
@@ -364,6 +386,7 @@ class Analysis(QWidget):
         self.buttonClear = QPushButton("Clear screen")
         self.buttonClear.clicked.connect(self.clear)
         self.buttonEOF = QCheckBox()
+        self.buttonEOF.setChecked(True)
         self.buttonEOFdescription = QLabel("Scroll to end of screen")
         self.buttonStop = QPushButton("Stop")
         self.buttonStop.clicked.connect(self.terminate)
@@ -410,13 +433,14 @@ class Analysis(QWidget):
             if isinstance(value, QCheckBox):
                 value = bool(value.checkState())
             if isinstance(value, QLineEdit):
-                value = float(value.text())
+                value = to_float(value.text())
             if isinstance(value, QComboBox):
                 value = int(value.currentText())
             out_settings[name] = value
         return out_settings
 
     def run(self):
+        self.clear()
         check = self.check_forms()
         if check != True:
             msg = QMessageBox()
@@ -426,21 +450,21 @@ class Analysis(QWidget):
             msg.exec_()
             return
 
-        self.parent().parent().parent().emitter_add.connect(self.add_text)
-        self.parent().parent().parent().emitter_done.connect(self.done)
+        self.main.emitter_add.connect(self.add_text)
+        self.main.emitter_done.connect(self.done)
 
-        if not self.parent().parent().parent().running:
-            self.parent().parent().parent().return_print = (
-                self.parent().parent().parent().manager.list([])
+        if not self.main.running:
+            self.main.return_print = (
+                self.main.manager.list([])
             )
-            self.parent().parent().parent().return_results = (
-                self.parent().parent().parent().manager.list([])
+            self.main.return_results = (
+                self.main.manager.list([])
             )
-            self.parent().parent().parent().set_buttons_running()
-            self.parent().parent().parent().running = True
-            self.runner_input = self.parent().parent().parent().get_input_params()
-            self.parent().parent().parent().getter.start()
-            self.p = Process(target=calculate_power_3d, kwargs=self.runner_input)
+            self.main.set_buttons_running()
+            self.main.running = True
+            self.runner_input = self.main.get_input_params()
+            self.main.getter.start()
+            self.p = Process(target=calculate_power_3d, args=[self.runner_input])
             self.p.start()
         else:
             msg = QMessageBox()
@@ -453,7 +477,7 @@ class Analysis(QWidget):
             msg.setDetailedText(
                 "Currently tha value MainWindow.running is %s, \
                 it should be False."
-                % str(self.parent().parent().parent().running)
+                % str(self.main.running)
             )
             msg.exec_()
 
@@ -463,19 +487,19 @@ class Analysis(QWidget):
             self.textEdit.moveCursor(QtGui.QTextCursor.End)
 
     def done(self, terminated=False):
-        self.parent().parent().parent().emitter_add.disconnect()
-        self.parent().parent().parent().emitter_done.disconnect()
-        self.parent().parent().parent().set_buttons_await()
-        self.parent().parent().parent().running = False
-        self.parent().parent().parent().getter.__del__()
+        self.main.emitter_add.disconnect()
+        self.main.emitter_done.disconnect()
+        self.main.set_buttons_await()
+        self.main.running = False
+        self.main.getter.__del__()
         if not terminated:
             self.p.join()
-            results = self.parent().parent().parent().return_results[0]
+            results = self.main.return_results[0]
             inp_params = self.runner_input
             r = ResultsWindow(
                 self,
-                self.parent().parent().parent().screen_width,
-                self.parent().parent().parent().screen_width,
+                self.main.screen_width,
+                self.main.screen_width,
                 results,
                 inp_params,
             )
@@ -487,14 +511,16 @@ class Analysis(QWidget):
         if hasattr(self, "p"):
             if self.p.is_alive():
                 self.p.terminate()
-                self.parent().parent().parent().running = False
-                self.parent().parent().parent().getter.__del__()
+                self.main.running = False
+                self.main.getter.__del__()
                 self.done(True)
 
 
 class Optimization(QWidget):
     def __init__(self, parent=None):
         super(Optimization, self).__init__(parent)
+        self.main=self.parent()
+
         self.validator = QtGui.QDoubleValidator()
         self.left = QWidget()
         self.textEdit = QTextEdit()
@@ -571,6 +597,7 @@ class Optimization(QWidget):
         self.buttonClear.clicked.connect(self.clear)
 
         self.buttonEOF = QCheckBox()
+        self.buttonEOF.setChecked(True)
         self.buttonEOFdescription = QLabel("Scroll to end of screen")
 
         self.grid = QGridLayout()
@@ -659,11 +686,12 @@ class Optimization(QWidget):
         sender.setStyleSheet("QLineEdit { background-color: %s }" % color)
 
     def run(self, run_pitch=False):
+        self.clear()
         if run_pitch:
             check = self.check_forms_pitch()
         else:
             check = self.check_forms_angles()
-        check_analysis = self.parent().parent().parent().analysis.check_forms()
+        check_analysis = self.main.analysis.check_forms()
         if check != True or check_analysis != True:
             if check == True:
                 check = ""
@@ -677,26 +705,26 @@ class Optimization(QWidget):
             msg.exec_()
             return
 
-        self.parent().parent().parent().emitter_add.connect(self.add_text)
-        self.parent().parent().parent().emitter_done.connect(self.done)
+        self.main.emitter_add.connect(self.add_text)
+        self.main.emitter_done.connect(self.done)
 
-        if not self.parent().parent().parent().running:
-            self.parent().parent().parent().return_print = (
-                self.parent().parent().parent().manager.list([])
+        if not self.main.running:
+            self.main.return_print = (
+                self.main.manager.list([])
             )
-            self.parent().parent().parent().return_results = (
-                self.parent().parent().parent().manager.list([])
+            self.main.return_results = (
+                self.main.manager.list([])
             )
-            self.parent().parent().parent().set_buttons_running()
-            self.parent().parent().parent().running = True
-            self.runner_input = self.parent().parent().parent().get_input_params()
-            self.parent().parent().parent().getter.start()
-            self.o = Optimizer(**self.runner_input)
+            self.main.set_buttons_running()
+            self.main.running = True
+            self.runner_input = self.main.get_input_params()
+            self.main.getter.start()
+            self.o = Optimizer(self.runner_input)
             if run_pitch:
-                self.p = Process(target=self.o.optimize_pitch, kwargs=self.runner_input)
+                self.p = Process(target=self.o.optimize_pitch, args=[self.runner_input])
             else:
                 self.p = Process(
-                    target=self.o.optimize_angles, kwargs=self.runner_input
+                    target=self.o.optimize_angles, args=[self.runner_input]
                 )
             self.p.start()
         else:
@@ -710,7 +738,7 @@ class Optimization(QWidget):
             msg.setDetailedText(
                 "Currently tha value MainWindow.running is %s, \
                 it should be False."
-                % str(self.parent().parent().parent().running)
+                % str(self.main.running)
             )
 
     def clear(self):
@@ -728,16 +756,16 @@ class Optimization(QWidget):
         if hasattr(self, "p"):
             if self.p.is_alive():
                 self.p.terminate()
-                self.parent().parent().parent().running = False
-                self.parent().parent().parent().getter.__del__()
+                self.main.running = False
+                self.main.getter.__del__()
                 self.done(True)
 
     def done(self, terminated=False):
-        self.parent().parent().parent().emitter_add.disconnect()
-        self.parent().parent().parent().emitter_done.disconnect()
-        self.parent().parent().parent().set_buttons_await()
-        self.parent().parent().parent().running = False
-        self.parent().parent().parent().getter.__del__()
+        self.main.emitter_add.disconnect()
+        self.main.emitter_done.disconnect()
+        self.main.set_buttons_await()
+        self.main.running = False
+        self.main.getter.__del__()
         if not terminated:
             self.p.join()
 
@@ -760,9 +788,8 @@ class Optimization(QWidget):
             elif v == None:
                 pass
             else:
-                v = float(v)
+                v = to_float(v)
             out[k] = v
-        # print(out)
         return out
 
     def set_settings(self, inp_dict):
@@ -785,7 +812,6 @@ class ThreadGetter(QThread):
 
     def run(self):
         print("Running Getter.")
-        # print("This was already in:",self.parent().return_print)
         while True:
             if len(self.parent().return_print) > 0:
                 t = self.parent().return_print.pop(0)

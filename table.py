@@ -1,7 +1,7 @@
 __author__ = "Miha Smrekar"
 __credits__ = ["Miha Smrekar"]
 __license__ = "GPL"
-__version__ = "0.2.5"
+__version__ = "0.2.6"
 __maintainer__ = "Miha Smrekar"
 __email__ = "miha.smrekar9@gmail.com"
 __status__ = "Development"
@@ -198,8 +198,8 @@ class Table(QWidget):
             delete_row = menu.addAction("delete row(s)")
             delete_column = menu.addAction("delete column(s)")
         else:
-            delete_row = None
-            delete_column = None
+            delete_row = False
+            delete_column = False
         
         insert_row = menu.addAction("insert row")
         insert_column = menu.addAction("insert column")

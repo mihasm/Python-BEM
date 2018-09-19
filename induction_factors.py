@@ -1,7 +1,7 @@
 __author__ = "Miha Smrekar"
 __credits__ = ["Miha Smrekar"]
 __license__ = "GPL"
-__version__ = "0.2.5"
+__version__ = "0.2.6"
 __maintainer__ = "Miha Smrekar"
 __email__ = "miha.smrekar9@gmail.com"
 __status__ = "Development"
@@ -116,6 +116,21 @@ def newLosses(cn, ct, B, r, R, phi, lambda_r, Rhub=None):
     ct = ct * Fl
     return cn, ct
 
+# noinspection PyUnusedLocal,PyUnusedLocal
+def fInductionCoefficients0(F, phi, sigma, cn, ct, *args, **kwargs):
+    """
+    METHOD FROM http://orbit.dtu.dk/files/86307371/A_Detailed_Study_of_the_Rotational.pdf
+
+    :param F: loss factors
+    :param phi: relative wind [rad]
+    :param sigma: solidity
+    :param cn: normal coefficient
+    :param ct: thrust coefficient
+    :return: axial induction factor, tangential induction factor
+    """
+    a = (sigma * cn) / (4 * F * sin(phi) ** 2 + sigma * cn)
+    aprime = (sigma * ct) / (4 * F * sin(phi) * cos(phi) - sigma * ct)
+    return a, aprime
 
 # noinspection PyUnusedLocal,PyUnusedLocal
 def fInductionCoefficients1(F, phi, sigma, cn, ct, *args, **kwargs):
@@ -413,8 +428,52 @@ def cascadeEffectsCorrection(alpha, v, omega, r, R, c, B, a, aprime):
 
     return out
 
+def calc_rotational_augmentation_correction(alpha,alpha_zero,Cl,Cd,omega,r,R,c,theta,v,Vrel,method=0):
+    """
+    METHODS FROM http://orbit.dtu.dk/files/86307371/A_Detailed_Study_of_the_Rotational.pdf
+    """
+
+    fl=0
+    fd=0
+
+    if method == 1:
+        #Snel et al.
+        a_s = 3
+        h = 2
+        fl=a_s*(c/r)**h
+        fd=0
+    if method == 2:
+        #Du & Selig
+        gama = omega*R/sqrt(abs(v**2-(omega*R)**2))
+        ad,dd,bd=1,1,1
+        fl=1/(2*pi)*(1.6*(c/r)/0.1267*(ad-(c/r)**(dd*R/gama/r))/(bd+(c/r)**(dd*R/gama/r))-1)
+        fd=-1/(2*pi)*(1.6*(c/r)/0.1267*(ad-(c/r)**(dd*R/gama/r/2))/(bd+(c/r)**(dd*R/gama/r/2))-1)
+    if method == 3:
+        #Chaviaropoulos and Hansen
+        ah=2.2
+        h=1.3
+        n=4
+        fl=ah*(c/r)**h*cos(theta)**n
+        fd = fl
+    if method == 4:
+        #Lindenburg
+        al=3.1
+        h=2
+        fl=al*(omega*R/Vrel)**2*(c/r)**h
+        fd=0
+    if method == 5:
+        # Dumitrescu and Cardos
+        gd=1.25
+        fl=(1-exp(-gd/(r/c-1)))
+        fd=0
+    #Cl_3D = Cl + fl*(2*pi*sin(alpha-alpha_zero)-Cl)
+    Cl_3D = Cl + fl*Cl
+    Cd_3D = Cd + fd*Cd
+    return Cl_3D,Cd_3D
 
 def calculate_coefficients(method, input_arguments):
+    if method == 0:
+        return fInductionCoefficients0(**input_arguments)
     if method == 1:
         return fInductionCoefficients1(**input_arguments)
     # if method == 2:
@@ -436,43 +495,62 @@ def calculate_coefficients(method, input_arguments):
     if method == 10:
         return fInductionCoefficients10(**input_arguments)
 
-
 class Calculator:
     """
     Class for calculation of induction factors using BEM theory.
     """
 
-    def __init__(self, interpolate_cL, interpolate_cD):
+    def __init__(self, interpolate_cL, interpolate_cD, inverse_f_c_L):
         self.f_c_L = interpolate_cL
         self.f_c_D = interpolate_cD
+        self.inverse_f_c_L = inverse_f_c_L
+        self.alpha_zero = self.inverse_f_c_L(0.0)
 
-    def convert_to_array(self, chord_angle, c, r):
+    def printer(self,locals):
+        return_print=[]
+        return_print.append("----Running induction calculation for following parameters----\n")
+        for k,v in locals.items():
+            if isinstance(v,dict):
+                for k2,v2 in v.items():
+                    _p2 = "    "+k2+":"+str(v2)+"\n"
+                    return_print.append(_p2)
+            elif isinstance(v,list):
+                for l in v:
+                    _l = "    "+l+"\n"
+                    return_print.append(_l)
+            else:
+                _p = k+":"+str(v)+"\n"
+                return_print.append(_p)
+        return_print.append("--------\n")
+        return return_print
+
+    def convert_to_array(self, theta, c, r):
         """
         Converts integers or floats into numpy arrays.
-        :param chord_angle: int or float
+        :param theta: int or float
         :param c: int or float
         :param r: int or float
-        :return: np.array(chord_angle),np.array(c),np.array(r)
+        :return: np.array(theta),np.array(c),np.array(r)
         """
         if (
-            isinstance(chord_angle, numpy.ndarray)
+            isinstance(theta, numpy.ndarray)
             and isinstance(c, numpy.ndarray)
             and isinstance(r, numpy.ndarray)
         ):
-            return chord_angle, c, r
+            return theta, c, r
         else:
             if (
-                isinstance(chord_angle, numbers.Real)
+                isinstance(theta, numbers.Real)
                 and isinstance(c, numbers.Real)
                 and isinstance(r, numbers.Real)
             ):
-                return numpy.array([chord_angle]), numpy.array([c]), numpy.array([r])
+                return numpy.array([theta]), numpy.array([c]), numpy.array([r])
             return None
 
     # noinspection PyUnusedLocal,PyUnusedLocal
     def run_array(
         self,
-        chord_angle,
+        theta,
         B,
         c,
         r,
@@ -481,20 +559,24 @@ class Calculator:
         Rhub,
         rpm,
         v,
-        print_out=False,
-        tip_loss=False,
-        hub_loss=False,
-        new_tip_loss=False,
-        new_hub_loss=False,
-        cascade_correction=False,
-        max_iterations=100,
-        convergence_limit=0.001,
-        rho=1.225,
-        method=10,
-        relaxation_factor=0.3,
-        print_all=False,
-        return_print=None,
-        return_results=None,
+        method,
+        print_out,
+        tip_loss,
+        hub_loss,
+        new_tip_loss,
+        new_hub_loss,
+        cascade_correction,
+        max_iterations,
+        convergence_limit,
+        rho,
+        relaxation_factor,
+        print_all,
+        return_print,
+        return_results,
+        rotational_augmentation_correction,
+        rotational_augmentation_correction_method,
+        *args,
+        **kwargs,
     ):
         """
         Calculates induction factors using standard iteration methods.
@@ -524,7 +606,7 @@ class Calculator:
         :param v: wind speed [m]
         :param r: sections radiuses [m]
         :param c: sections chord lengths [m]
-        :param chord_angle: twist - theta [deg]
+        :param theta: twist - theta [deg]
         :param rpm: rotational velocity [rpm]
         :param dr: np array of section heights [m]
         :param R: outer (tip) radius [m]
@@ -532,13 +614,12 @@ class Calculator:
         :param B: number of blades
         :return: dicitonary with results
         """
+        if print_all:
+            _a = self.printer(locals())
+            return_print+=_a
 
-        # convert numbers to arrays
-        if return_print is None:
-            return_print = []
-        if return_results is None:
-            return_results = []
-        chord_angle, c, r = self.convert_to_array(chord_angle, c, r)
+
+        theta, c, r = self.convert_to_array(theta, c, r)
 
         # create results array placeholders
         results = {}
@@ -555,23 +636,11 @@ class Calculator:
         # max_iterations = 100
         # convergence_limit = 0.001
 
-        if print_out:
-            _p = (
-                "Running iterative method for v "
-                + str(v)
-                + " rpm "
-                + str(rpm)
-                + " TSR "
-                + str(TSR)
-            )
-            return_print.append(_p)
-            # parent.analysis.textEdit.insertPlainText(_p+"\n")
-
-        for n in range(len(chord_angle)):
+        for n in range(len(theta)):
             # grab local radius, chord length and twist angle
             _r = r[n]
             _c = c[n]
-            theta = radians(chord_angle[n])
+            _theta = radians(theta[n])
 
             # local speed ratio
             lambda_r = omega * _r / v
@@ -580,7 +649,7 @@ class Calculator:
             # sigma=_c*B/(2*pi*_r)
 
             # solidity - implemented in QBlade/XBEM/BDATA.cpp
-            sigma = _c * B / (2 * pi * _r) * abs(cos(theta))
+            sigma = _c * B / (2 * pi * _r) * abs(cos(_theta))
 
             # Coning angle (PROPX: Definitions,Derivations, Data Flow, p.22)
             psi = 0.0
@@ -588,7 +657,7 @@ class Calculator:
             # initial guess
             a = 0.0
             aprime = 0.0
-            # a,aprime = guessInductionFactors(lambda_r,sigma,theta,self.f_c_L)
+            # a,aprime = guessInductionFactors(lambda_r,sigma,_theta,self.f_c_L)
 
             # iterations counter
             i = 0
@@ -626,7 +695,7 @@ class Calculator:
                     F = F * newHubLoss(B, _r, R, phi, lambda_r)
 
                 # angle of attack
-                alpha = phi - theta
+                alpha = phi - _theta
 
                 if cascade_correction:
                     alpha = cascadeEffectsCorrection(
@@ -644,6 +713,26 @@ class Calculator:
                 # lift and drag coefficients
                 Cl, Cd = self.f_c_L(degrees(alpha)), self.f_c_D(degrees(alpha))
 
+                if rotational_augmentation_correction:
+                    if print_all:
+                        return_print.append("Cl:"+str(Cl)+"Cd:"+str(Cd)+"\n")
+                    Cl,Cd = calc_rotational_augmentation_correction(
+                        alpha=alpha,
+                        alpha_zero=self.alpha_zero,
+                        Cl=Cl,
+                        Cd=Cd,
+                        omega=omega,
+                        r=_r,
+                        R=R,
+                        c=_c,
+                        theta=_theta,
+                        v=v,
+                        Vrel=Vrel_norm,
+                        method=rotational_augmentation_correction_method,
+                    )
+                    if print_all:
+                        return_print.append("Cl_cor:"+str(Cl)+"Cd_cor:"+str(Cd)+"\n")
+                        return_print.append("--\n")
                 # normal and thrust coefficients
                 cn = Cl * cos(phi) + Cd * sin(phi)
                 ct = Cl * sin(phi) - Cd * cos(phi)
@@ -673,6 +762,8 @@ class Calculator:
                     "omega": omega,
                     "v": v,
                     "a_last": a_last,
+                    "alpha_zero":self.alpha_zero,
+                    "method":method,
                 }
 
                 if print_all:
@@ -743,8 +834,8 @@ class Calculator:
                     + str(degrees(phi))
                     + "\n"
                     + prepend
-                    + "        theta: "
-                    + str(degrees(theta))
+                    + "        _theta: "
+                    + str(degrees(_theta))
                     + "\n"
                     + prepend
                     + "        alpha: "
@@ -813,5 +904,5 @@ class Calculator:
         results["B"] = B
         results["dr"] = dr
         results["c"] = c
-        results["theta"] = chord_angle
+        results["theta"] = theta
         return results

@@ -1,7 +1,7 @@
 __author__ = "Miha Smrekar"
 __credits__ = ["Miha Smrekar"]
 __license__ = "GPL"
-__version__ = "0.2.5"
+__version__ = "0.2.6"
 __maintainer__ = "Miha Smrekar"
 __email__ = "miha.smrekar9@gmail.com"
 __status__ = "Development"
@@ -133,3 +133,7 @@ def interpolate_geom(r,c,theta,num=None,linspace_interp=False):
     dr = r-r_shifted
     return r,c,theta,dr
 
+def to_float(inp):
+    if isinstance(inp,str):
+        inp = inp.replace(",",".")
+    return float(inp)
