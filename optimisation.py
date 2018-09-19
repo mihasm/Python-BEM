@@ -72,6 +72,7 @@ class Optimizer:
         :param _delta: change of twist - theta - for given section [deg]
         :return: True, False or None
         """
+
         power_orig = self._power(wind_speed=_wind_speed, rpm=_rpm)
         power_up = self._power(_r=_r, _delta=_delta, wind_speed=_wind_speed, rpm=_rpm)
         power_down = self._power(
@@ -90,6 +91,9 @@ class Optimizer:
         Optimizes angles of attack by changing twist angles.
         Prints results.
         """
+        chord_angles_orig = numpy.copy(inp_args["theta"])
+        chord_angles = numpy.copy(inp_args["theta"])
+
         power_preliminary = self._power(
             wind_speed=inp_args["target_speed"], rpm=inp_args["target_rpm"]
         )
@@ -106,6 +110,7 @@ class Optimizer:
             + str(inp_args["R"])
             + " [m]\n"
             ", hub radius:" + str(inp_args["Rhub"]) + " [m]\n"
+            + "angles "+str(chord_angles_orig)+"\n"
         )
 
         return_print.append("power at start is " + str(power_preliminary) + "\n")
@@ -169,6 +174,7 @@ class Optimizer:
                                 + "\n"
                             )
                             break
+                        chord_angles[r]=inp_args["theta"][r]
                         return_print.append(
                             "        New power "
                             + str(power)
@@ -198,14 +204,15 @@ class Optimizer:
         )
         percentage_increase = power_new / power_preliminary * 100
         return_print.append("Percentage " + str(percentage_increase) + "\n")
-        old_angles = self.chord_angles_orig
-        new_angles = self.chord_angles
+        old_angles = chord_angles_orig
+        new_angles = chord_angles
         return_print.append("Old angles " + str(old_angles) + "\n")
         return_print.append("New angles " + str(new_angles) + "\n")
         return_print.append("----------------------" + "\n")
 
         # reset chord angles so other functions work properly
-        self.chord_angles = numpy.copy(self.chord_angles_orig)
+        #self.chord_angles = numpy.copy(self.chord_angles_orig)
+        inp_args["theta"] = chord_angles_orig
 
         return_print.append("!!!!EOF!!!!")
         return new_angles
