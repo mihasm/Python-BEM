@@ -25,6 +25,8 @@ from PyQt5.QtWidgets import (
     QCheckBox,
     QStyleFactory,
     QMessageBox,
+    QAction,
+    QFileDialog
 )
 from numpy import array
 from scipy import interpolate
@@ -39,6 +41,7 @@ from utils import interpolate_geom, to_float
 
 from multiprocessing import Process, Manager
 import multiprocessing
+import json
 
 
 class MainWindow(QMainWindow):
@@ -47,6 +50,23 @@ class MainWindow(QMainWindow):
 
     def __init__(self, width, height):
         super().__init__()
+
+        self.statusBar()
+        mainMenu = self.menuBar()
+        fileMenu = mainMenu.addMenu('&File')
+        saveFile = QAction("&Save File", self)
+        saveFile.setShortcut("Ctrl+S")
+        saveFile.setStatusTip('Save File')
+        saveFile.triggered.connect(self.file_save)
+        loadFile = QAction("&Load File", self)
+        loadFile.setShortcut("Ctrl+L")
+        loadFile.setStatusTip('Load File')
+        loadFile.triggered.connect(self.file_load)
+        fileMenu.addAction(saveFile)
+        fileMenu.addAction(loadFile)
+
+
+
         self.screen_width = width
         self.screen_height = height
         self.setGeometry(width * 0.125, height * 0.125, width * 0.75, height * 0.75)
@@ -73,9 +93,34 @@ class MainWindow(QMainWindow):
 
         self.show()
 
+    def file_save(self):
+        name = QFileDialog.getSaveFileName(self, 'Save File')[0]
+        if name != "":
+            file = open(name,'w')
+            d = self.get_all_settings()
+            d_to_save= {}
+            for k,v in d.items():
+                if isinstance(v,numpy.ndarray):
+                    d_to_save[k]=v.tolist()
+                elif isinstance(v,(float,int,list,dict,str,bool)):
+                    d_to_save[k]=v
+                else:
+                    print("Could not save key",k,"value",v)
+            json_d = json.dumps(d_to_save)
+            file.write(json_d)
+            file.close()
+
+    def file_load(self):
+        l = QFileDialog.getOpenFileName(self,"Load File")[0]
+        if l != "":
+            with open(l,"r") as fp:
+                data = json.load(fp)
+            self.set_all_settings(data)
+        
+
     def get_all_settings(self):
-        properties = self.wind_turbine_properties.get_properties()
-        curves = self.curves.get_curves()
+        properties = self.wind_turbine_properties.get_settings()
+        curves = self.curves.get_settings()
         settings = self.analysis.get_settings()
         opt_settings = self.optimization.get_settings()
         out = {**properties, **curves, **settings, **opt_settings}
@@ -89,6 +134,12 @@ class MainWindow(QMainWindow):
         out["r_in"], out["c_in"], out["theta_in"] = _r, _c, _theta
         print(out)
         return out
+
+    def set_all_settings(self,inp_dict):
+        self.analysis.set_settings(inp_dict)
+        self.curves.set_settings(inp_dict)
+        self.optimization.set_settings(inp_dict)
+        self.wind_turbine_properties.set_settings(inp_dict)
 
     def get_input_params(self):
         settings = self.get_all_settings()
@@ -152,9 +203,9 @@ class WindTurbineProperties(QWidget):
         self.B.setText("5")
         fbox.addRow(_B, self.B)
 
-        self.set_properties(SET_INIT)
+        self.set_settings(SET_INIT)
 
-    def get_properties(self):
+    def get_settings(self):
         out_properties = {
             "Rhub": to_float(self.Rhub.text()),
             "R": to_float(self.R.text()),
@@ -170,10 +221,9 @@ class WindTurbineProperties(QWidget):
         out_properties["r"] = numpy.array(r)
         out_properties["c"] = numpy.array(c)
         out_properties["theta"] = numpy.array(theta)
-        # out_properties["dr"] = numpy.array(dr)
         return out_properties
 
-    def set_properties(self, dict_settings):
+    def set_settings(self, dict_settings):
         if "Rhub" in dict_settings:
             t = str(dict_settings["Rhub"])
             self.Rhub.setText(t)
@@ -215,9 +265,9 @@ class Curves(QWidget):
         self.table_cd.set_labels(["AoA", "Cd"])
         grid.addWidget(self.table_cd, 1, 2)
 
-        self.set_curves(SET_INIT)
+        self.set_settings(SET_INIT)
 
-    def get_curves(self):
+    def get_settings(self):
         AoA_cL = []
         cL = []
         AoA_cD = []
@@ -262,7 +312,7 @@ class Curves(QWidget):
             "inverse_f_c_L": inverse_f_c_L,
         }
 
-    def set_curves(self, dict_settings):
+    def set_settings(self, dict_settings):
         array_cl = []
         for r in range(len(dict_settings["AoA_cL"])):
             array_cl.append(
@@ -372,10 +422,10 @@ class Analysis(QWidget):
                 form.textChanged.connect(self.check_state)
                 form.textChanged.emit(form.text())
                 form.insert(str(value))
-
+            key_orig = key
             key = self.settings_to_name[key]
             self.fbox.addRow(key, form)
-            self.form_list.append([key, form])
+            self.form_list.append([key, form, key_orig])
 
         self.emptyLabel = QLabel(" ")
         self.buttonRun.clicked.connect(self.run)
@@ -397,7 +447,7 @@ class Analysis(QWidget):
 
     def check_forms(self):
         out = ""
-        for n, f in self.form_list:
+        for n, f, n_short in self.form_list:
             if isinstance(f, QLineEdit):
                 state = self.validator.validate(f.text(), 0)[0]
                 if state == QtGui.QValidator.Acceptable:
@@ -424,7 +474,7 @@ class Analysis(QWidget):
 
     def get_settings(self):
         out_settings = {}
-        for name, value in self.form_list:
+        for name, value, name_short in self.form_list:
             name = self.name_to_settings[name]
             if isinstance(value, QCheckBox):
                 value = bool(value.checkState())
@@ -434,6 +484,17 @@ class Analysis(QWidget):
                 value = int(value.currentText())
             out_settings[name] = value
         return out_settings
+
+    def set_settings(self,inp_dict):
+        for name_long,item,name in self.form_list:
+            if name in inp_dict:
+                if isinstance(item,QComboBox):
+                    item.setCurrentIndex(inp_dict[name])
+                elif isinstance(item,QLineEdit):
+                    item.setText(str(inp_dict[name]))
+                elif isinstance(item,QCheckBox):
+                    item.setChecked(inp_dict[name])
+
 
     def run(self):
         self.clear()
