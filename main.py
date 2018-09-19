@@ -50,7 +50,7 @@ class MainWindow(QMainWindow):
         self.screen_width = width
         self.screen_height = height
         self.setGeometry(width * 0.125, height * 0.125, width * 0.75, height * 0.75)
-        self.setWindowTitle("BEM analiza v%s"%__version__)
+        self.setWindowTitle("BEM analiza v%s" % __version__)
         self.tab_widget = TabWidget(self)
         self.setCentralWidget(self.tab_widget)
 
@@ -73,20 +73,20 @@ class MainWindow(QMainWindow):
 
         self.show()
 
-        
-
     def get_all_settings(self):
         properties = self.wind_turbine_properties.get_properties()
         curves = self.curves.get_curves()
         settings = self.analysis.get_settings()
         opt_settings = self.optimization.get_settings()
         out = {**properties, **curves, **settings, **opt_settings}
-        _r=out["r"]
-        _c=out["c"]
-        _theta=out["theta"]
-        r,c,theta,dr = interpolate_geom(_r,_c,_theta,out["num_interp"],out["linspace_interp"])
-        out["r"],out["c"],out["theta"],out["dr"] = r,c,theta,dr
-        out["r_in"],out["c_in"],out["theta_in"] = _r,_c,_theta
+        _r = out["r"]
+        _c = out["c"]
+        _theta = out["theta"]
+        r, c, theta, dr = interpolate_geom(
+            _r, _c, _theta, out["num_interp"], out["linspace_interp"]
+        )
+        out["r"], out["c"], out["theta"], out["dr"] = r, c, theta, dr
+        out["r_in"], out["c_in"], out["theta_in"] = _r, _c, _theta
         print(out)
         return out
 
@@ -170,7 +170,7 @@ class WindTurbineProperties(QWidget):
         out_properties["r"] = numpy.array(r)
         out_properties["c"] = numpy.array(c)
         out_properties["theta"] = numpy.array(theta)
-        #out_properties["dr"] = numpy.array(dr)
+        # out_properties["dr"] = numpy.array(dr)
         return out_properties
 
     def set_properties(self, dict_settings):
@@ -183,11 +183,7 @@ class WindTurbineProperties(QWidget):
         if "B" in dict_settings:
             t = str(dict_settings["B"])
             self.B.setText(t)
-        if (
-            "r" in dict_settings
-            and "c" in dict_settings
-            and "theta" in dict_settings
-        ):
+        if "r" in dict_settings and "c" in dict_settings and "theta" in dict_settings:
             _array = []
             for r in range(len(dict_settings["r"])):
                 _r = dict_settings["r"][r]
@@ -233,7 +229,7 @@ class Curves(QWidget):
                 _AoA = to_float(r[0])
                 _cL = to_float(r[1])
                 if _AoA > 90:
-                    _AoA = _AoA-180
+                    _AoA = _AoA - 180
                 AoA_cL.append(_AoA)
                 cL.append(_cL)
 
@@ -243,7 +239,7 @@ class Curves(QWidget):
                 _AoA = to_float(r[0])
                 _cD = to_float(r[1])
                 if _AoA > 90:
-                    _AoA = _AoA-180
+                    _AoA = _AoA - 180
                 AoA_cD.append(_AoA)
                 cD.append(_cD)
 
@@ -263,7 +259,7 @@ class Curves(QWidget):
             "AoA_cD": AoA_cD,
             "cL": cL,
             "cD": cD,
-            "inverse_f_c_L" : inverse_f_c_L,
+            "inverse_f_c_L": inverse_f_c_L,
         }
 
     def set_curves(self, dict_settings):
@@ -293,14 +289,14 @@ class Analysis(QWidget):
             "new_tip_loss": False,
             "new_hub_loss": False,
             "cascade_correction": False,
-            "rotational_augmentation_correction":False,
-            "rotational_augmentation_correction_method":1,
+            "rotational_augmentation_correction": False,
+            "rotational_augmentation_correction_method": 1,
             "max_iterations": 100,
             "convergence_limit": 0.001,
             "rho": 1.225,
             "method": 10,
-            "linspace_interp":False,
-            "num_interp":25,
+            "linspace_interp": False,
+            "num_interp": 25,
             "v_min": 3,
             "v_max": 20,
             "v_num": 10,
@@ -332,9 +328,9 @@ class Analysis(QWidget):
             "relaxation_factor": "Relaxation factor",
             "print_all": "Print every iteration [debug]",
             "num_interp": "Number of sections (interp)",
-            "linspace_interp":"Custom number of sections",
-            "rotational_augmentation_correction":"Rot. augmentation cor.",
-            "rotational_augmentation_correction_method":"Rot. augmentation cor. method"
+            "linspace_interp": "Custom number of sections",
+            "rotational_augmentation_correction": "Rot. augmentation cor.",
+            "rotational_augmentation_correction_method": "Rot. augmentation cor. method",
         }
 
         self.name_to_settings = {}
@@ -454,12 +450,8 @@ class Analysis(QWidget):
         self.main.emitter_done.connect(self.done)
 
         if not self.main.running:
-            self.main.return_print = (
-                self.main.manager.list([])
-            )
-            self.main.return_results = (
-                self.main.manager.list([])
-            )
+            self.main.return_print = self.main.manager.list([])
+            self.main.return_results = self.main.manager.list([])
             self.main.set_buttons_running()
             self.main.running = True
             self.runner_input = self.main.get_input_params()
@@ -519,7 +511,7 @@ class Analysis(QWidget):
 class Optimization(QWidget):
     def __init__(self, parent=None):
         super(Optimization, self).__init__(parent)
-        self.main=self.parent()
+        self.main = self.parent()
 
         self.validator = QtGui.QDoubleValidator()
         self.left = QWidget()
@@ -709,12 +701,8 @@ class Optimization(QWidget):
         self.main.emitter_done.connect(self.done)
 
         if not self.main.running:
-            self.main.return_print = (
-                self.main.manager.list([])
-            )
-            self.main.return_results = (
-                self.main.manager.list([])
-            )
+            self.main.return_print = self.main.manager.list([])
+            self.main.return_results = self.main.manager.list([])
             self.main.set_buttons_running()
             self.main.running = True
             self.runner_input = self.main.get_input_params()

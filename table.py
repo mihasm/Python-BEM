@@ -17,7 +17,7 @@ from PyQt5.QtWidgets import (
     QTableWidget,
     QTableWidgetItem,
     QVBoxLayout,
-    QMenu
+    QMenu,
 )
 
 from utils import array_to_csv
@@ -34,14 +34,18 @@ class Table(QWidget):
         self.initUI()
         self.clip = QApplication.clipboard()
         self.set_headers()
-    
+
     def set_headers(self):
         self.horizontal_headers = self.tableWidget.horizontalHeader()
         self.horizontal_headers.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
-        self.horizontal_headers.customContextMenuRequested.connect(self.horizontal_header_popup)
+        self.horizontal_headers.customContextMenuRequested.connect(
+            self.horizontal_header_popup
+        )
         self.vertical_headers = self.tableWidget.verticalHeader()
         self.vertical_headers.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
-        self.vertical_headers.customContextMenuRequested.connect(self.vertical_header_popup)
+        self.vertical_headers.customContextMenuRequested.connect(
+            self.vertical_header_popup
+        )
 
     def set_labels(self, arr):
         self.tableWidget.setHorizontalHeaderLabels(arr)
@@ -161,7 +165,9 @@ class Table(QWidget):
 
     def delete_data(self):
         rows = sorted(set(index.row() for index in self.tableWidget.selectedIndexes()))
-        columns = sorted(set(index.column() for index in self.tableWidget.selectedIndexes()))
+        columns = sorted(
+            set(index.column() for index in self.tableWidget.selectedIndexes())
+        )
         for r in rows:
             for c in columns:
                 self.tableWidget.setItem(r, c, QTableWidgetItem(""))
@@ -200,21 +206,27 @@ class Table(QWidget):
         else:
             delete_row = False
             delete_column = False
-        
+
         insert_row = menu.addAction("insert row")
         insert_column = menu.addAction("insert column")
 
         action = menu.exec_(self.mapToGlobal(event.pos()))
 
-        rows = sorted(set(index.row() for index in self.tableWidget.selectedIndexes()),reverse=True)
-        columns = sorted(set(index.column() for index in self.tableWidget.selectedIndexes()),reverse=True)
+        rows = sorted(
+            set(index.row() for index in self.tableWidget.selectedIndexes()),
+            reverse=True,
+        )
+        columns = sorted(
+            set(index.column() for index in self.tableWidget.selectedIndexes()),
+            reverse=True,
+        )
 
         if action == insert_row:
             if len(rows) == 0:
                 rows.append(0)
             self.tableWidget.insertRow(rows[-1])
             for c in range(self.tableWidget.columnCount()):
-                self.tableWidget.setItem(rows[-1],c, QTableWidgetItem(""))
+                self.tableWidget.setItem(rows[-1], c, QTableWidgetItem(""))
         elif action == delete_row:
             for r in rows:
                 self.tableWidget.removeRow(r)
@@ -223,19 +235,16 @@ class Table(QWidget):
                 columns.append(0)
             self.tableWidget.insertColumn(columns[-1])
             for r in range(self.tableWidget.rowCount()):
-                self.tableWidget.setItem(r,columns[-1], QTableWidgetItem(""))
+                self.tableWidget.setItem(r, columns[-1], QTableWidgetItem(""))
         elif action == delete_column:
             for c in columns:
                 self.tableWidget.removeColumn(c)
-
 
     def horizontal_header_popup(self, position):
         pass
 
     def vertical_header_popup(self, position):
         pass
-
-
 
 
 def draw_table():

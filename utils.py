@@ -115,25 +115,27 @@ def sort_xy(array_x, array_y):
             "Cannot create XY pairs with arrays with different num of elements"
         )
 
-def interpolate_geom(r,c,theta,num=None,linspace_interp=False):
+
+def interpolate_geom(r, c, theta, num=None, linspace_interp=False):
     """
     interpolates c,r,theta with num elements:
     """
-    c_interpolator = interpolate.interp1d(r,c)
-    theta_interpolator = interpolate.interp1d(r,theta)
+    c_interpolator = interpolate.interp1d(r, c)
+    theta_interpolator = interpolate.interp1d(r, theta)
     if linspace_interp:
-        r = numpy.linspace(start=r[0], stop=r[-1], num=num+1)
-    
+        r = numpy.linspace(start=r[0], stop=r[-1], num=num + 1)
+
     c = c_interpolator(r)
     theta = theta_interpolator(r)
     r_shifted = [r[0]]
     for _r in r:
         r_shifted.append(_r)
     r_shifted = array(r_shifted[:-1])
-    dr = r-r_shifted
-    return r,c,theta,dr
+    dr = r - r_shifted
+    return r, c, theta, dr
+
 
 def to_float(inp):
-    if isinstance(inp,str):
-        inp = inp.replace(",",".")
+    if isinstance(inp, str):
+        inp = inp.replace(",", ".")
     return float(inp)

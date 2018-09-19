@@ -61,19 +61,23 @@ class ResultsWindow(QMainWindow):
         t_geom.set_labels(["r", "c", "theta", "dr"])
         self.tab_widget.add_tab_widget(t_geom, "Geometry check")
 
-        #alpha = numpy.linspace(-90, 90, 100)
-        #f_c_L = input_data["f_c_L"]
-        #f_c_D = input_data["f_c_D"]
-        #cL = f_c_L(alpha)
-        #cD = f_c_D(alpha)
-        AoA_cL=input_data["AoA_cL"]
-        AoA_cD=input_data["AoA_cD"]
-        cL=input_data["cL"]
-        cD=input_data["cD"]
+        # alpha = numpy.linspace(-90, 90, 100)
+        # f_c_L = input_data["f_c_L"]
+        # f_c_D = input_data["f_c_D"]
+        # cL = f_c_L(alpha)
+        # cD = f_c_D(alpha)
+        AoA_cL = input_data["AoA_cL"]
+        AoA_cD = input_data["AoA_cD"]
+        cL = input_data["cL"]
+        cD = input_data["cD"]
 
         f = self.tab_widget.add_tab_figure("Cl/Cd check")
-        self.tab_widget.add_2d_plot_to_figure(f, AoA_cL, cL, 121, "cL", "alpha", "cL",look="og")
-        self.tab_widget.add_2d_plot_to_figure(f, AoA_cD, cD, 122, "cD", "alpha", "cD",look="or")
+        self.tab_widget.add_2d_plot_to_figure(
+            f, AoA_cL, cL, 121, "cL", "alpha", "cL", look="og"
+        )
+        self.tab_widget.add_2d_plot_to_figure(
+            f, AoA_cD, cD, 122, "cD", "alpha", "cD", look="or"
+        )
 
         f2 = self.tab_widget.add_tab_figure("Moč in Cp")
         self.tab_widget.add_2d_plot_to_figure(
@@ -82,7 +86,7 @@ class ResultsWindow(QMainWindow):
 
         TSR, CP = sort_xy(results_3d["TSR"], results_3d["cp"])
         self.tab_widget.add_2d_plot_to_figure(
-            f2, TSR, CP, 122, "Cp krivulja", "lambda", "Cp",look="o"
+            f2, TSR, CP, 122, "Cp krivulja", "lambda", "Cp", look="o"
         )
         try:
             if len(X) >= 3 and len(Y) >= 3:
@@ -116,7 +120,7 @@ class ResultsWindow(QMainWindow):
     def closeEvent(self, event):
         for f in self.tab_widget.figures:
             f.clear()
-        event.accept() # let the window close
+        event.accept()  # let the window close
 
     def set_menubar(self):
         mainMenu = self.menuBar()

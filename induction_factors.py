@@ -63,9 +63,9 @@ def newTipLoss(B, r, R, phi, lambda_r):
     f = sin(phi)
     g = (R - r) / r
     Flt = (
-        2
-        / pi
-        * acos(exp(-B / 2 * abs(g / f) * (exp(-0.15 * (B * lambda_r - 21)) + 0.1)))
+            2
+            / pi
+            * acos(exp(-B / 2 * abs(g / f) * (exp(-0.15 * (B * lambda_r - 21)) + 0.1)))
     )
     F = F * Flt
     return F
@@ -85,9 +85,9 @@ def newHubLoss(B, r, Rhub, phi, lambda_r):
     f = sin(phi)
     g = (Rhub - r) / r
     Flt = (
-        2
-        / pi
-        * acos(exp(-B / 2 * abs(g / f) * (exp(-0.15 * (B * lambda_r - 21)) + 0.1)))
+            2
+            / pi
+            * acos(exp(-B / 2 * abs(g / f) * (exp(-0.15 * (B * lambda_r - 21)) + 0.1)))
     )
     F = F * Flt
     return F
@@ -116,6 +116,7 @@ def newLosses(cn, ct, B, r, R, phi, lambda_r, Rhub=None):
     ct = ct * Fl
     return cn, ct
 
+
 # noinspection PyUnusedLocal,PyUnusedLocal
 def fInductionCoefficients0(F, phi, sigma, cn, ct, *args, **kwargs):
     """
@@ -131,6 +132,7 @@ def fInductionCoefficients0(F, phi, sigma, cn, ct, *args, **kwargs):
     a = (sigma * cn) / (4 * F * sin(phi) ** 2 + sigma * cn)
     aprime = (sigma * ct) / (4 * F * sin(phi) * cos(phi) - sigma * ct)
     return a, aprime
+
 
 # noinspection PyUnusedLocal,PyUnusedLocal
 def fInductionCoefficients1(F, phi, sigma, cn, ct, *args, **kwargs):
@@ -180,7 +182,6 @@ def fInductionCoefficients6(F, phi, sigma, cn, Cl, *args, **kwargs):
         to_sqrt = (K * (1 - 2 * ac) + 2) ** 2 + 4 * (K * ac ** 2 - 1)
         if to_sqrt >= 0.0:
             a = 1 + 0.5 * K * (1 - 2 * ac) - 0.5 * sqrt(to_sqrt)
-            # print("Spera:",a_last,a)
     aprime = 1 / (4 * cos(phi) / (sigma * Cl) - 1)
     return a, aprime
 
@@ -256,7 +257,7 @@ def fInductionCoefficients8(Ct, F, phi, sigma, cn, Cl, *args, **kwargs):
 
 # noinspection PyUnusedLocal,PyUnusedLocal,PyUnusedLocal
 def fInductionCoefficients7(
-    aprime_last, F, lambda_r, phi, sigma, Cl, B, c, psi, r, R, v, omega, *args, **kwargs
+        aprime_last, F, lambda_r, phi, sigma, Cl, B, c, psi, r, R, v, omega, *args, **kwargs
 ):
     """
     Calculates induction coefficients using method from
@@ -332,8 +333,8 @@ def fInductionCoefficients9(a_last, F, phi, sigma, cn, Cl, *args, **kwargs):
     if CT > 0.96 * F:
         # Glauert correction
         a = (
-            18 * F - 20 - 3 * sqrt(CT * (50 - 36 * F) + 12 * F * (3 * F - 4)) ** 0.5
-        ) / (36 * F - 50)
+                    18 * F - 20 - 3 * sqrt(CT * (50 - 36 * F) + 12 * F * (3 * F - 4)) ** 0.5
+            ) / (36 * F - 50)
     else:
         a = (1 + 4 * F * sin(phi) ** 2 / (sigma * cn)) ** -1
     aprime = -1 + 4 * F * sin(phi) * cos(phi) / (sigma * Cl)
@@ -363,8 +364,8 @@ def fInductionCoefficients10(Ct, F, lambda_r, phi, sigma, cn, *args, **kwargs):
         a = 1 / (4 * F * sin(phi) ** 2 / (sigma * cn) + 1)
     else:
         a = (
-            18 * F - 20 - 3 * abs(Ct * (50 - 36 * F) + 12 * F * (3 * F - 4)) ** 0.5
-        ) / (36 * F - 50)
+                    18 * F - 20 - 3 * abs(Ct * (50 - 36 * F) + 12 * F * (3 * F - 4)) ** 0.5
+            ) / (36 * F - 50)
 
     aprime = 0.5 * (abs(1 + 4 / (lambda_r ** 2) * a * (1 - a)) ** 0.5 - 1)
 
@@ -412,74 +413,96 @@ def cascadeEffectsCorrection(alpha, v, omega, r, R, c, B, a, aprime):
 
     tmax = 0.02
     delta_alpha_1 = (
-        1
-        / 4
-        * (
-            atan((1 - a) * v / ((1 + a * aprime) * r * omega))
-            - atan(((1 - a) * v) / (r * omega))
-        )
+            1
+            / 4
+            * (
+                    atan((1 - a) * v / ((1 + a * aprime) * r * omega))
+                    - atan(((1 - a) * v) / (r * omega))
+            )
     )
     delta_alpha_2 = (
-        0.109
-        * (B * c * tmax * R * omega / v)
-        / (R * c * sqrt((1 - a) ** 2 + (r * omega / v) ** 2))
+            0.109
+            * (B * c * tmax * R * omega / v)
+            / (R * c * sqrt((1 - a) ** 2 + (r * omega / v) ** 2))
     )
     out = alpha + delta_alpha_1 + delta_alpha_2
 
     return out
 
-def calc_rotational_augmentation_correction(alpha,alpha_zero,Cl,Cd,omega,r,R,c,theta,v,Vrel,method=0):
+
+def calc_rotational_augmentation_correction(
+        alpha, alpha_zero, Cl, Cd, omega, r, R, c, theta, v, Vrel, method=0
+):
     """
     METHODS FROM http://orbit.dtu.dk/files/86307371/A_Detailed_Study_of_the_Rotational.pdf
     """
 
-    fl=0
-    fd=0
+    fl = 0
+    fd = 0
 
     if method == 1:
-        #Snel et al.
+        # Snel et al.
         a_s = 3
         h = 2
-        fl=a_s*(c/r)**h
-        fd=0
+        fl = a_s * (c / r) ** h
+        fd = 0
     if method == 2:
-        #Du & Selig
-        gama = omega*R/sqrt(abs(v**2-(omega*R)**2))
-        ad,dd,bd=1,1,1
-        fl=1/(2*pi)*(1.6*(c/r)/0.1267*(ad-(c/r)**(dd*R/gama/r))/(bd+(c/r)**(dd*R/gama/r))-1)
-        fd=-1/(2*pi)*(1.6*(c/r)/0.1267*(ad-(c/r)**(dd*R/gama/r/2))/(bd+(c/r)**(dd*R/gama/r/2))-1)
+        # Du & Selig
+        gama = omega * R / sqrt(abs(v ** 2 - (omega * R) ** 2))
+        ad, dd, bd = 1, 1, 1
+        fl = (
+                1
+                / (2 * pi)
+                * (
+                        1.6
+                        * (c / r)
+                        / 0.1267
+                        * (ad - (c / r) ** (dd * R / gama / r))
+                        / (bd + (c / r) ** (dd * R / gama / r))
+                        - 1
+                )
+        )
+        fd = (
+                -1
+                / (2 * pi)
+                * (
+                        1.6
+                        * (c / r)
+                        / 0.1267
+                        * (ad - (c / r) ** (dd * R / gama / r / 2))
+                        / (bd + (c / r) ** (dd * R / gama / r / 2))
+                        - 1
+                )
+        )
     if method == 3:
-        #Chaviaropoulos and Hansen
-        ah=2.2
-        h=1.3
-        n=4
-        fl=ah*(c/r)**h*cos(theta)**n
+        # Chaviaropoulos and Hansen
+        ah = 2.2
+        h = 1.3
+        n = 4
+        fl = ah * (c / r) ** h * cos(theta) ** n
         fd = fl
     if method == 4:
-        #Lindenburg
-        al=3.1
-        h=2
-        fl=al*(omega*R/Vrel)**2*(c/r)**h
-        fd=0
+        # Lindenburg
+        al = 3.1
+        h = 2
+        fl = al * (omega * R / Vrel) ** 2 * (c / r) ** h
+        fd = 0
     if method == 5:
         # Dumitrescu and Cardos
-        gd=1.25
-        fl=(1-exp(-gd/(r/c-1)))
-        fd=0
-    #Cl_3D = Cl + fl*(2*pi*sin(alpha-alpha_zero)-Cl)
-    Cl_3D = Cl + fl*Cl
-    Cd_3D = Cd + fd*Cd
-    return Cl_3D,Cd_3D
+        gd = 1.25
+        fl = 1 - exp(-gd / (r / c - 1))
+        fd = 0
+    # Cl_3D = Cl + fl*(2*pi*sin(alpha-alpha_zero)-Cl)
+    Cl_3D = Cl + fl * Cl
+    Cd_3D = Cd + fd * Cd
+    return Cl_3D, Cd_3D
+
 
 def calculate_coefficients(method, input_arguments):
     if method == 0:
         return fInductionCoefficients0(**input_arguments)
     if method == 1:
         return fInductionCoefficients1(**input_arguments)
-    # if method == 2:
-    #   fInductionCoefficients2(**input_arguments)
-    # if method == 3:
-    #   fInductionCoefficients3(**input_arguments)
     if method == 4:
         return fInductionCoefficients4(**input_arguments)
     if method == 5:
@@ -495,6 +518,7 @@ def calculate_coefficients(method, input_arguments):
     if method == 10:
         return fInductionCoefficients10(**input_arguments)
 
+
 class Calculator:
     """
     Class for calculation of induction factors using BEM theory.
@@ -506,20 +530,19 @@ class Calculator:
         self.inverse_f_c_L = inverse_f_c_L
         self.alpha_zero = self.inverse_f_c_L(0.0)
 
-    def printer(self,locals):
-        return_print=[]
-        return_print.append("----Running induction calculation for following parameters----\n")
-        for k,v in locals.items():
-            if isinstance(v,dict):
-                for k2,v2 in v.items():
-                    _p2 = "    "+k2+":"+str(v2)+"\n"
+    def printer(self, _locals):
+        return_print = ["----Running induction calculation for following parameters----\n"]
+        for k, v in _locals.items():
+            if isinstance(v, dict):
+                for k2, v2 in v.items():
+                    _p2 = "    " + k2 + ":" + str(v2) + "\n"
                     return_print.append(_p2)
-            elif isinstance(v,list):
+            elif isinstance(v, list):
                 for l in v:
-                    _l = "    "+l+"\n"
+                    _l = "    " + l + "\n"
                     return_print.append(_l)
             else:
-                _p = k+":"+str(v)+"\n"
+                _p = k + ":" + str(v) + "\n"
                 return_print.append(_p)
         return_print.append("--------\n")
         return return_print
@@ -533,50 +556,50 @@ class Calculator:
         :return: np.array(theta),np.array(c),np.array(r)
         """
         if (
-            isinstance(theta, numpy.ndarray)
-            and isinstance(c, numpy.ndarray)
-            and isinstance(r, numpy.ndarray)
+                isinstance(theta, numpy.ndarray)
+                and isinstance(c, numpy.ndarray)
+                and isinstance(r, numpy.ndarray)
         ):
             return theta, c, r
         else:
             if (
-                isinstance(theta, numbers.Real)
-                and isinstance(c, numbers.Real)
-                and isinstance(r, numbers.Real)
+                    isinstance(theta, numbers.Real)
+                    and isinstance(c, numbers.Real)
+                    and isinstance(r, numbers.Real)
             ):
                 return numpy.array([theta]), numpy.array([c]), numpy.array([r])
             return None
 
     # noinspection PyUnusedLocal,PyUnusedLocal
     def run_array(
-        self,
-        theta,
-        B,
-        c,
-        r,
-        dr,
-        R,
-        Rhub,
-        rpm,
-        v,
-        method,
-        print_out,
-        tip_loss,
-        hub_loss,
-        new_tip_loss,
-        new_hub_loss,
-        cascade_correction,
-        max_iterations,
-        convergence_limit,
-        rho,
-        relaxation_factor,
-        print_all,
-        return_print,
-        return_results,
-        rotational_augmentation_correction,
-        rotational_augmentation_correction_method,
-        *args,
-        **kwargs,
+            self,
+            theta,
+            B,
+            c,
+            r,
+            dr,
+            R,
+            Rhub,
+            rpm,
+            v,
+            method,
+            print_out,
+            tip_loss,
+            hub_loss,
+            new_tip_loss,
+            new_hub_loss,
+            cascade_correction,
+            max_iterations,
+            convergence_limit,
+            rho,
+            relaxation_factor,
+            print_all,
+            return_print,
+            return_results,
+            rotational_augmentation_correction,
+            rotational_augmentation_correction_method,
+            *args,
+            **kwargs,
     ):
         """
         Calculates induction factors using standard iteration methods.
@@ -589,6 +612,8 @@ class Calculator:
         phi - angle of relative wind
         beta - theta
 
+        :param rotational_augmentation_correction_method:
+        :param rotational_augmentation_correction:
         :param return_results: lst, used for returning results to main class
         :param return_print: lst, used for printing using main class
         :param print_all: prints every iteration
@@ -616,8 +641,7 @@ class Calculator:
         """
         if print_all:
             _a = self.printer(locals())
-            return_print+=_a
-
+            return_print += _a
 
         theta, c, r = self.convert_to_array(theta, c, r)
 
@@ -628,13 +652,8 @@ class Calculator:
             results[array] = numpy.array([])
 
         # set constants that are section-independent
-        # rho = 1.225
         omega = rpm * 2 * pi / 60
         TSR = omega * R / v  # tip speed ratio
-
-        # algorithm constants
-        # max_iterations = 100
-        # convergence_limit = 0.001
 
         for n in range(len(theta)):
             # grab local radius, chord length and twist angle
@@ -715,8 +734,8 @@ class Calculator:
 
                 if rotational_augmentation_correction:
                     if print_all:
-                        return_print.append("Cl:"+str(Cl)+"Cd:"+str(Cd)+"\n")
-                    Cl,Cd = calc_rotational_augmentation_correction(
+                        return_print.append("Cl:" + str(Cl) + "Cd:" + str(Cd) + "\n")
+                    Cl, Cd = calc_rotational_augmentation_correction(
                         alpha=alpha,
                         alpha_zero=self.alpha_zero,
                         Cl=Cl,
@@ -731,7 +750,9 @@ class Calculator:
                         method=rotational_augmentation_correction_method,
                     )
                     if print_all:
-                        return_print.append("Cl_cor:"+str(Cl)+"Cd_cor:"+str(Cd)+"\n")
+                        return_print.append(
+                            "Cl_cor:" + str(Cl) + "Cd_cor:" + str(Cd) + "\n"
+                        )
                         return_print.append("--\n")
                 # normal and thrust coefficients
                 cn = Cl * cos(phi) + Cd * sin(phi)
@@ -762,8 +783,8 @@ class Calculator:
                     "omega": omega,
                     "v": v,
                     "a_last": a_last,
-                    "alpha_zero":self.alpha_zero,
-                    "method":method,
+                    "alpha_zero": self.alpha_zero,
+                    "method": method,
                 }
 
                 if print_all:
@@ -772,22 +793,20 @@ class Calculator:
                     )
                     _p = "            i " + str(i) + "\n"
                     return_print.append(_p)
-                    # print(_p)
-                    # parent.analysis.textEdit.insertPlainText(_p+"\n")
+
                     for a in args_to_print:
                         _p = (
-                            "            "
-                            + str(a)
-                            + " "
-                            + str(input_arguments[a])
-                            + "\n"
+                                "            "
+                                + str(a)
+                                + " "
+                                + str(input_arguments[a])
+                                + "\n"
                         )
                         return_print.append(_p)
-                        # print(_p)
-                        # parent.analysis.textEdit.insertPlainText(_p+"\n")
+
                     _p = "             " + "--------" + "\n"
                     return_print.append(_p)
-                    # parent.analysis.textEdit.insertPlainText(_p+"\n")
+
                 # calculate induction coefficients
                 a, aprime = calculate_coefficients(method, input_arguments)
 
@@ -804,14 +823,13 @@ class Calculator:
                 if i >= max_iterations:
                     if print_out:
                         _p = (
-                            "-*-*-*-*-*-*-*-*-*-*-*-*-*-\n"
-                            + "|max iterations exceeded\n"
-                            + "|------>a:"
-                            + str(a)
-                            + " aprime"
-                            + str(aprime)
+                                "-*-*-*-*-*-*-*-*-*-*-*-*-*-\n"
+                                + "|max iterations exceeded\n"
+                                + "|------>a:"
+                                + str(a)
+                                + " aprime"
+                                + str(aprime)
                         )
-                        # print(_p)
                         return_print.append(_p + "\n")
                         prepend = "|"
                     break
@@ -822,56 +840,55 @@ class Calculator:
 
             if print_out:
                 _p = (
-                    prepend
-                    + "    r"
-                    + str(r[n])
-                    + prepend
-                    + "        iters: "
-                    + str(i)
-                    + "\n"
-                    + prepend
-                    + "        phi: "
-                    + str(degrees(phi))
-                    + "\n"
-                    + prepend
-                    + "        _theta: "
-                    + str(degrees(_theta))
-                    + "\n"
-                    + prepend
-                    + "        alpha: "
-                    + str(degrees(alpha))
-                    + "Cl"
-                    + str(Cl)
-                    + "\n"
-                    + prepend
-                    + "        a: "
-                    + str(a)
-                    + "a'"
-                    + str(aprime)
-                    + "\n"
-                    + prepend
-                    + "        dFt: "
-                    + str(dFt)
-                    + "\n"
-                    + prepend
-                    + "        LSR: "
-                    + str(lambda_r)
-                    + "\n"
-                    + prepend
-                    + "        Ct: "
-                    + str(Ct)
-                    + "\n"
-                    + prepend
-                    + "        Vrel: "
-                    + str(Vrel_norm)
-                    + "\n"
-                    + prepend
-                    + "----------------------------"
-                    + "\n"
+                        prepend
+                        + "    r"
+                        + str(r[n])
+                        + prepend
+                        + "        iters: "
+                        + str(i)
+                        + "\n"
+                        + prepend
+                        + "        phi: "
+                        + str(degrees(phi))
+                        + "\n"
+                        + prepend
+                        + "        _theta: "
+                        + str(degrees(_theta))
+                        + "\n"
+                        + prepend
+                        + "        alpha: "
+                        + str(degrees(alpha))
+                        + "Cl"
+                        + str(Cl)
+                        + "\n"
+                        + prepend
+                        + "        a: "
+                        + str(a)
+                        + "a'"
+                        + str(aprime)
+                        + "\n"
+                        + prepend
+                        + "        dFt: "
+                        + str(dFt)
+                        + "\n"
+                        + prepend
+                        + "        LSR: "
+                        + str(lambda_r)
+                        + "\n"
+                        + prepend
+                        + "        Ct: "
+                        + str(Ct)
+                        + "\n"
+                        + prepend
+                        + "        Vrel: "
+                        + str(Vrel_norm)
+                        + "\n"
+                        + prepend
+                        + "----------------------------"
+                        + "\n"
                 )
-                # print(_p)
+
                 return_print.append(_p)
-                # parent.analysis.textEdit.insertPlainText(_p+"\n")
 
             results["a"] = numpy.append(results["a"], a)
             results["a'"] = numpy.append(results["a'"], aprime)
