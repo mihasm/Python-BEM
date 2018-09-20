@@ -114,6 +114,8 @@ class MainWindow(QMainWindow):
             with open(file_path, "r") as fp:
                 data = json.load(fp)
             self.set_all_settings(data)
+        self.analysis.clear()
+        self.optimization.clear()
 
     def get_all_settings(self):
         properties = self.wind_turbine_properties.get_settings()
@@ -186,7 +188,6 @@ class WindTurbineProperties(QWidget):
 
         _name = QLabel("Turbine Name")
         self.name = QLineEdit()
-        self.name.setText("test")
         fbox.addRow(_name, self.name)
 
         _Rhub = QLabel("Hub radius [m]")
@@ -211,6 +212,7 @@ class WindTurbineProperties(QWidget):
             "Rhub": to_float(self.Rhub.text()),
             "R": to_float(self.R.text()),
             "B": int(self.B.text()),
+            "turbine_name":self.name.text(),
         }
         geom_array = self.table_properties.get_values()
         r, c, theta, dr = [], [], [], []
@@ -248,6 +250,12 @@ class WindTurbineProperties(QWidget):
                     ]
                 )
             self.table_properties.createTable(_array)
+        if "turbine_name" in dict_settings:
+            t = str(dict_settings["turbine_name"])
+            self.name.setText(t)
+        else:
+            self.name.setText("")
+
 
 
 class Curves(QWidget):
@@ -490,7 +498,12 @@ class Analysis(QWidget):
         for name_long, item, name in self.form_list:
             if name in inp_dict:
                 if isinstance(item, QComboBox):
-                    item.setCurrentIndex(inp_dict[name])
+                    _index = item.findText(str(inp_dict[name]), QtCore.Qt.MatchFixedString)
+                    if _index >= 0:
+                        index = _index
+                    else:
+                        index = 0
+                    item.setCurrentIndex(index)
                 elif isinstance(item, QLineEdit):
                     item.setText(str(inp_dict[name]))
                 elif isinstance(item, QCheckBox):
@@ -546,14 +559,17 @@ class Analysis(QWidget):
         if not terminated:
             self.p.join()
             results = self.main.return_results[0]
-            inp_params = self.runner_input
-            r = ResultsWindow(
-                self,
-                self.main.screen_width,
-                self.main.screen_width,
-                results,
-                inp_params,
-            )
+            if len(results["v"]) > 0:
+                inp_params = self.runner_input
+                r = ResultsWindow(
+                    self,
+                    self.main.screen_width,
+                    self.main.screen_width,
+                    results,
+                    inp_params,
+                )
+            else:
+                print("Not enough points to print results...")
 
     def clear(self):
         self.textEdit.clear()

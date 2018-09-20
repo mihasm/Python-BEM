@@ -129,7 +129,7 @@ class Optimizer:
                 rpm=inp_args["target_rpm"]
             )
 
-            power_old = power
+            power_best = power
 
             # grab delta
             delta = inp_args["delta_start"]
@@ -186,16 +186,16 @@ class Optimizer:
                         )
 
                         # check whether goal reached
-                        if power <= power_old:
+                        if power <= power_best:
                             p.print("        New power", power,
-                                    "<= old power", power_old)
+                                    "<= old power", power_best)
                             break
                         else:
                             chord_angles[r] = inp_args["theta"][r]
 
                             p.print("        New power", power,
-                                    "> old power", power_old)
-                            power_old = power
+                                    "> old power", power_best)
+                            power_best = power
 
                 p.print("    Changing delta from", abs(delta), "to",
                         abs(delta) * inp_args["decrease_factor"])
@@ -203,16 +203,12 @@ class Optimizer:
                 # decrease delta by given amount
                 delta = abs(delta) * inp_args["decrease_factor"]
 
-        power_new = self._power(
-            wind_speed=inp_args["target_speed"], rpm=inp_args["target_rpm"]
-        )
-
         p.print("power at start was", power_preliminary)
-        p.print("power at end is", power_new)
+        p.print("power at end is", power_best)
         p.print(
-            "Power increase", power_new - power_preliminary
+            "Power increase", power_best - power_preliminary
         )
-        percentage_increase = power_new / power_preliminary * 100
+        percentage_increase = power_best / power_preliminary * 100
         p.print("Percentage",percentage_increase)
         old_angles = chord_angles_orig
         new_angles = chord_angles

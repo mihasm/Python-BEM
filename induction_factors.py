@@ -520,6 +520,7 @@ def calculate_coefficients(method, input_arguments):
         return fInductionCoefficients9(**input_arguments)
     if method == 10:
         return fInductionCoefficients10(**input_arguments)
+    raise Exception("Method is "+str(method))
 
 
 class Calculator:
@@ -548,7 +549,7 @@ class Calculator:
                 _p = k + ":" + str(v)
                 p.print(_p)
         p.print("-------------------------------------------------------------")
-        return return_print
+        return
 
     def convert_to_array(self, theta, c, r):
         """
@@ -645,8 +646,7 @@ class Calculator:
         p = Printer(return_print)
 
         if print_all:
-            _a = self.printer(locals(), p=p)
-            return_print += _a
+            self.printer(locals(), p=p)
 
         theta, c, r = self.convert_to_array(theta, c, r)
 

@@ -76,11 +76,12 @@ def calculate_power_3d(inp_args):
             p.print("    Power:", _results["power"], "[W], Cp:", _results["cp"], ".")
 
             if _results != None and _results["power"]:
-                if 0.0 < _results["cp"] <= 0.6:
-                    for key, value in _results.items():
-                        if key not in results_3d:
-                            results_3d[key] = []
-                        results_3d[key].append(value)
+                for key, value in _results.items():
+                    if key not in results_3d:
+                        results_3d[key] = []
+                for key, value in _results.items():
+                    if 0.0 < _results["cp"] <= 0.6:
+                            results_3d[key].append(value)
 
     for k, v in results_3d.items():
         results_3d[k] = v
