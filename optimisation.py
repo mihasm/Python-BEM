@@ -129,6 +129,8 @@ class Optimizer:
                 rpm=inp_args["target_rpm"]
             )
 
+            power_old = power
+
             # grab delta
             delta = inp_args["delta_start"]
 
@@ -166,7 +168,6 @@ class Optimizer:
                 if run_optimize:
 
                     # save old value of power
-                    power_old = power
 
                     while True:
 
