@@ -1,7 +1,7 @@
 __author__ = "Miha Smrekar"
 __credits__ = ["Miha Smrekar"]
 __license__ = "GPL"
-__version__ = "0.2.7"
+__version__ = "0.2.8"
 __maintainer__ = "Miha Smrekar"
 __email__ = "miha.smrekar9@gmail.com"
 __status__ = "Development"
@@ -9,9 +9,8 @@ __status__ = "Development"
 import numpy
 
 from induction_factors import Calculator
-
-
 from cp_curve import calculate_power
+from utils import Printer
 
 
 class Optimizer:
@@ -25,7 +24,7 @@ class Optimizer:
         self.inp_args = inp_args
 
     def _power(
-        self, wind_speed, rpm, power_only=True, _r=None, _delta=None, add_angle=None
+            self, wind_speed, rpm, power_only=True, _r=None, _delta=None, add_angle=None
     ):
         """
         Helper function that calculates power.
@@ -38,11 +37,14 @@ class Optimizer:
         :param _delta: change of twist - theta - for given section [deg]
         :return: power [W]
         """
+
+        # creates a copy of the dict so that input dict is not affected
         _inp_args = {**self.inp_args}
         _inp_args["v"] = wind_speed
         _inp_args["rpm"] = rpm
+
         if add_angle != None:
-            self.inp_args["add_angle"] = add_angle
+            _inp_args["add_angle"] = add_angle
 
         if _r and _delta:
             chord_angles_copy = numpy.copy(self.inp_args["theta"])
@@ -74,7 +76,8 @@ class Optimizer:
         """
 
         power_orig = self._power(wind_speed=_wind_speed, rpm=_rpm)
-        power_up = self._power(_r=_r, _delta=_delta, wind_speed=_wind_speed, rpm=_rpm)
+        power_up = self._power(_r=_r, _delta=_delta,
+                               wind_speed=_wind_speed, rpm=_rpm)
         power_down = self._power(
             _r=_r, _delta=-_delta, wind_speed=_wind_speed, rpm=_rpm
         )
@@ -91,235 +94,223 @@ class Optimizer:
         Optimizes angles of attack by changing twist angles.
         Prints results.
         """
+        p = Printer(inp_args["return_print"])
+        return_results = inp_args["return_results"]
+
+        # creates copy of original chord angles
         chord_angles_orig = numpy.copy(inp_args["theta"])
         chord_angles = numpy.copy(inp_args["theta"])
 
+        # init power
         power_preliminary = self._power(
-            wind_speed=inp_args["target_speed"], rpm=inp_args["target_rpm"]
-        )
-        return_print = inp_args["return_print"]
-        return_results = inp_args["return_results"]
-        return_print.append(
-            "Optimizing angles for target speed "
-            + str(inp_args["target_speed"])
-            + " [m/s], target rpm "
-            + str(inp_args["target_rpm"])
-            + " [RPM], number of blades:"
-            + str(5)
-            + ", tip radius:"
-            + str(inp_args["R"])
-            + " [m]\n"
-            ", hub radius:" + str(inp_args["Rhub"]) + " [m]\n"
-            + "angles "+str(chord_angles_orig)+"\n"
+            wind_speed=inp_args["target_speed"],
+            rpm=inp_args["target_rpm"]
         )
 
-        return_print.append("power at start is " + str(power_preliminary) + "\n")
+        # printout
+        p.print("---- Optimizing angles ----")
+        p.print("Wind speed:", inp_args["target_speed"], "[m/s]")
+        p.print("       Rpm:", inp_args["target_rpm"], "[RPM]")
+        p.print("    Blades:", 5)
+        p.print("Tip radius:", inp_args["R"], "[m]")
+        p.print("Hub radius:", inp_args["Rhub"], "[m]")
+        p.print("    Angles:", chord_angles_orig)
+        p.print("---------------------------")
+        p.print("Power at start:", power_preliminary, "[W]")
 
+        # for every blade section
         for r in range(len(inp_args["r"])):
-            return_print.append("Currently optimizing section " + str(r) + "\n")
+
+            p.print("Currently optimizing section", r)
+
+            # initial power for comparison
             power = self._power(
-                wind_speed=inp_args["target_speed"], rpm=inp_args["target_rpm"]
+                wind_speed=inp_args["target_speed"],
+                rpm=inp_args["target_rpm"]
             )
+
+            # grab delta
             delta = inp_args["delta_start"]
-            current_delta = 0.0
 
             while True:
-                return_print.append("    Current delta " + str(delta) + "\n")
+
+                p.print("    Current delta", delta)
+
+                # check if delta is smaller than limit
                 if delta < inp_args["min_delta"]:
-                    return_print.append("    Delta limit reached\n")
+                    p.print("    Delta limit reached")
                     break
 
+                # get direction
                 d = self.direction(
                     r,
                     delta,
                     _wind_speed=inp_args["target_speed"],
                     _rpm=inp_args["target_rpm"],
                 )
+
+                # Decide whether to optimize (if any direction is better)
                 run_optimize = False
 
                 if d == True:
-                    return_print.append("    Direction is up\n")
-                    current_delta = delta
+                    p.print("    Direction is up")
+                    delta = +abs(delta)
                     run_optimize = True
                 if d == False:
-                    return_print.append("    Direction is down\n")
-                    current_delta = -delta
+                    p.print("    Direction is down")
+                    delta = -abs(delta)
                     run_optimize = True
                 if d == None:
-                    return_print.append("    No direction provides better results.\n")
+                    p.print("    No direction provides better results.")
 
                 if run_optimize:
+
+                    # save old value of power
                     power_old = power
+
                     while True:
-                        return_print.append(
-                            "        Changing blade section "
-                            + str(r)
-                            + " angle from "
-                            + str(inp_args["theta"][r])
-                            + " to "
-                            + str(inp_args["theta"][r] + current_delta)
-                            + "\n"
-                        )
-                        inp_args["theta"][r] += current_delta
+
+                        p.print("        Changing section", r, "angle from",
+                                inp_args["theta"][r],
+                                "to",
+                                inp_args["theta"][r] + delta
+                                )
+
+                        # increase section r angle by delta
+                        inp_args["theta"][r] += delta
+
                         power = self._power(
                             wind_speed=inp_args["target_speed"],
                             rpm=inp_args["target_rpm"],
                         )
-                        if power <= power_old:
-                            return_print.append(
-                                "        New power "
-                                + str(power)
-                                + " is less than or equal to old power "
-                                + str(power_old)
-                                + "\n"
-                            )
-                            break
-                        chord_angles[r]=inp_args["theta"][r]
-                        return_print.append(
-                            "        New power "
-                            + str(power)
-                            + " is greater than old power "
-                            + str(power_old)
-                            + "\n"
-                        )
-                        power_old = power
-                    return_print.append(
-                        "    Changing delta from "
-                        + str(delta)
-                        + " to "
-                        + str(delta * inp_args["decrease_factor"])
-                        + "\n"
-                    )
 
-                delta = delta * inp_args["decrease_factor"]
+                        # check whether goal reached
+                        if power <= power_old:
+                            p.print("        New power", power,
+                                    "<= old power", power_old)
+                            break
+                        else:
+                            chord_angles[r] = inp_args["theta"][r]
+
+                            p.print("        New power", power,
+                                    "> old power", power_old)
+                            power_old = power
+
+                p.print("    Changing delta from", abs(delta), "to",
+                        abs(delta) * inp_args["decrease_factor"])
+
+                # decrease delta by given amount
+                delta = abs(delta) * inp_args["decrease_factor"]
 
         power_new = self._power(
             wind_speed=inp_args["target_speed"], rpm=inp_args["target_rpm"]
         )
 
-        return_print.append("power at start was " + str(power_preliminary) + "\n")
-        return_print.append("power at end is " + str(power_new) + "\n")
-        return_print.append(
-            "Power increase " + str(power_new - power_preliminary) + "\n"
+        p.print("power at start was", power_preliminary)
+        p.print("power at end is", power_new)
+        p.print(
+            "Power increase", power_new - power_preliminary
         )
         percentage_increase = power_new / power_preliminary * 100
-        return_print.append("Percentage " + str(percentage_increase) + "\n")
+        p.print("Percentage",percentage_increase)
         old_angles = chord_angles_orig
         new_angles = chord_angles
-        return_print.append("Old angles " + str(old_angles) + "\n")
-        return_print.append("New angles " + str(new_angles) + "\n")
-        return_print.append("----------------------" + "\n")
+        p.print("Old angles",old_angles)
+        p.print("New angles",new_angles)
+        p.print("----------------------")
 
         # reset chord angles so other functions work properly
-        #self.chord_angles = numpy.copy(self.chord_angles_orig)
+        # self.chord_angles = numpy.copy(self.chord_angles_orig)
         inp_args["theta"] = chord_angles_orig
-
-        return_print.append("!!!!EOF!!!!")
+        p.print("!!!!EOF!!!!")
         return new_angles
 
     def optimize_pitch(
-        self,inp_args
+            self, inp_args
     ):
         """
         This function calculates the optimum pitch angle of the blade for the given wind speed and rotational velocity.
 
-        :param target_rpm: rotational velocity [RPM]
-        :param target_speed: wind speed [m/s]
-        :param min_add_angle: lower limit [degrees]. Default: -30
-        :param max_add_angle: upper limit [degrees]. Default: +30
-        :param step: step for changing angle [degrees]
+        :param inp_args:
         :return: best angle change [degrees]
         """
-        return_print = inp_args["return_print"]
+        p = Printer(inp_args["return_print"])
         return_results = inp_args["return_results"]
-        chord_angles_orig = inp_args["theta"]
+        chord_angles_orig = numpy.copy(inp_args["theta"])
 
         if inp_args["target_rpm"] != None:
-            return_print.append(
-                "\nOptimizing for wind speed of "
-                + str(inp_args["target_speed"])
-                + "m/s... and rpm "
-                + str(inp_args["target_rpm"])
-                + " RPM\n"
+            p.print(
+                "Optimizing for wind speed of", inp_args[
+                    "target_speed"], "m/s... and rpm", inp_args["target_rpm"], "RPM"
             )
 
-            _power_orig = self._power(
+            power_orig = self._power(
                 wind_speed=inp_args["target_speed"], rpm=inp_args["target_rpm"]
             )
-            return_print.append(
-                "Without turning the blade, the power is: "
-                + "%.2f" % round(_power_orig)
-                + " [W] at wind speed "
-                + str(inp_args["target_speed"])
-                + "[m/s] and rotational velocity "
-                + str(inp_args["target_rpm"])
-                + "[RPM]"
-                + "\n"
+
+            p.print(
+                "Without turning the blade, the power is: ", "%.2f" % round(power_orig), "[W] at wind speed", inp_args[
+                    "target_speed"], "[m/s] and rotational velocity", inp_args["target_rpm"], "[RPM]"
+
             )
 
             current_add_angle = inp_args["min_add_angle"]
             results = []
+
             while current_add_angle <= inp_args["max_add_angle"]:
-                return_print.append(
-                    "Testing pitch: "
-                    + str(current_add_angle)
-                    + "° at rpm "
-                    + str(inp_args["target_rpm"])
-                    + " [RPM]\n"
+                p.print(
+                    "Testing pitch: ", current_add_angle, "° at rpm", inp_args["target_rpm"], "[RPM]"
                 )
-                power = self._power(
+
+                power_new = self._power(
                     add_angle=current_add_angle,
                     wind_speed=inp_args["target_speed"],
                     rpm=inp_args["target_rpm"],
                 )
-                results.append((current_add_angle, power))
+
+                results.append((current_add_angle, power_new))
+                p.print("    power:", power_new)
+                p.print("---")
+
                 current_add_angle += inp_args["angle_step"]
-                return_print.append("    power:" + str(power) + "\n")
-                return_print.append("---\n")
 
-            best_angle, best_power = sorted(results, key=lambda x: x[1], reverse=True)[
-                0
-            ]
+            best_angle, best_power = sorted(
+                results, key=lambda x: x[1], reverse=True)[0]
 
-            return_print.append(
-                "The best angle to turn would be:"
-                + "%.3f" % round(best_angle, 2)
-                + "°, at this pitch angle the power is:"
-                + "%.2f" % round(best_power)
-                + "Watts"
-                + "\n"
+            p.print(
+                "The best angle to turn would be:", "%.3f" % round(
+                    best_angle, 2), "°, at this pitch angle the power is:", "%.2f" % round(best_power), "Watts"
+
             )
-            return_print.append(
-                "That is a power gain of "
-                + "%.2f" % round(best_power - power_orig, 2)
-                + "Watts"
-                + "\n"
+            p.print(
+                "That is a power gain of", "%.2f" % round(
+                    best_power - power_orig, 2), "Watts"
+
             )
-            return_print.append("!!!!EOF!!!!")
+            p.print("!!!!EOF!!!!")
             return best_angle
         else:
-            return_print.append("Getting best power with original pitch.\n")
+            p.print("Getting best power with original pitch.")
             power_orig = (None, None)  # power, rpm
             for rpm in numpy.linspace(start=100, stop=3000, num=30):
                 res = self._power(
-                    wind_speed=inp_args["target_speed"], rpm=rpm, power_only=False
+                    wind_speed=inp_args[
+                        "target_speed"], rpm=rpm, power_only=False
                 )
                 if 0.0 < res["cp"] <= 0.6:
-                    p = res["power"]
-                    return_print.append("    rpm:" + str(rpm) + " p:" + str(p) + "\n")
+                    pwr = res["power"]
+                    p.print("    rpm:", rpm, "p:", pwr)
                     if power_orig[0] == None and power_orig[1] == None:
-                        power_orig = (p, rpm)
-                    elif p > power_orig[0]:
-                        power_orig = (p, rpm)
-            return_print.append("Original power" + str(power_orig) + "\n")
+                        power_orig = (pwr, rpm)
+                    elif pwr > power_orig[0]:
+                        power_orig = (pwr, rpm)
+            p.print("Original power", power_orig)
             current_add_angle = inp_args["min_add_angle"]
             results = []
-            return_print.append("Getting power for different pitches" + "\n")
-            
+            p.print("Getting power for different pitches")
+
             while current_add_angle <= inp_args["max_add_angle"]:
-                return_print.append(
-                    "    Current add angle:" + str(current_add_angle) + "\n"
-                )
+                p.print("    Current add angle:",current_add_angle)
                 best_result_angle = (None, None, None)
                 for rpm in numpy.linspace(start=100, stop=3000, num=30):
                     res = self._power(
@@ -329,45 +320,27 @@ class Optimizer:
                         power_only=False,
                     )
                     if 0.0 < res["cp"] <= 0.6:
-                        p = res["power"]
-                        return_print.append(
-                            "        rpm:" + str(rpm) + "p:" + str(p) + "\n"
-                        )
+                        pwr = res["power"]
+                        p.print("        rpm:",rpm,"p:",str(pwr))
                         if (
-                            best_result_angle[0] == None
-                            and best_result_angle[1] == None
+                                best_result_angle[0] == None
+                                and best_result_angle[1] == None
                         ):
-                            best_result_angle = (p, rpm, current_add_angle)
-                        if p > best_result_angle[0]:
-                            best_result_angle = (p, rpm, current_add_angle)
+                            best_result_angle = (pwr, rpm, current_add_angle)
+                        if pwr > best_result_angle[0]:
+                            best_result_angle = (pwr, rpm, current_add_angle)
                     else:
-                        p = res["power"]
-                        return_print.append(
-                            "        rpm:"
-                            + str(rpm)
-                            + " p:"
-                            + str(p)
-                            + " not possible / bad result"
-                            + "\n"
+                        pwr = res["power"]
+                        p.print(
+                            "        rpm:",rpm, "p:",pwr, "not possible / bad result"
+
                         )
                 results.append(best_result_angle)
                 current_add_angle += inp_args["angle_step"]
             best = sorted(results, key=lambda x: x[0], reverse=True)[0]
-            return_print.append(
-                "Best power is "
-                + str(best[0])
-                + " at rpm "
-                + str(best[1])
-                + " using pitch "
-                + str(best[2])
-                + "°\n"
-            )
-            return_print.append(
-                "That is a power gain of "
-                + str(best[0] - power_orig[0])
-                + " Watts."
-                + "\n"
-            )
+            p.print(
+                "Best power is",best[0], "at rpm",best[1], "using pitch",best[2], "°")
+            p.print("That is a power gain of",best[0] - power_orig[0], "Watts.")
         best_chord_angles = chord_angles_orig + best[2]
-        return_print.append("!!!!EOF!!!!")
+        p.print("!!!!EOF!!!!")
         return best_chord_angles

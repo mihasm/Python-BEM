@@ -1,7 +1,7 @@
 __author__ = "Miha Smrekar"
 __credits__ = ["Miha Smrekar"]
 __license__ = "GPL"
-__version__ = "0.2.7"
+__version__ = "0.2.8"
 __maintainer__ = "Miha Smrekar"
 __email__ = "miha.smrekar9@gmail.com"
 __status__ = "Development"
@@ -88,6 +88,7 @@ class ResultsWindow(QMainWindow):
         self.tab_widget.add_2d_plot_to_figure(
             f2, TSR, CP, 122, "Cp krivulja", "lambda", "Cp", look="o"
         )
+        # noinspection PyBroadException
         try:
             if len(X) >= 3 and len(Y) >= 3:
                 f3 = self.tab_widget.add_tab_figure("3D moč")
@@ -153,20 +154,20 @@ class TabWidget(QtWidgets.QTabWidget):
         return self.figures[-1]
 
     def add_2d_plot_to_figure(
-        self,
-        f,
-        x,
-        y,
-        whi,
-        title=None,
-        x_name=None,
-        y_name=None,
-        x_min=None,
-        x_max=None,
-        y_min=None,
-        y_max=None,
-        look=None,
-        legend=False,
+            self,
+            f,
+            x,
+            y,
+            whi,
+            title=None,
+            x_name=None,
+            y_name=None,
+            x_min=None,
+            x_max=None,
+            y_min=None,
+            y_max=None,
+            look=None,
+            legend=False,
     ):
         ax = f.add_subplot(whi)
         if look:
@@ -186,23 +187,23 @@ class TabWidget(QtWidgets.QTabWidget):
         self.canvas[-1].draw()
 
     def add_surface_plot(
-        self,
-        f,
-        x,
-        y,
-        z,
-        whi,
-        title=None,
-        x_name=None,
-        y_name=None,
-        z_name=None,
-        x_min=None,
-        x_max=None,
-        y_min=None,
-        y_max=None,
-        z_min=None,
-        z_max=None,
-        legend=False,
+            self,
+            f,
+            x,
+            y,
+            z,
+            whi,
+            title=None,
+            x_name=None,
+            y_name=None,
+            z_name=None,
+            x_min=None,
+            x_max=None,
+            y_min=None,
+            y_max=None,
+            z_min=None,
+            z_max=None,
+            legend=False,
     ):
         ax = f.add_subplot(whi, projection="3d")
         p0 = ax.plot_trisurf(x, y, z, cmap=plt.cm.CMRmap)

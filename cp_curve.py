@@ -1,7 +1,7 @@
 __author__ = "Miha Smrekar"
 __credits__ = ["Miha Smrekar"]
 __license__ = "GPL"
-__version__ = "0.2.7"
+__version__ = "0.2.8"
 __maintainer__ = "Miha Smrekar"
 __email__ = "miha.smrekar9@gmail.com"
 __status__ = "Development"
@@ -19,6 +19,7 @@ import numpy
 from mpl_toolkits.mplot3d import Axes3D
 
 from induction_factors import Calculator
+from utils import Printer
 
 a = Axes3D  # only for passing code inspection -> Axes3D needs to be imported
 
@@ -51,42 +52,28 @@ def calculate_power_3d(inp_args):
     :return: dictionary with all results stored as numpy arrays
     """
 
-    return_print = inp_args["return_print"]
+    p = Printer(inp_args["return_print"])
     return_results = inp_args["return_results"]
     results_3d = {}
 
     for v in list(
-        numpy.linspace(
-            start=inp_args["v_min"], stop=inp_args["v_max"], num=inp_args["v_num"]
-        )
+            numpy.linspace(
+                start=inp_args["v_min"], stop=inp_args["v_max"], num=inp_args["v_num"]
+            )
     ):
         for rpm in list(
-            numpy.linspace(
-                start=inp_args["rpm_min"],
-                stop=inp_args["rpm_max"],
-                num=inp_args["rpm_num"],
-            )
+                numpy.linspace(
+                    start=inp_args["rpm_min"],
+                    stop=inp_args["rpm_max"],
+                    num=inp_args["rpm_num"],
+                )
         ):
-            _p = (
-                "\nCalculating power for v: "
-                + str(v)
-                + "[m/s] rpm: "
-                + str(rpm)
-                + "[RPM]\n"
-            )
-            inp_args["v"] = v
-            inp_args["rpm"] = rpm
-            return_print.append(_p)
-            _results = calculate_power(inp_args)
-
-            _p = (
-                "    Power: "
-                + str(_results["power"])
-                + "[W] Cp: "
-                + str(_results["cp"])
-                + "\n"
-            )
-            return_print.append(_p)
+            p.print("Calculating power for v:", v, "[m/s], rpm:", rpm, "[RPM].")
+            _inp_args = {**inp_args}
+            _inp_args["v"] = v
+            _inp_args["rpm"] = rpm
+            _results = calculate_power(_inp_args)
+            p.print("    Power:", _results["power"], "[W], Cp:", _results["cp"], ".")
 
             if _results != None and _results["power"]:
                 if 0.0 < _results["cp"] <= 0.6:
@@ -99,7 +86,7 @@ def calculate_power_3d(inp_args):
         results_3d[k] = v
 
     return_results.append(results_3d)
-    return_print.append("!!!!EOF!!!!")
+    p.print("!!!!EOF!!!!")
     return results_3d
 
 

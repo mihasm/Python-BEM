@@ -1,7 +1,7 @@
 __author__ = "Miha Smrekar"
 __credits__ = ["Miha Smrekar"]
 __license__ = "GPL"
-__version__ = "0.2.7"
+__version__ = "0.2.8"
 __maintainer__ = "Miha Smrekar"
 __email__ = "miha.smrekar9@gmail.com"
 __status__ = "Development"
@@ -139,3 +139,23 @@ def to_float(inp):
     if isinstance(inp, str):
         inp = inp.replace(",", ".")
     return float(inp)
+
+
+class Printer:
+    def __init__(self, arr):
+        self.out = arr
+
+    def print(self, *args):
+        out_str = ""
+        i = 0
+        for a in args:
+            if i > 0:
+                out_str += " "
+            if isinstance(a, float):
+                a = "%.2f" % round(a, 2)
+            out_str += str(a)
+            i += 1
+        print(out_str)
+        out_str += "\n"
+        self.out.append(out_str)
+        return out_str

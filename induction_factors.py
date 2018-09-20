@@ -1,7 +1,7 @@
 __author__ = "Miha Smrekar"
 __credits__ = ["Miha Smrekar"]
 __license__ = "GPL"
-__version__ = "0.2.7"
+__version__ = "0.2.8"
 __maintainer__ = "Miha Smrekar"
 __email__ = "miha.smrekar9@gmail.com"
 __status__ = "Development"
@@ -10,6 +10,7 @@ import numbers
 from math import sin, cos, atan, acos, pi, exp, sqrt, radians, atan2, degrees, tan
 
 import numpy
+from utils import Printer
 
 numpy.seterr(all="raise")
 numpy.seterr(invalid="raise")
@@ -333,7 +334,8 @@ def fInductionCoefficients9(a_last, F, phi, sigma, cn, Cl, *args, **kwargs):
     if CT > 0.96 * F:
         # Glauert correction
         a = (
-                    18 * F - 20 - 3 * sqrt(CT * (50 - 36 * F) + 12 * F * (3 * F - 4)) ** 0.5
+                    18 * F - 20 - 3 * sqrt(CT * (50 - 36 * F) +
+                                           12 * F * (3 * F - 4)) ** 0.5
             ) / (36 * F - 50)
     else:
         a = (1 + 4 * F * sin(phi) ** 2 / (sigma * cn)) ** -1
@@ -364,7 +366,8 @@ def fInductionCoefficients10(Ct, F, lambda_r, phi, sigma, cn, *args, **kwargs):
         a = 1 / (4 * F * sin(phi) ** 2 / (sigma * cn) + 1)
     else:
         a = (
-                    18 * F - 20 - 3 * abs(Ct * (50 - 36 * F) + 12 * F * (3 * F - 4)) ** 0.5
+                    18 * F - 20 - 3 * abs(Ct * (50 - 36 * F) +
+                                          12 * F * (3 * F - 4)) ** 0.5
             ) / (36 * F - 50)
 
     aprime = 0.5 * (abs(1 + 4 / (lambda_r ** 2) * a * (1 - a)) ** 0.5 - 1)
@@ -530,21 +533,21 @@ class Calculator:
         self.inverse_f_c_L = inverse_f_c_L
         self.alpha_zero = self.inverse_f_c_L(0.0)
 
-    def printer(self, _locals):
-        return_print = ["----Running induction calculation for following parameters----\n"]
+    def printer(self, _locals, p):
+        p.print("----Running induction calculation for following parameters----")
         for k, v in _locals.items():
             if isinstance(v, dict):
                 for k2, v2 in v.items():
-                    _p2 = "    " + k2 + ":" + str(v2) + "\n"
-                    return_print.append(_p2)
+                    _p2 = "    " + k2 + ":" + str(v2)
+                    p.print(_p2)
             elif isinstance(v, list):
                 for l in v:
-                    _l = "    " + l + "\n"
-                    return_print.append(_l)
+                    _l = "    " + l
+                    p.print(_l)
             else:
-                _p = k + ":" + str(v) + "\n"
-                return_print.append(_p)
-        return_print.append("--------\n")
+                _p = k + ":" + str(v)
+                p.print(_p)
+        p.print("-------------------------------------------------------------")
         return return_print
 
     def convert_to_array(self, theta, c, r):
@@ -639,15 +642,18 @@ class Calculator:
         :param B: number of blades
         :return: dicitonary with results
         """
+        p = Printer(return_print)
+
         if print_all:
-            _a = self.printer(locals())
+            _a = self.printer(locals(), p=p)
             return_print += _a
 
         theta, c, r = self.convert_to_array(theta, c, r)
 
         # create results array placeholders
         results = {}
-        arrays = ["a", "a'", "cL", "alpha", "phi", "F", "dFt", "M", "TSR", "Ct"]
+        arrays = ["a", "a'", "cL", "alpha",
+                  "phi", "F", "dFt", "M", "TSR", "Ct"]
         for array in arrays:
             results[array] = numpy.array([])
 
@@ -734,7 +740,8 @@ class Calculator:
 
                 if rotational_augmentation_correction:
                     if print_all:
-                        return_print.append("Cl:" + str(Cl) + "Cd:" + str(Cd) + "\n")
+                        p.print("--")
+                        p.print("  Cl:", Cl, "Cd:", Cd)
                     Cl, Cd = calc_rotational_augmentation_correction(
                         alpha=alpha,
                         alpha_zero=self.alpha_zero,
@@ -750,10 +757,8 @@ class Calculator:
                         method=rotational_augmentation_correction_method,
                     )
                     if print_all:
-                        return_print.append(
-                            "Cl_cor:" + str(Cl) + "Cd_cor:" + str(Cd) + "\n"
-                        )
-                        return_print.append("--\n")
+                        p.print("  Cl_cor:", Cl, "Cd_cor:", Cd)
+                        p.print("--")
                 # normal and thrust coefficients
                 cn = Cl * cos(phi) + Cd * sin(phi)
                 ct = Cl * sin(phi) - Cd * cos(phi)
@@ -791,28 +796,19 @@ class Calculator:
                     args_to_print = sorted(
                         [key for key, value in input_arguments.items()]
                     )
-                    _p = "            i " + str(i) + "\n"
-                    return_print.append(_p)
-
+                    p.print("            i", i)
                     for a in args_to_print:
-                        _p = (
-                                "            "
-                                + str(a)
-                                + " "
-                                + str(input_arguments[a])
-                                + "\n"
-                        )
-                        return_print.append(_p)
-
-                    _p = "             " + "--------" + "\n"
-                    return_print.append(_p)
+                        p.print("            ", a, input_arguments[a])
+                    p.print("             --------")
 
                 # calculate induction coefficients
                 a, aprime = calculate_coefficients(method, input_arguments)
 
                 # force calculation
-                dFL = Cl * 0.5 * rho * Vrel_norm ** 2 * _c * dr[n]  # lift force
-                dFD = Cd * 0.5 * rho * Vrel_norm ** 2 * _c * dr[n]  # drag force
+                dFL = Cl * 0.5 * rho * Vrel_norm ** 2 * \
+                      _c * dr[n]  # lift force
+                dFD = Cd * 0.5 * rho * Vrel_norm ** 2 * \
+                      _c * dr[n]  # drag force
                 dFt = dFL * sin(phi) - dFD * cos(phi)  # tangential force
 
                 # check convergence
@@ -822,15 +818,10 @@ class Calculator:
                 # check iterations limit
                 if i >= max_iterations:
                     if print_out:
-                        _p = (
-                                "-*-*-*-*-*-*-*-*-*-*-*-*-*-\n"
-                                + "|max iterations exceeded\n"
-                                + "|------>a:"
-                                + str(a)
-                                + " aprime"
-                                + str(aprime)
-                        )
-                        return_print.append(_p + "\n")
+                        p.print("-*-*-*-*-*-*-*-*-*-*-*-*-*-\n",
+                                "|max iterations exceeded\n",
+                                "|------>a:", a, " aprime", aprime,
+                                )
                         prepend = "|"
                     break
 
@@ -839,56 +830,17 @@ class Calculator:
                 # aprime=aprime_last+0.3*(aprime-aprime_last)
 
             if print_out:
-                _p = (
-                        prepend
-                        + "    r"
-                        + str(r[n])
-                        + prepend
-                        + "        iters: "
-                        + str(i)
-                        + "\n"
-                        + prepend
-                        + "        phi: "
-                        + str(degrees(phi))
-                        + "\n"
-                        + prepend
-                        + "        _theta: "
-                        + str(degrees(_theta))
-                        + "\n"
-                        + prepend
-                        + "        alpha: "
-                        + str(degrees(alpha))
-                        + "Cl"
-                        + str(Cl)
-                        + "\n"
-                        + prepend
-                        + "        a: "
-                        + str(a)
-                        + "a'"
-                        + str(aprime)
-                        + "\n"
-                        + prepend
-                        + "        dFt: "
-                        + str(dFt)
-                        + "\n"
-                        + prepend
-                        + "        LSR: "
-                        + str(lambda_r)
-                        + "\n"
-                        + prepend
-                        + "        Ct: "
-                        + str(Ct)
-                        + "\n"
-                        + prepend
-                        + "        Vrel: "
-                        + str(Vrel_norm)
-                        + "\n"
-                        + prepend
-                        + "----------------------------"
-                        + "\n"
-                )
-
-                return_print.append(_p)
+                p.print(prepend, "    r", _r)
+                p.print(prepend, "        iters: ", i)
+                p.print(prepend, "        phi: ", degrees(phi))
+                p.print(prepend, "        _theta: ", degrees(_theta))
+                p.print(prepend, "        alpha: ", degrees(alpha)), "Cl", str(Cl)
+                p.print(prepend, "        a: ", a, "a'", str(aprime))
+                p.print(prepend, "        dFt: ", dFt)
+                p.print(prepend, "        LSR: ", lambda_r)
+                p.print(prepend, "        Ct: ", Ct)
+                p.print(prepend, "        Vrel: ", Vrel_norm)
+                p.print(prepend, "----------------------------")
 
             results["a"] = numpy.append(results["a"], a)
             results["a'"] = numpy.append(results["a'"], aprime)

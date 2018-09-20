@@ -1,7 +1,7 @@
 __author__ = "Miha Smrekar"
 __credits__ = ["Miha Smrekar"]
 __license__ = "GPL"
-__version__ = "0.2.7"
+__version__ = "0.2.8"
 __maintainer__ = "Miha Smrekar"
 __email__ = "miha.smrekar9@gmail.com"
 __status__ = "Development"
@@ -65,8 +65,6 @@ class MainWindow(QMainWindow):
         fileMenu.addAction(saveFile)
         fileMenu.addAction(loadFile)
 
-
-
         self.screen_width = width
         self.screen_height = height
         self.setGeometry(width * 0.125, height * 0.125, width * 0.75, height * 0.75)
@@ -96,27 +94,26 @@ class MainWindow(QMainWindow):
     def file_save(self):
         name = QFileDialog.getSaveFileName(self, 'Save File')[0]
         if name != "":
-            file = open(name,'w')
+            file = open(name, 'w')
             d = self.get_all_settings()
-            d_to_save= {}
-            for k,v in d.items():
-                if isinstance(v,numpy.ndarray):
-                    d_to_save[k]=v.tolist()
-                elif isinstance(v,(float,int,list,dict,str,bool)):
-                    d_to_save[k]=v
+            d_to_save = {}
+            for k, v in d.items():
+                if isinstance(v, numpy.ndarray):
+                    d_to_save[k] = v.tolist()
+                elif isinstance(v, (float, int, list, dict, str, bool)):
+                    d_to_save[k] = v
                 else:
-                    print("Could not save key",k,"value",v)
+                    print("Could not save key", k, "value", v)
             json_d = json.dumps(d_to_save)
             file.write(json_d)
             file.close()
 
     def file_load(self):
-        l = QFileDialog.getOpenFileName(self,"Load File")[0]
-        if l != "":
-            with open(l,"r") as fp:
+        file_path = QFileDialog.getOpenFileName(self, "Load File")[0]
+        if file_path != "":
+            with open(file_path, "r") as fp:
                 data = json.load(fp)
             self.set_all_settings(data)
-        
 
     def get_all_settings(self):
         properties = self.wind_turbine_properties.get_settings()
@@ -132,10 +129,10 @@ class MainWindow(QMainWindow):
         )
         out["r"], out["c"], out["theta"], out["dr"] = r, c, theta, dr
         out["r_in"], out["c_in"], out["theta_in"] = _r, _c, _theta
-        #print(out)
+        # print(out)
         return out
 
-    def set_all_settings(self,inp_dict):
+    def set_all_settings(self, inp_dict):
         self.analysis.set_settings(inp_dict)
         self.curves.set_settings(inp_dict)
         self.optimization.set_settings(inp_dict)
@@ -143,10 +140,14 @@ class MainWindow(QMainWindow):
 
     def get_input_params(self):
         settings = self.get_all_settings()
+        self.return_print = self.manager.list([])
+        self.return_results = self.manager.list([])
+        self.end_of_file = False
         inp_params = {
             **settings,
             "return_print": self.return_print,
             "return_results": self.return_results,
+            "EOF": self.end_of_file
         }
         return inp_params
 
@@ -485,16 +486,15 @@ class Analysis(QWidget):
             out_settings[name] = value
         return out_settings
 
-    def set_settings(self,inp_dict):
-        for name_long,item,name in self.form_list:
+    def set_settings(self, inp_dict):
+        for name_long, item, name in self.form_list:
             if name in inp_dict:
-                if isinstance(item,QComboBox):
+                if isinstance(item, QComboBox):
                     item.setCurrentIndex(inp_dict[name])
-                elif isinstance(item,QLineEdit):
+                elif isinstance(item, QLineEdit):
                     item.setText(str(inp_dict[name]))
-                elif isinstance(item,QCheckBox):
+                elif isinstance(item, QCheckBox):
                     item.setChecked(inp_dict[name])
-
 
     def run(self):
         self.clear()
@@ -511,8 +511,6 @@ class Analysis(QWidget):
         self.main.emitter_done.connect(self.done)
 
         if not self.main.running:
-            self.main.return_print = self.main.manager.list([])
-            self.main.return_results = self.main.manager.list([])
             self.main.set_buttons_running()
             self.main.running = True
             self.runner_input = self.main.get_input_params()
@@ -762,8 +760,6 @@ class Optimization(QWidget):
         self.main.emitter_done.connect(self.done)
 
         if not self.main.running:
-            self.main.return_print = self.main.manager.list([])
-            self.main.return_results = self.main.manager.list([])
             self.main.set_buttons_running()
             self.main.running = True
             self.runner_input = self.main.get_input_params()
@@ -865,7 +861,7 @@ class ThreadGetter(QThread):
             if len(self.parent().return_print) > 0:
                 t = self.parent().return_print.pop(0)
                 self.parent().emitter_add.emit(str(t))
-                if t == "!!!!EOF!!!!":
+                if "!!!!EOF!!!!" in t:
                     self.parent().emitter_done.emit()
                     break
             if self.parent().running == False:
