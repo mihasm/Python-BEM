@@ -214,6 +214,8 @@ class Optimizer:
         new_angles = chord_angles
         p.print("Old angles",old_angles)
         p.print("New angles",new_angles)
+        for a in new_angles:
+            p.print(a)
         p.print("----------------------")
 
         # reset chord angles so other functions work properly

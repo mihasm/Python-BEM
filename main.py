@@ -43,6 +43,7 @@ from multiprocessing import Process, Manager
 import multiprocessing
 import json
 
+TITLE_STR = "BEM analiza v%s" % __version__
 
 class MainWindow(QMainWindow):
     emitter_add = pyqtSignal(str)
@@ -68,7 +69,7 @@ class MainWindow(QMainWindow):
         self.screen_width = width
         self.screen_height = height
         self.setGeometry(width * 0.125, height * 0.125, width * 0.75, height * 0.75)
-        self.setWindowTitle("BEM analiza v%s" % __version__)
+        self.setWindowTitle(TITLE_STR)
         self.tab_widget = TabWidget(self)
         self.setCentralWidget(self.tab_widget)
 
@@ -90,6 +91,13 @@ class MainWindow(QMainWindow):
         self.manager = Manager()
 
         self.show()
+
+    def set_title(self):
+        s = self.wind_turbine_properties.name.text()
+        if s == "":
+            self.setWindowTitle(TITLE_STR)
+        else:
+            self.setWindowTitle(TITLE_STR+" - "+s)
 
     def file_save(self):
         name = QFileDialog.getSaveFileName(self, 'Save File')[0]
@@ -116,6 +124,7 @@ class MainWindow(QMainWindow):
             self.set_all_settings(data)
         self.analysis.clear()
         self.optimization.clear()
+        self.set_title()
 
     def get_all_settings(self):
         properties = self.wind_turbine_properties.get_settings()
@@ -171,6 +180,8 @@ class MainWindow(QMainWindow):
 class WindTurbineProperties(QWidget):
     def __init__(self, parent=None):
         super(WindTurbineProperties, self).__init__(parent)
+        
+        self.main = self.parent()
 
         grid = QGridLayout()
         self.setLayout(grid)
@@ -189,6 +200,7 @@ class WindTurbineProperties(QWidget):
         _name = QLabel("Turbine Name")
         self.name = QLineEdit()
         fbox.addRow(_name, self.name)
+        self.name.textEdited.connect(self.main.set_title)
 
         _Rhub = QLabel("Hub radius [m]")
         self.Rhub = QLineEdit()
