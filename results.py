@@ -1,7 +1,7 @@
 __author__ = "Miha Smrekar"
 __credits__ = ["Miha Smrekar"]
 __license__ = "GPL"
-__version__ = "0.2.8"
+__version__ = "0.2.9"
 __maintainer__ = "Miha Smrekar"
 __email__ = "miha.smrekar9@gmail.com"
 __status__ = "Development"
@@ -66,18 +66,18 @@ class ResultsWindow(QMainWindow):
         # f_c_D = input_data["f_c_D"]
         # cL = f_c_L(alpha)
         # cD = f_c_D(alpha)
-        AoA_cL = input_data["AoA_cL"]
-        AoA_cD = input_data["AoA_cD"]
-        cL = input_data["cL"]
-        cD = input_data["cD"]
+        #AoA_cL = input_data["AoA_cL"]
+        #AoA_cD = input_data["AoA_cD"]
+        #cL = input_data["cL"]
+        #cD = input_data["cD"]
 
-        f = self.tab_widget.add_tab_figure("Cl/Cd check")
-        self.tab_widget.add_2d_plot_to_figure(
-            f, AoA_cL, cL, 121, "cL", "alpha", "cL", look="og"
-        )
-        self.tab_widget.add_2d_plot_to_figure(
-            f, AoA_cD, cD, 122, "cD", "alpha", "cD", look="or"
-        )
+        #f = self.tab_widget.add_tab_figure("Cl/Cd check")
+        #self.tab_widget.add_2d_plot_to_figure(
+        #    f, AoA_cL, cL, 121, "cL", "alpha", "cL", look="og"
+        #)
+        #self.tab_widget.add_2d_plot_to_figure(
+        ##    f, AoA_cD, cD, 122, "cD", "alpha", "cD", look="or"
+        #)
 
         f2 = self.tab_widget.add_tab_figure("Moč in Cp")
         self.tab_widget.add_2d_plot_to_figure(

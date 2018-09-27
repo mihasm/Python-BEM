@@ -1,7 +1,7 @@
 __author__ = "Miha Smrekar"
 __credits__ = ["Miha Smrekar"]
 __license__ = "GPL"
-__version__ = "0.2.8"
+__version__ = "0.2.9"
 __maintainer__ = "Miha Smrekar"
 __email__ = "miha.smrekar9@gmail.com"
 __status__ = "Development"
@@ -10,7 +10,7 @@ import sys
 
 import numpy
 from PyQt5 import QtWidgets
-from PyQt5.QtCore import QThread, QTextStream, pyqtSignal, QProcess
+from PyQt5.QtCore import QThread, QTextStream, pyqtSignal, QProcess, QRect
 from PyQt5 import QtCore, QtGui
 from PyQt5.QtWidgets import (
     QComboBox,
@@ -26,7 +26,7 @@ from PyQt5.QtWidgets import (
     QStyleFactory,
     QMessageBox,
     QAction,
-    QFileDialog
+    QFileDialog,
 )
 from numpy import array
 from scipy import interpolate
@@ -37,7 +37,7 @@ from table import Table
 import time
 from turbine_data import SET_INIT
 from optimisation import Optimizer
-from utils import interpolate_geom, to_float
+from utils import interpolate_geom, to_float, fltr
 
 from multiprocessing import Process, Manager
 import multiprocessing
@@ -63,8 +63,11 @@ class MainWindow(QMainWindow):
         loadFile.setShortcut("Ctrl+L")
         loadFile.setStatusTip('Load File')
         loadFile.triggered.connect(self.file_load)
+        getSettings=QAction("Get settings",self)
+        getSettings.triggered.connect(self.get_all_settings)
         fileMenu.addAction(saveFile)
         fileMenu.addAction(loadFile)
+        fileMenu.addAction(getSettings)
 
         self.screen_width = width
         self.screen_height = height
@@ -73,11 +76,12 @@ class MainWindow(QMainWindow):
         self.tab_widget = TabWidget(self)
         self.setCentralWidget(self.tab_widget)
 
+        self.curve_manager = CurveManager(self)
+        self.curve_manager.add_foil("test_foil")
+        self.tab_widget.add_tab(self.curve_manager,"Curve Manager")
+
         self.wind_turbine_properties = WindTurbineProperties(self)
         self.tab_widget.add_tab(self.wind_turbine_properties, "Turbine info")
-
-        self.curves = Curves(self)
-        self.tab_widget.add_tab(self.curves, "Cl and Cd")
 
         self.analysis = Analysis(self)
         self.tab_widget.add_tab(self.analysis, "Analysis")
@@ -104,14 +108,7 @@ class MainWindow(QMainWindow):
         if name != "":
             file = open(name, 'w')
             d = self.get_all_settings()
-            d_to_save = {}
-            for k, v in d.items():
-                if isinstance(v, numpy.ndarray):
-                    d_to_save[k] = v.tolist()
-                elif isinstance(v, (float, int, list, dict, str, bool)):
-                    d_to_save[k] = v
-                else:
-                    print("Could not save key", k, "value", v)
+            d_to_save = fltr(d,(float, int, list, str, bool,numpy.ndarray))
             json_d = json.dumps(d_to_save)
             file.write(json_d)
             file.close()
@@ -128,26 +125,29 @@ class MainWindow(QMainWindow):
 
     def get_all_settings(self):
         properties = self.wind_turbine_properties.get_settings()
-        curves = self.curves.get_settings()
+        #curves = self.curves.get_settings()
         settings = self.analysis.get_settings()
         opt_settings = self.optimization.get_settings()
-        out = {**properties, **curves, **settings, **opt_settings}
+        curve_manager_settings = self.curve_manager.get_settings()
+        out = {**properties, **settings, **opt_settings, **curve_manager_settings}#, **curves}
         _r = out["r"]
         _c = out["c"]
         _theta = out["theta"]
-        r, c, theta, dr = interpolate_geom(
-            _r, _c, _theta, out["num_interp"], out["linspace_interp"]
+        _foils = out["foils"]
+        r, c, theta, foils, dr = interpolate_geom(
+            _r, _c, _theta, _foils, out["num_interp"], out["linspace_interp"]
         )
-        out["r"], out["c"], out["theta"], out["dr"] = r, c, theta, dr
-        out["r_in"], out["c_in"], out["theta_in"] = _r, _c, _theta
-        # print(out)
+        out["r"], out["c"], out["theta"], out["foils"], out["dr"] = r, c, theta, foils, dr
+        out["r_in"], out["c_in"], out["theta_in"], out["foils_in"] = _r, _c, _theta, _foils
+        print(out)
         return out
 
     def set_all_settings(self, inp_dict):
         self.analysis.set_settings(inp_dict)
-        self.curves.set_settings(inp_dict)
+        #self.curves.set_settings(inp_dict)
         self.optimization.set_settings(inp_dict)
         self.wind_turbine_properties.set_settings(inp_dict)
+        self.curve_manager.set_settings(inp_dict)
 
     def get_input_params(self):
         settings = self.get_all_settings()
@@ -191,8 +191,8 @@ class WindTurbineProperties(QWidget):
         left.setLayout(fbox)
 
         self.table_properties = Table()
-        self.table_properties.createEmpty(3, 30)
-        self.table_properties.set_labels(["r [m]", "c [m]", "theta [deg]"])
+        self.table_properties.createEmpty(4, 30)
+        self.table_properties.set_labels(["r [m]", "c [m]", "theta [deg]", "airfoil"])
 
         grid.addWidget(left, 1, 1)
         grid.addWidget(self.table_properties, 1, 2)
@@ -227,15 +227,17 @@ class WindTurbineProperties(QWidget):
             "turbine_name":self.name.text(),
         }
         geom_array = self.table_properties.get_values()
-        r, c, theta, dr = [], [], [], []
+        r, c, theta, foils = [], [], [], []
         for row in geom_array:
             if row[0] != "" and row[1] != "" and row[2] != "":
                 r.append(to_float(row[0]))
                 c.append(to_float(row[1]))
                 theta.append(to_float(row[2]))
+                foils.append(row[3])
         out_properties["r"] = numpy.array(r)
         out_properties["c"] = numpy.array(c)
         out_properties["theta"] = numpy.array(theta)
+        out_properties["foils"] = foils
         return out_properties
 
     def set_settings(self, dict_settings):
@@ -248,17 +250,19 @@ class WindTurbineProperties(QWidget):
         if "B" in dict_settings:
             t = str(dict_settings["B"])
             self.B.setText(t)
-        if "r" in dict_settings and "c" in dict_settings and "theta" in dict_settings:
+        if "r" in dict_settings and "c" in dict_settings and "theta" in dict_settings and "foils" in dict_settings:
             _array = []
             for r in range(len(dict_settings["r"])):
                 _r = dict_settings["r"][r]
                 _c = dict_settings["c"][r]
                 _theta = dict_settings["theta"][r]
+                _f = dict_settings["foils"][r]
                 _array.append(
                     [
-                        dict_settings["r"][r],
-                        dict_settings["c"][r],
-                        dict_settings["theta"][r],
+                        _r,
+                        _c,
+                        _theta,
+                        _f
                     ]
                 )
             self.table_properties.createTable(_array)
@@ -268,6 +272,104 @@ class WindTurbineProperties(QWidget):
         else:
             self.name.setText("")
 
+
+class CurveManager(QWidget):
+    #popup_close = pyqtSignal(str)
+    emitter = pyqtSignal(str)
+    def __init__(self, parent=None):
+        super(CurveManager, self).__init__(parent)
+        
+        self.main = self.parent()
+
+        self.grid = QGridLayout()
+        self.setLayout(self.grid)
+
+        self.tab_widget = TabWidget(self)
+        self.grid.addWidget(self.tab_widget,2,0)
+
+        self.upper_widget = QWidget()
+        self.upper_layout = QGridLayout()
+        self.upper_widget.setLayout(self.upper_layout)
+        self.grid.addWidget(self.upper_widget,1,0)
+
+        self.button_add_foil = QPushButton("Add airfoil")
+        self.button_add_foil.clicked.connect(self.add_foil_popup)
+        self.button_remove_foil = QPushButton("Remove foil")
+        self.button_remove_foil.clicked.connect(self.tab_widget.remove_current_tab)
+        self.button_rename_foil = QPushButton("Rename foil")
+        self.button_rename_foil.clicked.connect(self.rename_foil_popup)
+        self.button_get_settings = QPushButton("get settings")
+        self.button_get_settings.clicked.connect(self.get_settings)
+
+        self.upper_layout.addWidget(self.button_add_foil,0,1)
+        self.upper_layout.addWidget(self.button_remove_foil,0,2)
+        self.upper_layout.addWidget(self.button_rename_foil,0,3)
+        self.upper_layout.addWidget(self.button_get_settings,0,4)
+
+    def add_foil_popup(self):
+        self.emitter.connect(self.add_foil)
+        self.p = PopupText(self,"foil name","airfoil_name",self.emitter,"Add foil")
+        self.p.setGeometry(QRect(100, 100, 400, 200))
+        self.p.show()
+
+    def add_foil(self,string):
+        c = Curves(self)
+        self.tab_widget.add_tab(c,string)
+
+    def rename_foil_popup(self):
+        self.emitter.connect(self.rename_foil)
+        self.p = PopupText(self,"foil name",self.tab_widget.current_tab_name(),self.emitter,"Rename foil")
+        self.p.setGeometry(QRect(100, 100, 400, 200))
+        self.p.show()
+    
+    def rename_foil(self,string):
+        self.tab_widget.rename_current_tab(string)
+
+    def get_settings(self):
+        out = {}
+        i=0
+        for w,n in self.tab_widget.tabs:
+            out[n] = w.get_settings()
+            i+=1
+        #print("curves:",out)
+        return {"curves":out}
+
+    def set_settings(self,dict_settings):
+        self.tab_widget.remove_all_tabs()
+        if "curves" in dict_settings:
+            if len(dict_settings["curves"]) > 0:
+                for c_name,c_dict in dict_settings["curves"].items():
+                    curve_widget = Curves()
+                    curve_widget.set_settings(c_dict)
+                    self.tab_widget.add_tab(curve_widget,c_name)
+
+
+class PopupText(QWidget):
+    def __init__(self, parent=None,message="message",default_str="", emitter=None, title="Text popup"):
+        QWidget.__init__(self)
+
+        #self.setTitle(title)
+        self.emitter = emitter
+
+        self.layout = QGridLayout()
+        self.setLayout(self.layout)
+
+        self.message = QLabel(message)
+        #
+        self.layout.addWidget(self.message,0,0)
+
+        self.inp = QLineEdit()
+        self.inp.setText(default_str)
+        self.layout.addWidget(self.inp,1,0)
+
+        self.button = QPushButton("OK")
+        self.button.clicked.connect(self.send_signal)
+        self.layout.addWidget(self.button,2,0)
+
+    def send_signal(self):
+        self.emitter.emit(self.inp.text())
+        self.emitter.disconnect()
+        self.close()
 
 
 class Curves(QWidget):
@@ -323,6 +425,7 @@ class Curves(QWidget):
         inverse_f_c_L = interpolate.interp1d(
             cL, AoA_cL, fill_value=(AoA_cL[0], AoA_cL[-1]), bounds_error=False
         )
+        alpha_zero = inverse_f_c_L(0.0)
         return {
             "f_c_L": f_c_L,
             "f_c_D": f_c_D,
@@ -331,6 +434,7 @@ class Curves(QWidget):
             "cL": cL,
             "cD": cD,
             "inverse_f_c_L": inverse_f_c_L,
+            "alpha_zero":alpha_zero,
         }
 
     def set_settings(self, dict_settings):
@@ -404,9 +508,22 @@ class Analysis(QWidget):
             "rotational_augmentation_correction_method": "Rot. augmentation cor. method",
         }
 
-        self.name_to_settings = {}
-        for k, v in self.settings_to_name.items():
-            self.name_to_settings[v] = k
+        self.methods_to_names = {"0":"Original",
+                             "1":"Spera",
+                             "2":"Wiley (without Ct corr.)",
+                             "3":"Grant Ingram (without Ct corr.)",
+                             "4":"Wiley (with Ct corr.)",
+                             "5":"Propx",
+                             "6":"AeroDyn (modified Glauert)",
+                             "7":"QBlade (modified Glauert)",
+                             "8":"Shen's Ct correction",
+                             "9":"Glauert",
+                             "10":"Wilson and Walker",
+                             "11":"Classical brake state model",
+                             "12":"Advanced brake state model"}
+
+        self.name_to_methods = {v: k for k, v in self.methods_to_names.items()}
+        self.name_to_settings = {v: k for k, v in self.settings_to_name.items()}
 
         self.grid = QGridLayout()
         self.setLayout(self.grid)
@@ -429,7 +546,7 @@ class Analysis(QWidget):
         for key, value in self.settings.items():
             if key == "method":
                 form = QComboBox()
-                form.addItems(["1", "4", "5", "6", "7", "8", "9", "10"])
+                form.addItems([self.methods_to_names[k] for k,v in self.methods_to_names.items()])
                 form.setCurrentIndex(7)
             elif key == "rotational_augmentation_correction_method":
                 form = QComboBox()
@@ -502,7 +619,7 @@ class Analysis(QWidget):
             if isinstance(value, QLineEdit):
                 value = to_float(value.text())
             if isinstance(value, QComboBox):
-                value = int(value.currentText())
+                value = int(value.currentIndex())
             out_settings[name] = value
         return out_settings
 
@@ -510,7 +627,7 @@ class Analysis(QWidget):
         for name_long, item, name in self.form_list:
             if name in inp_dict:
                 if isinstance(item, QComboBox):
-                    _index = item.findText(str(inp_dict[name]), QtCore.Qt.MatchFixedString)
+                    _index = inp_dict[name]
                     if _index >= 0:
                         index = _index
                     else:
@@ -904,8 +1021,34 @@ class TabWidget(QtWidgets.QTabWidget):
         self.tabs = []
 
     def add_tab(self, widget, tab_name):
-        self.tabs.append(widget)
-        self.addTab(self.tabs[-1], tab_name)
+        for t,n in self.tabs:
+            if n == tab_name:
+                print("n",n,"tab_name",tab_name)
+                msg = QMessageBox()
+                msg.setIcon(QMessageBox.Warning)
+                msg.setText("Tab with same name already exists!")
+                msg.exec_()
+                return
+        self.tabs.append([widget,tab_name])
+        self.addTab(widget, tab_name)
+        return
+
+    def remove_tab(self,index):
+        self.removeTab(index)
+        del self.tabs[index]
+
+    def remove_all_tabs(self):
+        while len(self.tabs) > 0:
+            self.remove_tab(0)
+
+    def remove_current_tab(self):
+        self.remove_tab(self.currentIndex())
+
+    def rename_current_tab(self,string):
+        self.setTabText(self.currentIndex(),string)
+
+    def current_tab_name(self):
+        return self.tabText(self.currentIndex())
 
 
 if __name__ == "__main__":

@@ -1,7 +1,7 @@
 __author__ = "Miha Smrekar"
 __credits__ = ["Miha Smrekar"]
 __license__ = "GPL"
-__version__ = "0.2.8"
+__version__ = "0.2.9"
 __maintainer__ = "Miha Smrekar"
 __email__ = "miha.smrekar9@gmail.com"
 __status__ = "Development"
@@ -38,9 +38,7 @@ def calculate_power(inp_args):
     if "add_angle" in inp_args:
         if inp_args["add_angle"] != None:
             inp_args["theta"] = inp_args["theta"] + inp_args["add_angle"]
-    results = Calculator(
-        inp_args["f_c_L"], inp_args["f_c_D"], inp_args["inverse_f_c_L"]
-    ).run_array(**inp_args)
+    results = Calculator(inp_args["curves"]).run_array(**inp_args)
     return results
 
 

@@ -1,7 +1,7 @@
 __author__ = "Miha Smrekar"
 __credits__ = ["Miha Smrekar"]
 __license__ = "GPL"
-__version__ = "0.2.8"
+__version__ = "0.2.9"
 __maintainer__ = "Miha Smrekar"
 __email__ = "miha.smrekar9@gmail.com"
 __status__ = "Development"
@@ -502,4 +502,28 @@ SET_INIT = {
             -2.37,
         ]
     ),
+    "foils":[
+            "test_foil",
+            "test_foil",
+            "test_foil",
+            "test_foil",
+            "test_foil",
+            "test_foil",
+            "test_foil",
+            "test_foil",
+            "test_foil",
+            "test_foil",
+            "test_foil",
+            "test_foil",
+            "test_foil",
+            "test_foil",
+            "test_foil",
+            "test_foil",
+            "test_foil",
+            "test_foil",
+            "test_foil",
+            "test_foil",
+            "test_foil",
+            "test_foil",
+    ]
 }
