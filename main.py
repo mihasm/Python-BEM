@@ -77,7 +77,7 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(self.tab_widget)
 
         self.curve_manager = CurveManager(self)
-        self.curve_manager.add_foil("test_foil")
+        #self.curve_manager.add_foil("s826")
         self.tab_widget.add_tab(self.curve_manager,"Curve Manager")
 
         self.wind_turbine_properties = WindTurbineProperties(self)
@@ -93,6 +93,7 @@ class MainWindow(QMainWindow):
 
         self.running = False
         self.manager = Manager()
+        self.set_all_settings(SET_INIT)
 
         self.show()
 
@@ -124,23 +125,32 @@ class MainWindow(QMainWindow):
         self.set_title()
 
     def get_all_settings(self):
-        properties = self.wind_turbine_properties.get_settings()
-        #curves = self.curves.get_settings()
-        settings = self.analysis.get_settings()
-        opt_settings = self.optimization.get_settings()
-        curve_manager_settings = self.curve_manager.get_settings()
-        out = {**properties, **settings, **opt_settings, **curve_manager_settings}#, **curves}
-        _r = out["r"]
-        _c = out["c"]
-        _theta = out["theta"]
-        _foils = out["foils"]
-        r, c, theta, foils, dr = interpolate_geom(
-            _r, _c, _theta, _foils, out["num_interp"], out["linspace_interp"]
-        )
-        out["r"], out["c"], out["theta"], out["foils"], out["dr"] = r, c, theta, foils, dr
-        out["r_in"], out["c_in"], out["theta_in"], out["foils_in"] = _r, _c, _theta, _foils
-        print(out)
-        return out
+        try:
+            properties = self.wind_turbine_properties.get_settings()
+            #curves = self.curves.get_settings()
+            settings = self.analysis.get_settings()
+            opt_settings = self.optimization.get_settings()
+            curve_manager_settings = self.curve_manager.get_settings()
+            out = {**properties, **settings, **opt_settings, **curve_manager_settings}#, **curves}
+            _r = out["r"]
+            _c = out["c"]
+            _theta = out["theta"]
+            _foils = out["foils"]
+            r, c, theta, foils, dr = interpolate_geom(
+                _r, _c, _theta, _foils, out["num_interp"], out["linspace_interp"]
+            )
+            out["r"], out["c"], out["theta"], out["foils"], out["dr"] = r, c, theta, foils, dr
+            out["r_in"], out["c_in"], out["theta_in"], out["foils_in"] = _r, _c, _theta, _foils
+            print(out)
+            return out
+        except Exception as e:
+            msg = QMessageBox()
+            msg.setIcon(QMessageBox.Warning)
+            msg.setText("Error while getting settings")
+            msg.setDetailedText(str(e))
+            msg.exec_()
+            print(e)
+            return None
 
     def set_all_settings(self, inp_dict):
         self.analysis.set_settings(inp_dict)
@@ -151,6 +161,8 @@ class MainWindow(QMainWindow):
 
     def get_input_params(self):
         settings = self.get_all_settings()
+        if settings == None:
+            return None
         self.return_print = self.manager.list([])
         self.return_results = self.manager.list([])
         self.end_of_file = False
@@ -216,8 +228,6 @@ class WindTurbineProperties(QWidget):
         self.B = QLineEdit()
         self.B.setText("5")
         fbox.addRow(_B, self.B)
-
-        self.set_settings(SET_INIT)
 
     def get_settings(self):
         out_properties = {
@@ -324,14 +334,17 @@ class CurveManager(QWidget):
     
     def rename_foil(self,string):
         self.tab_widget.rename_current_tab(string)
+        #self.tab_widget.tabs
 
     def get_settings(self):
         out = {}
         i=0
+
+        #TODO Dont rely on name being set correctly in n!
         for w,n in self.tab_widget.tabs:
             out[n] = w.get_settings()
             i+=1
-        #print("curves:",out)
+
         return {"curves":out}
 
     def set_settings(self,dict_settings):
@@ -388,7 +401,6 @@ class Curves(QWidget):
         self.table_cd.set_labels(["AoA", "Cd"])
         grid.addWidget(self.table_cd, 1, 2)
 
-        self.set_settings(SET_INIT)
 
     def get_settings(self):
         AoA_cL = []
@@ -656,6 +668,10 @@ class Analysis(QWidget):
             self.main.set_buttons_running()
             self.main.running = True
             self.runner_input = self.main.get_input_params()
+            if self.runner_input == None:
+                print("No settings fetched... Terminating.")
+                self.terminate()
+                return self.done(True)
             self.main.getter.start()
             self.p = Process(target=calculate_power_3d, args=[self.runner_input])
             self.p.start()
@@ -824,7 +840,6 @@ class Optimization(QWidget):
         self.fbox.addRow(self.buttonClear, self.buttonStop)
         self.fbox.addRow(self.buttonEOFdescription, self.buttonEOF)
 
-        self.set_settings(SET_INIT)
 
     def check_forms_angles(self):
         out = ""
@@ -983,6 +998,7 @@ class Optimization(QWidget):
         return out
 
     def set_settings(self, inp_dict):
+        #print(inp_dict)
         self.target_rpm.setText(str(inp_dict["target_rpm"]))
         self.target_speed.setText(str(inp_dict["target_speed"]))
         self.delta_start.setText(str(inp_dict["delta_start"]))
@@ -1046,6 +1062,7 @@ class TabWidget(QtWidgets.QTabWidget):
 
     def rename_current_tab(self,string):
         self.setTabText(self.currentIndex(),string)
+        self.tabs[self.currentIndex()][1] = string
 
     def current_tab_name(self):
         return self.tabText(self.currentIndex())

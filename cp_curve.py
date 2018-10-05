@@ -42,7 +42,7 @@ def calculate_power(inp_args):
     return results
 
 
-def calculate_power_3d(inp_args):
+def calculate_power_3d(inp_args,print_eof=True):
     """
     Calculates power for given geometry and data for every windspeed and rpm.
 
@@ -85,7 +85,8 @@ def calculate_power_3d(inp_args):
         results_3d[k] = v
 
     return_results.append(results_3d)
-    p.print("!!!!EOF!!!!")
+    if print_eof:
+        p.print("!!!!EOF!!!!")
     return results_3d
 
 

@@ -131,9 +131,11 @@ def fInductionCoefficients0(F, phi, sigma, cn, ct, *args, **kwargs):
     :param ct: thrust coefficient
     :return: axial induction factor, tangential induction factor
     """
+    
     a = (sigma * cn) / (4 * F * sin(phi) ** 2 + sigma * cn)
     aprime = (sigma * ct) / (4 * F * sin(phi) * cos(phi) - sigma * ct)
-    Ct = 4*a*(1-a)
+    #Ct = 4*a*(1-a)
+    Ct = sigma * (1 - a) ** 2 * cn / (sin(phi) ** 2)  # Qblade
     return a, aprime, Ct
 
 
@@ -151,7 +153,8 @@ def fInductionCoefficients1(F, phi, sigma, cn, ct, *args, **kwargs):
     :return: axial induction factor, tangential induction factor
     """
     a = (sigma * cn) / (4 * F * sin(phi) ** 2 + sigma * cn)
-    Ct = 4*a*(1-a)*F
+    #Ct = 4*a*(1-a)*F
+    Ct = sigma * (1 - a) ** 2 * cn / (sin(phi) ** 2)  # Qblade
 
     # Spera's correction
     if a >= 0.2:
@@ -159,7 +162,7 @@ def fInductionCoefficients1(F, phi, sigma, cn, ct, *args, **kwargs):
         K = (4 * F * sin(phi) ** 2) / (sigma * cn)
         to_sqrt = abs((K * (1 - 2 * ac) + 2) ** 2 + 4 * (K * ac ** 2 - 1))
         a = 1 + 0.5 * K * (1 - 2 * ac) - 0.5 * sqrt(to_sqrt)
-        Ct = 4*(ac**2+(1-2*ac)*a)*F
+        #Ct = 4*(ac**2+(1-2*ac)*a)*F
 
     aprime = (sigma * ct) / (4 * F * sin(phi) * cos(phi) - sigma * ct)
     return a, aprime, Ct
@@ -180,12 +183,13 @@ def fInductionCoefficients2(F, phi, sigma, cn, Cl, *args, **kwargs):
     """
     a = 1 / (1 + 4 * F * sin(phi) ** 2 / (sigma * Cl * cos(phi)))
     aprime = 1 / (4 * cos(phi) / (sigma * Cl) - 1)
-    Ct = 4*a*(1-a)*F
+    #Ct = 4*a*(1-a)*F
+    Ct = sigma * (1 - a) ** 2 * cn / (sin(phi) ** 2)  # Qblade
     return a, aprime, Ct
 
 
 # noinspection PyUnusedLocal,PyUnusedLocal,PyUnusedLocal
-def fInductionCoefficients3(lambda_r, phi, sigma, Cl, *args, **kwargs):
+def fInductionCoefficients3(lambda_r, phi, sigma, Cl, cn, *args, **kwargs):
     """
     Calculates induction coefficients using method from
     Wind Turbine Blade Analysis, Grant Ingram, 2011
@@ -199,7 +203,8 @@ def fInductionCoefficients3(lambda_r, phi, sigma, Cl, *args, **kwargs):
 
     a = (1 + (4 * cos(phi) ** 2) / (sigma * Cl * sin(phi))) ** -1
     aprime = ((sigma * Cl) / (4 * lambda_r * cos(phi))) * (1 - a)
-    Ct = 4*a*(1-a)
+    #Ct = 4*a*(1-a)
+    Ct = sigma * (1 - a) ** 2 * cn / (sin(phi) ** 2)  # Qblade
     return a, aprime, Ct
 
 
@@ -230,7 +235,7 @@ def fInductionCoefficients4(a_last, F, phi, sigma, cn, Cl, *args, **kwargs):
 
 # noinspection PyUnusedLocal,PyUnusedLocal,PyUnusedLocal
 def fInductionCoefficients5(
-        aprime_last, F, lambda_r, phi, sigma, Cl, B, c, psi, r, R, v, omega, *args, **kwargs
+        aprime_last, F, lambda_r, phi, sigma, Cl, cn, B, c, psi, r, R, v, omega, *args, **kwargs
 ):
     """
     Calculates induction coefficients using method from
@@ -254,7 +259,8 @@ def fInductionCoefficients5(
 
     K = B * c * Cl * cos(phi) * cos(psi) / (8 * pi * r * sin(phi) ** 2)
     a = K / (1 + K)
-    CTL = 4 * a * F * (1 - a)
+   # CTL = 4 * a * F * (1 - a)
+    CTL = sigma * (1 - a) ** 2 * cn / (sin(phi) ** 2)  # Qblade
     
     if a > 0.2:
         ac = 0.2
@@ -303,7 +309,8 @@ def fInductionCoefficients6(a_last, F, phi, sigma, cn, ct, Cl, *args, **kwargs):
     :return: axial induction factor, tangential induction factor
     """
 
-    CT=(1+(sigma*(1-a_last)**2*cn)/(sin(phi)**2))
+    #CT=(1+(sigma*(1-a_last)**2*cn)/(sin(phi)**2))
+    CT=((sigma*(1-a_last)**2*cn)/(sin(phi)**2))
     if CT > 0.96 * F:
         # Modified Glauert correction
         a = (
@@ -348,53 +355,52 @@ def fInductionCoefficients7(a_last,F, lambda_r, phi, sigma, cn, *args, **kwargs)
 
 
 # noinspection PyUnusedLocal,PyUnusedLocal,PyUnusedLocal
-def fInductionCoefficients8(F, phi, sigma, cn, Cl, ct, *args, **kwargs):
+def fInductionCoefficients8(a_last,F, phi, sigma, lambda_r, B, r, R, cn, Cl, ct, *args, **kwargs):
     """
-    Calculates induction coefficients using method from
-    http://www.i-asem.org/publication_conf/asem17/1.SM/W4A.2.SM2143_4195F1.pdf
+    Method from Pratumnopharat,2010
 
-    :param Cl: lift coefficient
-    :param F: loss factors
-    :param phi: relative wind [rad]
-    :param sigma: solidity
-    :param cn: normal coefficient
-    :return: axial induction factor, tangential induction factor
+    Shen's correction
     """
-    a = (1 + 4 * F * sin(phi) ** 2 / (sigma * cn)) ** -1
-    Ct = 4*a*(1-a*F)*F
+    a=a_last
+    Ct = sigma * (1 - a) ** 2 * cn / (sin(phi) ** 2)  # Qblade
+    g=exp(-0.125*(B*lambda_r-21))+0.1
+    F1 = (2/pi)*acos(exp(-g*B*(R-r)/(2*r*sin(phi))))
+    Y1 = 4*F*sin(phi)**2/(sigma*F1*cn)
+    Y2 = 4*F*sin(phi)*cos(phi)/(sigma*F1*ct)
+    if Ct <= 0.888:
+        a=(1-sqrt(1-Ct))/(2*F)
+    else:
+        a=(2+Y1-sqrt(4*Y1*(1-F)+Y1**2))/(2*(1+F*Y1))
+    aprime = 1/((1-a*F)*Y2/(1-a)-1)
 
-    ac = 1/3
-
-    # Shen's correction
-    if a > ac:
-        Y1=a**-1
-        a = (2+Y1-sqrt(4*Y1*(1-F)+Y1**2))/(2*(1+F*Y1))
-        Ct = 4*(ac**2*F+(1-2*ac*F)*a)*F
-
-    aprime = 1 / (4 * F * sin(phi) * cos(phi)/ (sigma * ct) + 1)
     return a, aprime, Ct
 
-def fInductionCoefficients9(a_last,F,phi,Cl,ct,sigma,*args, **kwargs):
+def fInductionCoefficients9(a_last,F,phi,Cl,cn, ct,sigma,*args, **kwargs):
     """
     Method from Pratumnopharat,2010
 
     Glauert method
     """
+    #print("F",F)
     a = a_last
-    if a >= 1/3:
-        Ct = 4*a*F*(1-a)
-    else:
-        Ct = 4*a*F*(1-0.25*(5-3*a)*a)
+    #if a >= 1/3:
+    #    Ct = 4*a*F*(1-a)
+    #else:
+    #    Ct = 4*a*F*(1-0.25*(5-3*a)*a)
+    #print("Ct",Ct)
+    Ct = sigma * (1 - a_last) ** 2 * cn / (sin(phi) ** 2)  # Qblade
 
     if Ct <= 0.888*F:
+        #print("yes")
         a=(1-sqrt(1-Ct/F))/2
     else:
+        #print("no")
         Y=(sqrt(1/36*(Ct/F)**2-145/2187*Ct/F+92/2187)+Ct/(6*F)-145/729)**(1/3)
         a = Y-11/(81*Y)+5/9
     aprime = (4*F*sin(phi)*cos(phi)/(sigma*ct)-1)**-1
     return a,aprime,Ct
 
-def fInductionCoefficients10(a_last,F,phi,Cl,ct,sigma,*args, **kwargs):
+def fInductionCoefficients10(a_last,F,phi,Cl,ct, cn,sigma,*args, **kwargs):
     """
     Method from Pratumnopharat,2010
 
@@ -404,15 +410,19 @@ def fInductionCoefficients10(a_last,F,phi,Cl,ct,sigma,*args, **kwargs):
 
     ac = 0.2
 
-    if a <= ac:
-        Ct = 4*a*F*(1-a)
-    else:
-        Ct = 4*F*(ac**2+(1-2*ac)*a)
+    #if a <= ac:
+    #    Ct = 4*a*F*(1-a)
+    #else:
+    #    Ct = 4*F*(ac**2+(1-2*ac)*a)
+    Ct = sigma * (1 - a_last) ** 2 * cn / (sin(phi) ** 2)  # Qblade
 
     if Ct <= 0.64*F:
+        print("yes")
         a = (1-sqrt(1-Ct/F))/2
     else:
+        print("no")
         a = (Ct-4*F*ac**2)/(4*F*(1-2*ac))
+    print(a)
 
     aprime = (4*F*sin(phi)*cos(phi)/(sigma*ct)-1)**-1
 
@@ -427,7 +437,8 @@ def fInductionCoefficients11(a_last,F,phi,Cl,ct,cn,sigma,*args, **kwargs):
     """
     a=a_last
     Sw = sigma/(8*sin(phi)**2)*cn
-    Ct = Sw*(1-a)**2
+    #Ct = Sw*(1-a)**2
+    Ct = sigma * (1 - a_last) ** 2 * cn / (sin(phi) ** 2)  # Qblade
     a=(2*Sw+F-sqrt(F**2+4*Sw*F*(1-F)))/(2*(Sw+F**2))
     aprime = (4*F*sin(phi)*cos(phi)/(sigma*ct)-1)**-1
     return a,aprime,Ct
@@ -441,10 +452,11 @@ def fInductionCoefficients12(a_last,F,phi,Cl,ct,cn,sigma,lambda_r,*args, **kwarg
     Should be the same result as in Aerodyn or QBlade
     """
     a=a_last
-    if a <= 0.4:
-        Ct = 4*a*F*(1-a)
-    else:
-        Ct=8/9+(4*F-40/9)*a+(50/9-4*F)*a**2
+    #if a <= 0.4:
+    #    Ct = 4*a*F*(1-a)
+    #else:
+    #    Ct=8/9+(4*F-40/9)*a+(50/9-4*F)*a**2
+    Ct = sigma * (1 - a_last) ** 2 * cn / (sin(phi) ** 2)  # Qblade
 
     a = (18*F-20-3*sqrt(abs(ct*(50-36*F)+12*F*(3*F-4))))/(36*F-50)
     aprime = (4*F*sin(phi)*cos(phi)/(sigma*ct)-1)**-1
@@ -761,9 +773,9 @@ class Calculator:
             psi = 0.0
 
             # initial guess
-            a = 0.0
-            aprime = 0.0
-            # a,aprime = guessInductionFactors(lambda_r,sigma,_theta,self.f_c_L)
+            a = 0.1
+            aprime = 0.01
+            #a,aprime = guessInductionFactors(lambda_r,sigma,_theta,self.f_c_L)
 
             # iterations counter
             i = 0
@@ -943,6 +955,7 @@ class Calculator:
         dFt = results["dFt"]
         Ft = numpy.sum(dFt)
         M = B * dFt * r  # momenti po prerezih
+        Msum = numpy.sum(M)
         power = numpy.sum(M) * omega
         Pmax = 0.5 * rho * v ** 3 * pi * R ** 2
         cp = power / Pmax
@@ -956,6 +969,7 @@ class Calculator:
         results["r"] = r
         results["omega"] = omega
         results["M"] = M
+        results["Msum"] = Msum
         results["power"] = power
         results["dFt"] = dFt
         results["Rhub"] = Rhub
