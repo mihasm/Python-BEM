@@ -1,7 +1,7 @@
 __author__ = "Miha Smrekar"
 __credits__ = ["Miha Smrekar"]
 __license__ = "GPL"
-__version__ = "0.2.9"
+__version__ = "0.3.0"
 __maintainer__ = "Miha Smrekar"
 __email__ = "miha.smrekar9@gmail.com"
 __status__ = "Development"
@@ -44,6 +44,20 @@ import multiprocessing
 import json
 
 TITLE_STR = "BEM analiza v%s" % __version__
+
+METHODS_STRINGS = {"0":"Original",
+                             "1":"Spera",
+                             "2":"Wiley (without Ct corr.)",
+                             "3":"Grant Ingram (without Ct corr.)",
+                             "4":"Wiley (with Ct corr.)",
+                             "5":"Propx",
+                             "6":"AeroDyn (modified Glauert)",
+                             "7":"QBlade (modified Glauert)",
+                             "8":"Shen's Ct correction",
+                             "9":"Glauert",
+                             "10":"Wilson and Walker",
+                             "11":"Classical brake state model",
+                             "12":"Advanced brake state model"}
 
 class MainWindow(QMainWindow):
     emitter_add = pyqtSignal(str)
@@ -439,14 +453,14 @@ class Curves(QWidget):
         )
         alpha_zero = inverse_f_c_L(0.0)
         return {
-            "f_c_L": f_c_L,
-            "f_c_D": f_c_D,
+            #"f_c_L": f_c_L,
+            #"f_c_D": f_c_D,
             "AoA_cL": AoA_cL,
             "AoA_cD": AoA_cD,
             "cL": cL,
             "cD": cD,
-            "inverse_f_c_L": inverse_f_c_L,
-            "alpha_zero":alpha_zero,
+            #"inverse_f_c_L": inverse_f_c_L,
+            #"alpha_zero":alpha_zero,
         }
 
     def set_settings(self, dict_settings):
@@ -520,19 +534,7 @@ class Analysis(QWidget):
             "rotational_augmentation_correction_method": "Rot. augmentation cor. method",
         }
 
-        self.methods_to_names = {"0":"Original",
-                             "1":"Spera",
-                             "2":"Wiley (without Ct corr.)",
-                             "3":"Grant Ingram (without Ct corr.)",
-                             "4":"Wiley (with Ct corr.)",
-                             "5":"Propx",
-                             "6":"AeroDyn (modified Glauert)",
-                             "7":"QBlade (modified Glauert)",
-                             "8":"Shen's Ct correction",
-                             "9":"Glauert",
-                             "10":"Wilson and Walker",
-                             "11":"Classical brake state model",
-                             "12":"Advanced brake state model"}
+        self.methods_to_names = METHODS_STRINGS
 
         self.name_to_methods = {v: k for k, v in self.methods_to_names.items()}
         self.name_to_settings = {v: k for k, v in self.settings_to_name.items()}

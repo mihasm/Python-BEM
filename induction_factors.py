@@ -1,13 +1,14 @@
 __author__ = "Miha Smrekar"
 __credits__ = ["Miha Smrekar"]
 __license__ = "GPL"
-__version__ = "0.2.9"
+__version__ = "0.3.0"
 __maintainer__ = "Miha Smrekar"
 __email__ = "miha.smrekar9@gmail.com"
 __status__ = "Development"
 
 import numbers
 from math import sin, cos, atan, acos, pi, exp, sqrt, radians, atan2, degrees, tan
+from scipy import interpolate
 
 import numpy
 from utils import Printer
@@ -223,7 +224,8 @@ def fInductionCoefficients4(a_last, F, phi, sigma, cn, Cl, *args, **kwargs):
     :param sigma: solidity
     :return: axial induction factor, tangential induction factor
     """
-
+    if F == 0:
+        F = 1e-6
     Ct = sigma * (1 - a_last) ** 2 * cn / (sin(phi) ** 2)
     if Ct <= 0.96 * F:
         a = 1 / (1 + (4 * F * sin(phi) ** 2 / (sigma * Cl * cos(phi))))
@@ -361,10 +363,15 @@ def fInductionCoefficients8(a_last,F, phi, sigma, lambda_r, B, r, R, cn, Cl, ct,
 
     Shen's correction
     """
+    if F == 0:
+        F = 1e-6
     a=a_last
     Ct = sigma * (1 - a) ** 2 * cn / (sin(phi) ** 2)  # Qblade
     g=exp(-0.125*(B*lambda_r-21))+0.1
-    F1 = (2/pi)*acos(exp(-g*B*(R-r)/(2*r*sin(phi))))
+    try:
+        F1 = (2/pi)*acos(exp(-g*B*(R-r)/(2*r*sin(phi))))
+    except:
+        F1 = 1.0
     Y1 = 4*F*sin(phi)**2/(sigma*F1*cn)
     Y2 = 4*F*sin(phi)*cos(phi)/(sigma*F1*ct)
     if Ct <= 0.888:
@@ -389,12 +396,11 @@ def fInductionCoefficients9(a_last,F,phi,Cl,cn, ct,sigma,*args, **kwargs):
     #    Ct = 4*a*F*(1-0.25*(5-3*a)*a)
     #print("Ct",Ct)
     Ct = sigma * (1 - a_last) ** 2 * cn / (sin(phi) ** 2)  # Qblade
-
+    if F == 0:
+        F = 1e-6
     if Ct <= 0.888*F:
-        #print("yes")
         a=(1-sqrt(1-Ct/F))/2
     else:
-        #print("no")
         Y=(sqrt(1/36*(Ct/F)**2-145/2187*Ct/F+92/2187)+Ct/(6*F)-145/729)**(1/3)
         a = Y-11/(81*Y)+5/9
     aprime = (4*F*sin(phi)*cos(phi)/(sigma*ct)-1)**-1
@@ -415,12 +421,11 @@ def fInductionCoefficients10(a_last,F,phi,Cl,ct, cn,sigma,*args, **kwargs):
     #else:
     #    Ct = 4*F*(ac**2+(1-2*ac)*a)
     Ct = sigma * (1 - a_last) ** 2 * cn / (sin(phi) ** 2)  # Qblade
-
+    if F == 0:
+        F = 1e-6
     if Ct <= 0.64*F:
-        print("yes")
         a = (1-sqrt(1-Ct/F))/2
     else:
-        print("no")
         a = (Ct-4*F*ac**2)/(4*F*(1-2*ac))
     print(a)
 
@@ -622,6 +627,25 @@ class Calculator:
 
     def __init__(self, curves):
         self.curves = curves
+        for blade_name in self.curves:
+            AoA_cL = self.curves[blade_name]["AoA_cL"]
+            cL = self.curves[blade_name]["cL"]
+            AoA_cD = self.curves[blade_name]["AoA_cD"]
+            cD = self.curves[blade_name]["cD"]
+            f_c_L = interpolate.interp1d(
+                AoA_cL, cL, fill_value=(cL[0], cL[-1]), bounds_error=False
+            )
+            f_c_D = interpolate.interp1d(
+                AoA_cD, cD, fill_value=(cD[0], cD[-1]), bounds_error=False
+            )
+            inverse_f_c_L = interpolate.interp1d(
+                cL, AoA_cL, fill_value=(AoA_cL[0], AoA_cL[-1]), bounds_error=False
+            )
+            alpha_zero = inverse_f_c_L(0.0)
+            self.curves[blade_name]["f_c_L"] = f_c_L
+            self.curves[blade_name]["f_c_D"] = f_c_D
+            self.curves[blade_name]["inverse_f_c_L"] = inverse_f_c_L
+            self.curves[blade_name]["alpha_zero"] = alpha_zero
         #self.alpha_zero = self.inverse_f_c_L(0.0) #TODO CHECK
 
     def printer(self, _locals, p):
@@ -801,16 +825,16 @@ class Calculator:
                 if tip_loss:
                     F = F * fTipLoss(B, _r, R, phi)
 
+                # New tip loss
+                elif new_tip_loss:
+                    F = F * newTipLoss(B, _r, R, phi, lambda_r)
+
                 # Prandtl hub loss
                 if hub_loss:
                     F = F * fHubLoss(B, _r, Rhub, phi)
 
-                # New tip loss
-                if new_tip_loss:
-                    F = F * newTipLoss(B, _r, R, phi, lambda_r)
-
                 # New hub loss
-                if new_hub_loss:
+                elif new_hub_loss:
                     F = F * newHubLoss(B, _r, R, phi, lambda_r)
 
                 # angle of attack
@@ -922,7 +946,7 @@ class Calculator:
 
                 # relaxation
                 a = a_last + relaxation_factor * (a - a_last)
-                # aprime=aprime_last+0.3*(aprime-aprime_last)
+                #aprime=aprime_last+relaxation_factor*(aprime-aprime_last)
 
             ############ END ITERATION ############
             
