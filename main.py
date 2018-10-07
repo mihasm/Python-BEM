@@ -46,18 +46,19 @@ import json
 TITLE_STR = "BEM analiza v%s" % __version__
 
 METHODS_STRINGS = {"0":"Original",
-                             "1":"Spera",
-                             "2":"Wiley (without Ct corr.)",
-                             "3":"Grant Ingram (without Ct corr.)",
-                             "4":"Wiley (with Ct corr.)",
-                             "5":"Propx",
-                             "6":"AeroDyn (modified Glauert)",
-                             "7":"QBlade (modified Glauert)",
-                             "8":"Shen's Ct correction",
-                             "9":"Glauert",
-                             "10":"Wilson and Walker",
-                             "11":"Classical brake state model",
-                             "12":"Advanced brake state model"}
+                   "1":"Spera",
+                   "2":"Wiley (without Ct corr.)",
+                   "3":"Grant Ingram (without Ct corr.)",
+                   "4":"Wiley (with Ct corr.)",
+                   "5":"Propx",
+                   "6":"AeroDyn (modified Glauert)",
+                   "7":"QBlade (modified Glauert)",
+                   "8":"Shen's Ct correction",
+                   "9":"Glauert",
+                   "10":"Wilson and Walker",
+                   "11":"Classical brake state model",
+                   "12":"Advanced brake state model",
+                   "13":"Modified advanced brake state model"}
 
 class MainWindow(QMainWindow):
     emitter_add = pyqtSignal(str)
@@ -705,18 +706,19 @@ class Analysis(QWidget):
         self.main.getter.__del__()
         if not terminated:
             self.p.join()
-            results = self.main.return_results[0]
-            if len(results["v"]) > 0:
-                inp_params = self.runner_input
-                r = ResultsWindow(
-                    self,
-                    self.main.screen_width,
-                    self.main.screen_width,
-                    results,
-                    inp_params,
-                )
-            else:
-                print("Not enough points to print results...")
+            if len(self.main.return_results) > 0:
+                results = self.main.return_results[0]
+                if len(results["v"]) > 0:
+                    inp_params = self.runner_input
+                    r = ResultsWindow(
+                        self,
+                        self.main.screen_width,
+                        self.main.screen_width,
+                        results,
+                        inp_params,
+                    )
+                else:
+                    print("Not enough points to print results...")
 
     def clear(self):
         self.textEdit.clear()

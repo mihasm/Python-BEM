@@ -116,14 +116,78 @@ def sort_xy(array_x, array_y):
         )
 
 
+def transitions_to_nearest_profiles(r,foils):
+    #print("transitioning foils")
+    #print("transition foils before",foils)
+    r_orig = r.copy()
+    foils_orig = foils.copy()
+    if len(r_orig) != len(foils_orig):
+        raise Exception("Lengths of arrays r and foils must match!")
+    for i in range(len(r)):
+        #print("currently checking i",i)
+        #if there is a transition between two foils,
+        #select the closest foil to the given transition
+        if "transition" in foils_orig[i].lower():
+            _r = r[i]
+            nearest_i_down = int(str(i))
+            while True:
+                nearest_i_down -= 1
+                if nearest_i_down < 0:
+                    nearest_i_down = None
+                    break
+                if "transition" in foils_orig[nearest_i_down].lower():
+                    pass
+                else:
+                    break
+            #print("##nearest_i_down",nearest_i_down)
+            nearest_i_up = int(str(i))
+            while True:
+                nearest_i_up += 1
+                if nearest_i_up >= len(r):
+                    nearest_i_up = None
+                    break
+                if "transition" in foils_orig[nearest_i_up].lower():
+                    pass
+                else:
+                    break
+            #print("##nearest_i_up",nearest_i_up)
+
+            if nearest_i_up == None and nearest_i_down == None:
+                raise Exception("Transition %s doesn't end with any profile"%i)
+
+            if nearest_i_down != None:
+                dr_down = abs(_r-r[nearest_i_down])
+
+            if nearest_i_up != None:
+                dr_up = abs(_r-r[nearest_i_up])
+
+            if nearest_i_up != None and nearest_i_down != None:
+                if dr_down < dr_up:
+                    best_i = nearest_i_down
+                else:
+                    best_i = nearest_i_up
+            else:
+                if nearest_i_up:
+                    best_i = nearest_i_up
+                else:
+                    best_i = nearest_i_down
+
+            foils[i] = foils_orig[best_i]
+    #print("transition foils after",foils)
+    return foils
+
+
 def interpolate_geom(r, c, theta, foils, num=None, linspace_interp=False):
     """
     interpolates c,r,theta with num elements:
     """
+    #print("interpolating")
+    #print("foils before",foils)
     c_interpolator = interpolate.interp1d(r, c)
     theta_interpolator = interpolate.interp1d(r, theta)
-    r_orig = numpy.copy(r)
+    r_orig = r.copy()
     foils_orig = foils.copy()
+    foils_orig = transitions_to_nearest_profiles(r_orig,foils_orig)
     if linspace_interp:
         r = numpy.linspace(start=r[0], stop=r[-1], num=num + 1)
         c = c_interpolator(r)
@@ -132,6 +196,8 @@ def interpolate_geom(r, c, theta, foils, num=None, linspace_interp=False):
         for _r in r:
             closest_index = find_nearest(r_orig,_r)
             foils.append(foils_orig[closest_index])
+    else:
+        foils = foils_orig
 
     #calculate dr
     r_shifted = [r[0]]
@@ -139,7 +205,9 @@ def interpolate_geom(r, c, theta, foils, num=None, linspace_interp=False):
         r_shifted.append(_r)
     r_shifted = array(r_shifted[:-1])
     dr = r - r_shifted
+    #print("foils after",foils)
     return r, c, theta, foils, dr
+
 
 def find_nearest(array, value):
     array = numpy.asarray(array)

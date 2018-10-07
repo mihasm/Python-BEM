@@ -427,7 +427,7 @@ def fInductionCoefficients10(a_last,F,phi,Cl,ct, cn,sigma,*args, **kwargs):
         a = (1-sqrt(1-Ct/F))/2
     else:
         a = (Ct-4*F*ac**2)/(4*F*(1-2*ac))
-    print(a)
+    #print(a)
 
     aprime = (4*F*sin(phi)*cos(phi)/(sigma*ct)-1)**-1
 
@@ -465,6 +465,30 @@ def fInductionCoefficients12(a_last,F,phi,Cl,ct,cn,sigma,lambda_r,*args, **kwarg
 
     a = (18*F-20-3*sqrt(abs(ct*(50-36*F)+12*F*(3*F-4))))/(36*F-50)
     aprime = (4*F*sin(phi)*cos(phi)/(sigma*ct)-1)**-1
+    return a, aprime, Ct
+
+def fInductionCoefficients13(a_last,F,phi,Cl,ct,cn,sigma,lambda_r,*args, **kwargs):
+    """
+    Method from Pratumnopharat,2010
+
+    Modified advanced brake state model
+    """
+    a=a_last
+    #if a <= 0.4:
+    #    Ct = 4*a*F*(1-a)
+    #else:
+    #    Ct=8/9+(4*F-40/9)*a+(50/9-4*F)*a**2
+    Ct = sigma * (1 - a_last) ** 2 * cn / (sin(phi) ** 2)  # Qblade
+    if Ct < 0.96*F:
+        a = (1-sqrt(1-Ct/F))/2
+    else:
+        a=0.1432+sqrt(-0.55106+0.6427*Ct/F)
+    aprimeprime = (4*a*F*(1-a))/(lambda_r**2)
+    if (1+aprimeprime) < 0:
+        aprime = 0
+    else:
+        aprime = (sqrt(1+aprimeprime)-1)/2
+
     return a, aprime, Ct
 
 
@@ -617,6 +641,8 @@ def calculate_coefficients(method, input_arguments):
         return fInductionCoefficients11(**input_arguments)
     if method == 12:
         return fInductionCoefficients12(**input_arguments)
+    if method == 13:
+        return fInductionCoefficients13(**input_arguments)
     raise Exception("Method "+str(method)+" does not exist.")
 
 
@@ -942,6 +968,7 @@ class Calculator:
                                 "|------>a:", a, " aprime", aprime,
                                 )
                         prepend = "|"
+                    return None
                     break
 
                 # relaxation

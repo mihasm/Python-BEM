@@ -14,6 +14,7 @@ $pyinstaller preracun_vetrnica.py
 >>--paths C:\\Users\\miha\\AppData\\Local\\Programs\\Python\\Python36-32\\lib\\site-packages\\scipy\\extra-dll
 >>--hidden-import='scipy._lib.messagestream'
 """
+import sys, traceback
 
 import numpy
 from mpl_toolkits.mplot3d import Axes3D
@@ -35,14 +36,21 @@ def calculate_power(inp_args):
 
     :return: dict with results
     """
+    p = Printer(inp_args["return_print"])
     if "add_angle" in inp_args:
         if inp_args["add_angle"] != None:
             inp_args["theta"] = inp_args["theta"] + inp_args["add_angle"]
-    results = Calculator(inp_args["curves"]).run_array(**inp_args)
-    return results
+    try:
+        results = Calculator(inp_args["curves"]).run_array(**inp_args)
+        return results
+    except:
+        p.print("!!!!EOF!!!!")
+        traceback.print_exc(file=sys.stdout)
+        raise
+        #return "!!!!EOF!!!!"
 
 
-def calculate_power_3d(inp_args,print_eof=True):
+def calculate_power_3d(inp_args,print_eof=True,prepend="",print_out=True):
     """
     Calculates power for given geometry and data for every windspeed and rpm.
 
@@ -66,14 +74,17 @@ def calculate_power_3d(inp_args,print_eof=True):
                     num=inp_args["rpm_num"],
                 )
         ):
-            p.print("Calculating power for v:", v, "[m/s], rpm:", rpm, "[RPM].")
+            if print_out:
+                p.print(prepend+"Calculating power for v:", v, "[m/s], rpm:", rpm, "[RPM].")
             _inp_args = {**inp_args}
             _inp_args["v"] = v
             _inp_args["rpm"] = rpm
             _results = calculate_power(_inp_args)
-            p.print("    Power:", _results["power"], "[W], Cp:", _results["cp"], ".")
-
+            if _results == "!!!!EOF!!!!":
+                return None
             if _results != None and _results["power"]:
+                if print_out:
+                    p.print(prepend+"    Power:", _results["power"], "[W], Cp:", _results["cp"], ".")
                 for key, value in _results.items():
                     if key not in results_3d:
                         results_3d[key] = []
