@@ -101,11 +101,11 @@ class ResultsWindow(QMainWindow):
         f4 = self.tab_widget.add_tab_figure("Ct krivulja")
         self.tab_widget.add_2d_plot_to_figure(
             f4,
-            results_3d["a"],
-            results_3d["Ct"],
+            results_3d["TSR"],
+            results_3d["ct"],
             111,
             "ct krivulja",
-            "a",
+            "TSR",
             "ct",
             look="o",
         )

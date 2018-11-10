@@ -46,19 +46,19 @@ import json
 TITLE_STR = "BEM analiza v%s" % __version__
 
 METHODS_STRINGS = {"0":"Original",
-                   "1":"Spera",
-                   "2":"Wiley (without Ct corr.)",
+                   "1":"b) Spera",
+                   "2":"Wiley: Strip theory, incl. wake rot.",
                    "3":"Grant Ingram (without Ct corr.)",
-                   "4":"Wiley (with Ct corr.)",
+                   "4":"f) Glauert empirical",
                    "5":"Propx",
-                   "6":"AeroDyn (modified Glauert)",
-                   "7":"QBlade (modified Glauert)",
-                   "8":"Shen's Ct correction",
-                   "9":"Glauert",
+                   "6":"e) Aerodyn (Buhl)",
+                   "7":"QBlade (Buhl)",
+                   "8":"d) Shen",
+                   "9":"a) Glauert",
                    "10":"Wilson and Walker",
                    "11":"Classical brake state model",
                    "12":"Advanced brake state model",
-                   "13":"Modified advanced brake state model"}
+                   "13":"c) Modified ABS model"}
 
 class MainWindow(QMainWindow):
     emitter_add = pyqtSignal(str)
@@ -140,6 +140,7 @@ class MainWindow(QMainWindow):
         self.set_title()
 
     def get_all_settings(self):
+        valid_foils = list(self.curve_manager.get_settings()["curves"].keys()) + ["transition","Transition"]
         try:
             properties = self.wind_turbine_properties.get_settings()
             #curves = self.curves.get_settings()
@@ -156,7 +157,7 @@ class MainWindow(QMainWindow):
             )
             out["r"], out["c"], out["theta"], out["foils"], out["dr"] = r, c, theta, foils, dr
             out["r_in"], out["c_in"], out["theta_in"], out["foils_in"] = _r, _c, _theta, _foils
-            print(out)
+            #print(out)
             return out
         except Exception as e:
             msg = QMessageBox()
@@ -169,7 +170,6 @@ class MainWindow(QMainWindow):
 
     def set_all_settings(self, inp_dict):
         self.analysis.set_settings(inp_dict)
-        #self.curves.set_settings(inp_dict)
         self.optimization.set_settings(inp_dict)
         self.wind_turbine_properties.set_settings(inp_dict)
         self.curve_manager.set_settings(inp_dict)
@@ -416,6 +416,11 @@ class Curves(QWidget):
         self.table_cd.set_labels(["AoA", "Cd"])
         grid.addWidget(self.table_cd, 1, 2)
 
+        self.max_thickness_str = QLabel("Maximum thickness [ratio of chord length]:")
+        self.max_thickness = QLineEdit()
+        grid.addWidget(self.max_thickness_str,2,1)
+        grid.addWidget(self.max_thickness,2,2)
+
 
     def get_settings(self):
         AoA_cL = []
@@ -453,6 +458,7 @@ class Curves(QWidget):
             cL, AoA_cL, fill_value=(AoA_cL[0], AoA_cL[-1]), bounds_error=False
         )
         alpha_zero = inverse_f_c_L(0.0)
+        max_thickness = float(self.max_thickness.text())
         return {
             #"f_c_L": f_c_L,
             #"f_c_D": f_c_D,
@@ -460,6 +466,7 @@ class Curves(QWidget):
             "AoA_cD": AoA_cD,
             "cL": cL,
             "cD": cD,
+            "max_thickness": max_thickness
             #"inverse_f_c_L": inverse_f_c_L,
             #"alpha_zero":alpha_zero,
         }
@@ -477,6 +484,8 @@ class Curves(QWidget):
             )
         self.table_cl.createTable(array_cl)
         self.table_cd.createTable(array_cd)
+        #print(dict_settings)
+        self.max_thickness.setText(str(dict_settings["max_thickness"]))
 
 
 class Analysis(QWidget):

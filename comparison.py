@@ -8,19 +8,16 @@ import matplotlib.pyplot as plt
 from cycler import cycler
 from utils import Printer
 
-
-#cycler_map = (cycler('color', ['k']) * cycler('linestyle', ['-.','--', ':']) * cycler('marker', ['^',',','.','x'])) #Monochrome
-cycler_map = (cycler('linestyle', ['-','-.','--', ':']) * cycler('color', ['r','g','b','c']) * cycler('marker', [',']))
-c = Calculator(SET_INIT["curves"])
+#set the default values
 SET_INIT["return_print"] = []
 SET_INIT["return_results"] = []
 
-#SET_INIT["tip_loss"] = True
-#SET_INIT["hub_loss"] = True
-#SET_INIT["new_tip_loss"] = True
-#SET_INIT["new_hub_loss"] = True
-#SET_INIT["cascade_correction"] = True
-#SET_INIT["rotational_augmentation_correction"] = True
+#initialize the calculator
+c = Calculator(SET_INIT["curves"])
+
+#cycler_map = (cycler('color', ['k']) * cycler('linestyle', ['-.','--', ':']) * cycler('marker', ['^',',','.','x'])) #Monochrome
+#cycler_map = (cycler('linestyle', ['-','-.','--', ':']) * cycler('color', ['r','g','b']) * cycler('marker', ['']))
+cycler_map = (cycler('linestyle', ['-','--']) * cycler('marker', ['',"^","o"]) * cycler('color', ['r','g','b',"y"]) )
 
 def title_gen(SET_INIT):
     title = "Comparison of BEM methods"
@@ -71,6 +68,11 @@ error_x=[0.463678516,0.927357032,1.391035549,1.808346213,2.225656878,2.819165379
 error_y=[0.007567568,0.015135135,0.024216216,0.040864865,0.062054054,0.104432432,0.225513514,0.373837838,0.405621622,0.447243243,0.47372973,0.483567568,0.485081081,0.479027027,0.466162162,0.444972973,0.413189189,0.371567568,0.324648649,0.271675676,0.211891892,0.146810811,0.084756757,0.009837838]
 error_size=numpy.array([0.004540541,0.007567568,0.015135135,0.024216216,0.015135135,0.027243243,0.028756757,0.056,0.485837838,0.354162162,0.060540541,0.059027027,0.045405405,0.042378378,0.042378378,0.049945946,0.051459459,0.059027027,0.056,0.051459459,0.048432432,0.049945946,0.046918919,0.052972973])/2.
 
+exp_lambda_ct = [0.480291971,0.909489051,1.389781022,1.808759124,2.217518248,2.810218978,3.300729927,3.781021898,4.251094891,4.741605839,5.211678832,5.681751825,6.182481752,6.652554745,7.122627737,7.633576642,8.083211679,8.553284672,9.04379562,9.513868613,9.983941606,10.48467153,10.94452555,11.41459854]
+exp_ct = [0.214084507,0.264788732,0.307042254,0.354929577,0.408450704,0.487323944,0.591549296,0.752112676,0.902816901,0.930985915,0.957746479,1.004225352,1.050704225,1.088732394,1.123943662,1.16056338,1.191549296,1.221126761,1.246478873,1.266197183,1.287323944,1.307042254,1.328169014,1.349295775]
+exp_ct_error_size = [0.002816901,0.016901408,0.014084507,0.012676056,0.047887324,0.012676056,0.008450704,0.012676056,0.067605634,0.046478873,0.008450704,0.008450704,0.005633803,0.007042254,0.007042254,0.005633803,0.007042254,0.004225352,0.004225352,0.001408451,0.002816901,0.004225352,0.001408451,0.001408451]
+
+
             #[tiploss,hubloss,newtiploss,newhubloss,cascadeffects]
 variants = [[False,False,False,False,False],
             [True,False,False,False,False],
@@ -86,34 +88,61 @@ variants = [[False,False,False,False,False],
 def comparison_runner(inp_settings,TSR_exp,CP_exp,error_x,error_y,error_size):
     p = Printer(inp_settings["return_print"])
 
-    for i in range(len(variants)):
-
-        plt.figure(i)
+    for i in range(len(variants[:])):
 
         p.print("Running variant",i,"/",len(variants))
         inp_settings["tip_loss"],inp_settings["hub_loss"],inp_settings["new_tip_loss"],inp_settings["new_hub_loss"],inp_settings["cascade_correction"] = variants[i]
         
         title =title_gen(inp_settings)
-        fig, ax = plt.subplots(1,1,figsize=(10, 5))
-        plt.plot(TSR_exp,CP_exp,label="Experimental data",color="black")
-        plt.errorbar(error_x,error_y,error_size,capsize=2,color="black")
-        ax.set_prop_cycle(cycler_map)
+        #fig, (ax0,ax1) = plt.subplots(1,2,figsize=(10, 4),num=i)
+        fig,ax0 = plt.subplots(1,1,figsize=(10, 4),num=i)
+        fig.suptitle(title)
+        
+        #draw defaults on left ax
+        ax0.plot(TSR_exp,CP_exp,label="Experimental data",color="black")
+        ax0.errorbar(error_x,error_y,error_size,capsize=2,color="black",linestyle="")
+        ax0.set_prop_cycle(cycler_map)
+        ax0.grid(which="both")
 
-        for j in [0,1,2,4,6,7,8,9,10,13]: #+1 for counting max number in
+        ##draw defaults on right ax
+        ##ax1.plot(exp_lambda_ct,exp_ct,label="Experimental data",color="black")
+        #ax1.errorbar(exp_lambda_ct,exp_ct,exp_ct_error_size,capsize=2,color="black")
+        #ax1.set_prop_cycle(cycler_map)
+        #ax1.grid(which="both")
+        
+        
+        #Labels
+        ax0.set_xlabel(r"$\lambda$")
+        ax0.set_ylabel(r"$C_p$")
+        #ax1.set_xlabel(r"$\lambda$")
+        #ax1.set_ylabel(r"$C_T$")
+
+        #calculate and draw BEM results
+        for j in [0,9,1,13,8,6,4][:]:
             inp_settings["method"] = j
             p.print("    Calculating using method",j,"(%s)"%METHODS_STRINGS[str(j)])
             res = calculate_power_3d(inp_settings,False,"    ",False)
             TSR, CP = sort_xy(res["TSR"], res["cp"])
-            plt.plot(TSR,CP,label=METHODS_STRINGS[str(j)])
+            ax0.plot(TSR,CP,label=METHODS_STRINGS[str(j)])
+            #TSR,CT = sort_xy(res["TSR"],res["ct"])
+            #ax1.plot(TSR,CT,label=METHODS_STRINGS[str(j)])
 
-        plt.xlabel(r"$\lambda_r$")
-        plt.ylabel(r"$C_p$")
-        plt.title(title,fontsize="x-small")
-        plt.grid(which="both")
-        plt.legend(loc=2,fontsize="x-small") # 1="upper right" 2="upper left"
+        #legend
+        ##ax0.legend(loc=2,fontsize="x-small") # 1="upper right" 2="upper left"
+        ##ax1.legend(loc=2,fontsize="x-small") # 1="upper right" 2="upper left"
+        handles, labels = ax0.get_legend_handles_labels()
+        fig.legend(handles, labels, loc='right')
+
+
+        #fit legend
+        plt.tight_layout()
+        plt.subplots_adjust(right=0.75,top=0.9)
+
+        #save figure to file
         out_title = './out/Fig%s.png' % str(i)
         print(out_title)
         fig.savefig(out_title, bbox_inches='tight')
+
     plt.show()
 
 comparison_runner(SET_INIT,TSR_exp,CP_exp,error_x,error_y,error_size)

@@ -232,7 +232,7 @@ class Printer:
             if i > 0:
                 out_str += " "
             if isinstance(a, float):
-                a = "%.2f" % round(a, 2)
+                a = "%.3f" % round(a, 3)
             out_str += str(a)
             i += 1
         print(out_str)

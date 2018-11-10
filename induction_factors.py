@@ -135,8 +135,7 @@ def fInductionCoefficients0(F, phi, sigma, cn, ct, *args, **kwargs):
     
     a = (sigma * cn) / (4 * F * sin(phi) ** 2 + sigma * cn)
     aprime = (sigma * ct) / (4 * F * sin(phi) * cos(phi) - sigma * ct)
-    #Ct = 4*a*(1-a)
-    Ct = sigma * (1 - a) ** 2 * cn / (sin(phi) ** 2)  # Qblade
+    Ct = sigma * (1 - a) ** 2 * cn / (sin(phi) ** 2)
     return a, aprime, Ct
 
 
@@ -146,6 +145,9 @@ def fInductionCoefficients1(F, phi, sigma, cn, ct, *args, **kwargs):
     Calculates induction coefficients using method using Spera correction only
     https://cmm2017.sciencesconf.org/129068/document
 
+    Spera 1994
+
+
     :param F: loss factors
     :param phi: relative wind [rad]
     :param sigma: solidity
@@ -154,8 +156,7 @@ def fInductionCoefficients1(F, phi, sigma, cn, ct, *args, **kwargs):
     :return: axial induction factor, tangential induction factor
     """
     a = (sigma * cn) / (4 * F * sin(phi) ** 2 + sigma * cn)
-    #Ct = 4*a*(1-a)*F
-    Ct = sigma * (1 - a) ** 2 * cn / (sin(phi) ** 2)  # Qblade
+    Ct = sigma * (1 - a) ** 2 * cn / (sin(phi) ** 2)
 
     # Spera's correction
     if a >= 0.2:
@@ -174,6 +175,8 @@ def fInductionCoefficients2(F, phi, sigma, cn, Cl, *args, **kwargs):
     """
     Calculates induction coefficients using method from
     Wiley,Wind Energy, p.126 (Method 2) == p.128
+
+    #the same as original...
 
     :param Cl: lift coefficient
     :param F: loss factors
@@ -194,6 +197,8 @@ def fInductionCoefficients3(lambda_r, phi, sigma, Cl, cn, *args, **kwargs):
     """
     Calculates induction coefficients using method from
     Wind Turbine Blade Analysis, Grant Ingram, 2011
+    
+    #the same as original
 
     :param lambda_r: local speed ratio
     :param Cl: lift coefficient
@@ -215,6 +220,7 @@ def fInductionCoefficients4(a_last, F, phi, sigma, cn, Cl, *args, **kwargs):
     Calculates induction coefficients using method from
     Wind Energy Explained, Wiley, p.136
     Turbulent Wake State Modeling
+
 
     :param cn: normal coefficient
     :param F: loss factors
@@ -261,7 +267,7 @@ def fInductionCoefficients5(
 
     K = B * c * Cl * cos(phi) * cos(psi) / (8 * pi * r * sin(phi) ** 2)
     a = K / (1 + K)
-   # CTL = 4 * a * F * (1 - a)
+
     CTL = sigma * (1 - a) ** 2 * cn / (sin(phi) ** 2)  # Qblade
     
     if a > 0.2:
@@ -302,6 +308,9 @@ def fInductionCoefficients6(a_last, F, phi, sigma, cn, ct, Cl, *args, **kwargs):
     Calculates induction coefficients using method from
     AeroDyn manual - theory.
 
+    This is equal to Advanced brake state model.
+
+
     :param cn: normal coefficient
     :param a_last: axial induction factor
     :param F: loss factors
@@ -331,6 +340,7 @@ def fInductionCoefficients7(a_last,F, lambda_r, phi, sigma, cn, *args, **kwargs)
     """
     Calculates induction coefficients using method from
     QBlade/src/XBEM/BData.cpp
+
 
     :param lambda_r: local speed ratio
     :param Ct: local thrust coefficient
@@ -362,6 +372,7 @@ def fInductionCoefficients8(a_last,F, phi, sigma, lambda_r, B, r, R, cn, Cl, ct,
     Method from Pratumnopharat,2010
 
     Shen's correction
+
     """
     if F == 0:
         F = 1e-6
@@ -387,15 +398,11 @@ def fInductionCoefficients9(a_last,F,phi,Cl,cn, ct,sigma,*args, **kwargs):
     Method from Pratumnopharat,2010
 
     Glauert method
+
     """
-    #print("F",F)
+    
     a = a_last
-    #if a >= 1/3:
-    #    Ct = 4*a*F*(1-a)
-    #else:
-    #    Ct = 4*a*F*(1-0.25*(5-3*a)*a)
-    #print("Ct",Ct)
-    Ct = sigma * (1 - a_last) ** 2 * cn / (sin(phi) ** 2)  # Qblade
+    Ct = sigma * (1 - a_last) ** 2 * cn / (sin(phi) ** 2)
     if F == 0:
         F = 1e-6
     if Ct <= 0.888*F:
@@ -411,23 +418,19 @@ def fInductionCoefficients10(a_last,F,phi,Cl,ct, cn,sigma,*args, **kwargs):
     Method from Pratumnopharat,2010
 
     Wilson and Walker method
+
     """
     a=a_last
 
     ac = 0.2
 
-    #if a <= ac:
-    #    Ct = 4*a*F*(1-a)
-    #else:
-    #    Ct = 4*F*(ac**2+(1-2*ac)*a)
-    Ct = sigma * (1 - a_last) ** 2 * cn / (sin(phi) ** 2)  # Qblade
+    Ct = sigma * (1 - a_last) ** 2 * cn / (sin(phi) ** 2)
     if F == 0:
         F = 1e-6
     if Ct <= 0.64*F:
         a = (1-sqrt(1-Ct/F))/2
     else:
         a = (Ct-4*F*ac**2)/(4*F*(1-2*ac))
-    #print(a)
 
     aprime = (4*F*sin(phi)*cos(phi)/(sigma*ct)-1)**-1
 
@@ -442,7 +445,6 @@ def fInductionCoefficients11(a_last,F,phi,Cl,ct,cn,sigma,*args, **kwargs):
     """
     a=a_last
     Sw = sigma/(8*sin(phi)**2)*cn
-    #Ct = Sw*(1-a)**2
     Ct = sigma * (1 - a_last) ** 2 * cn / (sin(phi) ** 2)  # Qblade
     a=(2*Sw+F-sqrt(F**2+4*Sw*F*(1-F)))/(2*(Sw+F**2))
     aprime = (4*F*sin(phi)*cos(phi)/(sigma*ct)-1)**-1
@@ -472,6 +474,7 @@ def fInductionCoefficients13(a_last,F,phi,Cl,ct,cn,sigma,lambda_r,*args, **kwarg
     Method from Pratumnopharat,2010
 
     Modified advanced brake state model
+
     """
     a=a_last
     #if a <= 0.4:
@@ -511,7 +514,7 @@ def guessInductionFactors(lambda_r, sigma, theta, f_c_L):
     return a, aprime
 
 
-def cascadeEffectsCorrection(alpha, v, omega, r, R, c, B, a, aprime):
+def cascadeEffectsCorrection(alpha, v, omega, r, R, c, B, a, aprime, tmax):
     """
     Calculates cascade effects and corresponding change in angle of attack.
     Method from PROPX: Definitions, Derivations and Data Flow, C. Harman, 1994
@@ -527,7 +530,7 @@ def cascadeEffectsCorrection(alpha, v, omega, r, R, c, B, a, aprime):
     :return: new angle of attack [rad]
     """
 
-    tmax = 0.02
+    #tmax = 0.02
     delta_alpha_1 = (
             1
             / 4
@@ -810,6 +813,9 @@ class Calculator:
             _theta = radians(theta[n])
             _airfoil = foils[n]
 
+            #get max thickness
+            max_thickness = self.curves[_airfoil]["max_thickness"]*_c
+
             # local speed ratio
             lambda_r = omega * _r / v
 
@@ -877,6 +883,7 @@ class Calculator:
                         B=B,
                         a=a,
                         aprime=aprime,
+                        tmax=max_thickness
                     )
 
                 # lift and drag coefficients
@@ -1011,10 +1018,16 @@ class Calculator:
         Pmax = 0.5 * rho * v ** 3 * pi * R ** 2
         cp = power / Pmax
 
+        dFn = results["dFn"]
+        Fn = numpy.sum(dFn)
+        T=Fn*B
+        ct = T/(0.5*rho*v**2*pi*R**2)
+
         results["R"] = R
         results["rpm"] = rpm
         results["v"] = v
         results["cp"] = cp
+        results["ct"] = ct
         results["TSR"] = TSR
         results["Ft"] = Ft
         results["r"] = r
@@ -1022,6 +1035,7 @@ class Calculator:
         results["M"] = M
         results["Msum"] = Msum
         results["power"] = power
+        results["thrust"] = T
         results["dFt"] = dFt
         results["Rhub"] = Rhub
         results["B"] = B
