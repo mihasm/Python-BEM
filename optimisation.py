@@ -189,6 +189,9 @@ class Optimizer:
                         if power <= power_best:
                             p.print("        New power", power,
                                     "<= old power", power_best)
+
+                            # decrease section r angle by delta back to before
+                            inp_args["theta"][r] -= delta
                             break
                         else:
                             chord_angles[r] = inp_args["theta"][r]
