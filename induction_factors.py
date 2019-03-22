@@ -44,44 +44,37 @@ def xfoil_runner(airfoil,reynolds,alpha,printer):
         printer.print("    Convergence failed, modifying parameters...")
         original_alpha = alpha
         original_reynolds = reynolds
-        #first try and decrease the rounding precision of alpha (minimum one digit)
-        for i in [4,3,2,1]:
-            
-            alpha = round(original_alpha,i)
-            #printer.print("    XFOIL_RUNNER:Reducing alpha roundup to %s" % alpha)
-            o = run_xfoil_analysis(airfoil,reynolds,alpha)
-            if o != False:
-                return o
-        alpha = original_alpha
-        #then try to increase reynolds
-        i = 0
         while True:
-            i+=1
-            if i>= 100:
-                break
-            reynolds+=1e3
-            #printer.print("    XFOIL_RUNNER:Increasing Re to %s" % reynolds)
-            o = run_xfoil_analysis(airfoil,reynolds,alpha)
-            if o != False:
-                return o
+            razmak_x = 0.0
 
-        reynolds = original_reynolds
+            while True:
+                if razmak_x >= 5:
+                    break
+                razmak_x += 0.01
+                alpha_spodnji = original_alpha-razmak_x
+                alpha_zgornji = original_alpha+razmak_x
+                out_spodnji = run_xfoil_analysis(airfoil,reynolds,alpha_spodnji)
+                out_zgornji = run_xfoil_analysis(airfoil,reynolds,alpha_zgornji)
+                if out_spodnji != False and out_zgornji != False:
+                    CL_spodnji = out_spodnji["CL"]
+                    CL_zgornji = out_zgornji["CL"]
+                    dy = CL_zgornji-CL_spodnji
+                    dx = alpha_zgornji-alpha_spodnji
+                    k = dy/dx
+                    n = CL_zgornji-k*alpha_zgornji
+                    CL_interpoliran = k*original_alpha+n
 
-        #then try to decrease reynolds
-        i = 0
-        while True:
-            i+=1
-            if i>= 100:
-                break
-            reynolds-=1e3
-            #printer.print("    XFOIL_RUNNER:Decreasing Re to %s" % reynolds)
-            o = run_xfoil_analysis(airfoil,reynolds,alpha)
-            if o != False:
-                return o
+                    CD_spodnji = out_spodnji["CD"]
+                    CD_zgornji = out_zgornji["CD"]
+                    dy_2 = CD_zgornji - CD_spodnji
+                    k_2 = dy_2/dx
+                    n = CD_zgornji-k_2*alpha_zgornji
+                    CD_interpoliran = k*original_alpha+n
+                    return {"CD":CD_interpoliran,"CL":CL_interpoliran,"out":out_spodnji["out"]+out_zgornji["out"]}
 
-        #If all else fails
-        return False
-        
+            reynolds = reynolds + 1e3
+
+
     else:
         return out
 
