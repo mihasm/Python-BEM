@@ -137,8 +137,11 @@ class Table(QWidget):
 
     def paste(self):
         results = []
+        text = self.clip.text()
+        text = text.replace("   ","\t")
+        text = text.replace("  ","\t")
         reader = csv.reader(
-            self.clip.text().splitlines(), delimiter="\t"
+            text.splitlines(), delimiter="\t"
         )  # change contents to floats
         for row in reader:  # each row is a list
             results.append(row)

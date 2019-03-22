@@ -157,7 +157,7 @@ class MainWindow(QMainWindow):
             )
             out["r"], out["c"], out["theta"], out["foils"], out["dr"] = r, c, theta, foils, dr
             out["r_in"], out["c_in"], out["theta_in"], out["foils_in"] = _r, _c, _theta, _foils
-            #print(out)
+            print(out)
             return out
         except Exception as e:
             msg = QMessageBox()
@@ -169,10 +169,22 @@ class MainWindow(QMainWindow):
             return None
 
     def set_all_settings(self, inp_dict):
-        self.analysis.set_settings(inp_dict)
-        self.optimization.set_settings(inp_dict)
-        self.wind_turbine_properties.set_settings(inp_dict)
-        self.curve_manager.set_settings(inp_dict)
+        try:
+            self.analysis.set_settings(inp_dict)
+        except:
+            print("Error setting analysis settings!")
+        try:
+            self.optimization.set_settings(inp_dict)
+        except:
+            print("Error setting optimization settings!")
+        try:
+            self.wind_turbine_properties.set_settings(inp_dict)
+        except:
+            print("Error setting wind turbine properties settings!")
+        try:
+            self.curve_manager.set_settings(inp_dict)
+        except:
+            print("Error setting curve manager settings!")
 
     def get_input_params(self):
         settings = self.get_all_settings()
@@ -406,15 +418,15 @@ class Curves(QWidget):
         grid = QGridLayout()
         self.setLayout(grid)
 
-        self.table_cl = Table()
-        self.table_cl.createEmpty(2, 50)
-        self.table_cl.set_labels(["AoA", "Cl"])
-        grid.addWidget(self.table_cl, 1, 1)
+        self.table_dat = Table()
+        self.table_dat.createEmpty(2, 50)
+        self.table_dat.set_labels(["x", "y"])
+        grid.addWidget(self.table_dat, 1, 1)
 
-        self.table_cd = Table()
-        self.table_cd.createEmpty(2, 50)
-        self.table_cd.set_labels(["AoA", "Cd"])
-        grid.addWidget(self.table_cd, 1, 2)
+        #self.table_cd = Table()
+        #self.table_cd.createEmpty(2, 50)
+        #self.table_cd.set_labels(["x", "y"])
+        #grid.addWidget(self.table_cd, 1, 2)
 
         self.max_thickness_str = QLabel("Maximum thickness [ratio of chord length]:")
         self.max_thickness = QLineEdit()
@@ -423,67 +435,78 @@ class Curves(QWidget):
 
 
     def get_settings(self):
-        AoA_cL = []
-        cL = []
-        AoA_cD = []
-        cD = []
+        x = []
+        y = []
+        #AoA_cD = []
+        #cD = []
 
-        array_cl = self.table_cl.get_values()
-        for r in array_cl:
+        array_dat = self.table_dat.get_values()
+        for r in array_dat:
             if r[0] != "" and r[1] != "":
-                _AoA = to_float(r[0])
-                _cL = to_float(r[1])
-                if _AoA > 90:
-                    _AoA = _AoA - 180
-                AoA_cL.append(_AoA)
-                cL.append(_cL)
+                _x = to_float(r[0])
+                _y = to_float(r[1])
+                #if _AoA > 90:
+                #    _AoA = _AoA - 180
+                x.append(_x)
+                y.append(_y)
 
-        array_cd = self.table_cd.get_values()
-        for r in array_cd:
-            if r[0] != "" and r[1] != "":
-                _AoA = to_float(r[0])
-                _cD = to_float(r[1])
-                if _AoA > 90:
-                    _AoA = _AoA - 180
-                AoA_cD.append(_AoA)
-                cD.append(_cD)
+        #array_cd = self.table_cd.get_values()
+        #for r in array_cd:
+        #    if r[0] != "" and r[1] != "":
+        #        _AoA = to_float(r[0])
+        #        _cD = to_float(r[1])
+        #        if _AoA > 90:
+        #            _AoA = _AoA - 180
+        #        AoA_cD.append(_AoA)
+        #        cD.append(_cD)
 
-        f_c_L = interpolate.interp1d(
-            AoA_cL, cL, fill_value=(cL[0], cL[-1]), bounds_error=False
-        )
-        f_c_D = interpolate.interp1d(
-            AoA_cD, cD, fill_value=(cD[0], cD[-1]), bounds_error=False
-        )
-        inverse_f_c_L = interpolate.interp1d(
-            cL, AoA_cL, fill_value=(AoA_cL[0], AoA_cL[-1]), bounds_error=False
-        )
-        alpha_zero = inverse_f_c_L(0.0)
+        #f_c_L = interpolate.interp1d(
+        #    AoA_cL, cL, fill_value=(cL[0], cL[-1]), bounds_error=False
+        #)
+        #f_c_D = interpolate.interp1d(
+        #    AoA_cD, cD, fill_value=(cD[0], cD[-1]), bounds_error=False
+        #)
+        #inverse_f_c_L = interpolate.interp1d(
+        #    cL, AoA_cL, fill_value=(AoA_cL[0], AoA_cL[-1]), bounds_error=False
+        #)
+        #alpha_zero = inverse_f_c_L(0.0)
+
         max_thickness = float(self.max_thickness.text())
+        #dat = self.generate_dat()
         return {
             #"f_c_L": f_c_L,
             #"f_c_D": f_c_D,
-            "AoA_cL": AoA_cL,
-            "AoA_cD": AoA_cD,
-            "cL": cL,
-            "cD": cD,
-            "max_thickness": max_thickness
+            #"AoA_cL": AoA_cL,
+            #"AoA_cD": AoA_cD,
+            #"cL": cL,
+            #"cD": cD,
+            "x":x,
+            "y":y,
+            "max_thickness": max_thickness,
+            #"dat":dat
             #"inverse_f_c_L": inverse_f_c_L,
             #"alpha_zero":alpha_zero,
         }
 
+
     def set_settings(self, dict_settings):
-        array_cl = []
-        for r in range(len(dict_settings["AoA_cL"])):
-            array_cl.append(
-                [str(dict_settings["AoA_cL"][r]), str(dict_settings["cL"][r])]
-            )
-        array_cd = []
-        for r in range(len(dict_settings["AoA_cD"])):
-            array_cd.append(
-                [str(dict_settings["AoA_cD"][r]), str(dict_settings["cD"][r])]
-            )
-        self.table_cl.createTable(array_cl)
-        self.table_cd.createTable(array_cd)
+        #array_cl = []
+        #for r in range(len(dict_settings["AoA_cL"])):
+        #    array_cl.append(
+        #        [str(dict_settings["AoA_cL"][r]), str(dict_settings["cL"][r])]
+        #    )
+        #array_cd = []
+        #for r in range(len(dict_settings["AoA_cD"])):
+        #    array_cd.append(
+        #        [str(dict_settings["AoA_cD"][r]), str(dict_settings["cD"][r])]
+        #    )
+        array_dat = []
+        for r in range(len(dict_settings["x"])):
+            array_dat.append(
+                [str(dict_settings["x"][r]), str(dict_settings["y"][r])])
+
+        self.table_dat.createTable(array_dat)
+        #self.table_cd.createTable(array_cd)
         #print(dict_settings)
         self.max_thickness.setText(str(dict_settings["max_thickness"]))
 
@@ -717,17 +740,20 @@ class Analysis(QWidget):
             self.p.join()
             if len(self.main.return_results) > 0:
                 results = self.main.return_results[0]
-                if len(results["v"]) > 0:
-                    inp_params = self.runner_input
-                    r = ResultsWindow(
-                        self,
-                        self.main.screen_width,
-                        self.main.screen_width,
-                        results,
-                        inp_params,
-                    )
+                if "v" in results:
+                    if len(results["v"]) > 0:
+                        inp_params = self.runner_input
+                        r = ResultsWindow(
+                            self,
+                            self.main.screen_width,
+                            self.main.screen_width,
+                            results,
+                            inp_params,
+                        )
+                    else:
+                        print("Not enough points to print results...")
                 else:
-                    print("Not enough points to print results...")
+                    print("No results to print...")
 
     def clear(self):
         self.textEdit.clear()

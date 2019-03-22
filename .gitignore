@@ -3,6 +3,7 @@
 
 #outputs, save files
 /out
+*.dat
 
 # User-specific stuff
 .idea/**/workspace.xml

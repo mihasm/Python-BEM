@@ -24,7 +24,6 @@ from utils import Printer
 
 a = Axes3D  # only for passing code inspection -> Axes3D needs to be imported
 
-
 def calculate_power(inp_args):
     """
     Returns calculated power using BEM analysis.
@@ -37,6 +36,12 @@ def calculate_power(inp_args):
     :return: dict with results
     """
     p = Printer(inp_args["return_print"])
+
+    for f in inp_args["foils_in"]:
+        if not f in inp_args["curves"].keys():
+            p.print("Section foil %s does not exist in airfoil list." % f)
+            raise Exception("Section foil not matching airfoil list error")
+    
     if "add_angle" in inp_args:
         if inp_args["add_angle"] != None:
             inp_args["theta"] = inp_args["theta"] + inp_args["add_angle"]
@@ -79,7 +84,12 @@ def calculate_power_3d(inp_args,print_eof=True,prepend="",print_out=True):
             _inp_args = {**inp_args}
             _inp_args["v"] = v
             _inp_args["rpm"] = rpm
-            _results = calculate_power(_inp_args)
+            try:
+                _results = calculate_power(_inp_args)
+            except:
+                p.print("Error in running calculate_power")
+                p.print("!!!!EOF!!!!")
+                raise
             if _results == "!!!!EOF!!!!":
                 return None
             if _results != None and _results["power"]:
