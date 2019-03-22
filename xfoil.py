@@ -4,7 +4,11 @@ import time
 from subprocess import Popen, PIPE, DEVNULL, STDOUT
 import re
 from threading import Timer
+import sys
 
+xfoil_path = "xfoil.exe"
+if sys.platform.startswith("darwin"):
+    xfoil_path = "xfoil"
 
 def get_coefficients_from_output(output_str):
     lines = output_str.splitlines()
@@ -33,7 +37,7 @@ def get_coefficients_from_output(output_str):
 
 def run_xfoil_analysis(airfoil,reynolds,alpha,iterations=100,print_output = False):
     #print("running xfoil for %s,Re=%s,alpha=%s" % (airfoil,reynolds,alpha))
-    with Popen(os.path.abspath("xfoil.exe"), stdin=PIPE, stdout=PIPE,
+    with Popen(os.path.abspath(xfoil_path), stdin=PIPE, stdout=PIPE,
                universal_newlines=True) as process:
 
         def call(_str,process=process):
