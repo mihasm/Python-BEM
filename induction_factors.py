@@ -14,6 +14,7 @@ import numpy
 from utils import Printer
 from popravki import *
 from xfoil import run_xfoil_analysis
+import os
 
 numpy.seterr(all="raise")
 numpy.seterr(invalid="raise")
@@ -32,7 +33,7 @@ def generate_dat(name,x,y):
                 out += "%.6f  %.6f\n" % (_x,_y)
 
     print(out)
-    f = open(name+".dat","w")
+    f = open(os.path.join("foils",name+".dat"),"w")
     f.write(out)
     f.close()
     return out

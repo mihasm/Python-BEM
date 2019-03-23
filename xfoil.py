@@ -6,9 +6,9 @@ import re
 from threading import Timer
 import sys
 
-xfoil_path = "xfoil.exe"
+xfoil_path = os.path.join("xfoil_executables","xfoil.exe")
 if sys.platform.startswith("darwin"):
-    xfoil_path = "xfoil"
+    xfoil_path = os.path.join("xfoil_executables","xfoil")
 
 def get_coefficients_from_output(output_str):
     lines = output_str.splitlines()
@@ -58,7 +58,7 @@ def run_xfoil_analysis(airfoil,reynolds,alpha,iterations=100,print_output = Fals
             call(airfoil)
         else:
             #open .dat file
-            call("load %s" % airfoil)
+            call("load %s" % os.path.join("foils",airfoil))
         call("oper")
         call("re")
         #rint("settings reynolds")
