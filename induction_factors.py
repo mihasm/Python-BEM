@@ -41,7 +41,7 @@ def xfoil_runner(airfoil,reynolds,alpha,printer):
     #printer.print("xfoil runner")
     out = run_xfoil_analysis(airfoil,reynolds,alpha)
     if out == False:
-        printer.print("    Convergence failed, modifying parameters...")
+        #printer.print("    Convergence failed, modifying parameters...")
         original_alpha = alpha
         original_reynolds = reynolds
         while True:
@@ -51,6 +51,7 @@ def xfoil_runner(airfoil,reynolds,alpha,printer):
                 if razmak_x >= 5:
                     break
                 razmak_x += 0.01
+                #printer.print("razmak_x =",razmak_x)
                 alpha_spodnji = original_alpha-razmak_x
                 alpha_zgornji = original_alpha+razmak_x
                 out_spodnji = run_xfoil_analysis(airfoil,reynolds,alpha_spodnji)
@@ -59,23 +60,25 @@ def xfoil_runner(airfoil,reynolds,alpha,printer):
                     CL_spodnji = out_spodnji["CL"]
                     CL_zgornji = out_zgornji["CL"]
                     dy = CL_zgornji-CL_spodnji
-                    dx = alpha_zgornji-alpha_spodnji
-                    k = dy/dx
-                    n = CL_zgornji-k*alpha_zgornji
-                    CL_interpoliran = k*original_alpha+n
+                    #dx = alpha_zgornji-alpha_spodnji
+                    #k = dy/dx
+                    #n = CL_zgornji-k*alpha_zgornji
+                    CL_interpoliran = CL_spodnji+(dy/2)
 
                     CD_spodnji = out_spodnji["CD"]
                     CD_zgornji = out_zgornji["CD"]
                     dy_2 = CD_zgornji - CD_spodnji
-                    k_2 = dy_2/dx
-                    n = CD_zgornji-k_2*alpha_zgornji
-                    CD_interpoliran = k*original_alpha+n
+                    #k_2 = dy_2/dx
+                    #n = CD_zgornji-k_2*alpha_zgornji
+                    CD_interpoliran = CD_spodnji+(dy_2/2)
+                    printer.print("    CD:",CD_interpoliran,"CL:",CL_interpoliran)
                     return {"CD":CD_interpoliran,"CL":CL_interpoliran,"out":out_spodnji["out"]+out_zgornji["out"]}
 
             reynolds = reynolds + 1e3
 
 
     else:
+        printer.print("    CD:",out["CD"],"CL:",out["CL"])
         return out
 
 
@@ -393,7 +396,7 @@ class Calculator:
                 dFn = dFL * cos(phi) + dFD * sin(phi)  # normal force
 
                 # check convergence
-                if abs(a - a_last) < convergence_limit:
+                if abs(a - a_last) < convergence_limit and abs(aprime-aprime_last) < convergence_limit:
                     break
 
                 # check iterations limit

@@ -25,6 +25,11 @@ def get_coefficients_from_output(output_str):
         b = re.match("(.+)Cm =(.+)CD =(.+)=>.+CDf =(.+)CDp =(.+)",l)
         __,Cm,CD,CDf,CDp = b.groups() if b != None else [__,Cm,CD,CDf,CDp]
     #print(output_str)
+    #Weird case
+    if CL == None or CD == None:
+        return False
+    if "*" in CL or "*" in CD:
+        return False
     out = {
     "CL":float(CL),
     "CD":float(CD),
@@ -66,7 +71,7 @@ def run_xfoil_analysis(airfoil,reynolds,alpha,iterations=100,print_output = Fals
         call("")
         call("quit")
         #print(process.stdout.read())
-        timer = Timer(0.5, process.kill)
+        timer = Timer(0.3, process.kill)
         try:
             timer.start()
             output = process.communicate()[0]
