@@ -18,6 +18,8 @@ import sys, traceback
 
 import numpy
 from mpl_toolkits.mplot3d import Axes3D
+import time
+import datetime
 
 from induction_factors import Calculator
 from utils import Printer
@@ -66,19 +68,24 @@ def calculate_power_3d(inp_args,print_eof=True,prepend="",print_out=True):
     p = Printer(inp_args["return_print"])
     return_results = inp_args["return_results"]
     results_3d = {}
-
-    for v in list(
+    speeds = list(
             numpy.linspace(
                 start=inp_args["v_min"], stop=inp_args["v_max"], num=inp_args["v_num"]
-            )
-    ):
-        for rpm in list(
+            ))
+    rpms = list(
                 numpy.linspace(
                     start=inp_args["rpm_min"],
                     stop=inp_args["rpm_max"],
                     num=inp_args["rpm_num"],
                 )
-        ):
+        )
+    total_iterations = int(len(speeds)*len(rpms))
+    i = 0
+    time_start = time.time()
+    for v in speeds:
+        for rpm in rpms:
+            
+
             if print_out:
                 p.print(prepend+"Calculating power for v:", v, "[m/s], rpm:", rpm, "[RPM].")
             _inp_args = {**inp_args}
@@ -101,6 +108,14 @@ def calculate_power_3d(inp_args,print_eof=True,prepend="",print_out=True):
                 for key, value in _results.items():
                     if 0.0 < _results["cp"] <= 0.6:
                             results_3d[key].append(value)
+
+            i+=1
+            t_now = time.time()-time_start
+            t_left = (total_iterations/i-1)*t_now
+            t_left_str = str(datetime.timedelta(seconds=t_left))
+            eta = str(datetime.datetime.now()+datetime.timedelta(seconds=t_left))
+            p.print("    ### Time left:",t_left_str,"ETA:",eta,"###")
+
 
     for k, v in results_3d.items():
         results_3d[k] = v
