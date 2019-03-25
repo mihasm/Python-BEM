@@ -110,10 +110,11 @@ def calculate_power_3d(inp_args,print_eof=True,prepend="",print_out=True):
                             results_3d[key].append(value)
 
             i+=1
-            t_now = time.time()-time_start
-            t_left = (total_iterations/i-1)*t_now
+            t_now = int(time.time()-time_start)
+            t_left = int((total_iterations/i-1)*t_now)
             t_left_str = str(datetime.timedelta(seconds=t_left))
-            eta = str(datetime.datetime.now()+datetime.timedelta(seconds=t_left))
+            eta_seconds = datetime.datetime.now()+datetime.timedelta(seconds=t_left)
+            eta = str(eta_seconds).split(".")[0]
             p.print("    ### Time left:",t_left_str,"ETA:",eta,"###")
 
 
