@@ -72,14 +72,14 @@ def xfoil_runner(airfoil,reynolds,alpha,printer):
                     #k_2 = dy_2/dx
                     #n = CD_zgornji-k_2*alpha_zgornji
                     CD_interpoliran = CD_spodnji+(dy_2/2)
-                    printer.print("    CD:",CD_interpoliran,"CL:",CL_interpoliran)
+                    #printer.print("    CD:",CD_interpoliran,"CL:",CL_interpoliran)
                     return {"CD":CD_interpoliran,"CL":CL_interpoliran,"out":out_spodnji["out"]+out_zgornji["out"]}
 
             reynolds = reynolds + 1e3
 
 
     else:
-        printer.print("    CD:",out["CD"],"CL:",out["CL"])
+        #printer.print("    CD:",out["CD"],"CL:",out["CL"])
         return out
 
 
@@ -225,7 +225,10 @@ class Calculator:
         TSR = omega * R / v  # tip speed ratio
         kin_viscosity = 1.4207E-5 # Kinematic viscosity
 
+        section_number = 0
+
         for n in range(len(theta)):
+            section_number += 1
             # grab local radius, chord length and twist angle
             _r = r[n]
             _c = c[n]
@@ -247,10 +250,10 @@ class Calculator:
             # Coning angle (PROPX: Definitions,Derivations, Data Flow, p.22)
             psi = 0.0
 
-            # initial guess
-            a = 0.1
-            aprime = 0.01
-            #a,aprime = guessInductionFactors(lambda_r,sigma,_theta,self.f_c_L)
+            ## initial guess
+            #a = 0.1
+            #aprime = 0.01
+            a,aprime = guessInductionFactors(lambda_r,sigma,_theta)
 
             # iterations counter
             i = 0
@@ -309,18 +312,23 @@ class Calculator:
                 # lift and drag coefficients
                 #Cl, Cd = self.f_c_L(degrees(alpha)), self.f_c_D(degrees(alpha))
                 #Cl,Cd = self.curves[_airfoil]["f_c_L"](degrees(alpha)), self.curves[_airfoil]["f_c_D"](degrees(alpha))
-                if print_out or print_all:
+                if print_all:
                     p.print("    Running xfoil for %s,Re=%s,alpha=%s" % (_airfoil,Re,alpha))
+                    #p.print("")
 
                 xfoil_return = xfoil_runner(airfoil=_airfoil+".dat",reynolds=Re,alpha=alpha,printer=p)
 
-                if print_all and xfoil_return != False:
-                    p.print(xfoil_return["out"])
+                #if print_all and xfoil_return != False:
+                #    p.print(xfoil_return["out"])
+
                 if xfoil_return == False:
                     p.print("    Xfoil failed")
                     return None
                     break
+
                 Cl,Cd = xfoil_return["CL"],xfoil_return["CD"]
+                if print_all:
+                    print("CL:",Cl,"Cd:",Cd)
                 #p.print(xfoil_return["out"])
 
                 if rotational_augmentation_correction:
@@ -419,17 +427,20 @@ class Calculator:
             
 
             if print_out:
-                p.print(prepend, "    r", _r)
+                p.print(prepend, "    r", _r, "("+str(section_number)+")")
                 p.print(prepend, "        iters: ", i)
-                p.print(prepend, "        phi: ", degrees(phi))
-                p.print(prepend, "        _theta: ", degrees(_theta))
+                #p.print(prepend, "        phi: ", degrees(phi))
+                #p.print(prepend, "        _theta: ", degrees(_theta))
                 p.print(prepend, "        alpha: ", degrees(alpha)), "Cl", str(Cl)
                 p.print(prepend, "        a: ", a, "a'", str(aprime))
-                p.print(prepend, "        dFt: ", dFt)
+                #p.print(prepend, "        dFt: ", dFt)
                 p.print(prepend, "        LSR: ", lambda_r)
-                p.print(prepend, "        Ct: ", Ct)
+                #p.print(prepend, "        Ct: ", Ct)
                 p.print(prepend, "        Vrel: ", Vrel_norm)
+                p.print(prepend, "        Re:",Re)
                 p.print(prepend, "        foil:",_airfoil)
+                p.print(prepend, "        Cl:",Cl)
+                p.print(prepend, "        Cd:",Cd)
                 p.print(prepend, "    ----------------------------")
 
             results["a"] = numpy.append(results["a"], a)

@@ -6,13 +6,14 @@ __maintainer__ = "Miha Smrekar"
 __email__ = "miha.smrekar9@gmail.com"
 __status__ = "Development"
 
-import matplotlib.pyplot as plt
+
 import numpy
 from PyQt5 import QtWidgets
 from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QMainWindow, QAction
 from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.backends.backend_qt4agg import NavigationToolbar2QT as NavigationToolbar
+import matplotlib.pyplot as plt
 
 from cp_curve import max_calculate
 from table import Table

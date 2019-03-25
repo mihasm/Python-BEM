@@ -480,22 +480,23 @@ def fInductionCoefficients13(a_last,F,phi,Cl,ct,cn,sigma,lambda_r,*args, **kwarg
     return a, aprime, Ct
 
 
-def guessInductionFactors(lambda_r, sigma, theta, f_c_L):
+def guessInductionFactors(lambda_r, sigma, theta):
     """
     Provides initial guess to the function coefficients.
 
-    Method from Wiley, Wind energy explained.
+    Method from Wiley, Wind energy explained (2nd ed.). (3.124,3.125,3.126)
 
     :param lambda_r: local speed ratio
     :param sigma: solidity
     :param theta: twist [rad]
-    :param f_c_L: function for lift calculation
     :return: axial induction factor, tangential induction factor
     """
 
     phi = (2 / 3) * atan(1 / lambda_r)
-    Cl = f_c_L(degrees(theta))
+    #Cl = f_c_L(degrees(theta))
+    Cl = 0.4
     a = 1 / (1 + (4 * sin(phi) ** 2) / (sigma * Cl * cos(phi)))
+    aprime = (1-3*a)/(4*a-1)
     return a, aprime
 
 

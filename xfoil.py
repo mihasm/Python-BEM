@@ -86,4 +86,4 @@ def run_xfoil_analysis(airfoil,reynolds,alpha,iterations=100,print_output = Fals
 
     return get_coefficients_from_output(output)
 
-#print(run_xfoil_analysis("airfoil_name.dat",26820,0.82))
+#print(run_xfoil_analysis("s826.dat",100000,0))

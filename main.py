@@ -32,6 +32,10 @@ from PyQt5.QtGui import QPalette, QColor
 from numpy import array
 from scipy import interpolate
 
+from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
+from matplotlib.backends.backend_qt4agg import NavigationToolbar2QT as NavigationToolbar
+import matplotlib.pyplot as plt
+
 from cp_curve import calculate_power_3d
 from results import ResultsWindow
 from table import Table
@@ -184,8 +188,10 @@ class MainWindow(QMainWindow):
             print("Error setting wind turbine properties settings!")
         try:
             self.curve_manager.set_settings(inp_dict)
-        except:
+        except Exception as e:
+            #print(e)
             print("Error setting curve manager settings!")
+            raise
 
     def get_input_params(self):
         settings = self.get_all_settings()
@@ -424,15 +430,68 @@ class Curves(QWidget):
         self.table_dat.set_labels(["x", "y"])
         grid.addWidget(self.table_dat, 1, 1)
 
+        self.plt = plt.figure(figsize=(10,5))
+        self.canvas = FigureCanvas(self.plt)
+        toolbar = NavigationToolbar(self.canvas,self)
+        grid.addWidget(self.canvas,1,2)
+        self.ax = self.plt.add_subplot(111)
+        grid.addWidget(toolbar,2,2)
+        #self.ax.plot([1,2,3],[4,5,6])
+        #self.ax = self.plt.add_subplot()
+
         #self.table_cd = Table()
         #self.table_cd.createEmpty(2, 50)
         #self.table_cd.set_labels(["x", "y"])
         #grid.addWidget(self.table_cd, 1, 2)
 
-        self.max_thickness_str = QLabel("Maximum thickness [ratio of chord length]:")
-        self.max_thickness = QLineEdit()
-        grid.addWidget(self.max_thickness_str,2,1)
-        grid.addWidget(self.max_thickness,2,2)
+        #self.max_thickness_str = QLabel("Maximum thickness [ratio of chord length]:")
+        #self.max_thickness = QLineEdit()
+        self.buttonRefresh = QPushButton("Refresh curve")
+        #grid.addWidget(self.max_thickness_str,2,1)
+        grid.addWidget(self.buttonRefresh,2,1)
+        self.buttonRefresh.clicked.connect(self.draw_curve)
+
+        self.table_dat.tableWidget.cellChanged.connect(self.draw_curve)
+
+    def draw_curve(self):
+        #print("draw_curve")
+        self.ax.clear()
+        #self.ax = self.plt.add_subplot(111)
+        x_values = []
+        y_values = []
+        array_dat = self.table_dat.get_values()
+        #print(y_values)
+        for r in array_dat:
+            if r[0] != "" and r[1] != "":
+                try:
+                    _x = to_float(r[0])
+                    _y = to_float(r[1])
+                except:
+                    print("Error drawing airfoil because _x or _y isn't a float.")
+                    return
+                x_values.append(_x)
+                y_values.append(_y)
+        #print(y_values)
+        self.ax.set_xlim(0,1)
+        self.ax.set_ylim(-0.5,0.5)
+        self.ax.plot(x_values,y_values)
+        self.plt.canvas.draw()
+
+    def get_max_thickness(self):
+        x = []
+        y = []
+        array_dat = self.table_dat.get_values()
+        for r in array_dat:
+            if r[0] != "" and r[1] != "":
+                _x = to_float(r[0])
+                _y = to_float(r[1])
+                x.append(_x)
+                y.append(_y)
+        y_max = numpy.max(y)
+        y_min = numpy.min(y)
+        thickness = (abs(y_max)+abs(y_min))/1
+        print("Thickness:",thickness)
+        return thickness
 
 
     def get_settings(self):
@@ -472,7 +531,7 @@ class Curves(QWidget):
         #)
         #alpha_zero = inverse_f_c_L(0.0)
 
-        max_thickness = float(self.max_thickness.text())
+        #max_thickness = float(self.max_thickness.text())
         #dat = self.generate_dat()
         return {
             #"f_c_L": f_c_L,
@@ -483,7 +542,7 @@ class Curves(QWidget):
             #"cD": cD,
             "x":x,
             "y":y,
-            "max_thickness": max_thickness,
+            "max_thickness": self.get_max_thickness(),
             #"dat":dat
             #"inverse_f_c_L": inverse_f_c_L,
             #"alpha_zero":alpha_zero,
@@ -509,7 +568,8 @@ class Curves(QWidget):
         self.table_dat.createTable(array_dat)
         #self.table_cd.createTable(array_cd)
         #print(dict_settings)
-        self.max_thickness.setText(str(dict_settings["max_thickness"]))
+        #self.max_thickness.setText(str(dict_settings["max_thickness"]))
+        self.draw_curve()
 
 
 class Analysis(QWidget):
