@@ -601,6 +601,8 @@ class Analysis(QWidget):
             "relaxation_factor": 0.3,
             "print_all": False,
             "print_out": False,
+            "reynolds":50000,
+            "fix_reynolds":False
         }
 
         self.settings_to_name = {
@@ -626,6 +628,8 @@ class Analysis(QWidget):
             "linspace_interp": "Custom number of sections",
             "rotational_augmentation_correction": "Rot. augmentation cor.",
             "rotational_augmentation_correction_method": "Rot. augmentation cor. method",
+            "fix_reynolds":"Fix Reynolds",
+            "reynolds":"Reynolds"
         }
 
         self.methods_to_names = METHODS_STRINGS
@@ -640,7 +644,15 @@ class Analysis(QWidget):
         self.fbox = QFormLayout()
         self.left.setLayout(self.fbox)
 
-        self.grid.addWidget(self.left, 1, 1)
+        self.scroll_area = QtWidgets.QScrollArea()
+        self.scroll_widget = QtWidgets.QWidget()
+        self.scroll_widget_layout = QtWidgets.QVBoxLayout()
+
+        self.scroll_widget.setLayout(self.scroll_widget_layout)
+        self.scroll_area.setWidget(self.left)
+        self.scroll_area.setWidgetResizable(True)
+
+        self.grid.addWidget(self.scroll_area, 1, 1)
 
         self.textEdit = QTextEdit()
         self.textEdit.setReadOnly(True)

@@ -164,6 +164,8 @@ class Calculator:
             return_results,
             rotational_augmentation_correction,
             rotational_augmentation_correction_method,
+            fix_reynolds,
+            reynolds,
             *args,
             **kwargs,
     ):
@@ -270,7 +272,10 @@ class Calculator:
                 Ut = omega * _r * (1 + aprime)
                 Un = v * (1 - a)
                 Vrel_norm = sqrt(Un ** 2 + Ut ** 2)
-                Re = int(Vrel_norm*_c/kin_viscosity)
+                if fix_reynolds:
+                    Re = reynolds
+                else:
+                    Re = int(Vrel_norm*_c/kin_viscosity)
 
                 # relative wind
                 phi = atan2(Un, Ut)
