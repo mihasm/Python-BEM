@@ -3,7 +3,7 @@ from induction_factors import Calculator
 from cp_curve import calculate_power_3d
 from utils import sort_xy
 import numpy
-from main import METHODS_STRINGS
+#from main import METHODS_STRINGS
 import matplotlib.pyplot as plt
 from cycler import cycler
 from utils import Printer
@@ -145,4 +145,4 @@ def comparison_runner(inp_settings,TSR_exp,CP_exp,error_x,error_y,error_size):
 
     plt.show()
 
-comparison_runner(SET_INIT,TSR_exp,CP_exp,error_x,error_y,error_size)
+#comparison_runner(SET_INIT,TSR_exp,CP_exp,error_x,error_y,error_size)

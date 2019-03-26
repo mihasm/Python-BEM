@@ -19,6 +19,9 @@ from cp_curve import max_calculate
 from table import Table
 from utils import sort_xy, dict_to_ar
 
+#### TO REMOVE
+from comparison import TSR_exp, CP_exp
+
 
 class ResultsWindow(QMainWindow):
     def __init__(self, parent, width, height, results_3d, input_data):
@@ -89,6 +92,8 @@ class ResultsWindow(QMainWindow):
         self.tab_widget.add_2d_plot_to_figure(
             f2, TSR, CP, 122, "Cp krivulja", "lambda", "Cp", look="o"
         )
+        self.tab_widget.add_2d_plot_to_figure(
+            f2,TSR_exp,CP_exp, 122, "Cp_exp", "lambda", "Cp",look="-r")
         # noinspection PyBroadException
         try:
             if len(X) >= 3 and len(Y) >= 3:

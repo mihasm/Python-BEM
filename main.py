@@ -188,10 +188,10 @@ class MainWindow(QMainWindow):
             print("Error setting wind turbine properties settings!")
         try:
             self.curve_manager.set_settings(inp_dict)
-        except Exception as e:
+        except:
             #print(e)
             print("Error setting curve manager settings!")
-            raise
+            #raise
 
     def get_input_params(self):
         settings = self.get_all_settings()
