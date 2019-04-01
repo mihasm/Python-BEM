@@ -13,7 +13,7 @@ SET_INIT["return_print"] = []
 SET_INIT["return_results"] = []
 
 #initialize the calculator
-c = Calculator(SET_INIT["curves"])
+#c = Calculator(SET_INIT["curves"])
 
 #cycler_map = (cycler('color', ['k']) * cycler('linestyle', ['-.','--', ':']) * cycler('marker', ['^',',','.','x'])) #Monochrome
 #cycler_map = (cycler('linestyle', ['-','-.','--', ':']) * cycler('color', ['r','g','b']) * cycler('marker', ['']))

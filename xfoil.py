@@ -55,6 +55,7 @@ def run_xfoil_analysis(airfoil,reynolds,alpha,iterations=100,print_output = Fals
 
         if "naca" in airfoil.lower():
             #treat as standard naca airfoil
+            airfoil = airfoil.replace(".dat","").strip()
             call(airfoil)
         else:
             #open .dat file

@@ -94,8 +94,8 @@ class ResultsWindow(QMainWindow):
         )
         
         #for comparison Karlsen et al., S826, 0.45m, 3B
-        #self.tab_widget.add_2d_plot_to_figure(
-        #    f2,TSR_exp,CP_exp, 122, "Cp_exp", "lambda", "Cp",look="-r")
+        self.tab_widget.add_2d_plot_to_figure(
+            f2,TSR_exp,CP_exp, 122, "Cp_exp", "lambda", "Cp",look="-r")
         
 
         # noinspection PyBroadException
@@ -111,14 +111,36 @@ class ResultsWindow(QMainWindow):
         f4 = self.tab_widget.add_tab_figure("Ct krivulja")
         self.tab_widget.add_2d_plot_to_figure(
             f4,
-            results_3d["TSR"],
-            results_3d["ct"],
+            results_3d["a"],
+            results_3d["Ct"],
             111,
-            "ct krivulja",
-            "TSR",
-            "ct",
+            "Ct(a) krivulja",
+            "a",
+            "Ct",
             look="o",
         )
+
+        f5 = self.tab_widget.add_tab_figure("ct/J krivulja (propeler)")
+        self.tab_widget.add_2d_plot_to_figure(
+            f5,
+            results_3d["J"],
+            results_3d["ct"],
+            111,
+            "ct(J) krivulja",
+            "J = 1/lambda",
+            "ct",
+            look="og")
+
+        f6 = self.tab_widget.add_tab_figure("cp/J krivulja (propeler)")
+        self.tab_widget.add_2d_plot_to_figure(
+            f6,
+            results_3d['J'],
+            results_3d['cp'],
+            111,
+            'cp(J) krivulja',
+            'J',
+            'cp',
+            look='og')
 
         data = dict_to_ar(results_3d)
         t = Table()

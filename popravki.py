@@ -2,6 +2,10 @@ import numbers
 from math import sin, cos, atan, acos, pi, exp, sqrt, radians, atan2, degrees, tan
 from scipy import interpolate
 
+def machNumberCorrection(Cl,M):
+    Cl = Cl/sqrt(1-M**2)
+    return Cl
+
 def fTipLoss(B, r, R, phi):
     """
     Prandtl tip loss.
@@ -80,10 +84,10 @@ def newHubLoss(B, r, Rhub, phi, lambda_r):
     return F
 
 
-def newLosses(cn, ct, B, r, R, phi, lambda_r, Rhub=None):
+def newLosses(C_norm, C_tang, B, r, R, phi, lambda_r, Rhub=None):
     """
     Combines Prandtl tip and hub losses with corrections.
-    :param cn: normal coefficient [float]
+    :param C_norm: normal coefficient [float]
     :param ct: thrust coefficient [float]
     :param B: number of blades [int]
     :param r: section radius [m]
@@ -91,7 +95,7 @@ def newLosses(cn, ct, B, r, R, phi, lambda_r, Rhub=None):
     :param phi: angle of relative wind [rad]
     :param lambda_r: local speed ratio [float]
     :param Rhub: hub radius [m]
-    :return: cn,ct with included losses
+    :return: C_norm,ct with included losses
     """
     tiploss = newTipLoss(B, r, R, phi, lambda_r)
     if Rhub:
@@ -99,34 +103,36 @@ def newLosses(cn, ct, B, r, R, phi, lambda_r, Rhub=None):
     else:
         hubloss = 1.0
     Fl = tiploss * hubloss
-    cn = cn * Fl
-    ct = ct * Fl
-    return cn, ct
+    C_norm = C_norm * Fl
+    C_tang = C_tang * Fl
+    return C_norm, C_tang
 
 
 # noinspection PyUnusedLocal,PyUnusedLocal
-def fInductionCoefficients0(F, phi, sigma, cn, ct, *args, **kwargs):
+def fInductionCoefficients0(F, phi, sigma, C_norm, C_tang, *args, **kwargs):
     """
+    NAME: Original
     METHOD FROM http://orbit.dtu.dk/files/86307371/A_Detailed_Study_of_the_Rotational.pdf
     Basically, original method without any corrections.
 
     :param F: loss factors
     :param phi: relative wind [rad]
     :param sigma: solidity
-    :param cn: normal coefficient
-    :param ct: thrust coefficient
+    :param C_norm: normal coefficient
+    :param C_tang: thrust coefficient
     :return: axial induction factor, tangential induction factor
     """
     
-    a = (sigma * cn) / (4 * F * sin(phi) ** 2 + sigma * cn)
-    aprime = (sigma * ct) / (4 * F * sin(phi) * cos(phi) - sigma * ct)
-    Ct = sigma * (1 - a) ** 2 * cn / (sin(phi) ** 2)
+    a = (sigma * C_norm) / (4 * F * sin(phi) ** 2 + sigma * C_norm)
+    aprime = (sigma * C_tang) / (4 * F * sin(phi) * cos(phi) - sigma * C_tang)
+    Ct = sigma * (1 - a) ** 2 * C_norm / (sin(phi) ** 2)
     return a, aprime, Ct
 
 
 # noinspection PyUnusedLocal,PyUnusedLocal
-def fInductionCoefficients1(F, phi, sigma, cn, ct, *args, **kwargs):
+def fInductionCoefficients1(F, phi, sigma, C_norm, C_tang, *args, **kwargs):
     """
+    NAME: Spera
     Calculates induction coefficients using method using Spera correction only
     https://cmm2017.sciencesconf.org/129068/document
 
@@ -136,54 +142,57 @@ def fInductionCoefficients1(F, phi, sigma, cn, ct, *args, **kwargs):
     :param F: loss factors
     :param phi: relative wind [rad]
     :param sigma: solidity
-    :param cn: normal coefficient
+    :param C_norm: normal coefficient
     :param ct: thrust coefficient
     :return: axial induction factor, tangential induction factor
     """
-    a = (sigma * cn) / (4 * F * sin(phi) ** 2 + sigma * cn)
-    Ct = sigma * (1 - a) ** 2 * cn / (sin(phi) ** 2)
+    a = (sigma * C_norm) / (4 * F * sin(phi) ** 2 + sigma * C_norm)
+    Ct = sigma * (1 - a) ** 2 * C_norm / (sin(phi) ** 2)
 
     # Spera's correction
     if a >= 0.2:
         ac = 0.2
-        K = (4 * F * sin(phi) ** 2) / (sigma * cn)
+        K = (4 * F * sin(phi) ** 2) / (sigma * C_norm)
         to_sqrt = abs((K * (1 - 2 * ac) + 2) ** 2 + 4 * (K * ac ** 2 - 1))
         a = 1 + 0.5 * K * (1 - 2 * ac) - 0.5 * sqrt(to_sqrt)
         #Ct = 4*(ac**2+(1-2*ac)*a)*F
 
-    aprime = (sigma * ct) / (4 * F * sin(phi) * cos(phi) - sigma * ct)
+    aprime = (sigma * C_tang) / (4 * F * sin(phi) * cos(phi) - sigma * C_tang)
     return a, aprime, Ct
 
 
 # noinspection PyUnusedLocal,PyUnusedLocal,PyUnusedLocal
-def fInductionCoefficients2(F, phi, sigma, cn, Cl, *args, **kwargs):
+def fInductionCoefficients2(F, phi, sigma, C_norm, Cl, *args, **kwargs):
     """
+    NAME: Wiley: Strip theory, including wake rotation
     Calculates induction coefficients using method from
     Wiley,Wind Energy, p.126 (Method 2) == p.128
 
     #the same as original...
+    #DOES NOT INCLUDE DRAG
 
     :param Cl: lift coefficient
     :param F: loss factors
     :param phi: relative wind [rad]
     :param sigma: solidity
-    :param cn: normal coefficient
+    :param C_norm: normal coefficient
     :return: axial induction factor, tangential induction factor
     """
     a = 1 / (1 + 4 * F * sin(phi) ** 2 / (sigma * Cl * cos(phi)))
     aprime = 1 / (4 * cos(phi) / (sigma * Cl) - 1)
-    #Ct = 4*a*(1-a)*F
-    Ct = sigma * (1 - a) ** 2 * cn / (sin(phi) ** 2)  # Qblade
+    Ct = 4*a*(1-a)*F
     return a, aprime, Ct
 
 
 # noinspection PyUnusedLocal,PyUnusedLocal,PyUnusedLocal
-def fInductionCoefficients3(lambda_r, phi, sigma, Cl, cn, *args, **kwargs):
+def fInductionCoefficients3(lambda_r, phi, sigma, Cl, C_norm, *args, **kwargs):
     """
+    NAME: Grant Ingram
     Calculates induction coefficients using method from
     Wind Turbine Blade Analysis, Grant Ingram, 2011
     
     #the same as original
+    #DOES NOT INCLDUE DRAG
 
     :param lambda_r: local speed ratio
     :param Cl: lift coefficient
@@ -194,20 +203,21 @@ def fInductionCoefficients3(lambda_r, phi, sigma, Cl, cn, *args, **kwargs):
 
     a = (1 + (4 * cos(phi) ** 2) / (sigma * Cl * sin(phi))) ** -1
     aprime = ((sigma * Cl) / (4 * lambda_r * cos(phi))) * (1 - a)
-    #Ct = 4*a*(1-a)
-    Ct = sigma * (1 - a) ** 2 * cn / (sin(phi) ** 2)  # Qblade
+    Ct = 4*a*(1-a)
     return a, aprime, Ct
 
 
 # noinspection PyUnusedLocal,PyUnusedLocal,PyUnusedLocal
-def fInductionCoefficients4(a_last, F, phi, sigma, cn, Cl, *args, **kwargs):
+def fInductionCoefficients4(a_last, F, phi, sigma, C_norm, Cl, *args, **kwargs):
     """
+    NAME: Glauert Empirical
     Calculates induction coefficients using method from
     Wind Energy Explained, Wiley, p.136
     Turbulent Wake State Modeling
+    Glauert
 
 
-    :param cn: normal coefficient
+    :param C_norm: normal coefficient
     :param F: loss factors
     :param a_last: axial induction factor
     :param Cl: lift coefficient
@@ -217,20 +227,21 @@ def fInductionCoefficients4(a_last, F, phi, sigma, cn, Cl, *args, **kwargs):
     """
     if F == 0:
         F = 1e-6
-    Ct = sigma * (1 - a_last) ** 2 * cn / (sin(phi) ** 2)
+    Ct = sigma * (1 - a_last) ** 2 * C_norm / (sin(phi) ** 2)
     if Ct <= 0.96 * F:
         a = 1 / (1 + (4 * F * sin(phi) ** 2 / (sigma * Cl * cos(phi))))
     else:
-        a = (1 / F) * (0.143 + sqrt(abs(0.0203 - 0.6427 * (0.889 - Ct))))
+        a = (1 / F) * (0.143 + sqrt(abs(0.0203 - 0.6427 * (0.889 - C_tang))))
     aprime = 1 / ((4 * F * cos(phi) / (sigma * Cl)) - 1)
     return a, aprime, Ct
 
 
 # noinspection PyUnusedLocal,PyUnusedLocal,PyUnusedLocal
 def fInductionCoefficients5(
-        aprime_last, F, lambda_r, phi, sigma, Cl, cn, B, c, psi, r, R, v, omega, *args, **kwargs
+        aprime_last, F, lambda_r, phi, sigma, Cl, C_norm, B, c, psi, r, R, v, omega, *args, **kwargs
 ):
     """
+    NAME: PROPX
     Calculates induction coefficients using method from
     PROPX: Definitions, Derivations and Data Flow, C. Harman, 1994
 
@@ -253,7 +264,7 @@ def fInductionCoefficients5(
     K = B * c * Cl * cos(phi) * cos(psi) / (8 * pi * r * sin(phi) ** 2)
     a = K / (1 + K)
 
-    CTL = sigma * (1 - a) ** 2 * cn / (sin(phi) ** 2)  # Qblade
+    CTL = sigma * (1 - a) ** 2 * C_norm / (sin(phi) ** 2)  # Qblade
     
     if a > 0.2:
         ac = 0.2
@@ -288,15 +299,15 @@ def fInductionCoefficients5(
 
 
 # noinspection PyUnusedLocal,PyUnusedLocal,PyUnusedLocal
-def fInductionCoefficients6(a_last, F, phi, sigma, cn, ct, Cl, *args, **kwargs):
+def fInductionCoefficients6(a_last, F, phi, sigma, C_norm, C_tang, Cl, *args, **kwargs):
     """
+    NAME: AERODYN (BUHL)
     Calculates induction coefficients using method from
     AeroDyn manual - theory.
 
     This is equal to Advanced brake state model.
 
-
-    :param cn: normal coefficient
+    :param C_norm: normal coefficient
     :param a_last: axial induction factor
     :param F: loss factors
     :param Cl: lift coefficient
@@ -305,8 +316,8 @@ def fInductionCoefficients6(a_last, F, phi, sigma, cn, ct, Cl, *args, **kwargs):
     :return: axial induction factor, tangential induction factor
     """
 
-    #CT=(1+(sigma*(1-a_last)**2*cn)/(sin(phi)**2))
-    CT=((sigma*(1-a_last)**2*cn)/(sin(phi)**2))
+    #CT=(1+(sigma*(1-a_last)**2*C_norm)/(sin(phi)**2))
+    CT=((sigma*(1-a_last)**2*C_norm)/(sin(phi)**2))
     if CT > 0.96 * F:
         # Modified Glauert correction
         a = (
@@ -315,31 +326,32 @@ def fInductionCoefficients6(a_last, F, phi, sigma, cn, ct, Cl, *args, **kwargs):
             ) / (36 * F - 50)
         CT = 8/9+(4*F-40/90)*a+(50/9-4*F)*a**2
     else:
-        a = (1 + 4 * F * sin(phi) ** 2 / (sigma * cn)) ** -1
-    aprime = (-1 + 4 * F * sin(phi) * cos(phi) / (sigma * ct)) ** -1
+        a = (1 + 4 * F * sin(phi) ** 2 / (sigma * C_norm)) ** -1
+    aprime = (-1 + 4 * F * sin(phi) * cos(phi) / (sigma * C_tang)) ** -1
     return a, aprime, CT
 
 
 # noinspection PyUnusedLocal,PyUnusedLocal,PyUnusedLocal
-def fInductionCoefficients7(a_last,F, lambda_r, phi, sigma, cn, *args, **kwargs):
+def fInductionCoefficients7(a_last,F, lambda_r, phi, sigma, C_norm, *args, **kwargs):
     """
+    NAME: QBLADE (Buhl)
     Calculates induction coefficients using method from
     QBlade/src/XBEM/BData.cpp
 
 
     :param lambda_r: local speed ratio
-    :param Ct: local thrust coefficient
-    :param cn: normal coefficient
+    :param C_tang: local thrust coefficient
+    :param C_norm: normal coefficient
     :param F: loss factors
     :param phi: relative wind [rad]
     :param sigma: solidity
     :return: axial induction factor, tangential induction factor
     """
 
-    Ct = sigma * (1 - a_last) ** 2 * cn / (sin(phi) ** 2)  # Qblade
+    Ct = sigma * (1 - a_last) ** 2 * C_norm / (sin(phi) ** 2)  # Qblade
 
     if Ct <= 0.96 * F:
-        a = 1 / (4 * F * sin(phi) ** 2 / (sigma * cn) + 1)
+        a = 1 / (4 * F * sin(phi) ** 2 / (sigma * C_norm) + 1)
     else:
         a = (
                     18 * F - 20 - 3 * abs(Ct * (50 - 36 * F) +
@@ -352,34 +364,42 @@ def fInductionCoefficients7(a_last,F, lambda_r, phi, sigma, cn, *args, **kwargs)
 
 
 # noinspection PyUnusedLocal,PyUnusedLocal,PyUnusedLocal
-def fInductionCoefficients8(a_last,F, phi, sigma, lambda_r, B, r, R, cn, Cl, ct, *args, **kwargs):
+def fInductionCoefficients8(a_last,F, phi, sigma, lambda_r, B, r, R, C_norm, Cl, C_tang, *args, **kwargs):
     """
+    NAME: SHEN
     Method from Pratumnopharat,2010
 
     Shen's correction
 
     """
-    if F == 0:
-        F = 1e-6
-    a=a_last
-    Ct = sigma * (1 - a) ** 2 * cn / (sin(phi) ** 2)  # Qblade
-    g=exp(-0.125*(B*lambda_r-21))+0.1
     try:
+        if F == 0:
+            F = 1e-6
+        a=a_last
+        #Ct = sigma * (1 - a) ** 2 * C_norm / (sin(phi) ** 2)  # Qblade
+        g=exp(-0.125*(B*lambda_r-21))+0.1
         F1 = (2/pi)*acos(exp(-g*B*(R-r)/(2*r*sin(phi))))
+        Y1 = 4*F*sin(phi)**2/(sigma*F1*C_norm)
+        Y2 = 4*F*sin(phi)*cos(phi)/(sigma*F1*Ct)
+        a_c = 1/3
+        if a <= a_c:
+            Ct = 4*a*F*(1-a*F)
+        else:
+            Ct = 4*(a_c**2*F**2+(1-2*a_c*F)*a*F)
+        if Ct <= 0.888:
+            a=(1-sqrt(1-Ct))/(2*F)
+        else:
+            a=(2+Y1-sqrt(4*Y1*(1-F)+Y1**2))/(2*(1+F*Y1))
+        aprime = 1/((1-a*F)*Y2/(1-a)-1)
     except:
-        F1 = 1.0
-    Y1 = 4*F*sin(phi)**2/(sigma*F1*cn)
-    Y2 = 4*F*sin(phi)*cos(phi)/(sigma*F1*ct)
-    if Ct <= 0.888:
-        a=(1-sqrt(1-Ct))/(2*F)
-    else:
-        a=(2+Y1-sqrt(4*Y1*(1-F)+Y1**2))/(2*(1+F*Y1))
-    aprime = 1/((1-a*F)*Y2/(1-a)-1)
+        return None
 
     return a, aprime, Ct
 
-def fInductionCoefficients9(a_last,F,phi,Cl,cn, ct,sigma,*args, **kwargs):
+def fInductionCoefficients9(a_last,F,phi,Cl,C_norm, C_tang,sigma,*args, **kwargs):
     """
+    NAME: Glauert
+
     Method from Pratumnopharat,2010
 
     Glauert method
@@ -387,7 +407,11 @@ def fInductionCoefficients9(a_last,F,phi,Cl,cn, ct,sigma,*args, **kwargs):
     """
     
     a = a_last
-    Ct = sigma * (1 - a_last) ** 2 * cn / (sin(phi) ** 2)
+    #Ct = sigma * (1 - a_last) ** 2 * C_norm / (sin(phi) ** 2)
+    if a<=1/3:
+        Ct = 4*a*F*(1-a)
+    else:
+        Ct = 4*a*F*(1-1/4*(5-3*a)*a)
     if F == 0:
         F = 1e-6
     if Ct <= 0.888*F:
@@ -395,11 +419,13 @@ def fInductionCoefficients9(a_last,F,phi,Cl,cn, ct,sigma,*args, **kwargs):
     else:
         Y=(sqrt(1/36*(Ct/F)**2-145/2187*Ct/F+92/2187)+Ct/(6*F)-145/729)**(1/3)
         a = Y-11/(81*Y)+5/9
-    aprime = (4*F*sin(phi)*cos(phi)/(sigma*ct)-1)**-1
+    aprime = (4*F*sin(phi)*cos(phi)/(sigma*Ct)-1)**-1
     return a,aprime,Ct
 
-def fInductionCoefficients10(a_last,F,phi,Cl,ct, cn,sigma,*args, **kwargs):
+def fInductionCoefficients10(a_last,F,phi,Cl,C_tang,C_norm,sigma,*args, **kwargs):
     """
+    NAME: Wilson and walker
+
     Method from Pratumnopharat,2010
 
     Wilson and Walker method
@@ -409,7 +435,11 @@ def fInductionCoefficients10(a_last,F,phi,Cl,ct, cn,sigma,*args, **kwargs):
 
     ac = 0.2
 
-    Ct = sigma * (1 - a_last) ** 2 * cn / (sin(phi) ** 2)
+    #Ct = sigma * (1 - a_last) ** 2 * C_norm / (sin(phi) ** 2)
+    if a <= ac:
+        Ct = 4*a*F*(1-a)
+    else:
+        Ct = 4*F*(ac**2+(1-2*ac)*a)
     if F == 0:
         F = 1e-6
     if Ct <= 0.64*F:
@@ -417,26 +447,29 @@ def fInductionCoefficients10(a_last,F,phi,Cl,ct, cn,sigma,*args, **kwargs):
     else:
         a = (Ct-4*F*ac**2)/(4*F*(1-2*ac))
 
-    aprime = (4*F*sin(phi)*cos(phi)/(sigma*ct)-1)**-1
+    aprime = (4*F*sin(phi)*cos(phi)/(sigma*C_tang)-1)**-1
 
     return a,aprime,Ct
 
 
-def fInductionCoefficients11(a_last,F,phi,Cl,ct,cn,sigma,*args, **kwargs):
+def fInductionCoefficients11(a_last,F,phi,Cl,C_norm,C_tang,sigma,*args, **kwargs):
     """
+    NAME: Classical brake state model
     Method from Pratumnopharat,2010
 
     Classical momentum brake state model
     """
     a=a_last
-    Sw = sigma/(8*sin(phi)**2)*cn
-    Ct = sigma * (1 - a_last) ** 2 * cn / (sin(phi) ** 2)  # Qblade
+    Sw = sigma/(8*sin(phi)**2)*C_norm
+    Ct = Sw*(1-a)**2
     a=(2*Sw+F-sqrt(F**2+4*Sw*F*(1-F)))/(2*(Sw+F**2))
-    aprime = (4*F*sin(phi)*cos(phi)/(sigma*ct)-1)**-1
+    aprime = (4*F*sin(phi)*cos(phi)/(sigma*C_tang)-1)**-1
     return a,aprime,Ct
 
-def fInductionCoefficients12(a_last,F,phi,Cl,ct,cn,sigma,lambda_r,*args, **kwargs):
+def fInductionCoefficients12(a_last,F,phi,Cl,C_tang,C_norm,sigma,lambda_r,*args, **kwargs):
     """
+    NAME: Advanced brake state model
+
     Method from Pratumnopharat,2010
 
     Advanced brake state model
@@ -444,29 +477,29 @@ def fInductionCoefficients12(a_last,F,phi,Cl,ct,cn,sigma,lambda_r,*args, **kwarg
     Should be the same result as in Aerodyn or QBlade
     """
     a=a_last
-    #if a <= 0.4:
-    #    Ct = 4*a*F*(1-a)
-    #else:
-    #    Ct=8/9+(4*F-40/9)*a+(50/9-4*F)*a**2
-    Ct = sigma * (1 - a_last) ** 2 * cn / (sin(phi) ** 2)  # Qblade
+    if a <= 0.4:
+        Ct = 4*a*F*(1-a)
+    else:
+        Ct=8/9+(4*F-40/9)*a+(50/9-4*F)*a**2
 
-    a = (18*F-20-3*sqrt(abs(ct*(50-36*F)+12*F*(3*F-4))))/(36*F-50)
-    aprime = (4*F*sin(phi)*cos(phi)/(sigma*ct)-1)**-1
+    a = (18*F-20-3*sqrt(abs(Ct*(50-36*F)+12*F*(3*F-4))))/(36*F-50)
+    aprime = (4*F*sin(phi)*cos(phi)/(sigma*C_tang)-1)**-1
     return a, aprime, Ct
 
-def fInductionCoefficients13(a_last,F,phi,Cl,ct,cn,sigma,lambda_r,*args, **kwargs):
+def fInductionCoefficients13(a_last,F,phi,Cl,C_norm,sigma,lambda_r,*args, **kwargs):
     """
+    NAME: Modified ABS model
     Method from Pratumnopharat,2010
 
     Modified advanced brake state model
 
     """
     a=a_last
-    #if a <= 0.4:
-    #    Ct = 4*a*F*(1-a)
-    #else:
-    #    Ct=8/9+(4*F-40/9)*a+(50/9-4*F)*a**2
-    Ct = sigma * (1 - a_last) ** 2 * cn / (sin(phi) ** 2)  # Qblade
+    if a <= 0.4:
+        Ct = 4*a*F*(1-a)
+    else:
+        Ct=8/9+(4*F-40/9)*a+(50/9-4*F)*a**2
+    #Ct = sigma * (1 - a_last) ** 2 * C_norm / (sin(phi) ** 2)  # Qblade
     if Ct < 0.96*F:
         a = (1-sqrt(1-Ct/F))/2
     else:
@@ -478,6 +511,23 @@ def fInductionCoefficients13(a_last,F,phi,Cl,ct,cn,sigma,lambda_r,*args, **kwarg
         aprime = (sqrt(1+aprimeprime)-1)/2
 
     return a, aprime, Ct
+
+def fInductionCoefficients14(a_last,phi,sigma,Cl,Cd,F,C_norm,*args,**kwargs):
+    """
+    NAME: Propeller
+    Method from http://acoustics.ae.illinois.edu/pdfs/AIAA-Paper-2015-3296.pdf
+
+    Modified advanced brake state model
+    """
+
+    a = a_last
+    CT = cos(phi)*Cl-sin(phi)*Cd
+    CQ = sin(phi)*Cl+cos(phi)*Cd
+    a = 1/(F*4*sin(phi)**2/(sigma*CT)-1)
+    aprime = 1/(F*4*sin(phi)*cos(phi)/(sigma*CQ)+1)
+
+    Ct = sigma * (1 - a) ** 2 * C_norm / (sin(phi) ** 2) #QBlade
+    return a,aprime,Ct
 
 
 def guessInductionFactors(lambda_r, sigma, theta):
@@ -632,5 +682,7 @@ def calculate_coefficients(method, input_arguments):
         return fInductionCoefficients12(**input_arguments)
     if method == 13:
         return fInductionCoefficients13(**input_arguments)
+    if method == 14:
+        return fInductionCoefficients14(**input_arguments)
     raise Exception("Method "+str(method)+" does not exist.")
 

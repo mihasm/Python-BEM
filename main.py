@@ -63,7 +63,8 @@ METHODS_STRINGS = {"0":"Original",
                    "10":"Wilson and Walker",
                    "11":"Classical brake state model",
                    "12":"Advanced brake state model",
-                   "13":"c) Modified ABS model"}
+                   "13":"c) Modified ABS model",
+                   "14":"Propeller BEM"}
 
 class MainWindow(QMainWindow):
     emitter_add = pyqtSignal(str)
@@ -451,7 +452,7 @@ class Curves(QWidget):
         grid.addWidget(self.buttonRefresh,2,1)
         self.buttonRefresh.clicked.connect(self.draw_curve)
 
-        self.table_dat.tableWidget.cellChanged.connect(self.draw_curve)
+        #self.table_dat.tableWidget.cellChanged.connect(self.draw_curve)
 
     def draw_curve(self):
         #print("draw_curve")

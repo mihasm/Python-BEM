@@ -101,13 +101,13 @@ def calculate_power_3d(inp_args,print_eof=True,prepend="",print_out=True):
                 return None
             if _results != None and _results["power"]:
                 if print_out:
-                    p.print(prepend+"    Power:", _results["power"], "[W], Cp:", _results["cp"], ".")
+                    p.print(prepend+"    TSR:", _results["TSR"],"J:",_results["J"], "Cp:", _results["cp"], "Ct:", _results["ct"])
                 for key, value in _results.items():
                     if key not in results_3d:
                         results_3d[key] = []
                 for key, value in _results.items():
-                    if 0.0 < _results["cp"] <= 0.6:
-                            results_3d[key].append(value)
+                    #if 0.0 < _results["cp"] <= 0.6:
+                    results_3d[key].append(value)
 
             i+=1
             t_now = int(time.time()-time_start)

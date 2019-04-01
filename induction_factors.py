@@ -20,6 +20,7 @@ numpy.seterr(all="raise")
 numpy.seterr(invalid="raise")
 
 def generate_dat(name,x,y):
+    print("generating dat")
     out = ""
     out += name+"\n"
     #out += "   x/c        y/c\n"
@@ -218,246 +219,54 @@ class Calculator:
         # create results array placeholders
         results = {}
         arrays = ["a", "a'", "cL", "alpha",
-                  "phi", "F", "dFt", "M", "TSR", "Ct", "dFn", "foils"]
+                  "phi", "F", "dFt", "M", "TSR", "Ct", "dFn", "foils",
+                  "dT"]
         for array in arrays:
             results[array] = numpy.array([])
 
         # set constants that are section-independent
         omega = rpm * 2 * pi / 60
         TSR = omega * R / v  # tip speed ratio
+        #J = 1/TSR #advance ratio
+        J=v/(rpm/60*R*2)
         kin_viscosity = 1.4207E-5 # Kinematic viscosity
 
         section_number = 0
 
         for n in range(len(theta)):
             section_number += 1
-            # grab local radius, chord length and twist angle
+
             _r = r[n]
             _c = c[n]
             _theta = radians(theta[n])
             _airfoil = foils[n]
+            _airfoil_dat = _airfoil+".dat"
+            _dr = dr[n]
+
+            if print_out:
+                p.print("    r", _r, "("+str(section_number)+")")
 
             #get max thickness
             max_thickness = self.curves[_airfoil]["max_thickness"]*_c
-
-            # local speed ratio
-            lambda_r = omega * _r / v
-
-            # solidity
-            # sigma=_c*B/(2*pi*_r)
-
-            # solidity - implemented in QBlade/XBEM/BDATA.cpp
-            sigma = _c * B / (2 * pi * _r) * abs(cos(_theta))
-
+            
             # Coning angle (PROPX: Definitions,Derivations, Data Flow, p.22)
             psi = 0.0
 
-            ## initial guess
-            #a = 0.1
-            #aprime = 0.01
-            a,aprime = guessInductionFactors(lambda_r,sigma,_theta)
+            out_results = calculate_section(**locals(),printer=p)
+            if out_results == None:
+                return None
 
-            # iterations counter
-            i = 0
-
-            ############ START ITERATION ############
-            while True:
-                # update counter
-                i = i + 1
-
-                # for pretty-printing only
-                prepend = ""
-
-                # wind components
-                Ut = omega * _r * (1 + aprime)
-                Un = v * (1 - a)
-                Vrel_norm = sqrt(Un ** 2 + Ut ** 2)
-                if fix_reynolds:
-                    Re = reynolds
-                else:
-                    Re = int(Vrel_norm*_c/kin_viscosity)
-
-                # relative wind
-                phi = atan2(Un, Ut)
-
-                F = 1
-                # Prandtl tip loss
-                if tip_loss:
-                    F = F * fTipLoss(B, _r, R, phi)
-
-                # New tip loss
-                elif new_tip_loss:
-                    F = F * newTipLoss(B, _r, R, phi, lambda_r)
-
-                # Prandtl hub loss
-                if hub_loss:
-                    F = F * fHubLoss(B, _r, Rhub, phi)
-
-                # New hub loss
-                elif new_hub_loss:
-                    F = F * newHubLoss(B, _r, R, phi, lambda_r)
-
-                # angle of attack
-                alpha = phi - _theta
-
-                if cascade_correction:
-                    alpha = cascadeEffectsCorrection(
-                        alpha=alpha,
-                        v=v,
-                        omega=omega,
-                        r=_r,
-                        R=R,
-                        c=_c,
-                        B=B,
-                        a=a,
-                        aprime=aprime,
-                        tmax=max_thickness
-                    )
-
-                # lift and drag coefficients
-                #Cl, Cd = self.f_c_L(degrees(alpha)), self.f_c_D(degrees(alpha))
-                #Cl,Cd = self.curves[_airfoil]["f_c_L"](degrees(alpha)), self.curves[_airfoil]["f_c_D"](degrees(alpha))
-                if print_all:
-                    p.print("    Running xfoil for %s,Re=%s,alpha=%s" % (_airfoil,Re,alpha))
-                    #p.print("")
-
-                xfoil_return = xfoil_runner(airfoil=_airfoil+".dat",reynolds=Re,alpha=alpha,printer=p)
-
-                #if print_all and xfoil_return != False:
-                #    p.print(xfoil_return["out"])
-
-                if xfoil_return == False:
-                    p.print("    Xfoil failed")
-                    return None
-                    break
-
-                Cl,Cd = xfoil_return["CL"],xfoil_return["CD"]
-                if print_all:
-                    print("CL:",Cl,"Cd:",Cd)
-                #p.print(xfoil_return["out"])
-
-                if rotational_augmentation_correction:
-                    if print_all:
-                        p.print("--")
-                        p.print("  Cl:", Cl, "Cd:", Cd)
-                    Cl, Cd = calc_rotational_augmentation_correction(
-                        alpha=alpha,
-                        alpha_zero=self.curves[_airfoil]["alpha_zero"],
-                        Cl=Cl,
-                        Cd=Cd,
-                        omega=omega,
-                        r=_r,
-                        R=R,
-                        c=_c,
-                        theta=_theta,
-                        v=v,
-                        Vrel=Vrel_norm,
-                        method=rotational_augmentation_correction_method,
-                    )
-
-                    if print_all:
-                        p.print("  Cl_cor:", Cl, "Cd_cor:", Cd)
-                        p.print("--")
-
-                # normal and tangential coefficients
-                cn = Cl * cos(phi) + Cd * sin(phi)
-                ct = Cl * sin(phi) - Cd * cos(phi)
-
-
-                # save old values, calculate new values of induction factors
-                a_last = a
-                aprime_last = aprime
-
-                input_arguments = {
-                    "F": F,
-                    "lambda_r": lambda_r,
-                    "phi": phi,
-                    "sigma": sigma,
-                    "cn": cn,
-                    "ct": ct,
-                    "Cl": Cl,
-                    "B": B,
-                    "c": _c,
-                    "r": _r,
-                    "R": R,
-                    "psi": 0.0,
-                    "aprime_last": aprime,
-                    "omega": omega,
-                    "v": v,
-                    "a_last": a_last,
-                    "alpha_zero": self.curves[_airfoil]["alpha_zero"],
-                    "method": method,
-                }
-
-                if print_all:
-                    args_to_print = sorted(
-                        [key for key, value in input_arguments.items()]
-                    )
-                    p.print("            i", i)
-                    for a in args_to_print:
-                        p.print("            ", a, input_arguments[a])
-                    p.print("             --------")
-
-                # calculate induction coefficients
-                a, aprime, Ct = calculate_coefficients(method, input_arguments)
-
-                # force calculation
-                dFL = Cl * 0.5 * rho * Vrel_norm ** 2 * \
-                      _c * dr[n]  # lift force
-                dFD = Cd * 0.5 * rho * Vrel_norm ** 2 * \
-                      _c * dr[n]  # drag force
-                dFt = dFL * sin(phi) - dFD * cos(phi)  # tangential force
-                dFn = dFL * cos(phi) + dFD * sin(phi)  # normal force
-
-                # check convergence
-                if abs(a - a_last) < convergence_limit and abs(aprime-aprime_last) < convergence_limit:
-                    break
-
-                # check iterations limit
-                if i >= max_iterations:
-                    if print_out:
-                        p.print("-*-*-*-*-*-*-*-*-*-*-*-*-*-\n",
-                                "|max iterations exceeded\n",
-                                "|------>a:", a, " aprime", aprime,
-                                )
-                        prepend = "|"
-                    return None
-                    break
-
-                # relaxation
-                a = a_last + relaxation_factor * (a - a_last)
-                #aprime=aprime_last+relaxation_factor*(aprime-aprime_last)
-
-            ############ END ITERATION ############
-            
-
-            if print_out:
-                p.print(prepend, "    r", _r, "("+str(section_number)+")")
-                p.print(prepend, "        iters: ", i)
-                #p.print(prepend, "        phi: ", degrees(phi))
-                #p.print(prepend, "        _theta: ", degrees(_theta))
-                p.print(prepend, "        alpha: ", degrees(alpha)), "Cl", str(Cl)
-                p.print(prepend, "        a: ", a, "a'", str(aprime))
-                #p.print(prepend, "        dFt: ", dFt)
-                p.print(prepend, "        LSR: ", lambda_r)
-                #p.print(prepend, "        Ct: ", Ct)
-                p.print(prepend, "        Vrel: ", Vrel_norm)
-                p.print(prepend, "        Re:",Re)
-                p.print(prepend, "        foil:",_airfoil)
-                p.print(prepend, "        Cl:",Cl)
-                p.print(prepend, "        Cd:",Cd)
-                p.print(prepend, "    ----------------------------")
-
-            results["a"] = numpy.append(results["a"], a)
-            results["a'"] = numpy.append(results["a'"], aprime)
-            results["cL"] = numpy.append(results["cL"], Cl)
-            results["alpha"] = numpy.append(results["alpha"], alpha)
-            results["phi"] = numpy.append(results["phi"], phi)
-            results["F"] = numpy.append(results["F"], F)
-            results["dFt"] = numpy.append(results["dFt"], dFt)
-            results["Ct"] = numpy.append(results["Ct"], Ct)
-            results["dFn"] = numpy.append(results["dFn"], dFn)
-            results["foils"] = numpy.append(results["foils"], _airfoil)
+            results["a"] = numpy.append(results["a"], out_results["a"])
+            results["a'"] = numpy.append(results["a'"], out_results["aprime"])
+            results["cL"] = numpy.append(results["cL"], out_results["Cl"])
+            results["alpha"] = numpy.append(results["alpha"], out_results["alpha"])
+            results["phi"] = numpy.append(results["phi"], out_results["phi"])
+            results["F"] = numpy.append(results["F"], out_results["F"])
+            results["dFt"] = numpy.append(results["dFt"], out_results["dFt"])
+            results["Ct"] = numpy.append(results["Ct"], out_results["Ct"])
+            results["dFn"] = numpy.append(results["dFn"], out_results["dFn"])
+            results["foils"] = numpy.append(results["foils"], out_results["_airfoil"])
+            results["dT"] = numpy.append(results["dT"],out_results["dT"])
 
         dFt = results["dFt"]
         Ft = numpy.sum(dFt)
@@ -469,7 +278,10 @@ class Calculator:
 
         dFn = results["dFn"]
         Fn = numpy.sum(dFn)
-        T=Fn*B
+        #T=Fn*B
+        dT = results["dT"]
+        T = numpy.sum(dT)
+        #ct = T/(0.5*rho*v**2*pi*R**2)
         ct = T/(0.5*rho*v**2*pi*R**2)
 
         results["R"] = R
@@ -491,4 +303,271 @@ class Calculator:
         results["dr"] = dr
         results["c"] = c
         results["theta"] = theta
+        results["J"] = J
         return results
+
+def calculate_section(
+    v,
+    omega,
+    _r,
+    _c,
+    _theta,
+    _dr,
+    B,
+    R,
+    _airfoil_dat,
+    max_thickness,
+    psi=0.0,
+    fix_reynolds=False,
+    reynolds=1e6,
+    tip_loss=False,
+    new_tip_loss=False,
+    hub_loss=False,
+    new_hub_loss=False,
+    cascade_correction=False,
+    rotational_augmentation_correction=False,
+    rotational_augmentation_correction_method=0,
+    method=5,
+    kin_viscosity=1.4207E-5,
+    rho=1.225,
+    convergence_limit=0.001,
+    max_iterations=100,
+    relaxation_factor=0.3,
+    printer=None,
+    print_all=False,
+    print_out=False,
+    *args,
+    **kwargs,
+    ):
+    p = printer
+    
+
+    # local speed ratio
+    lambda_r = omega * _r / v
+
+    # solidity
+    # sigma=_c*B/(2*pi*_r)
+
+    # solidity - implemented in QBlade/XBEM/BDATA.cpp
+    sigma = _c * B / (2 * pi * _r) * abs(cos(_theta))
+
+
+    ## initial guess
+    #a = 0.1
+    #aprime = 0.01
+    a,aprime = guessInductionFactors(lambda_r,sigma,_theta)
+
+    # iterations counter
+    i = 0
+
+    #tip mach number
+    M = omega*_r/343
+
+    ############ START ITERATION ############
+    while True:
+        # update counter
+        i = i + 1
+
+        # for pretty-printing only
+        prepend = ""
+
+        # wind components
+        Ut = omega * _r * (1 + aprime)
+        Un = v * (1 - a)
+        Vrel_norm = sqrt(Un ** 2 + Ut ** 2)
+        if fix_reynolds:
+            Re = reynolds
+        else:
+            Re = int(Vrel_norm*_c/kin_viscosity)
+
+        # relative wind
+        phi = atan2(Un, Ut)
+
+        F = 1
+        # Prandtl tip loss
+        if tip_loss:
+            F = F * fTipLoss(B, _r, R, phi)
+
+        # New tip loss
+        elif new_tip_loss:
+            F = F * newTipLoss(B, _r, R, phi, lambda_r)
+
+        # Prandtl hub loss
+        if hub_loss:
+            F = F * fHubLoss(B, _r, Rhub, phi)
+
+        # New hub loss
+        elif new_hub_loss:
+            F = F * newHubLoss(B, _r, R, phi, lambda_r)
+
+        # angle of attack
+        alpha = phi - _theta
+
+        #cascade correction
+        if cascade_correction:
+            alpha = cascadeEffectsCorrection(
+                alpha=alpha,
+                v=v,
+                omega=omega,
+                r=_r,
+                R=R,
+                c=_c,
+                B=B,
+                a=a,
+                aprime=aprime,
+                tmax=max_thickness
+            )
+
+        if print_all:
+            p.print("    Running xfoil for %s,Re=%s,alpha=%s" % (_airfoil_dat,Re,alpha))
+
+        xfoil_return = xfoil_runner(airfoil=_airfoil_dat,reynolds=Re,alpha=alpha,printer=p)
+
+        if xfoil_return == False:
+            p.print("    Xfoil failed")
+            return None
+            break
+
+        Cl,Cd = xfoil_return["CL"],xfoil_return["CD"]
+        if print_all:
+            print("CL:",Cl,"Cd:",Cd)
+
+        if rotational_augmentation_correction:
+            if print_all:
+                p.print("--")
+                p.print("  Cl:", Cl, "Cd:", Cd)
+            Cl, Cd = calc_rotational_augmentation_correction(
+                alpha=alpha,
+                #alpha_zero=self.curves[_airfoil]["alpha_zero"],
+                Cl=Cl,
+                Cd=Cd,
+                omega=omega,
+                r=_r,
+                R=R,
+                c=_c,
+                theta=_theta,
+                v=v,
+                Vrel=Vrel_norm,
+                method=rotational_augmentation_correction_method,
+            )
+
+            if print_all:
+                p.print("  Cl_cor:", Cl, "Cd_cor:", Cd)
+                p.print("--")
+
+        Cl = machNumberCorrection(Cl,M)
+
+        # normal and tangential coefficients
+        C_norm = Cl * cos(phi) + Cd * sin(phi)
+        C_tang = Cl * sin(phi) - Cd * cos(phi)
+
+
+        # save old values, calculate new values of induction factors
+        a_last = a
+        aprime_last = aprime
+
+        input_arguments = {
+            "F": F,
+            "lambda_r": lambda_r,
+            "phi": phi,
+            "sigma": sigma,
+            "C_norm": C_norm,
+            "C_tang": C_tang,
+            "Cl": Cl,
+            "Cd": Cd,
+            "B": B,
+            "c": _c,
+            "r": _r,
+            "R": R,
+            "psi": 0.0,
+            "aprime_last": aprime,
+            "omega": omega,
+            "v": v,
+            "a_last": a_last,
+            #"alpha_zero": curves[_airfoil]["alpha_zero"],
+            "method": method,
+        }
+
+        if print_all:
+            args_to_print = sorted(
+                [key for key, value in input_arguments.items()]
+            )
+            p.print("            i", i)
+            for a in args_to_print:
+                p.print("            ", a, input_arguments[a])
+            p.print("             --------")
+
+        # calculate induction coefficients
+        coeffs = calculate_coefficients(method, input_arguments)
+        if coeffs == None:
+            return None
+        else:
+            a, aprime, Ct =  coeffs
+
+        # force calculation
+        dFL = Cl * 0.5 * rho * Vrel_norm ** 2 * _c * _dr  # lift force
+        dFD = Cd * 0.5 * rho * Vrel_norm ** 2 * _c * _dr  # drag force
+        dFt = dFL * sin(phi) - dFD * cos(phi)  # tangential force
+        dFn = dFL * cos(phi) + dFD * sin(phi)  # normal force
+        #dT = B*0.5*rho*v**2*(Cl*cos(phi)-Cd*sin(phi))*_c*_dr*(1+a)**2/sin(phi)**2
+        #dT_2 = 4*pi*_r*rho*v**2*(1+a)*a*_dr
+        dT_MT = F*4*pi*_r*rho*v**2*a*(1-a)*_dr
+        dT_BET = 0.5*rho*B*_c*Vrel_norm**2*(Cl*cos(phi)+Cd*sin(phi))*_dr
+        dT=dT_BET
+        #
+        #wind after
+        U4 = v*(1-2*a)
+
+        # check convergence
+        if abs(a - a_last) < convergence_limit and abs(aprime-aprime_last) < convergence_limit:
+            p.print("dT_MT %.2f dT_BET %.2f" % (dT_MT,dT_BET))
+            break
+
+        #p.print("dT_MT %.2f dT_BET %.2f" % (dT_MT,dT_BET))
+
+        # check iterations limit
+        if i >= max_iterations:
+            if print_out:
+                p.print("-*-*-*-*-*-*-*-*-*-*-*-*-*-\n",
+                        "|max iterations exceeded\n",
+                        "|------>a:", a, " aprime", aprime,
+                        )
+                prepend = "|"
+            return None
+            break
+
+        # relaxation
+        a = a_last + relaxation_factor * (a - a_last)
+        #aprime=aprime_last+relaxation_factor*(aprime-aprime_last)
+
+    ############ END ITERATION ############
+    
+
+    if print_out:
+        p.print(prepend, "        iters: ", i)
+        p.print(prepend, "        alpha: ", degrees(alpha)), "Cl", str(Cl)
+        p.print(prepend, "        a: ", a, "a'", str(aprime))
+        p.print(prepend, "        LSR: ", lambda_r)
+        p.print(prepend, "        Vrel: ", Vrel_norm)
+        p.print(prepend, "        Re:",Re)
+        p.print(prepend, "        foil:",_airfoil_dat)
+        p.print(prepend, "        Cl:",Cl)
+        p.print(prepend, "        Cd:",Cd)
+        p.print(prepend, "        U4:",U4)
+        p.print(prepend, "    ----------------------------")
+    
+    out = {
+        "a":a,
+        "aprime":aprime,
+        "Cl":Cl,
+        "alpha":alpha,
+        "phi":phi,
+        "F":F,
+        "dFt":dFt,
+        "Ct":Ct,
+        "dFn":dFn,
+        "_airfoil":_airfoil_dat,
+        "U4":U4,
+        "dT":dT
+    }
+    return out
