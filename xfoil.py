@@ -12,10 +12,11 @@ if sys.platform.startswith("darwin"):
 
 def get_coefficients_from_output(output_str):
     lines = output_str.splitlines()
-    if "VISCAL:  Convergence failed" in output_str:
+    last_lines = "\n".join(lines[-5:])
+    if "VISCAL:  Convergence failed" in last_lines:
         return False
-    if "TRCHEK2: N2 convergence failed." in output_str:
-        return False
+    #if "TRCHEK2: N2 convergence failed." in output_str:
+    #    return False
     i=-1
     cur_line = 0
     _,__,a,CL,Cm,CD,CDf,CDp = [None]*8
@@ -40,7 +41,7 @@ def get_coefficients_from_output(output_str):
     }
     return out
 
-def run_xfoil_analysis(airfoil,reynolds,alpha,iterations=100,print_output = False):
+def run_xfoil_analysis(airfoil,reynolds,alpha,iterations=100,repeats=1,print_output = False):
     #print("running xfoil for %s,Re=%s,alpha=%s" % (airfoil,reynolds,alpha))
     with Popen(os.path.abspath(xfoil_path), stdin=PIPE, stdout=PIPE,
                universal_newlines=True) as process:
@@ -67,12 +68,13 @@ def run_xfoil_analysis(airfoil,reynolds,alpha,iterations=100,print_output = Fals
         call("v")
         call("iteration")
         call("%s" % iterations)
-        call("alfa")
-        call("%s" % alpha)
+        for i in range(repeats):
+            call("alfa")
+            call("%s" % alpha)
         call("")
         call("quit")
         #print(process.stdout.read())
-        timer = Timer(0.3, process.kill)
+        timer = Timer(3, process.kill)
         try:
             timer.start()
             output = process.communicate()[0]

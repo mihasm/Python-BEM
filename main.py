@@ -580,6 +580,7 @@ class Analysis(QWidget):
         self.main = self.parent()
 
         self.settings = {
+            "propeller_mode":False,
             "tip_loss": False,
             "hub_loss": False,
             "new_tip_loss": False,
@@ -587,6 +588,7 @@ class Analysis(QWidget):
             "cascade_correction": False,
             "rotational_augmentation_correction": False,
             "rotational_augmentation_correction_method": 1,
+            "mach_number_correction":False,
             "max_iterations": 100,
             "convergence_limit": 0.001,
             "rho": 1.225,
@@ -607,6 +609,7 @@ class Analysis(QWidget):
         }
 
         self.settings_to_name = {
+            "propeller_mode":"Propeller mode",
             "print_out": "Print final iteration data",
             "tip_loss": "Prandtl tip loss",
             "hub_loss": "Prandtl hub loss",
@@ -630,7 +633,8 @@ class Analysis(QWidget):
             "rotational_augmentation_correction": "Rot. augmentation cor.",
             "rotational_augmentation_correction_method": "Rot. augmentation cor. method",
             "fix_reynolds":"Fix Reynolds",
-            "reynolds":"Reynolds"
+            "reynolds":"Reynolds",
+            "mach_number_correction":"Mach number correction",
         }
 
         self.methods_to_names = METHODS_STRINGS

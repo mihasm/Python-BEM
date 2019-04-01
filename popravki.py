@@ -208,7 +208,7 @@ def fInductionCoefficients3(lambda_r, phi, sigma, Cl, C_norm, *args, **kwargs):
 
 
 # noinspection PyUnusedLocal,PyUnusedLocal,PyUnusedLocal
-def fInductionCoefficients4(a_last, F, phi, sigma, C_norm, Cl, *args, **kwargs):
+def fInductionCoefficients4(a_last, F, phi, sigma, C_norm, C_tang, Cl, *args, **kwargs):
     """
     NAME: Glauert Empirical
     Calculates induction coefficients using method from
@@ -382,10 +382,11 @@ def fInductionCoefficients8(a_last,F, phi, sigma, lambda_r, B, r, R, C_norm, Cl,
         Y1 = 4*F*sin(phi)**2/(sigma*F1*C_norm)
         Y2 = 4*F*sin(phi)*cos(phi)/(sigma*F1*Ct)
         a_c = 1/3
-        if a <= a_c:
-            Ct = 4*a*F*(1-a*F)
-        else:
-            Ct = 4*(a_c**2*F**2+(1-2*a_c*F)*a*F)
+        #if a <= a_c:
+        #    Ct = 4*a*F*(1-a*F)
+        #else:
+        #    Ct = 4*(a_c**2*F**2+(1-2*a_c*F)*a*F)
+        Ct = sigma * (1 - a_last) ** 2 * C_norm / (sin(phi) ** 2)  # Qblade
         if Ct <= 0.888:
             a=(1-sqrt(1-Ct))/(2*F)
         else:
@@ -407,11 +408,11 @@ def fInductionCoefficients9(a_last,F,phi,Cl,C_norm, C_tang,sigma,*args, **kwargs
     """
     
     a = a_last
-    #Ct = sigma * (1 - a_last) ** 2 * C_norm / (sin(phi) ** 2)
-    if a<=1/3:
-        Ct = 4*a*F*(1-a)
-    else:
-        Ct = 4*a*F*(1-1/4*(5-3*a)*a)
+    Ct = sigma * (1 - a_last) ** 2 * C_norm / (sin(phi) ** 2)  # Qblade
+    #if a<=1/3:
+    #    Ct = 4*a*F*(1-a)
+    #else:
+    #    Ct = 4*a*F*(1-1/4*(5-3*a)*a)
     if F == 0:
         F = 1e-6
     if Ct <= 0.888*F:
@@ -435,11 +436,11 @@ def fInductionCoefficients10(a_last,F,phi,Cl,C_tang,C_norm,sigma,*args, **kwargs
 
     ac = 0.2
 
-    #Ct = sigma * (1 - a_last) ** 2 * C_norm / (sin(phi) ** 2)
-    if a <= ac:
-        Ct = 4*a*F*(1-a)
-    else:
-        Ct = 4*F*(ac**2+(1-2*ac)*a)
+    Ct = sigma * (1 - a_last) ** 2 * C_norm / (sin(phi) ** 2)  # Qblade
+    #if a <= ac:
+    #    Ct = 4*a*F*(1-a)
+    #else:
+    #    Ct = 4*F*(ac**2+(1-2*ac)*a)
     if F == 0:
         F = 1e-6
     if Ct <= 0.64*F:
@@ -461,7 +462,8 @@ def fInductionCoefficients11(a_last,F,phi,Cl,C_norm,C_tang,sigma,*args, **kwargs
     """
     a=a_last
     Sw = sigma/(8*sin(phi)**2)*C_norm
-    Ct = Sw*(1-a)**2
+    #Ct = Sw*(1-a)**2
+    Ct = sigma * (1 - a_last) ** 2 * C_norm / (sin(phi) ** 2)  # Qblade
     a=(2*Sw+F-sqrt(F**2+4*Sw*F*(1-F)))/(2*(Sw+F**2))
     aprime = (4*F*sin(phi)*cos(phi)/(sigma*C_tang)-1)**-1
     return a,aprime,Ct
@@ -477,10 +479,11 @@ def fInductionCoefficients12(a_last,F,phi,Cl,C_tang,C_norm,sigma,lambda_r,*args,
     Should be the same result as in Aerodyn or QBlade
     """
     a=a_last
-    if a <= 0.4:
-        Ct = 4*a*F*(1-a)
-    else:
-        Ct=8/9+(4*F-40/9)*a+(50/9-4*F)*a**2
+    #if a <= 0.4:
+    #    Ct = 4*a*F*(1-a)
+    #else:
+    #    Ct=8/9+(4*F-40/9)*a+(50/9-4*F)*a**2
+    Ct = sigma * (1 - a_last) ** 2 * C_norm / (sin(phi) ** 2)  # Qblade
 
     a = (18*F-20-3*sqrt(abs(Ct*(50-36*F)+12*F*(3*F-4))))/(36*F-50)
     aprime = (4*F*sin(phi)*cos(phi)/(sigma*C_tang)-1)**-1
@@ -495,11 +498,11 @@ def fInductionCoefficients13(a_last,F,phi,Cl,C_norm,sigma,lambda_r,*args, **kwar
 
     """
     a=a_last
-    if a <= 0.4:
-        Ct = 4*a*F*(1-a)
-    else:
-        Ct=8/9+(4*F-40/9)*a+(50/9-4*F)*a**2
-    #Ct = sigma * (1 - a_last) ** 2 * C_norm / (sin(phi) ** 2)  # Qblade
+    #if a <= 0.4:
+    #    Ct = 4*a*F*(1-a)
+    #else:
+    #    Ct=8/9+(4*F-40/9)*a+(50/9-4*F)*a**2
+    Ct = sigma * (1 - a_last) ** 2 * C_norm / (sin(phi) ** 2)  # Qblade
     if Ct < 0.96*F:
         a = (1-sqrt(1-Ct/F))/2
     else:
@@ -685,4 +688,3 @@ def calculate_coefficients(method, input_arguments):
     if method == 14:
         return fInductionCoefficients14(**input_arguments)
     raise Exception("Method "+str(method)+" does not exist.")
-

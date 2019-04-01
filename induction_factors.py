@@ -40,43 +40,30 @@ def generate_dat(name,x,y):
     return out
 
 def xfoil_runner(airfoil,reynolds,alpha,printer):
-    #printer.print("xfoil runner")
+    alpha = round(degrees(alpha),2)
+    printer.print("xfoil runner, alpha=",alpha)
     out = run_xfoil_analysis(airfoil,reynolds,alpha)
+    if out != False:
+        printer.print("cL",out["CL"])
+    #
     if out == False:
-        #printer.print("    Convergence failed, modifying parameters...")
+        printer.print("    Convergence failed, modifying parameters...")
         original_alpha = alpha
         original_reynolds = reynolds
+        repeats = 1
         while True:
-            razmak_x = 0.0
-
-            while True:
-                if razmak_x >= 5:
-                    break
-                razmak_x += 0.01
-                #printer.print("razmak_x =",razmak_x)
-                alpha_spodnji = original_alpha-razmak_x
-                alpha_zgornji = original_alpha+razmak_x
-                out_spodnji = run_xfoil_analysis(airfoil,reynolds,alpha_spodnji)
-                out_zgornji = run_xfoil_analysis(airfoil,reynolds,alpha_zgornji)
-                if out_spodnji != False and out_zgornji != False:
-                    CL_spodnji = out_spodnji["CL"]
-                    CL_zgornji = out_zgornji["CL"]
-                    dy = CL_zgornji-CL_spodnji
-                    #dx = alpha_zgornji-alpha_spodnji
-                    #k = dy/dx
-                    #n = CL_zgornji-k*alpha_zgornji
-                    CL_interpoliran = CL_spodnji+(dy/2)
-
-                    CD_spodnji = out_spodnji["CD"]
-                    CD_zgornji = out_zgornji["CD"]
-                    dy_2 = CD_zgornji - CD_spodnji
-                    #k_2 = dy_2/dx
-                    #n = CD_zgornji-k_2*alpha_zgornji
-                    CD_interpoliran = CD_spodnji+(dy_2/2)
-                    #printer.print("    CD:",CD_interpoliran,"CL:",CL_interpoliran)
-                    return {"CD":CD_interpoliran,"CL":CL_interpoliran,"out":out_spodnji["out"]+out_zgornji["out"]}
-
-            reynolds = reynolds + 1e3
+            printer.print("repeats:",repeats)
+            if repeats >= 5:
+                break
+            out = run_xfoil_analysis(airfoil,reynolds,alpha,repeats=repeats)
+            if out != False:
+               return out
+            repeats = repeats+1
+        alpha = radians(alpha)
+        if alpha <= 0:
+            return xfoil_runner(airfoil,reynolds,alpha+radians(1),printer)
+        else:
+            return xfoil_runner(airfoil,reynolds,alpha-radians(1),printer)
 
 
     else:
@@ -150,6 +137,7 @@ class Calculator:
             rpm,
             v,
             method,
+            propeller_mode,
             print_out,
             tip_loss,
             hub_loss,
@@ -165,6 +153,7 @@ class Calculator:
             return_results,
             rotational_augmentation_correction,
             rotational_augmentation_correction_method,
+            mach_number_correction,
             fix_reynolds,
             reynolds,
             *args,
@@ -227,8 +216,10 @@ class Calculator:
         # set constants that are section-independent
         omega = rpm * 2 * pi / 60
         TSR = omega * R / v  # tip speed ratio
-        #J = 1/TSR #advance ratio
-        J=v/(rpm/60*R*2)
+        #J_1 = 1/TSR #advance ratio
+        J_2 = v/(rpm/60*R*2)
+        J = J_2
+        #p.print("J1",J_1,"J2",J_2)
         kin_viscosity = 1.4207E-5 # Kinematic viscosity
 
         section_number = 0
@@ -274,21 +265,24 @@ class Calculator:
         Msum = numpy.sum(M)
         power = numpy.sum(M) * omega
         Pmax = 0.5 * rho * v ** 3 * pi * R ** 2
-        cp = power / Pmax
+        cp_w = power / Pmax
+        cp_p = power / (rho*(rpm/60)**3*(2*R)**5)
+
 
         dFn = results["dFn"]
         Fn = numpy.sum(dFn)
-        #T=Fn*B
         dT = results["dT"]
         T = numpy.sum(dT)
-        #ct = T/(0.5*rho*v**2*pi*R**2)
-        ct = T/(0.5*rho*v**2*pi*R**2)
+        ct_w = T/(0.5*rho*v**2*pi*R**2)
+        ct_p = T/(rho*(2*R)**4*(rpm/60)**2)
 
         results["R"] = R
         results["rpm"] = rpm
         results["v"] = v
-        results["cp"] = cp
-        results["ct"] = ct
+        results["cp_w"] = cp_w
+        results["cp_p"] = cp_p
+        results["ct_w"] = ct_w
+        results["ct_p"] = ct_p
         results["TSR"] = TSR
         results["Ft"] = Ft
         results["r"] = r
@@ -317,6 +311,7 @@ def calculate_section(
     R,
     _airfoil_dat,
     max_thickness,
+    propeller_mode,
     psi=0.0,
     fix_reynolds=False,
     reynolds=1e6,
@@ -327,6 +322,7 @@ def calculate_section(
     cascade_correction=False,
     rotational_augmentation_correction=False,
     rotational_augmentation_correction_method=0,
+    mach_number_correction=False,
     method=5,
     kin_viscosity=1.4207E-5,
     rho=1.225,
@@ -348,8 +344,8 @@ def calculate_section(
     # solidity
     # sigma=_c*B/(2*pi*_r)
 
-    # solidity - implemented in QBlade/XBEM/BDATA.cpp
-    sigma = _c * B / (2 * pi * _r) * abs(cos(_theta))
+    # solidity
+    sigma = _c * B / (2 * pi * _r) #* abs(cos(_theta)) implemented in QBlade/XBEM/BDATA.cpp
 
 
     ## initial guess
@@ -372,9 +368,15 @@ def calculate_section(
         prepend = ""
 
         # wind components
-        Ut = omega * _r * (1 + aprime)
-        Un = v * (1 - a)
+        if propeller_mode:
+            Un = v * (1 + a)
+            Ut = omega * _r * (1 - aprime)
+        else:
+            Un = v * (1 - a)
+            Ut = omega * _r * (1 + aprime)
+
         Vrel_norm = sqrt(Un ** 2 + Ut ** 2)
+
         if fix_reynolds:
             Re = reynolds
         else:
@@ -430,7 +432,10 @@ def calculate_section(
 
         Cl,Cd = xfoil_return["CL"],xfoil_return["CD"]
         if print_all:
-            print("CL:",Cl,"Cd:",Cd)
+            p.print("CL:",Cl,"Cd:",Cd)
+        if print_all:
+
+            p.print(xfoil_return["out"])
 
         if rotational_augmentation_correction:
             if print_all:
@@ -455,7 +460,8 @@ def calculate_section(
                 p.print("  Cl_cor:", Cl, "Cd_cor:", Cd)
                 p.print("--")
 
-        Cl = machNumberCorrection(Cl,M)
+        if mach_number_correction:
+            Cl = machNumberCorrection(Cl,M)
 
         # normal and tangential coefficients
         C_norm = Cl * cos(phi) + Cd * sin(phi)
@@ -504,23 +510,37 @@ def calculate_section(
         else:
             a, aprime, Ct =  coeffs
 
-        # force calculation
+        ## force calculation
         dFL = Cl * 0.5 * rho * Vrel_norm ** 2 * _c * _dr  # lift force
         dFD = Cd * 0.5 * rho * Vrel_norm ** 2 * _c * _dr  # drag force
         dFt = dFL * sin(phi) - dFD * cos(phi)  # tangential force
         dFn = dFL * cos(phi) + dFD * sin(phi)  # normal force
-        #dT = B*0.5*rho*v**2*(Cl*cos(phi)-Cd*sin(phi))*_c*_dr*(1+a)**2/sin(phi)**2
-        #dT_2 = 4*pi*_r*rho*v**2*(1+a)*a*_dr
+
+        #thrust and torque - Wiley, WE 2nd, p.124
         dT_MT = F*4*pi*_r*rho*v**2*a*(1-a)*_dr
         dT_BET = 0.5*rho*B*_c*Vrel_norm**2*(Cl*cos(phi)+Cd*sin(phi))*_dr
-        dT=dT_BET
-        #
+        dQ_MT = F*4*aprime*(1-a)*rho*v*pi*_r**3*omega*_dr
+        dQ_BET = B*0.5*rho*Vrel_norm**2*(Cl*sin(phi)-Cd*cos(phi))*_c*_dr*_r
+
+        #thrust-propeller
+        dT_MT_p=4*pi*_r*rho*v**2*(1+a)*a*_dr
+        dQ_MT_p=4*pi*_r**3*rho*v*omega*(1+a)*aprime*_dr
+        dT_BET_p=0.5*rho*v**2*_c*B*(1+a)**2/(sin(phi)**2)*(Cl*cos(phi)-Cd*sin(phi))*_dr
+        dQ_BET_p=0.5*rho*v*_c*B*omega*_r**2*(1+a)*(1-aprime)/(sin(phi)*cos(phi))*(Cl*sin(phi)+Cd*cos(phi))*_dr
+
+        if propeller_mode:
+            dT=dT_BET_p
+            dQ=dQ_BET_p
+        else:
+            dT=dT_BET
+            dQ=dQ_BET
+
+
         #wind after
         U4 = v*(1-2*a)
 
         # check convergence
         if abs(a - a_last) < convergence_limit and abs(aprime-aprime_last) < convergence_limit:
-            p.print("dT_MT %.2f dT_BET %.2f" % (dT_MT,dT_BET))
             break
 
         #p.print("dT_MT %.2f dT_BET %.2f" % (dT_MT,dT_BET))
@@ -554,6 +574,10 @@ def calculate_section(
         p.print(prepend, "        Cl:",Cl)
         p.print(prepend, "        Cd:",Cd)
         p.print(prepend, "        U4:",U4)
+        p.print(prepend, "        dT_MT %.2f dT_BET %.2f" % (dT_MT,dT_BET))
+        p.print(prepend, "        dQ_MT %.2f dQ_BET %.2f" % (dQ_MT,dQ_BET))
+        p.print(prepend, "        dT_MT_p %.2f dT_BET_p %.2f" % (dT_MT_p,dT_BET_p))
+        p.print(prepend, "        dQ_MT_p %.2f dQ_BET_p %.2f" % (dQ_MT_p,dQ_BET_p))
         p.print(prepend, "    ----------------------------")
     
     out = {
@@ -568,6 +592,7 @@ def calculate_section(
         "dFn":dFn,
         "_airfoil":_airfoil_dat,
         "U4":U4,
-        "dT":dT
+        "dT":dT,
+        "dQ":dQ
     }
     return out

@@ -88,7 +88,7 @@ class ResultsWindow(QMainWindow):
             f2, max_x, max_z, 121, "Moč vs veter", "veter [m/s]", "moč [W]"
         )
 
-        TSR, CP = sort_xy(results_3d["TSR"], results_3d["cp"])
+        TSR, CP = sort_xy(results_3d["TSR"], results_3d["cp_w"])
         self.tab_widget.add_2d_plot_to_figure(
             f2, TSR, CP, 122, "Cp krivulja", "lambda", "Cp", look="o"
         )
@@ -118,29 +118,41 @@ class ResultsWindow(QMainWindow):
             "a",
             "Ct",
             look="o",
+            x_min=0,
+            x_max=1,
+            y_min=0,
+            y_max=1
         )
 
         f5 = self.tab_widget.add_tab_figure("ct/J krivulja (propeler)")
         self.tab_widget.add_2d_plot_to_figure(
             f5,
             results_3d["J"],
-            results_3d["ct"],
+            results_3d["ct_p"],
             111,
             "ct(J) krivulja",
             "J = 1/lambda",
             "ct",
-            look="og")
+            look="-",
+            x_min=0,
+            x_max=1,
+            y_min=0,
+            y_max=1)
 
         f6 = self.tab_widget.add_tab_figure("cp/J krivulja (propeler)")
         self.tab_widget.add_2d_plot_to_figure(
             f6,
             results_3d['J'],
-            results_3d['cp'],
+            results_3d['cp_p'],
             111,
             'cp(J) krivulja',
             'J',
             'cp',
-            look='og')
+            look='-',
+            x_min=0,
+            x_max=1,
+            y_min=0,
+            y_max=1)
 
         data = dict_to_ar(results_3d)
         t = Table()
