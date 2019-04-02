@@ -817,7 +817,7 @@ class Analysis(QWidget):
         if not terminated:
             self.p.join()
             if len(self.main.return_results) > 0:
-                results = self.main.return_results[0]
+                results = self.main.return_results[-1]
                 if "v" in results:
                     if len(results["v"]) > 0:
                         inp_params = self.runner_input

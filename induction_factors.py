@@ -177,7 +177,7 @@ class Calculator:
         results = {}
         arrays = ["a", "a'", "cL", "alpha",
                   "phi", "F", "dFt", "M", "TSR", "Ct", "dFn", "foils",
-                  "dT"]
+                  "dT","dQ"]
         for array in arrays:
             results[array] = numpy.array([])
 
@@ -226,6 +226,7 @@ class Calculator:
             results["dFn"] = numpy.append(results["dFn"], out_results["dFn"])
             results["foils"] = numpy.append(results["foils"], out_results["_airfoil"])
             results["dT"] = numpy.append(results["dT"],out_results["dT"])
+            results["dQ"] = numpy.append(results["dQ"],out_results["dQ"])
         
         if not print_all and not print_out:
             p.print("")
@@ -233,11 +234,14 @@ class Calculator:
         dFt = results["dFt"]
         Ft = numpy.sum(dFt)
         M = B * dFt * r  # momenti po prerezih
+        dQ = results["dQ"]
+        Q = numpy.sum(dQ) # moment for propeller
+        power_p = Q*omega
         Msum = numpy.sum(M)
         power = numpy.sum(M) * omega
         Pmax = 0.5 * rho * v ** 3 * pi * R ** 2
         cp_w = power / Pmax
-        cp_p = power / (rho*(rpm/60)**3*(2*R)**5)
+        cp_p = power_p / (rho*(rpm/60)**3*(2*R)**5)
 
 
         dFn = results["dFn"]
@@ -511,8 +515,8 @@ def calculate_section(
         dQ_BET_p=0.5*rho*v*_c*B*omega*_r**2*(1+a)*(1-aprime)/(sin(phi)*cos(phi))*(Cl*sin(phi)+Cd*cos(phi))*_dr
 
         if propeller_mode:
-            dT=dT_p
-            dQ=dQ_p
+            dT=dT_BET_p
+            dQ=dQ_BET_p
         else:
             dT=dT_BET
             dQ=dQ_BET
@@ -558,8 +562,8 @@ def calculate_section(
         p.print(prepend, "        U4:",U4)
         p.print(prepend, "        dT_MT %.2f dT_BET %.2f" % (dT_MT,dT_BET))
         p.print(prepend, "        dQ_MT %.2f dQ_BET %.2f" % (dQ_MT,dQ_BET))
-        p.print(prepend, "        dT_MT_p %.2f dT_BET_p %.2f" % (dT_MT_p,dT_BET_p))
-        p.print(prepend, "        dQ_MT_p %.2f dQ_BET_p %.2f" % (dQ_MT_p,dQ_BET_p))
+        p.print(prepend, "        dT_MT_p %.5f dT_BET_p %.5f" % (dT_MT_p,dT_BET_p))
+        p.print(prepend, "        dQ_MT_p %.5f dQ_BET_p %.5f" % (dQ_MT_p,dQ_BET_p))
         p.print(prepend, "        dT_p %.2f dQ_p %.2f" % (dT_p,dQ_p))
         p.print(prepend, "    ----------------------------")
     

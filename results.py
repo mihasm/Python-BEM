@@ -130,14 +130,14 @@ class ResultsWindow(QMainWindow):
             results_3d["J"],
             results_3d["ct_p"],
             111,
-            "ct(J) krivulja",
+            "ct_p(J) krivulja",
             "J = 1/lambda",
             "ct",
             look="-",
             x_min=0,
             x_max=1,
             y_min=0,
-            y_max=1)
+            y_max=0.1)
 
         f6 = self.tab_widget.add_tab_figure("cp/J krivulja (propeler)")
         self.tab_widget.add_2d_plot_to_figure(

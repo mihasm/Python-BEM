@@ -108,7 +108,7 @@ def run_xfoil_analysis(airfoil,reynolds,alpha,iterations=100,max_next_angle=5.,p
         call("")
         call("quit")
         #print(process.stdout.read())
-        timer = Timer(0.7, process.kill)
+        timer = Timer(0.3, process.kill)
         try:
             timer.start()
             output = process.communicate()[0]

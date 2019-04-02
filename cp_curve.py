@@ -109,6 +109,7 @@ def calculate_power_3d(inp_args,print_eof=True,prepend="",print_out=True):
                 for key, value in _results.items():
                     #if 0.0 < _results["cp"] <= 0.6:
                     results_3d[key].append(value)
+                return_results.append(results_3d)
 
             i+=1
             t_now = int(time.time()-time_start)
@@ -119,8 +120,8 @@ def calculate_power_3d(inp_args,print_eof=True,prepend="",print_out=True):
             p.print("    ### Time left:",t_left_str,"ETA:",eta,"###")
 
 
-    for k, v in results_3d.items():
-        results_3d[k] = v
+    #for k, v in results_3d.items(): #why is this here?
+    #    results_3d[k] = v
 
     return_results.append(results_3d)
     if print_eof:
