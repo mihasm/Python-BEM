@@ -41,34 +41,11 @@ def generate_dat(name,x,y):
 
 def xfoil_runner(airfoil,reynolds,alpha,printer):
     alpha = round(degrees(alpha),2)
-    printer.print("xfoil runner, alpha=",alpha)
+    printer.print("xfoil runner, alpha=",alpha,"re=",reynolds)
     out = run_xfoil_analysis(airfoil,reynolds,alpha)
-    if out != False:
-        printer.print("cL",out["CL"])
-    #
     if out == False:
-        printer.print("    Convergence failed, modifying parameters...")
-        original_alpha = alpha
-        original_reynolds = reynolds
-        repeats = 1
-        while True:
-            printer.print("repeats:",repeats)
-            if repeats >= 5:
-                break
-            out = run_xfoil_analysis(airfoil,reynolds,alpha,repeats=repeats)
-            if out != False:
-               return out
-            repeats = repeats+1
-        alpha = radians(alpha)
-        if alpha <= 0:
-            return xfoil_runner(airfoil,reynolds,alpha+radians(1),printer)
-        else:
-            return xfoil_runner(airfoil,reynolds,alpha-radians(1),printer)
-
-
-    else:
-        #printer.print("    CD:",out["CD"],"CL:",out["CL"])
-        return out
+        return xfoil_runner(airfoil,reynolds/2,radians(alpha),printer)
+    return out
 
 
 class Calculator:
@@ -349,9 +326,9 @@ def calculate_section(
 
 
     ## initial guess
-    #a = 0.1
-    #aprime = 0.01
-    a,aprime = guessInductionFactors(lambda_r,sigma,_theta)
+    a = 0.01
+    aprime = 0.01
+    #a,aprime = guessInductionFactors(lambda_r,sigma,_theta)
 
     # iterations counter
     i = 0

@@ -15,8 +15,8 @@ def get_coefficients_from_output(output_str):
     last_lines = "\n".join(lines[-5:])
     if "VISCAL:  Convergence failed" in last_lines:
         return False
-    #if "TRCHEK2: N2 convergence failed." in output_str:
-    #    return False
+    if "TRCHEK2: N2 convergence failed." in output_str:
+        return False
     i=-1
     cur_line = 0
     _,__,a,CL,Cm,CD,CDf,CDp = [None]*8
@@ -28,6 +28,10 @@ def get_coefficients_from_output(output_str):
     #print(output_str)
     #Weird case
     if CL == None or CD == None:
+        return False
+    if CL == float("+Infinity") or CL == float("-Infinity"):
+        return False
+    if CD == float("+Infinity") or CD == float("-Infinity"):
         return False
     if "*" in CL or "*" in CD:
         return False
@@ -41,7 +45,7 @@ def get_coefficients_from_output(output_str):
     }
     return out
 
-def run_xfoil_analysis(airfoil,reynolds,alpha,iterations=100,repeats=1,print_output = False):
+def run_xfoil_analysis(airfoil,reynolds,alpha,iterations=100,max_next_angle=5.,print_output = False):
     #print("running xfoil for %s,Re=%s,alpha=%s" % (airfoil,reynolds,alpha))
     with Popen(os.path.abspath(xfoil_path), stdin=PIPE, stdout=PIPE,
                universal_newlines=True) as process:
@@ -68,9 +72,27 @@ def run_xfoil_analysis(airfoil,reynolds,alpha,iterations=100,repeats=1,print_out
         call("v")
         call("iteration")
         call("%s" % iterations)
-        for i in range(repeats):
+        
+        alpha_current = 0
+        to_break = False
+        while True:
             call("alfa")
-            call("%s" % alpha)
+            call("%s" % alpha_current)
+            if to_break == True:
+                break
+            if alpha > 0:
+                if alpha > alpha_current+max_next_angle:
+                    alpha_current+=max_next_angle
+                else:
+                    alpha_current = alpha
+                    to_break = True
+            else:
+                if alpha < alpha_current-max_next_angle:
+                    alpha_current-=max_next_angle
+                else:
+                    alpha_current = alpha
+                    to_break = True
+
         call("")
         call("quit")
         #print(process.stdout.read())
