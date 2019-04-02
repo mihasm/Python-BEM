@@ -5,10 +5,22 @@ from subprocess import Popen, PIPE, DEVNULL, STDOUT
 import re
 from threading import Timer
 import sys
+from math import sin, cos, atan, acos, pi, exp, sqrt, radians, atan2, degrees, tan
+
 
 xfoil_path = os.path.join("xfoil_executables","xfoil.exe")
 if sys.platform.startswith("darwin"):
     xfoil_path = os.path.join("xfoil_executables","xfoil")
+
+def xfoil_runner(airfoil,reynolds,alpha,printer,print_all=False):
+    alpha = round(degrees(alpha),1)
+    if print_all:
+        printer.print("        xfoil runner, alpha=",alpha,"re=",reynolds)
+    out = run_xfoil_analysis(airfoil,reynolds,alpha)
+    if out == False:
+        return xfoil_runner(airfoil,reynolds*0.5,radians(alpha),printer,print_all=print_all)
+    return out
+
 
 def get_coefficients_from_output(output_str):
     lines = output_str.splitlines()
@@ -96,7 +108,7 @@ def run_xfoil_analysis(airfoil,reynolds,alpha,iterations=100,max_next_angle=5.,p
         call("")
         call("quit")
         #print(process.stdout.read())
-        timer = Timer(3, process.kill)
+        timer = Timer(0.7, process.kill)
         try:
             timer.start()
             output = process.communicate()[0]

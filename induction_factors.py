@@ -13,7 +13,7 @@ from scipy import interpolate
 import numpy
 from utils import Printer
 from popravki import *
-from xfoil import run_xfoil_analysis
+from xfoil import run_xfoil_analysis, xfoil_runner
 import os
 
 numpy.seterr(all="raise")
@@ -38,15 +38,6 @@ def generate_dat(name,x,y):
     f.write(out)
     f.close()
     return out
-
-def xfoil_runner(airfoil,reynolds,alpha,printer):
-    alpha = round(degrees(alpha),2)
-    printer.print("xfoil runner, alpha=",alpha,"re=",reynolds)
-    out = run_xfoil_analysis(airfoil,reynolds,alpha)
-    if out == False:
-        return xfoil_runner(airfoil,reynolds/2,radians(alpha),printer)
-    return out
-
 
 class Calculator:
     """
@@ -193,10 +184,7 @@ class Calculator:
         # set constants that are section-independent
         omega = rpm * 2 * pi / 60
         TSR = omega * R / v  # tip speed ratio
-        #J_1 = 1/TSR #advance ratio
-        J_2 = v/(rpm/60*R*2)
-        J = J_2
-        #p.print("J1",J_1,"J2",J_2)
+        J = v/(rpm/60*R*2)
         kin_viscosity = 1.4207E-5 # Kinematic viscosity
 
         section_number = 0
@@ -221,6 +209,9 @@ class Calculator:
             psi = 0.0
 
             out_results = calculate_section(**locals(),printer=p)
+            if not print_all and not print_out:
+                p.print("*",add_newline=False)
+
             if out_results == None:
                 return None
 
@@ -235,6 +226,9 @@ class Calculator:
             results["dFn"] = numpy.append(results["dFn"], out_results["dFn"])
             results["foils"] = numpy.append(results["foils"], out_results["_airfoil"])
             results["dT"] = numpy.append(results["dT"],out_results["dT"])
+        
+        if not print_all and not print_out:
+            p.print("")
 
         dFt = results["dFt"]
         Ft = numpy.sum(dFt)
@@ -357,7 +351,10 @@ def calculate_section(
         if fix_reynolds:
             Re = reynolds
         else:
-            Re = int(Vrel_norm*_c/kin_viscosity)
+            Re_next = Vrel_norm*_c/kin_viscosity
+            if Re_next > 1e7:
+                Re_next = 2e5
+            Re = int(Re_next)
 
         # relative wind
         phi = atan2(Un, Ut)
@@ -380,7 +377,11 @@ def calculate_section(
             F = F * newHubLoss(B, _r, R, phi, lambda_r)
 
         # angle of attack
-        alpha = phi - _theta
+        if propeller_mode:
+            alpha = _theta - phi
+        else:
+            alpha = phi - _theta
+
 
         #cascade correction
         if cascade_correction:
@@ -398,21 +399,20 @@ def calculate_section(
             )
 
         if print_all:
-            p.print("    Running xfoil for %s,Re=%s,alpha=%s" % (_airfoil_dat,Re,alpha))
+            p.print("        Running xfoil for %s,Re=%s,alpha=%s" % (_airfoil_dat,Re,alpha))
 
-        xfoil_return = xfoil_runner(airfoil=_airfoil_dat,reynolds=Re,alpha=alpha,printer=p)
+        xfoil_return = xfoil_runner(airfoil=_airfoil_dat,reynolds=Re,alpha=alpha,printer=p,print_all=print_all)
 
         if xfoil_return == False:
-            p.print("    Xfoil failed")
+            p.print("        Xfoil failed")
             return None
             break
 
         Cl,Cd = xfoil_return["CL"],xfoil_return["CD"]
         if print_all:
-            p.print("CL:",Cl,"Cd:",Cd)
-        if print_all:
-
-            p.print(xfoil_return["out"])
+            p.print("        CL:",Cl,"Cd:",Cd)
+        #if print_all:
+        #    p.print(xfoil_return["out"])
 
         if rotational_augmentation_correction:
             if print_all:
@@ -499,6 +499,11 @@ def calculate_section(
         dQ_MT = F*4*aprime*(1-a)*rho*v*pi*_r**3*omega*_dr
         dQ_BET = B*0.5*rho*Vrel_norm**2*(Cl*sin(phi)-Cd*cos(phi))*_c*_dr*_r
 
+        #thrust and torque from https://apps.dtic.mil/dtic/tr/fulltext/u2/1013408.pdf
+        dT_p = B*rho*(omega*_r/cos(phi)*cos(_theta))**2*_c*_dr*(Cl*cos(phi)-Cd*sin(phi))
+        dQ_p = B*rho*(omega*_r/cos(phi)*cos(_theta))**2*_c*_r*_dr*(Cl*sin(phi)+Cd*cos(phi))
+
+
         #thrust-propeller
         dT_MT_p=4*pi*_r*rho*v**2*(1+a)*a*_dr
         dQ_MT_p=4*pi*_r**3*rho*v*omega*(1+a)*aprime*_dr
@@ -506,8 +511,8 @@ def calculate_section(
         dQ_BET_p=0.5*rho*v*_c*B*omega*_r**2*(1+a)*(1-aprime)/(sin(phi)*cos(phi))*(Cl*sin(phi)+Cd*cos(phi))*_dr
 
         if propeller_mode:
-            dT=dT_BET_p
-            dQ=dQ_BET_p
+            dT=dT_p
+            dQ=dQ_p
         else:
             dT=dT_BET
             dQ=dQ_BET
@@ -555,6 +560,7 @@ def calculate_section(
         p.print(prepend, "        dQ_MT %.2f dQ_BET %.2f" % (dQ_MT,dQ_BET))
         p.print(prepend, "        dT_MT_p %.2f dT_BET_p %.2f" % (dT_MT_p,dT_BET_p))
         p.print(prepend, "        dQ_MT_p %.2f dQ_BET_p %.2f" % (dQ_MT_p,dQ_BET_p))
+        p.print(prepend, "        dT_p %.2f dQ_p %.2f" % (dT_p,dQ_p))
         p.print(prepend, "    ----------------------------")
     
     out = {

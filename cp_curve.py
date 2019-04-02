@@ -20,6 +20,7 @@ import numpy
 from mpl_toolkits.mplot3d import Axes3D
 import time
 import datetime
+from math import pi
 
 from induction_factors import Calculator
 from utils import Printer
@@ -87,7 +88,7 @@ def calculate_power_3d(inp_args,print_eof=True,prepend="",print_out=True):
             
 
             if print_out:
-                p.print(prepend+"Calculating power for v:", v, "[m/s], rpm:", rpm, "[RPM].")
+                p.print(prepend+"Calculating power for v:", v, "[m/s], rpm:", rpm, "[RPM], lambda:", rpm/60*2*pi*inp_args["R"]/v,"J:",v/(rpm/60*inp_args["R"]*2))
             _inp_args = {**inp_args}
             _inp_args["v"] = v
             _inp_args["rpm"] = rpm

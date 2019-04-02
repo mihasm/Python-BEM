@@ -842,7 +842,9 @@ class Analysis(QWidget):
                 self.p.terminate()
                 self.main.running = False
                 self.main.getter.__del__()
-                self.done(True)
+                
+                #change to self.done(True), if you dont want to see already calculated points
+                self.done(False)
 
 
 class Optimization(QWidget):

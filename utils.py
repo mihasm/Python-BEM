@@ -225,7 +225,7 @@ class Printer:
     def __init__(self, arr):
         self.out = arr
 
-    def print(self, *args):
+    def print(self, *args, add_newline=True):
         out_str = ""
         i = 0
         for a in args:
@@ -236,7 +236,8 @@ class Printer:
             out_str += str(a)
             i += 1
         print(out_str)
-        out_str += "\n"
+        if add_newline:
+            out_str += "\n"
         self.out.append(out_str)
         return out_str
 
