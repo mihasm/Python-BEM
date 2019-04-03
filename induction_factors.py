@@ -503,10 +503,13 @@ def calculate_section(
         dQ_MT = F*4*aprime*(1-a)*rho*v*pi*_r**3*omega*_dr
         dQ_BET = B*0.5*rho*Vrel_norm**2*(Cl*sin(phi)-Cd*cos(phi))*_c*_dr*_r
 
-        #thrust and torque from https://apps.dtic.mil/dtic/tr/fulltext/u2/1013408.pdf
+        ##thrust and torque from https://apps.dtic.mil/dtic/tr/fulltext/u2/1013408.pdf
         dT_p = B*rho*(omega*_r/cos(phi)*cos(_theta))**2*_c*_dr*(Cl*cos(phi)-Cd*sin(phi))
         dQ_p = B*rho*(omega*_r/cos(phi)*cos(_theta))**2*_c*_r*_dr*(Cl*sin(phi)+Cd*cos(phi))
 
+        #thrust and torque from http://www.icas.org/ICAS_ARCHIVE/ICAS2010/PAPERS/434.PDF
+        #dT_p = sigma*pi*rho*v**2*(1+a)**2/(sin(phi)**2)*(Cl*cos(phi)-Cd*sin(phi))*_r*_dr
+        #dQ_p = sigma*pi*rho*v**2*(1+a)**2/(sin(phi)*+2)*(Cl*sin(phi)+Cd*cos(phi))*_r**2*_dr
 
         #thrust-propeller
         dT_MT_p=4*pi*_r*rho*v**2*(1+a)*a*_dr

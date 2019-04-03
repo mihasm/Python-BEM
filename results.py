@@ -145,14 +145,14 @@ class ResultsWindow(QMainWindow):
             results_3d['J'],
             results_3d['cp_p'],
             111,
-            'cp(J) krivulja',
+            'cp_p(J) krivulja',
             'J',
             'cp',
             look='-',
             x_min=0,
             x_max=1,
             y_min=0,
-            y_max=1)
+            y_max=0.1)
 
         data = dict_to_ar(results_3d)
         t = Table()

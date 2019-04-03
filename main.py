@@ -41,7 +41,7 @@ from results import ResultsWindow
 from table import Table
 import time
 from turbine_data import SET_INIT
-from optimisation import Optimizer
+from optimization import Optimizer
 from utils import interpolate_geom, to_float, fltr
 
 from multiprocessing import Process, Manager
@@ -212,14 +212,12 @@ class MainWindow(QMainWindow):
     def set_buttons_running(self):
         self.analysis.buttonRun.setEnabled(False)
         self.optimization.buttonAngles.setEnabled(False)
-        self.optimization.buttonPitch.setEnabled(False)
         self.analysis.buttonStop.setEnabled(True)
         self.optimization.buttonStop.setEnabled(True)
 
     def set_buttons_await(self):
         self.analysis.buttonRun.setEnabled(True)
         self.optimization.buttonAngles.setEnabled(True)
-        self.optimization.buttonPitch.setEnabled(True)
         self.analysis.buttonStop.setEnabled(False)
         self.optimization.buttonStop.setEnabled(False)
 
@@ -873,53 +871,8 @@ class Optimization(QWidget):
         self._target_rpm = QLabel("Target rpm [RPM]")
         self.form_list.append([self._target_rpm, self.target_rpm])
 
-        self.delta_start = QLineEdit()
-        self.delta_start.setValidator(self.validator)
-        self.delta_start.textChanged.connect(self.check_state)
-        self.delta_start.textChanged.emit(self.delta_start.text())
-        self._delta_start = QLabel("delta_start")
-        self.form_list.append([self._delta_start, self.delta_start])
-
-        self.decrease_factor = QLineEdit()
-        self.decrease_factor.setValidator(self.validator)
-        self.decrease_factor.textChanged.connect(self.check_state)
-        self.decrease_factor.textChanged.emit(self.decrease_factor.text())
-        self._decrease_factor = QLabel("decrease_factor")
-        self.form_list.append([self._decrease_factor, self.decrease_factor])
-
-        self.min_delta = QLineEdit()
-        self.min_delta.setValidator(self.validator)
-        self.min_delta.textChanged.connect(self.check_state)
-        self.min_delta.textChanged.emit(self.min_delta.text())
-        self._min_delta = QLabel("min_delta")
-        self.form_list.append([self._min_delta, self.min_delta])
-
-        self.min_add_angle = QLineEdit()
-        self.min_add_angle.setValidator(self.validator)
-        self.min_add_angle.textChanged.connect(self.check_state)
-        self.min_add_angle.textChanged.emit(self.min_add_angle.text())
-        self._min_add_angle = QLabel("min_add_angle")
-        self.form_list.append([self._min_add_angle, self.min_add_angle])
-
-        self.max_add_angle = QLineEdit()
-        self.max_add_angle.setValidator(self.validator)
-        self.max_add_angle.textChanged.connect(self.check_state)
-        self.max_add_angle.textChanged.emit(self.max_add_angle.text())
-        self._max_add_angle = QLabel("max_add_angle")
-        self.form_list.append([self._max_add_angle, self.max_add_angle])
-
-        self.angle_step = QLineEdit()
-        self.angle_step.setValidator(self.validator)
-        self.angle_step.textChanged.connect(self.check_state)
-        self.angle_step.textChanged.emit(self.angle_step.text())
-        self._angle_step = QLabel("angle_step")
-        self.form_list.append([self._angle_step, self.angle_step])
-
         self.buttonAngles = QPushButton("Run angle optimization")
         self.buttonAngles.clicked.connect(self.run)
-
-        self.buttonPitch = QPushButton("Run pitch optimization")
-        self.buttonPitch.clicked.connect(self.run_pitch)
 
         self.buttonStop = QPushButton("Stop")
         self.buttonStop.clicked.connect(self.terminate)
@@ -941,21 +894,9 @@ class Optimization(QWidget):
         self.fbox.addRow(self._target_speed, self.target_speed)
         self.fbox.addRow(self._target_rpm, self.target_rpm)
 
-        rpmtext = QTextEdit("Target RPM can be empty for pitch calc.")
-        rpmtext.setReadOnly(True)
-        self.fbox.addRow(QLabel(" "), rpmtext)
-
         self.fbox.addRow(QLabel("--------"))
-        self.fbox.addRow(self._delta_start, self.delta_start)
-        self.fbox.addRow(self._min_delta, self.min_delta)
-        self.fbox.addRow(self._decrease_factor, self.decrease_factor)
         self.fbox.addRow(self.buttonAngles)
 
-        self.fbox.addRow(QLabel("--------"))
-        self.fbox.addRow(self._min_add_angle, self.min_add_angle)
-        self.fbox.addRow(self._max_add_angle, self.max_add_angle)
-        self.fbox.addRow(self._angle_step, self.angle_step)
-        self.fbox.addRow(self.buttonPitch)
         self.fbox.addRow(self.buttonClear, self.buttonStop)
         self.fbox.addRow(self.buttonEOFdescription, self.buttonEOF)
 
@@ -965,9 +906,6 @@ class Optimization(QWidget):
         _needed_vars = [
             [self._target_speed, self.target_speed],
             [self._target_rpm, self.target_rpm],
-            [self._delta_start, self.delta_start],
-            [self._decrease_factor, self.decrease_factor],
-            [self._min_delta, self.min_delta],
         ]
         for n, f in _needed_vars:
             if isinstance(f, QLineEdit):
@@ -982,26 +920,6 @@ class Optimization(QWidget):
             return True
         return out
 
-    def check_forms_pitch(self):
-        out = ""
-        _needed_vars = [
-            [self._target_speed, self.target_speed],
-            [self._min_add_angle, self.min_add_angle],
-            [self._max_add_angle, self.max_add_angle],
-            [self._angle_step, self.angle_step],
-        ]
-        for n, f in _needed_vars:
-            if isinstance(f, QLineEdit):
-                state = self.validator.validate(f.text(), 0)[0]
-                if state == QtGui.QValidator.Acceptable:
-                    pass
-                elif state == QtGui.QValidator.Intermediate:
-                    out += "Form %s appears not to be valid.\n" % n.text()
-                else:
-                    out += "Form %s is not of the valid type.\n" % n.text()
-        if out == "":
-            return True
-        return out
 
     def check_state(self, *args, **kwargs):
         sender = self.sender()
@@ -1015,12 +933,9 @@ class Optimization(QWidget):
             color = "#f6989d"  # red
         sender.setStyleSheet("QLineEdit { background-color: %s }" % color)
 
-    def run(self, run_pitch=False):
+    def run(self):
         self.clear()
-        if run_pitch:
-            check = self.check_forms_pitch()
-        else:
-            check = self.check_forms_angles()
+        check = self.check_forms_angles()
         check_analysis = self.main.analysis.check_forms()
         if check != True or check_analysis != True:
             if check == True:
@@ -1044,12 +959,9 @@ class Optimization(QWidget):
             self.runner_input = self.main.get_input_params()
             self.main.getter.start()
             self.o = Optimizer(self.runner_input)
-            if run_pitch:
-                self.p = Process(target=self.o.optimize_pitch, args=[self.runner_input])
-            else:
-                self.p = Process(
-                    target=self.o.optimize_angles, args=[self.runner_input]
-                )
+            self.p = Process(
+                target=self.o.optimize_angles, args=[self.runner_input]
+            )
             self.p.start()
         else:
             msg = QMessageBox()
@@ -1100,12 +1012,6 @@ class Optimization(QWidget):
         else:
             out["target_rpm"] = self.target_rpm.text()
         out["target_speed"] = self.target_speed.text()
-        out["delta_start"] = self.delta_start.text()
-        out["decrease_factor"] = self.decrease_factor.text()
-        out["min_delta"] = self.min_delta.text()
-        out["min_add_angle"] = self.min_add_angle.text()
-        out["max_add_angle"] = self.max_add_angle.text()
-        out["angle_step"] = self.angle_step.text()
         for k, v in out.items():
             if v == "":
                 v = None
