@@ -20,11 +20,13 @@ import numpy
 from mpl_toolkits.mplot3d import Axes3D
 import time
 import datetime
+from math import pi
 
 from induction_factors import Calculator
 from utils import Printer
 
 a = Axes3D  # only for passing code inspection -> Axes3D needs to be imported
+
 
 def calculate_power(inp_args):
     """
@@ -43,7 +45,7 @@ def calculate_power(inp_args):
         if not f in inp_args["curves"].keys():
             p.print("Section foil %s does not exist in airfoil list." % f)
             raise Exception("Section foil not matching airfoil list error")
-    
+
     if "add_angle" in inp_args:
         if inp_args["add_angle"] != None:
             inp_args["theta"] = inp_args["theta"] + inp_args["add_angle"]
@@ -54,10 +56,9 @@ def calculate_power(inp_args):
         p.print("!!!!EOF!!!!")
         traceback.print_exc(file=sys.stdout)
         raise
-        #return "!!!!EOF!!!!"
 
 
-def calculate_power_3d(inp_args,print_eof=True,prepend="",print_out=True):
+def calculate_power_3d(inp_args, print_eof=True, prepend="", print_out=True):
     """
     Calculates power for given geometry and data for every windspeed and rpm.
 
@@ -69,25 +70,27 @@ def calculate_power_3d(inp_args,print_eof=True,prepend="",print_out=True):
     return_results = inp_args["return_results"]
     results_3d = {}
     speeds = list(
-            numpy.linspace(
-                start=inp_args["v_min"], stop=inp_args["v_max"], num=inp_args["v_num"]
-            ))
+        numpy.linspace(
+            start=inp_args["v_min"],
+            stop=inp_args["v_max"],
+            num=inp_args["v_num"]
+        ))
     rpms = list(
-                numpy.linspace(
-                    start=inp_args["rpm_min"],
-                    stop=inp_args["rpm_max"],
-                    num=inp_args["rpm_num"],
-                )
+        numpy.linspace(
+            start=inp_args["rpm_min"],
+            stop=inp_args["rpm_max"],
+            num=inp_args["rpm_num"],
         )
-    total_iterations = int(len(speeds)*len(rpms))
+    )
+    total_iterations = int(len(speeds) * len(rpms))
     i = 0
     time_start = time.time()
     for v in speeds:
         for rpm in rpms:
-            
 
             if print_out:
-                p.print(prepend+"Calculating power for v:", v, "[m/s], rpm:", rpm, "[RPM].")
+                p.print(prepend + "Calculating power for v:", v, "[m/s], rpm:", rpm, "[RPM], lambda:",
+                        rpm / 60 * 2 * pi * inp_args["R"] / v, "J:", v / (rpm / 60 * inp_args["R"] * 2))
             _inp_args = {**inp_args}
             _inp_args["v"] = v
             _inp_args["rpm"] = rpm
@@ -101,25 +104,22 @@ def calculate_power_3d(inp_args,print_eof=True,prepend="",print_out=True):
                 return None
             if _results != None and _results["power"]:
                 if print_out:
-                    p.print(prepend+"    TSR:", _results["TSR"],"J:",_results["J"], "cp:", _results["cp_w"], "ct_p:",_results["ct_p"])
+                    p.print(prepend + "    TSR:", _results["TSR"], "J:", _results["J"], "cp:", _results["cp_w"],
+                            "ct_p:", _results["ct_p"])
                 for key, value in _results.items():
                     if key not in results_3d:
                         results_3d[key] = []
                 for key, value in _results.items():
-                    #if 0.0 < _results["cp"] <= 0.6:
                     results_3d[key].append(value)
+                return_results.append(results_3d)
 
-            i+=1
-            t_now = int(time.time()-time_start)
-            t_left = int((total_iterations/i-1)*t_now)
+            i += 1
+            t_now = int(time.time() - time_start)
+            t_left = int((total_iterations / i - 1) * t_now)
             t_left_str = str(datetime.timedelta(seconds=t_left))
-            eta_seconds = datetime.datetime.now()+datetime.timedelta(seconds=t_left)
+            eta_seconds = datetime.datetime.now() + datetime.timedelta(seconds=t_left)
             eta = str(eta_seconds).split(".")[0]
-            p.print("    ### Time left:",t_left_str,"ETA:",eta,"###")
-
-
-    for k, v in results_3d.items():
-        results_3d[k] = v
+            p.print("    ### Time left:", t_left_str, "ETA:", eta, "###")
 
     return_results.append(results_3d)
     if print_eof:

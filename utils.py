@@ -9,6 +9,7 @@ __status__ = "Development"
 import numpy
 from scipy import interpolate
 from numpy import array
+import os
 
 
 def transpose(a):
@@ -116,17 +117,17 @@ def sort_xy(array_x, array_y):
         )
 
 
-def transitions_to_nearest_profiles(r,foils):
-    #print("transitioning foils")
-    #print("transition foils before",foils)
+def transitions_to_nearest_profiles(r, foils):
+    # print("transitioning foils")
+    # print("transition foils before",foils)
     r_orig = r.copy()
     foils_orig = foils.copy()
     if len(r_orig) != len(foils_orig):
         raise Exception("Lengths of arrays r and foils must match!")
     for i in range(len(r)):
-        #print("currently checking i",i)
-        #if there is a transition between two foils,
-        #select the closest foil to the given transition
+        # print("currently checking i",i)
+        # if there is a transition between two foils,
+        # select the closest foil to the given transition
         if "transition" in foils_orig[i].lower():
             _r = r[i]
             nearest_i_down = int(str(i))
@@ -139,7 +140,7 @@ def transitions_to_nearest_profiles(r,foils):
                     pass
                 else:
                     break
-            #print("##nearest_i_down",nearest_i_down)
+            # print("##nearest_i_down",nearest_i_down)
             nearest_i_up = int(str(i))
             while True:
                 nearest_i_up += 1
@@ -150,16 +151,16 @@ def transitions_to_nearest_profiles(r,foils):
                     pass
                 else:
                     break
-            #print("##nearest_i_up",nearest_i_up)
+            # print("##nearest_i_up",nearest_i_up)
 
             if nearest_i_up == None and nearest_i_down == None:
-                raise Exception("Transition %s doesn't end with any profile"%i)
+                raise Exception("Transition %s doesn't end with any profile" % i)
 
             if nearest_i_down != None:
-                dr_down = abs(_r-r[nearest_i_down])
+                dr_down = abs(_r - r[nearest_i_down])
 
             if nearest_i_up != None:
-                dr_up = abs(_r-r[nearest_i_up])
+                dr_up = abs(_r - r[nearest_i_up])
 
             if nearest_i_up != None and nearest_i_down != None:
                 if dr_down < dr_up:
@@ -173,7 +174,7 @@ def transitions_to_nearest_profiles(r,foils):
                     best_i = nearest_i_down
 
             foils[i] = foils_orig[best_i]
-    #print("transition foils after",foils)
+    # print("transition foils after",foils)
     return foils
 
 
@@ -181,31 +182,31 @@ def interpolate_geom(r, c, theta, foils, num=None, linspace_interp=False):
     """
     interpolates c,r,theta with num elements:
     """
-    #print("interpolating")
-    #print("foils before",foils)
+    # print("interpolating")
+    # print("foils before",foils)
     c_interpolator = interpolate.interp1d(r, c)
     theta_interpolator = interpolate.interp1d(r, theta)
     r_orig = r.copy()
     foils_orig = foils.copy()
-    foils_orig = transitions_to_nearest_profiles(r_orig,foils_orig)
+    foils_orig = transitions_to_nearest_profiles(r_orig, foils_orig)
     if linspace_interp:
         r = numpy.linspace(start=r[0], stop=r[-1], num=num + 1)
         c = c_interpolator(r)
         theta = theta_interpolator(r)
         foils = []
         for _r in r:
-            closest_index = find_nearest(r_orig,_r)
+            closest_index = find_nearest(r_orig, _r)
             foils.append(foils_orig[closest_index])
     else:
         foils = foils_orig
 
-    #calculate dr
+    # calculate dr
     r_shifted = [r[0]]
     for _r in r:
         r_shifted.append(_r)
     r_shifted = array(r_shifted[:-1])
     dr = r - r_shifted
-    #print("foils after",foils)
+    # print("foils after",foils)
     return r, c, theta, foils, dr
 
 
@@ -225,7 +226,7 @@ class Printer:
     def __init__(self, arr):
         self.out = arr
 
-    def print(self, *args):
+    def print(self, *args, add_newline=True):
         out_str = ""
         i = 0
         for a in args:
@@ -236,29 +237,32 @@ class Printer:
             out_str += str(a)
             i += 1
         print(out_str)
-        out_str += "\n"
+        if add_newline:
+            out_str += "\n"
         self.out.append(out_str)
         return out_str
 
+
 import copy
+
 
 def fltr(node, vals):
     print(node)
     if isinstance(node, dict):
         retVal = {}
-        for key,value in node.items():
-            if isinstance(value,numpy.ndarray):
+        for key, value in node.items():
+            if isinstance(value, numpy.ndarray):
                 node[key] = value.tolist()
-            if isinstance(key,vals) and isinstance(value,vals):
+            if isinstance(key, vals) and isinstance(value, vals):
                 retVal[key] = copy.deepcopy(node[key])
             elif isinstance(node[key], list) or isinstance(node[key], dict):
                 child = fltr(node[key], vals)
                 if child:
                     retVal[key] = child
         if retVal:
-             return retVal
+            return retVal
         else:
-             return None
+            return None
     elif isinstance(node, list):
         retVal = []
         for entry in node:
@@ -269,8 +273,21 @@ def fltr(node, vals):
             return retVal
         else:
             return None
-#b = numpy.array([1,2,3])
-#a = {1:1,2:2,3:{1:1,2:2,3:3,4:{1:1,2:2,3:b}},4:numpy}
-#
-#print(fltr(a,(float, int, list, str, bool, numpy.ndarray)))
-#
+
+
+def generate_dat(name, x, y):
+    print("generating dat")
+    out = ""
+    out += name + "\n"
+    for i in range(len(x)):
+        _x = float(x[i])
+        _y = float(y[i])
+        if _y >= 0:
+            out += "%.6f   %.6f\n" % (_x, _y)
+        else:
+            out += "%.6f  %.6f\n" % (_x, _y)
+
+    f = open(os.path.join("foils", name + ".dat"), "w")
+    f.write(out)
+    f.close()
+    return out
