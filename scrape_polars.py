@@ -1,7 +1,7 @@
 import requests
 from bs4 import BeautifulSoup as bs
 
-def get_polars(link="http://airfoiltools.com/airfoil/details?airfoil=s826-nr"):
+def get_polars(link):
 	results = {}
 
 	r = requests.get(link)
@@ -35,9 +35,12 @@ def get_polars(link="http://airfoiltools.com/airfoil/details?airfoil=s826-nr"):
 			if "csv?polar" in l.get("href"):
 				csv_links.append("http://airfoiltools.com"+l.get("href"))
 				break
+	#print(csv_links)
 	
-	alpha_dict = {}
+	
 	for l in csv_links:
+		#print(l)
+		lines = None
 		r = requests.get(l)
 		text = r.text
 		lines = text.splitlines()
@@ -45,12 +48,17 @@ def get_polars(link="http://airfoiltools.com/airfoil/details?airfoil=s826-nr"):
 		reynolds_number = [float(i.split(",")[1]) for i in lines if "Reynolds number," in i][0]
 		ncrit = [float(i.split(",")[1]) for i in lines if "Ncrit," in i][0]
 		mach = [float(i.split(",")[1]) for i in lines if "Mach," in i][0]
-		#print(reynolds_number)
+		#print(ncrit)
 		for line_num in range(start+1,len(lines)):
+			alpha,cl,cd = None,None,None
 			alpha,cl,cd = lines[line_num].split(",")[:3]
 			alpha,cl,cd = float(alpha),float(cl),float(cd)
-			alpha_dict[alpha] = {"cl":cl,"cd":cd}
-		results[reynolds_number] = {ncrit:alpha_dict}
+			if not reynolds_number in results.keys():
+				results[reynolds_number] = {}
+			if not ncrit in results[reynolds_number].keys():
+				results[reynolds_number][ncrit] = {}
+			results[reynolds_number][ncrit][alpha] = {"cl":cl,"cd":cd}
+		
 	return results
 
-get_polars()
+#get_polars("http://airfoiltools.com/airfoil/details?airfoil=s826-nr")

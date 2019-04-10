@@ -137,6 +137,8 @@ def optimize_angles(inp_args):
             p.print("*******************************")
         p.print("angles:")
         p.print(degrees(output_angles))
+        for a in degrees(output_angles):
+            p.print(a)
         p.print("!!!!EOF!!!!")
     except:
         p.print("Error in running optimizer")

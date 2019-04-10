@@ -8,13 +8,14 @@ __status__ = "Development"
 
 import numbers
 from math import sin, cos, atan, acos, pi, exp, sqrt, radians, atan2, degrees, tan
-from scipy import interpolate
+import os
 
 import numpy
+from scipy import interpolate
+
 from utils import Printer, generate_dat
 from popravki import *
 from xfoil import run_xfoil_analysis, xfoil_runner
-import os
 
 numpy.seterr(all="raise")
 numpy.seterr(invalid="raise")
@@ -154,6 +155,7 @@ class Calculator:
             psi = 0.0
 
             out_results = calculate_section(**locals(), printer=p)
+
             if not print_all and not print_out:
                 p.print("*", add_newline=False)
 
@@ -220,11 +222,12 @@ class Calculator:
         return results
 
 
-def calculate_section(v, omega, _r, _c, _theta, _dr, B, R, _airfoil_dat, max_thickness, propeller_mode, psi=0.0,
+def calculate_section(self, v, omega, _r, _c, _theta, _dr, B, R, _airfoil_dat, _airfoil, max_thickness, propeller_mode, psi=0.0,
         fix_reynolds=False, reynolds=1e6, tip_loss=False, new_tip_loss=False, hub_loss=False, new_hub_loss=False,
         cascade_correction=False, rotational_augmentation_correction=False, rotational_augmentation_correction_method=0,
         mach_number_correction=False, method=5, kin_viscosity=1.4207E-5, rho=1.225, convergence_limit=0.001,
-        max_iterations=100, relaxation_factor=0.3, printer=None, print_all=False, print_out=False, *args, **kwargs, ):
+        max_iterations=100, relaxation_factor=0.3, printer=None, print_all=False, print_out=False, *args, **kwargs):
+
     p = printer
 
     # local speed ratio
@@ -307,13 +310,17 @@ def calculate_section(v, omega, _r, _c, _theta, _dr, B, R, _airfoil_dat, max_thi
         if print_all:
             p.print("        Running xfoil for %s,Re=%s,alpha=%s" % (_airfoil_dat, Re, alpha))
 
+        """
         xfoil_return = xfoil_runner(airfoil=_airfoil_dat, reynolds=Re, alpha=alpha, printer=p, print_all=print_all)
 
         if xfoil_return == False:
             p.print("        Xfoil failed")
             return None
+        """
 
-        Cl, Cd = xfoil_return["CL"], xfoil_return["CD"]
+        #Cl, Cd = xfoil_return["CL"], xfoil_return["CD"] #direct xfoil calculation - no interpolation
+        Cl,Cd = self.curves[_airfoil]["interp_function_cl"](Re,degrees(alpha)), self.curves[_airfoil]["interp_function_cd"](Re,degrees(alpha))
+        
         if print_all:
             p.print("        CL:", Cl, "Cd:", Cd)
 

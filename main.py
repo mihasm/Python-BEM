@@ -29,6 +29,7 @@ import time
 from turbine_data import SET_INIT
 from optimization import optimize_angles
 from utils import interpolate_geom, to_float, fltr
+from polars import get_cl_cd_interpolation_function
 
 from multiprocessing import Process, Manager
 import multiprocessing
@@ -381,6 +382,9 @@ class Curves(QWidget):
         grid = QGridLayout()
         self.setLayout(grid)
 
+        self.interp_function_cl = None
+        self.interp_function_cd = None
+
         self.table_dat = Table()
         self.table_dat.createEmpty(2, 50)
         self.table_dat.set_labels(["x", "y"])
@@ -395,6 +399,16 @@ class Curves(QWidget):
         self.buttonRefresh = QPushButton("Refresh curve")
         grid.addWidget(self.buttonRefresh, 2, 1)
         self.buttonRefresh.clicked.connect(self.draw_curve)
+        self.link = QLineEdit("link (airfoiltools.com)")
+        grid.addWidget(self.link,3,1)
+        self.button_generate_interp = QPushButton("Generate interp functions")
+        self.button_generate_interp.clicked.connect(self.generate_interp_functions)
+        grid.addWidget(self.button_generate_interp,3,2)
+
+    def generate_interp_functions(self):
+        self.interp_function_cl, self.interp_function_cd = get_cl_cd_interpolation_function(self.link.text())
+        #self.curves[blade_name]["interp_function_cl"] = f_cl
+        #self.curves[blade_name]["interp_function_cd"] = f_cd
 
     def draw_curve(self):
         self.ax.clear()
@@ -427,11 +441,13 @@ class Curves(QWidget):
                 _y = to_float(r[1])
                 x.append(_x)
                 y.append(_y)
-        y_max = numpy.max(y)
-        y_min = numpy.min(y)
-        thickness = (abs(y_max) + abs(y_min)) / 1
-        print("Thickness:", thickness)
-        return thickness
+        if len(y) > 0:
+            y_max = numpy.max(y)
+            y_min = numpy.min(y)
+            thickness = (abs(y_max) + abs(y_min)) / 1
+            #print("Thickness:", thickness)
+            return thickness
+        return None
 
     def get_settings(self):
         x = []
@@ -445,15 +461,23 @@ class Curves(QWidget):
                 x.append(_x)
                 y.append(_y)
 
-        return {"x": x, "y": y, "max_thickness": self.get_max_thickness()}
+        return {"x": x,
+                "y": y,
+                "max_thickness": self.get_max_thickness(),
+                "link":self.link.text(),
+                "interp_function_cl":self.interp_function_cl,
+                "interp_function_cd":self.interp_function_cd}
 
     def set_settings(self, dict_settings):
         array_dat = []
-        for r in range(len(dict_settings["x"])):
-            array_dat.append([str(dict_settings["x"][r]), str(dict_settings["y"][r])])
+        if len(dict_settings["x"]) > 0 and len(dict_settings["y"]) > 0:
+            for r in range(len(dict_settings["x"])):
+                array_dat.append([str(dict_settings["x"][r]), str(dict_settings["y"][r])])
+            self.table_dat.createTable(array_dat)
+            self.draw_curve()
 
-        self.table_dat.createTable(array_dat)
-        self.draw_curve()
+        self.link.setText(dict_settings["link"])        
+        
 
 
 class Analysis(QWidget):

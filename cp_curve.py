@@ -84,6 +84,7 @@ def calculate_power_3d(inp_args, print_eof=True, prepend="", print_out=True):
     )
     total_iterations = int(len(speeds) * len(rpms))
     i = 0
+
     time_start = time.time()
     for v in speeds:
         for rpm in rpms:

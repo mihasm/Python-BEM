@@ -5,7 +5,6 @@ from matplotlib import pyplot as plt
 from matplotlib.widgets import Slider, Button, RadioButtons
 import os
 
-imp_polar = np.loadtxt(open("foils/NACA_0015_polar.csv", "rb"), delimiter=",", skiprows=1)
 
 class POLAR_CLASS:
     def __init__(self,x,y,alpha,Cl,Cd):
@@ -16,7 +15,7 @@ class POLAR_CLASS:
         self.m_Cd = Cd
 
 class Montgomerie:
-    def __init__(self,POLAR,A=1,Am=25,B=5,Bm=10):
+    def __init__(self,POLAR_CLA,reynolds=100000,A=1,Am=25,B=5,Bm=10):
         self.CLzero = 0.0
         self.CL180 = 0
         self.alphazero = 0
@@ -34,8 +33,10 @@ class Montgomerie:
         self.m_fThickness = 0.15
         self.m_fCamber = 0.0
 
-        self.m_pCurPolar = POLAR
+        self.m_pCurPolar = POLAR_CLA
         self.posalphamax = np.argmax(self.m_pCurPolar.m_Cl)
+
+        self.reynolds = reynolds
 
 
     def CD90(self,alpha):
@@ -96,7 +97,7 @@ class Montgomerie:
         self.CL180 = self.PlateFlow(self.alphazero, self.CLzero, 180)
         
         self.slope2 = 0.8*self.slope
-        Re=1e3 #Reynolds
+        Re=self.reynolds #Reynolds
         deltaCL=1.324*pow((1-exp(Re/1000000*(-0.2))), 0.7262)
         
         CL1plus=self.CL180-deltaCL
@@ -223,10 +224,12 @@ class Montgomerie:
             alpha = alpha-self.deltaalpha
         return m_Alpha,m_Cl,m_Cd
 
-def draw_matplotlib():
-    polar = POLAR_CLASS([],[],imp_polar[:,0],imp_polar[:,1],imp_polar[:,2])
-    M = Montgomerie(polar)
-    m_Alpha,m_Cl,m_Cd = M.calculate_extrapolation()
+def draw_matplotlib(polar,M):
+    #polar = POLAR_CLASS([],[],imp_polar[:,0],imp_polar[:,1],imp_polar[:,2])
+    #M = Montgomerie(polar)
+    """
+    m_Alpha,m_Cl,m_Cd = M.calculate_extrapolation([],[],[])
+
 
     fig, ax = plt.subplots()
     plt.subplots_adjust(bottom=0.35)
@@ -275,6 +278,13 @@ def draw_matplotlib():
         fig.canvas.draw_idle()
 
     ax.plot(M.m_pCurPolar.m_Alpha,M.m_pCurPolar.m_Cl)
+    
     plt.show()
+    
+    """
+    
+    return M.calculate_extrapolation([],[],[])
 
-draw_matplotlib()
+
+
+#draw_matplotlib()
