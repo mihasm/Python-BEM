@@ -43,8 +43,11 @@ def optimize_angles(inp_args):
                     # middle angle
                     if not _theta in done_angles:
                         p.print("   calculating out")
-                        out = calculate_section(omega=omega, _airfoil_dat=_airfoil_dat, max_thickness=max_thickness,
-                                                v=v, _r=_r, _c=_c, _dr=_dr, _theta=_theta, printer=p, **inp_args)
+                        try:
+                            out = calculate_section(omega=omega, _airfoil_dat=_airfoil_dat, max_thickness=max_thickness,
+                                                    v=v, _r=_r, _c=_c, _dr=_dr, _theta=_theta, printer=p, **inp_args)
+                        except:
+                            out = None
                         if out == False or out == None:
                             break
                         done_angles[_theta] = out
@@ -55,9 +58,12 @@ def optimize_angles(inp_args):
                     # upper angle
                     if not _theta + radians(dtheta) in done_angles:
                         p.print("   calculating out_up")
-                        out_up = calculate_section(omega=omega, _airfoil_dat=_airfoil_dat, max_thickness=max_thickness,
-                                                   v=v, _r=_r, _c=_c, _dr=_dr, _theta=_theta + radians(dtheta),
-                                                   printer=p, **inp_args)
+                        try:
+                            out_up = calculate_section(omega=omega, _airfoil_dat=_airfoil_dat, max_thickness=max_thickness,
+                                                       v=v, _r=_r, _c=_c, _dr=_dr, _theta=_theta + radians(dtheta),
+                                                       printer=p, **inp_args)
+                        except:
+                            out_up = None
                         if out_up == False or out_up == None:
                             break
                         done_angles[_theta + radians(dtheta)] = out_up
@@ -68,9 +74,12 @@ def optimize_angles(inp_args):
                     # lower angle
                     if not _theta - radians(dtheta) in done_angles:
                         p.print("   calculating out_down")
-                        out_down = calculate_section(omega=omega, _airfoil_dat=_airfoil_dat,
-                                                     max_thickness=max_thickness, v=v, _r=_r, _c=_c, _dr=_dr,
-                                                     _theta=_theta - radians(dtheta), printer=p, **inp_args)
+                        try:
+                            out_down = calculate_section(omega=omega, _airfoil_dat=_airfoil_dat,
+                                                         max_thickness=max_thickness, v=v, _r=_r, _c=_c, _dr=_dr,
+                                                         _theta=_theta - radians(dtheta), printer=p, **inp_args)
+                        except:
+                            out_down = None
                         if out_down == False or out_down == None:
                             break
                         done_angles[_theta - radians(dtheta)] = out_down
