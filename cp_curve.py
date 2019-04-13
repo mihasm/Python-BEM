@@ -50,7 +50,8 @@ def calculate_power(inp_args):
         if inp_args["add_angle"] != None:
             inp_args["theta"] = inp_args["theta"] + inp_args["add_angle"]
     try:
-        results = Calculator(inp_args["airfoils"]).run_array(**inp_args)
+        c = Calculator(inp_args["airfoils"])
+        results = c.run_array(**inp_args)
         return results
     except:
         p.print("!!!!EOF!!!!")

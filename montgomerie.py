@@ -30,12 +30,13 @@ class Montgomerie:
         self.m_pctrlAm = Am #1-80
         self.m_pctrlBm = Bm #1-70
         self.m_CD90 = 1.8 #tko je bilo line 367 v BEM.cpp
-        self.m_fThickness = 0.15
-        self.m_fCamber = 0.0
+        self.m_fThickness = 0.14
+        self.m_fCamber = 0.043
 
         #self.m_pCurPolar = POLAR_CLA
         self.m_pCurPolar = POLAR_CLASS(x,y,alpha,Cl,Cd)
         self.posalphamax = np.argmax(self.m_pCurPolar.m_Cl)
+        #self.posalphamax = len(self.m_pCurPolar.m_Alpha)
 
         self.reynolds = Re
 
@@ -99,7 +100,10 @@ class Montgomerie:
 
         am=(a1plus-G*a2plus)/(1-G)
 
-        k=(1/f2plus-1)*1/pow((a2plus-am),4)
+        k_div = pow((a2plus-am),4)
+        if k_div == 0:
+            k_div = 1e-5
+        k=(1/f2plus-1)*1/k_div
 
         #rear end flying
         self.CL180 = self.PlateFlow(self.alphazero, self.CLzero, 180)

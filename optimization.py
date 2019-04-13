@@ -1,8 +1,10 @@
 from turbine_data import SET_INIT
-from induction_factors import calculate_section
+from induction_factors import Calculator
 from utils import Printer
 from numpy import radians, degrees
 from math import pi
+import traceback
+
 
 
 # noinspection PyBroadException
@@ -14,12 +16,14 @@ def optimize_angles(inp_args):
 
         v = inp_args["target_speed"]
         rpm = inp_args["target_rpm"]
-        print(v,pi,rpm)
+        #print(v,pi,rpm)
         omega = 2 * pi * rpm / 60
         # optimization_variable = "dT"
         optimization_variable = inp_args["optimization_variable"]
 
         output_angles = []
+
+        C = Calculator(inp_args["airfoils"])
 
         for section_number in range(len(inp_args["r_in"])):
             p.print("section_number is", section_number)
@@ -29,7 +33,7 @@ def optimize_angles(inp_args):
             _theta = radians(inp_args["theta_in"][section_number])
             _dr = inp_args["dr"][section_number]
             _airfoil = inp_args["foils_in"][section_number]
-            max_thickness = inp_args["curves"][_airfoil]["max_thickness"] * _c
+            max_thickness = inp_args["airfoils"][_airfoil]["max_thickness"] * _c
             _airfoil_dat = _airfoil + ".dat"
 
             done_angles = {}  # key is theta, value is out
@@ -44,9 +48,11 @@ def optimize_angles(inp_args):
                     if not _theta in done_angles:
                         p.print("   calculating out")
                         try:
-                            out = calculate_section(omega=omega, _airfoil_dat=_airfoil_dat, max_thickness=max_thickness,
-                                                    v=v, _r=_r, _c=_c, _dr=_dr, _theta=_theta, printer=p, **inp_args)
-                        except:
+                            out = C.calculate_section(v=v,omega=omega,_airfoil=_airfoil,_airfoil_dat=_airfoil_dat, max_thickness=max_thickness,
+                                                    _r=_r, _c=_c, _dr=_dr, _theta=_theta, printer=p, **inp_args)
+                        except Exception as e:
+                            print(e)
+                            print(traceback.format_exc())
                             out = None
                         if out == False or out == None:
                             break
@@ -59,10 +65,11 @@ def optimize_angles(inp_args):
                     if not _theta + radians(dtheta) in done_angles:
                         p.print("   calculating out_up")
                         try:
-                            out_up = calculate_section(omega=omega, _airfoil_dat=_airfoil_dat, max_thickness=max_thickness,
-                                                       v=v, _r=_r, _c=_c, _dr=_dr, _theta=_theta + radians(dtheta),
-                                                       printer=p, **inp_args)
-                        except:
+                            out_up = C.calculate_section(v=v,omega=omega,_airfoil=_airfoil,_airfoil_dat=_airfoil_dat, max_thickness=max_thickness,
+                                                    _r=_r, _c=_c, _dr=_dr, _theta=_theta+radians(dtheta), printer=p, **inp_args)
+                        except Exception as e:
+                            print()
+                            print(traceback.format_exc())
                             out_up = None
                         if out_up == False or out_up == None:
                             break
@@ -75,10 +82,11 @@ def optimize_angles(inp_args):
                     if not _theta - radians(dtheta) in done_angles:
                         p.print("   calculating out_down")
                         try:
-                            out_down = calculate_section(omega=omega, _airfoil_dat=_airfoil_dat,
-                                                         max_thickness=max_thickness, v=v, _r=_r, _c=_c, _dr=_dr,
-                                                         _theta=_theta - radians(dtheta), printer=p, **inp_args)
-                        except:
+                            out_down = C.calculate_section(v=v,omega=omega,_airfoil=_airfoil,_airfoil_dat=_airfoil_dat, max_thickness=max_thickness,
+                                                    _r=_r, _c=_c, _dr=_dr, _theta=_theta-radians(dtheta), printer=p, **inp_args)
+                        except Exception as e:
+                            print(e)
+                            print(traceback.format_exc())
                             out_down = None
                         if out_down == False or out_down == None:
                             break

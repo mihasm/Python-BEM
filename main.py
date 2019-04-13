@@ -446,15 +446,17 @@ class Airfoils(QWidget):
         data = self.gather_curves()
         re_min,re_max = data[:,0].min(),data[:,0].max()
         alpha_min,alpha_max = data[:,2].min(),data[:,2].max()
-        x,y,z = [],[],[]
+        x,y,z_1,z_2 = [],[],[],[]
         for _re in np.linspace(re_min,re_max,10):
             for _alpha in np.linspace(alpha_min,alpha_max):
                 x.append(_re)
                 y.append(_alpha)
-                z.append(self.interp_function_cl(_re,_alpha))
+                z_1.append(self.interp_function_cl(_re,_alpha))
+                z_2.append(self.interp_function_cd(_re,_alpha))
         w = MatplotlibWindow(self)
         w.ax = w.figure.add_subplot(111, projection="3d")
-        w.ax.scatter(x,y,z)
+        w.ax.scatter(x,y,z_1)
+        w.ax.scatter(x,y,z_2)
 
     def open_viewer(self):
         print("opening viewwer")
@@ -494,10 +496,11 @@ class Airfoils(QWidget):
         print("Done")
 
     def populate_curve_list(self,data):
+        self.curve_list = []
         x,y = self.get_x_y()
         Re_list = np.unique(data[:,0])
         ncrit_list = np.unique(data[:,1])
-        ncrit_selected = ncrit_list[0]
+        ncrit_selected = np.min(ncrit_list)
         for Re in Re_list:
             rows_with_Re = data[np.in1d(data[:,0],Re)]
             rows_with_Re = rows_with_Re[np.in1d(rows_with_Re[:,1],ncrit_selected)]
@@ -800,7 +803,8 @@ class CurveControl(QWidget):
         self.draw_base()
 
         alpha,cl,cd = self.curve.get_extrapolated_curve()
-        self.ax.plot(alpha,cl,"ro")
+        self.ax.plot(alpha,cl,"g.")
+        self.ax.plot(alpha,cd,"r.")
         self.canvas.draw()
 
     def update(self):

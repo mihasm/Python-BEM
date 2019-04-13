@@ -62,7 +62,7 @@ def get_coefficients_from_output(output_str):
     return out
 
 
-def run_xfoil_analysis(airfoil, reynolds, alpha, iterations=100, max_next_angle=10., print_output=False):
+def run_xfoil_analysis(airfoil, reynolds, alpha, iterations=70, max_next_angle=2., print_output=False):
     # print("running xfoil for %s,Re=%s,alpha=%s" % (airfoil,reynolds,alpha))
     #alpha in degrees
     with Popen(os.path.abspath(xfoil_path), stdin=PIPE, stdout=PIPE, universal_newlines=True) as process:
