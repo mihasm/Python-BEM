@@ -25,6 +25,7 @@ if sys.platform.startswith("darwin"):
 
 def xfoil_runner(airfoil, reynolds, alpha, printer=None, print_all=False):
     #alpha = round(degrees(alpha))
+    #alpha in degrees
     if print_all:
         if printer != None:
             printer.print("        xfoil runner, alpha=", alpha, "re=", reynolds)
@@ -37,10 +38,10 @@ def xfoil_runner(airfoil, reynolds, alpha, printer=None, print_all=False):
 def get_coefficients_from_output(output_str):
     lines = output_str.splitlines()
     last_lines = "\n".join(lines[-5:])
-    #if "VISCAL:  Convergence failed" in last_lines:
-    #    return False
-    #if "TRCHEK2: N2 convergence failed." in output_str:
-    #    return False
+    if "VISCAL:  Convergence failed" in output_str:
+        return False
+    if "TRCHEK2: N2 convergence failed." in last_lines:
+        return False
     i = -1
     cur_line = 0
     _, __, a, CL, Cm, CD, CDf, CDp = [None] * 8
@@ -61,8 +62,9 @@ def get_coefficients_from_output(output_str):
     return out
 
 
-def run_xfoil_analysis(airfoil, reynolds, alpha, iterations=100, max_next_angle=2., print_output=False):
+def run_xfoil_analysis(airfoil, reynolds, alpha, iterations=100, max_next_angle=10., print_output=False):
     # print("running xfoil for %s,Re=%s,alpha=%s" % (airfoil,reynolds,alpha))
+    #alpha in degrees
     with Popen(os.path.abspath(xfoil_path), stdin=PIPE, stdout=PIPE, universal_newlines=True) as process:
 
         def call(_str, proc=process):
@@ -80,6 +82,11 @@ def run_xfoil_analysis(airfoil, reynolds, alpha, iterations=100, max_next_angle=
         else:
             # open .dat file
             call("load %s" % os.path.join("foils", airfoil))
+        call("mdes")
+        call("filt")
+        call("exec")
+        call("")
+        call("pane")
         call("oper")
         call("re")
         # rint("settings reynolds")
@@ -111,7 +118,7 @@ def run_xfoil_analysis(airfoil, reynolds, alpha, iterations=100, max_next_angle=
         call("")
         call("quit")
         # print(process.stdout.read())
-        timer = Timer(3, process.kill)
+        timer = Timer(1, process.kill)
         try:
             timer.start()
             output = process.communicate()[0]
@@ -174,19 +181,20 @@ def draw_to_matplotlib(x,y,z,shrani=False,unit='CL'):
 
     plt.show()
 
-def generate_polars():
+def generate_polars(foil):
     all_re = []
     all_a = []
     all_cl = []
     all_cd = []
 
-    for Re in np.linspace(10e3,1e7,10):
-        for a in np.linspace(-90,90,21):
+    for Re in np.linspace(10e3,1e6,10):
+        for a in np.linspace(-45,45,21):
+            Re = int(Re)
             cl = None
             cd = None
             print("re",Re,"a",a)
             o = None
-            o = xfoil_runner("s826.dat",Re,a)
+            o = xfoil_runner(foil,Re,a)
             if o != False:
                 cl = o["CL"]
                 cd = o["CD"]
@@ -198,7 +206,18 @@ def generate_polars():
                 all_cd.append(cd)
     return all_a,all_re,all_cl,all_cd
 
+def generate_polars_data(foil):
+    all_a,all_re,all_cl,all_cd = generate_polars(foil)
+    out = []
+    ncrit = 0
+    for i in range(len(all_a)):
+        out.append([all_re[i],ncrit,all_a[i],all_cl[i],all_cd[i]])
+    out = np.array(out)
+    return out
+
 #all_a,all_re,all_cl,all_cd = generate_polars()
+#data = generate_polars_data("s826.dat")
+#print(data)
 #from s826 import all_re,all_a,all_cl,all_cd
 
 
@@ -221,3 +240,4 @@ def draw_scatter(x,y,z):
 
 #draw_to_matplotlib(all_a,all_re,all_cl)
 #draw_scatter(all_a,all_re,all_cl)
+#

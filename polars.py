@@ -4,7 +4,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 from pprint import pprint
 from scipy.interpolate import Rbf
-from montgomerie import POLAR_CLASS, Montgomerie, draw_matplotlib
+from montgomerie import Montgomerie
+from xfoil import generate_polars_data
 #from numpy import interp
 from scipy.interpolate import interp1d
 import scipy.interpolate
@@ -76,32 +77,57 @@ def extrapolate_nans(x, y, v):
     return v
     
 
-def get_cl_cd_interpolation_function(link,airfoil_x=[],airfoil_y=[]):
-    #imp_polar = np.loadtxt(open("foils/NACA_0015_polar.csv", "rb"), delimiter=",", skiprows=1)
-    print("scraping")
-    data = get_polars(link)
-    #pprint(data)
-    x,y,z_cl,z_cd = [],[],[],[]
-    ncrit_set = 9.0
-    for Re,value in data.items():
-        _alpha = []
-        _cl = []
-        _cd = []
-        for ncrit,value2 in value.items():
-            if ncrit == ncrit_set:
-                for alpha,value3 in value2.items():
-                    cl = value3["cl"]
-                    cd = value3["cd"]
-                    #print(Re,ncrit,alpha,cl)
-                    _alpha.append(alpha)
-                    _cl.append(cl)
-                    _cd.append(cd)
-        
-        polar = POLAR_CLASS(x=airfoil_x,y=airfoil_y,alpha=_alpha,Cl=_cl,Cd=_cd)
-        M = Montgomerie(polar,reynolds=Re)
+def get_interpolation_function(x,y,z,num_x=10,num_y=361,min_x=0,max_x=1e6):
+    x,y,z = np.array(x),np.array(y),np.array(z)
+    xi, yi = np.linspace(x.min(), x.max(), num_x), np.linspace(y.min(), y.max(), num_y)
+    xi, yi = np.meshgrid(xi, yi)
+    zi = interp_at(x,y,z,xi.ravel(),yi.ravel(),algorithm="linear",extrapolate=False)   
+    fun = scipy.interpolate.interp2d(xi, yi, zi, kind='linear')
+    return fun
 
-        #m_Alpha,m_Cl,m_Cd = M.calculate_extrapolation([],[],[])
-        m_Alpha,m_Cl,m_Cd = draw_matplotlib(polar,M)
+def scrape_data(link):
+    out = []
+    data = get_polars(link)
+    for Re,value in data.items():
+        for ncrit,value2 in value.items():
+            for alpha,value3 in value2.items():
+                cl = value3["cl"]
+                cd = value3["cd"]
+                out.append([Re,ncrit,alpha,cl,cd])
+    out = np.array(out)
+    return out
+
+#print(scrape_data("http://airfoiltools.com/airfoil/details?airfoil=s826-nr"))
+
+def get_cl_cd_from_link(link,airfoil_x=[],airfoil_y=[]):
+    data = scrape_data(link)
+    return get_cl_cd_interpolation_function(data,airfoil_x,airfoil_y)
+
+def get_cl_cd_from_xfoil(foil,airfoil_x=[],airfoil_y=[]):
+    data = generate_polars_data(foil)
+    return get_cl_cd_interpolation_function(data,airfoil_x,airfoil_y)
+
+def get_cl_cd_interpolation_function(data,airfoil_x=[],airfoil_y=[]):
+    #imp_polar = np.loadtxt(open("foils/NACA_0015_polar.csv", "rb"), delimiter=",", skiprows=1)
+    print("Getting inteprolation function")
+    
+    x,y,z_cl,z_cd = [],[],[],[]
+
+    Re_list = np.unique(data[:,0])
+    ncrit_list = np.unique(data[:,1])
+    ncrit_selected = ncrit_list[0]
+
+    for Re in Re_list:
+        rows_with_Re = data[np.in1d(data[:,0],Re)]
+        rows_with_Re = rows_with_Re[np.in1d(rows_with_Re[:,1],ncrit_selected)]
+
+        _alpha = rows_with_Re[:,2].flatten()
+        _cl = rows_with_Re[:,3].flatten()
+        _cd = rows_with_Re[:,4].flatten()
+
+        M = Montgomerie(x=airfoil_x,y=airfoil_y,alpha=_alpha,Cl=_cl,Cd=_cd,Re=Re)
+
+        m_Alpha,m_Cl,m_Cd = M.calculate_extrapolation()
         f_cl = interp1d(_alpha,_cl,bounds_error=True)
         f_cd = interp1d(_alpha,_cd,bounds_error=True)
         for i in range(len(m_Alpha)):
@@ -118,54 +144,30 @@ def get_cl_cd_interpolation_function(link,airfoil_x=[],airfoil_y=[]):
             z_cl.append(cl)
             z_cd.append(cd)
 
-    #for i in range(len(x)):
-    #    print(x[i],y[i],z_cl[i],z_cd[i])
-
-    #print("test2")
-
     fig = plt.figure()
     ax = Axes3D(fig)
-    x,y,z_cl,z_cd = np.array(x),np.array(y),np.array(z_cl),np.array(z_cd)
-    #ax.scatter(x,y,z_cl)
-    #plt.show()
-
     ax.set_xlabel('re')
     ax.set_ylabel('alpha')
     ax.set_zlabel('cl')
-    xi, yi = np.linspace(x.min(), x.max(), 10), np.linspace(y.min(), y.max(), 361)
-    num_elements = len(xi)*len(yi)
 
-    xi, yi = np.meshgrid(xi, yi)
-
-
+    x,y,z_cl,z_cd = np.array(x),np.array(y),np.array(z_cl),np.array(z_cd)
+    ax.scatter(x,y,z_cl)
+    
     print("interp1")
-    zi_cl = interp_at(x,y,z_cl,xi.ravel(),yi.ravel(),algorithm="linear",extrapolate=False)
-    #print(len(xi.flatten()),len(yi.flatten()),len(zi_cl.flatten()))
-    
-    rbf_cl = scipy.interpolate.interp2d(xi, yi, zi_cl, kind='linear') #interpolacija je lahko linear, cubic, itd.
-    
-    #xi2,yi2 = np.linspace(50000,500000,10),np.linspace(-180,180,361)
-    #xi2,yi2 = np.meshgrid(xi2,yi2)
-    #zi_cl_2 = rbf_cl(xi2.flatten(), yi2.flatten())
-    
-
-
+    fun_cl = get_interpolation_function(x,y,z_cl)
 
     print("interp2")
-    zi_cd = interp_at(x,y,z_cd,xi.ravel(),yi.ravel(),algorithm="linear",extrapolate=False)
-    rbf_cd = scipy.interpolate.Rbf(xi,yi, zi_cd, function='linear')
-    zi_cd_2 = rbf_cd(xi,yi)
-    
+    fun_cd = get_interpolation_function(x,y,z_cd)
 
-
-    #print(len(xi2.flatten()),len(yi2.flatten()),len(zi_cl_2.flatten()))
-    #ax.scatter(xi,yi,zi_cl)
-    #ax.scatter(xi2.flatten(),yi2.flatten(),zi_cl_2.flatten())
-    #ax.scatter(xi,yi,zi_cd)
     #plt.show()
-    return rbf_cl,rbf_cd
 
-#f,f2 = get_cl_cd_interpolation_function("http://airfoiltools.com/airfoil/details?airfoil=s826-nr")
-#print(f(100000,15))
-#print(f(200000,5))
-#print(f(50000,5.0))
+    print("Done with interp!")
+
+    return fun_cl,fun_cd
+
+
+
+#f,f2 = get_cl_cd_from_link("http://airfoiltools.com/airfoil/details?airfoil=s826-nr")
+#f,f2 = get_cl_cd_from_xfoil("s826.dat")
+#print(f(200000,13))
+

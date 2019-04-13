@@ -13,6 +13,7 @@ from PyQt5.QtWidgets import QMainWindow, QAction
 from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.backends.backend_qt4agg import NavigationToolbar2QT as NavigationToolbar
 import matplotlib.pyplot as plt
+import numpy as np
 
 from cp_curve import max_calculate
 from table import Table
@@ -88,6 +89,10 @@ class ResultsWindow(QMainWindow):
         f6 = self.tab_widget.add_tab_figure("cp/J krivulja (propeler)")
         self.tab_widget.add_2d_plot_to_figure(f6, results_3d['J'], results_3d['cp_p'], 111, 'cp_p(J) krivulja', 'J',
                                               'cp', look='-', x_min=0, x_max=1, y_min=0, y_max=0.1)
+
+        # CL check
+        f7 = self.tab_widget.add_tab_figure("check CL")
+        self.tab_widget.add_3d_scatter_plot(f7,np.array(results_3d["Re"]).flatten(),np.array(results_3d["alpha"]).flatten(),np.array(results_3d["cL"]).flatten(), 111, "Title","Re","alpha[deg]","cL")
 
         data = dict_to_ar(results_3d)
         t = Table()
@@ -166,6 +171,29 @@ class TabWidget(QtWidgets.QTabWidget):
         if z_name:
             ax.set_zlabel(z_name)
             cbar.set_label(z_name)
+        if x_min != None and x_max != None:
+            ax.set_xlim(x_min, x_max)
+        if y_min != None and y_max != None:
+            ax.set_ylim(y_min, y_max)
+        if z_min != None and z_max != None:
+            ax.set_zlim(z_min, z_max)
+        self.canvas[-1].draw()
+
+    def add_3d_scatter_plot(self, f, x, y, z, whi, title=None, x_name=None, y_name=None, z_name=None, x_min=None,
+            x_max=None, y_min=None, y_max=None, z_min=None, z_max=None, legend=False, ):
+        ax = f.add_subplot(whi, projection="3d")
+        p0 = ax.scatter(x, y, z, cmap=plt.cm.CMRmap)
+        #cbar = plt.colorbar(p0)
+
+        if title:
+            plt.title(title)
+        if x_name:
+            ax.set_xlabel(x_name)
+        if y_name:
+            ax.set_ylabel(y_name)
+        if z_name:
+            ax.set_zlabel(z_name)
+            #cbar.set_label(z_name)
         if x_min != None and x_max != None:
             ax.set_xlim(x_min, x_max)
         if y_min != None and y_max != None:

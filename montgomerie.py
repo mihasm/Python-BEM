@@ -15,7 +15,7 @@ class POLAR_CLASS:
         self.m_Cd = Cd
 
 class Montgomerie:
-    def __init__(self,POLAR_CLA,reynolds=100000,A=1,Am=25,B=5,Bm=10):
+    def __init__(self,x,y,alpha,Cl,Cd,Re=100000,A=30,Am=5,B=5,Bm=5):
         self.CLzero = 0.0
         self.CL180 = 0
         self.alphazero = 0
@@ -33,10 +33,11 @@ class Montgomerie:
         self.m_fThickness = 0.15
         self.m_fCamber = 0.0
 
-        self.m_pCurPolar = POLAR_CLA
+        #self.m_pCurPolar = POLAR_CLA
+        self.m_pCurPolar = POLAR_CLASS(x,y,alpha,Cl,Cd)
         self.posalphamax = np.argmax(self.m_pCurPolar.m_Cl)
 
-        self.reynolds = reynolds
+        self.reynolds = Re
 
 
     def CD90(self,alpha):
@@ -56,7 +57,10 @@ class Montgomerie:
         res=self.CD90(alpha)*sin(alpha/360*2*PI)**2
         return res
 
-    def calculate_extrapolation(self,m_Alpha=[],m_Cl=[],m_Cd=[]):
+    def calculate_extrapolation(self):
+        m_Alpha=[]
+        m_Cl=[]
+        m_Cd=[]
         #print("A",self.m_pctrlA,"B",self.m_pctrlB)
         #positive extrapolation
 
@@ -76,8 +80,12 @@ class Montgomerie:
 
 
         A = (self.PotFlow(self.CLzero, self.slope, a1plus)-self.PlateFlow(self.alphazero, self.CLzero, a1plus))
+        if A == 0.:
+            A = 1e-5
         f1plus=((CL1plus-self.PlateFlow(self.alphazero, self.CLzero, a1plus))/A)
         B = (self.PotFlow(self.CLzero, self.slope, a2plus)-self.PlateFlow(self.alphazero, self.CLzero, a2plus))
+        if B == 0.:
+            B = 1e-5
         f2plus=((CL2plus-self.PlateFlow(self.alphazero, self.CLzero, a2plus))/B)
 
         if (f1plus == 1):
@@ -224,66 +232,66 @@ class Montgomerie:
             alpha = alpha-self.deltaalpha
         return m_Alpha,m_Cl,m_Cd
 
-def draw_matplotlib(polar,M):
+def draw_matplotlib(M, draw = False):
     #polar = POLAR_CLASS([],[],imp_polar[:,0],imp_polar[:,1],imp_polar[:,2])
     #M = Montgomerie(polar)
-    """
-    m_Alpha,m_Cl,m_Cd = M.calculate_extrapolation([],[],[])
+
+    if draw:
+        m_Alpha,m_Cl,m_Cd = M.calculate_extrapolation()
 
 
-    fig, ax = plt.subplots()
-    plt.subplots_adjust(bottom=0.35)
-    l, = plt.plot(m_Alpha, m_Cl,'o', lw=2, color='red')
-    plt.axis([-180, 180, -2, 2])
+        fig, ax = plt.subplots()
+        plt.subplots_adjust(bottom=0.35)
+        l, = plt.plot(m_Alpha, m_Cl,'o', lw=2, color='red')
+        plt.axis([-180, 180, -2, 2])
 
-    axcolor = 'lightgoldenrodyellow'
-    axA = plt.axes([0.25, 0.1, 0.65, 0.03], facecolor=axcolor)
-    axAm = plt.axes([0.25, 0.15, 0.65, 0.03], facecolor=axcolor)
-    axB = plt.axes([0.25, 0.2, 0.65, 0.03], facecolor=axcolor)
-    axBm = plt.axes([0.25, 0.25, 0.65, 0.03], facecolor=axcolor)
+        axcolor = 'lightgoldenrodyellow'
+        axA = plt.axes([0.25, 0.1, 0.65, 0.03], facecolor=axcolor)
+        axAm = plt.axes([0.25, 0.15, 0.65, 0.03], facecolor=axcolor)
+        axB = plt.axes([0.25, 0.2, 0.65, 0.03], facecolor=axcolor)
+        axBm = plt.axes([0.25, 0.25, 0.65, 0.03], facecolor=axcolor)
 
-    sA = Slider(axA, 'A', -10, 30, valinit=0,valstep=1) #,valstep=1
-    sAm = Slider(axAm, 'A-', 1, 80, valinit=20)
-    sB = Slider(axB, 'B', 1, 100, valinit=5,valstep=1)
-    sBm = Slider(axBm, 'B-', 1, 70, valinit=20)
-
-
-    def update(val):
-        M.m_pctrlA = sA.val
-        M.m_pctrlAm = sAm.val
-        M.m_pctrlB = sB.val
-        M.m_pctrlBm = sBm.val
-        m_Alpha,m_Cl,m_Cd = M.calculate_extrapolation([],[],[])
-        l.set_ydata(m_Cl)
-        fig.canvas.draw_idle()
-
-    sA.on_changed(update)
-    sAm.on_changed(update)
-    sB.on_changed(update)
-    sBm.on_changed(update)
-
-    resetax = plt.axes([0.8, 0.025, 0.1, 0.04])
-    button = Button(resetax, 'Reset', color=axcolor, hovercolor='0.975')
+        sA = Slider(axA, 'A', -10, 30, valinit=0,valstep=1) #,valstep=1
+        sAm = Slider(axAm, 'A-', 1, 80, valinit=20)
+        sB = Slider(axB, 'B', 1, 100, valinit=5,valstep=1)
+        sBm = Slider(axBm, 'B-', 1, 70, valinit=20)
 
 
-    def reset(event):
-        sA.reset()
-        sAm.reset()
-        sB.reset()
-        sBm.reset()
-    button.on_clicked(reset)
+        def update(val):
+            M.m_pctrlA = sA.val
+            M.m_pctrlAm = sAm.val
+            M.m_pctrlB = sB.val
+            M.m_pctrlBm = sBm.val
+            m_Alpha,m_Cl,m_Cd = M.calculate_extrapolation()
+            l.set_ydata(m_Cl)
+            fig.canvas.draw_idle()
 
-    def colorfunc(label):
-        l.set_color(label)
-        fig.canvas.draw_idle()
+        sA.on_changed(update)
+        sAm.on_changed(update)
+        sB.on_changed(update)
+        sBm.on_changed(update)
 
-    ax.plot(M.m_pCurPolar.m_Alpha,M.m_pCurPolar.m_Cl)
+        resetax = plt.axes([0.8, 0.025, 0.1, 0.04])
+        button = Button(resetax, 'Reset', color=axcolor, hovercolor='0.975')
+
+
+        def reset(event):
+            sA.reset()
+            sAm.reset()
+            sB.reset()
+            sBm.reset()
+        button.on_clicked(reset)
+
+        def colorfunc(label):
+            l.set_color(label)
+            fig.canvas.draw_idle()
+
+        ax.plot(M.m_pCurPolar.m_Alpha,M.m_pCurPolar.m_Cl)
+        
+        plt.show()
+        
     
-    plt.show()
-    
-    """
-    
-    return M.calculate_extrapolation([],[],[])
+    return M.calculate_extrapolation()
 
 
 

@@ -26,11 +26,11 @@ class Calculator:
     Class for calculation of induction factors using BEM theory.
     """
 
-    def __init__(self, curves):
-        self.curves = curves
-        for blade_name in self.curves:
-            self.curves[blade_name]["alpha_zero"] = 0.0  # TODO FIX
-            generate_dat(blade_name, self.curves[blade_name]["x"], self.curves[blade_name]["y"])
+    def __init__(self, airfoils):
+        self.airfoils = airfoils
+        for blade_name in self.airfoils:
+            self.airfoils[blade_name]["alpha_zero"] = 0.0  # TODO FIX
+            generate_dat(blade_name, self.airfoils[blade_name]["x"], self.airfoils[blade_name]["y"])
 
     def printer(self, _locals, p):
         p.print("----Running induction calculation for following parameters----")
@@ -123,7 +123,7 @@ class Calculator:
 
         # create results array placeholders
         results = {}
-        arrays = ["a", "a'", "cL", "alpha", "phi", "F", "dFt", "M", "TSR", "Ct", "dFn", "foils", "dT", "dQ"]
+        arrays = ["a", "a'", "cL", "alpha", "phi", "F", "dFt", "M", "TSR", "Ct", "dFn", "foils", "dT", "dQ","Re"]
         for array in arrays:
             results[array] = numpy.array([])
 
@@ -149,7 +149,7 @@ class Calculator:
                 p.print("    r", _r, "(" + str(section_number) + ")")
 
             # get max thickness
-            max_thickness = self.curves[_airfoil]["max_thickness"] * _c
+            max_thickness = self.airfoils[_airfoil]["max_thickness"] * _c
 
             # Coning angle (PROPX: Definitions,Derivations, Data Flow, p.22)
             psi = 0.0
@@ -174,6 +174,7 @@ class Calculator:
             results["foils"] = numpy.append(results["foils"], out_results["_airfoil"])
             results["dT"] = numpy.append(results["dT"], out_results["dT"])
             results["dQ"] = numpy.append(results["dQ"], out_results["dQ"])
+            results["Re"] = numpy.append(results["Re"], out_results["Re"])
 
         if not print_all and not print_out:
             p.print("")
@@ -307,8 +308,8 @@ def calculate_section(self, v, omega, _r, _c, _theta, _dr, B, R, _airfoil_dat, _
             alpha = cascadeEffectsCorrection(alpha=alpha, v=v, omega=omega, r=_r, R=R, c=_c, B=B, a=a, aprime=aprime,
                                              max_thickness=max_thickness)
 
-        if print_all:
-            p.print("        Running xfoil for %s,Re=%s,alpha=%s" % (_airfoil_dat, Re, alpha))
+        #if print_all:
+        #    p.print("        Running xfoil for %s,Re=%s,alpha=%s" % (_airfoil_dat, Re, alpha))
 
         """
         xfoil_return = xfoil_runner(airfoil=_airfoil_dat, reynolds=Re, alpha=alpha, printer=p, print_all=print_all)
@@ -319,7 +320,7 @@ def calculate_section(self, v, omega, _r, _c, _theta, _dr, B, R, _airfoil_dat, _
         """
 
         #Cl, Cd = xfoil_return["CL"], xfoil_return["CD"] #direct xfoil calculation - no interpolation
-        Cl,Cd = self.curves[_airfoil]["interp_function_cl"](Re,degrees(alpha)), self.curves[_airfoil]["interp_function_cd"](Re,degrees(alpha))
+        Cl,Cd = self.airfoils[_airfoil]["interp_function_cl"](Re,degrees(alpha)), self.airfoils[_airfoil]["interp_function_cd"](Re,degrees(alpha))
         
         if print_all:
             p.print("        CL:", Cl, "Cd:", Cd)
@@ -349,8 +350,8 @@ def calculate_section(self, v, omega, _r, _c, _theta, _dr, B, R, _airfoil_dat, _
 
         input_arguments = {"F": F, "lambda_r": lambda_r, "phi": phi, "sigma": sigma, "C_norm": C_norm, "C_tang": C_tang,
                            "Cl": Cl, "Cd": Cd, "B": B, "c": _c, "r": _r, "R": R, "psi": 0.0, "aprime_last": aprime,
-                           "omega": omega, "v": v, "a_last": a_last,  # "alpha_zero": curves[_airfoil]["alpha_zero"],
-                           "method": method, }
+                           "omega": omega, "v": v, "a_last": a_last,  # "alpha_zero": airfoils[_airfoil]["alpha_zero"],
+                           "method": method, "alpha":alpha, "alpha_deg":degrees(alpha)}
 
         if print_all:
             args_to_print = sorted([key for key, value in input_arguments.items()])
@@ -441,5 +442,5 @@ def calculate_section(self, v, omega, _r, _c, _theta, _dr, B, R, _airfoil_dat, _
         p.print(prepend, "    ----------------------------")
 
     out = {"a": a, "aprime": aprime, "Cl": Cl, "alpha": alpha, "phi": phi, "F": F, "dFt": dFt, "Ct": Ct, "dFn": dFn,
-           "_airfoil": _airfoil_dat, "U4": U4, "dT": dT, "dQ": dQ}
+           "_airfoil": _airfoil_dat, "U4": U4, "dT": dT, "dQ": dQ, "Re":Re}
     return out

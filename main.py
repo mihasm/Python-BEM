@@ -10,17 +10,21 @@ import sys
 
 import numpy
 from PyQt5 import QtWidgets
-from PyQt5.QtCore import QThread, QTextStream, pyqtSignal, QProcess, QRect
+from PyQt5.QtCore import QThread, QTextStream, pyqtSignal, QProcess, QRect, Qt
 from PyQt5 import QtCore, QtGui
 from PyQt5.QtWidgets import (QComboBox, QMainWindow, QPushButton, QTextEdit, QWidget, QFormLayout, QLabel, QLineEdit,
-                             QGridLayout, QCheckBox, QStyleFactory, QMessageBox, QAction, QFileDialog, )
+                             QGridLayout, QCheckBox, QStyleFactory, QMessageBox, QAction, QFileDialog, QSlider)
 from PyQt5.QtGui import QPalette, QColor
 from numpy import array
+import numpy as np
 from scipy import interpolate
+from scipy.interpolate import interp1d
 
 from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.backends.backend_qt4agg import NavigationToolbar2QT as NavigationToolbar
 import matplotlib.pyplot as plt
+from matplotlib.widgets import Slider, Button, RadioButtons
+
 
 from cp_curve import calculate_power_3d
 from results import ResultsWindow
@@ -29,7 +33,9 @@ import time
 from turbine_data import SET_INIT
 from optimization import optimize_angles
 from utils import interpolate_geom, to_float, fltr
-from polars import get_cl_cd_interpolation_function
+from polars import get_cl_cd_interpolation_function, scrape_data
+from montgomerie import Montgomerie
+from xfoil import generate_polars_data
 
 from multiprocessing import Process, Manager
 import multiprocessing
@@ -75,8 +81,8 @@ class MainWindow(QMainWindow):
         self.tab_widget = TabWidget(self)
         self.setCentralWidget(self.tab_widget)
 
-        self.curve_manager = CurveManager(self)
-        self.tab_widget.add_tab(self.curve_manager, "Curve Manager")
+        self.curve_manager = AirfoilManager(self)
+        self.tab_widget.add_tab(self.curve_manager, "Airfoil management")
 
         self.wind_turbine_properties = WindTurbineProperties(self)
         self.tab_widget.add_tab(self.wind_turbine_properties, "Turbine info")
@@ -123,7 +129,7 @@ class MainWindow(QMainWindow):
         self.set_title()
 
     def get_all_settings(self):
-        valid_foils = list(self.curve_manager.get_settings()["curves"].keys()) + ["transition", "Transition"]
+        valid_foils = list(self.curve_manager.get_settings()["airfoils"].keys()) + ["transition", "Transition"]
         try:
             properties = self.wind_turbine_properties.get_settings()
             settings = self.analysis.get_settings()
@@ -149,23 +155,31 @@ class MainWindow(QMainWindow):
             return None
 
     # noinspection PyBroadException
-    def set_all_settings(self, inp_dict):
+    def set_all_settings(self, inp_dict, suppress = False):
         try:
             self.analysis.set_settings(inp_dict)
         except:
             print("Error setting analysis settings!")
+            if not suppress:
+                raise
         try:
             self.optimization.set_settings(inp_dict)
         except:
             print("Error setting optimization settings!")
+            if not suppress:
+                raise
         try:
             self.wind_turbine_properties.set_settings(inp_dict)
         except:
             print("Error setting wind turbine properties settings!")
+            if not suppress:
+                raise
         try:
             self.curve_manager.set_settings(inp_dict)
-        except:
-            print("Error setting curve manager settings!")  # raise
+        except Exception as e:
+            print("Error setting curve manager settings!")
+            if not suppress:
+                raise
 
     def get_input_params(self):
         settings = self.get_all_settings()
@@ -274,12 +288,12 @@ class WindTurbineProperties(QWidget):
             self.name.setText("")
 
 
-class CurveManager(QWidget):
+class AirfoilManager(QWidget):
     # popup_close = pyqtSignal(str)
     emitter = pyqtSignal(str)
 
     def __init__(self, parent=None):
-        super(CurveManager, self).__init__(parent)
+        super(AirfoilManager, self).__init__(parent)
 
         self.main = self.parent()
 
@@ -315,7 +329,7 @@ class CurveManager(QWidget):
         self.p.show()
 
     def add_foil(self, string):
-        c = Curves(self)
+        c = Airfoils(string,self)
         self.tab_widget.add_tab(c, string)
 
     def rename_foil_popup(self):
@@ -336,14 +350,14 @@ class CurveManager(QWidget):
             out[n] = w.get_settings()
             i += 1
 
-        return {"curves": out}
+        return {"airfoils": out}
 
     def set_settings(self, dict_settings):
         self.tab_widget.remove_all_tabs()
-        if "curves" in dict_settings:
-            if len(dict_settings["curves"]) > 0:
-                for c_name, c_dict in dict_settings["curves"].items():
-                    curve_widget = Curves()
+        if "airfoils" in dict_settings:
+            if len(dict_settings["airfoils"]) > 0:
+                for c_name, c_dict in dict_settings["airfoils"].items():
+                    curve_widget = Airfoils(c_name,self)
                     curve_widget.set_settings(c_dict)
                     self.tab_widget.add_tab(curve_widget, c_name)
 
@@ -376,9 +390,16 @@ class PopupText(QWidget):
         self.close()
 
 
-class Curves(QWidget):
-    def __init__(self, parent=None):
-        super(Curves, self).__init__(parent)
+class Airfoils(QWidget):
+    def __init__(self,airfoil_name,parent=None):
+        super(Airfoils, self).__init__(parent)
+
+        self.curve_list = []
+
+        self.viewer = CurveViewer(self)        
+
+        self.airfoil_name = airfoil_name
+
         grid = QGridLayout()
         self.setLayout(grid)
 
@@ -398,19 +419,95 @@ class Curves(QWidget):
         grid.addWidget(toolbar, 2, 2)
         self.buttonRefresh = QPushButton("Refresh curve")
         grid.addWidget(self.buttonRefresh, 2, 1)
-        self.buttonRefresh.clicked.connect(self.draw_curve)
+        self.buttonRefresh.clicked.connect(self.draw_airfoil)
         self.link = QLineEdit("link (airfoiltools.com)")
         grid.addWidget(self.link,3,1)
         self.button_generate_interp = QPushButton("Generate interp functions")
         self.button_generate_interp.clicked.connect(self.generate_interp_functions)
         grid.addWidget(self.button_generate_interp,3,2)
+        self.button_open_viewer = QPushButton("Open Curve Viewer")
+        self.button_open_viewer.clicked.connect(self.open_viewer)
+        grid.addWidget(self.button_open_viewer,4,2)
+        self.button_generate_curves_xfoil = QPushButton("Generate xfoil curves [debug]")
+        self.button_generate_curves_xfoil.clicked.connect(self.generate_curves_xfoil)
+        grid.addWidget(self.button_generate_curves_xfoil,4,1)
+        self.button_generate_curves_link = QPushButton("Generate curves from link")
+        self.button_generate_curves_link.clicked.connect(self.generate_curves_link)
+        grid.addWidget(self.button_generate_curves_link,5,1)
+        self.button_visualize = QPushButton("Create curve visualization")
+        self.button_visualize.clicked.connect(self.visualize)
+        grid.addWidget(self.button_visualize,5,2)
+
+    def visualize(self):
+        print("Visualizing")
+        if self.interp_function_cl == None or self.interp_function_cd == None:
+            print("No interpolation functions,man")
+            return
+        data = self.gather_curves()
+        re_min,re_max = data[:,0].min(),data[:,0].max()
+        alpha_min,alpha_max = data[:,2].min(),data[:,2].max()
+        x,y,z = [],[],[]
+        for _re in np.linspace(re_min,re_max,10):
+            for _alpha in np.linspace(alpha_min,alpha_max):
+                x.append(_re)
+                y.append(_alpha)
+                z.append(self.interp_function_cl(_re,_alpha))
+        w = MatplotlibWindow(self)
+        w.ax = w.figure.add_subplot(111, projection="3d")
+        w.ax.scatter(x,y,z)
+
+    def open_viewer(self):
+        print("opening viewwer")
+        self.viewer.show()
 
     def generate_interp_functions(self):
-        self.interp_function_cl, self.interp_function_cd = get_cl_cd_interpolation_function(self.link.text())
-        #self.curves[blade_name]["interp_function_cl"] = f_cl
-        #self.curves[blade_name]["interp_function_cd"] = f_cd
+        data = self.gather_curves()
+        x,y = self.get_x_y()
+        self.interp_function_cl, self.interp_function_cd = get_cl_cd_interpolation_function(data,x,y)
 
-    def draw_curve(self):
+    def gather_curves(self):
+        out = []
+        for curve in self.curve_list:
+            alpha,cl,cd = curve.get_combined_curve()
+            #print(alpha,cl,cd)
+            for i in range(len(alpha)):
+                Re = curve.Re
+                ncrit = curve.ncrit
+                _alpha = alpha[i]
+                _cl = cl[i]
+                _cd = cd[i]
+                
+                out.append([Re,ncrit,_alpha,_cl,_cd])
+        out = np.array(out)
+        return out
+
+    def generate_curves_xfoil(self):
+        print("Generating xfoil curves")
+        data = generate_polars_data(self.airfoil_name+".dat")
+        self.populate_curve_list(data)
+        print("Done")
+
+    def generate_curves_link(self):
+        print("Scraping from link...")
+        data = scrape_data(self.link.text())
+        self.populate_curve_list(data)
+        print("Done")
+
+    def populate_curve_list(self,data):
+        x,y = self.get_x_y()
+        Re_list = np.unique(data[:,0])
+        ncrit_list = np.unique(data[:,1])
+        ncrit_selected = ncrit_list[0]
+        for Re in Re_list:
+            rows_with_Re = data[np.in1d(data[:,0],Re)]
+            rows_with_Re = rows_with_Re[np.in1d(rows_with_Re[:,1],ncrit_selected)]
+            _alpha = rows_with_Re[:,2].flatten()
+            _cl = rows_with_Re[:,3].flatten()
+            _cd = rows_with_Re[:,4].flatten()
+            c = Curve(x=x,y=y,Re=Re,ncrit=ncrit_selected,alpha=_alpha,cl=_cl,cd=_cd)
+            self.curve_list.append(c)
+
+    def draw_airfoil(self):
         self.ax.clear()
         x_values = []
         y_values = []
@@ -449,7 +546,7 @@ class Curves(QWidget):
             return thickness
         return None
 
-    def get_settings(self):
+    def get_x_y(self):
         x = []
         y = []
 
@@ -460,6 +557,10 @@ class Curves(QWidget):
                 _y = to_float(r[1])
                 x.append(_x)
                 y.append(_y)
+        return x,y
+
+    def get_settings(self):
+        x,y = self.get_x_y()
 
         return {"x": x,
                 "y": y,
@@ -474,10 +575,240 @@ class Curves(QWidget):
             for r in range(len(dict_settings["x"])):
                 array_dat.append([str(dict_settings["x"][r]), str(dict_settings["y"][r])])
             self.table_dat.createTable(array_dat)
-            self.draw_curve()
+            self.draw_airfoil()
 
         self.link.setText(dict_settings["link"])        
+
+class MatplotlibWindow(QWidget):
+    def __init__(self, parent=None, curve=None):
+        super(MatplotlibWindow, self).__init__(None)
+        self.layout = QGridLayout()
+        self.setLayout(self.layout)
+        self.figure = plt.figure(figsize=(10,5))
+        self.canvas = FigureCanvas(self.figure)
+        self.canvas.setMinimumSize(500,500)
+        self.toolbar = NavigationToolbar(self.canvas,self)
+        self.layout.addWidget(self.canvas)
+        self.layout.addWidget(self.toolbar)
+        #self.ax = self.figure.add_subplot(111)
+
+        self.show()
+
+class Curve:
+    def __init__(self,x,y,Re,ncrit,alpha,cl,cd):
+        self.x = x
+        self.y = y
+        self.Re = Re
+        self.ncrit = 0.0
+        self.alpha = alpha
+        self.cl = cl
+        self.cd = cd
+        self.A = 5
+        self.B = 5
+        self.Am = 5
+        self.Bm = 5
+
+    def get_cl_curve(self):
+        return self.alpha_cl,self.cl
+
+    def get_extrapolated_curve(self):
+        M = Montgomerie(
+            x=self.x,
+            y=self.y,
+            alpha=self.alpha,
+            Cl=self.cl,
+            Cd=self.cd,
+            Re=self.Re,
+            A=self.A,
+            Am=self.Am,
+            B=self.B,
+            Bm=self.Bm)
+        alpha,cl,cd = M.calculate_extrapolation()
+        return alpha,cl,cd
+
+    def get_combined_curve(self):
+        M = Montgomerie(
+            x=self.x,
+            y=self.y,
+            alpha=self.alpha,
+            Cl=self.cl,
+            Cd=self.cd,
+            Re=self.Re,
+            A=self.A,
+            Am=self.Am,
+            B=self.B,
+            Bm=self.Bm)
+        _alpha,_cl,_cd = M.calculate_extrapolation()
+        cl_out,cd_out = [],[]
+        f_cl = interp1d(self.alpha,self.cl,bounds_error=True)
+        f_cd = interp1d(self.alpha,self.cd,bounds_error=True)
+        for i in range(len(_alpha)):
+            #x.append(self.Re)
+            #y.append(m_Alpha[i])
+            a = _alpha[i]
+            try:
+                cl = f_cl(a)
+            except ValueError:
+                cl = _cl[i]
+            try:
+                cd = f_cd(a)
+            except ValueError:
+                cd = _cd[i]
+            cl_out.append(cl)
+            cd_out.append(cd)
+        return _alpha,cl_out,cd_out
+            
+class CurveViewer(QWidget):
+    def __init__(self, parent=None):
+        super(CurveViewer, self).__init__(None)
+        self.resize(1600,768)
+        self.parent = parent
+        self.grid = QGridLayout()
+        self.setLayout(self.grid)
+        self.button = QPushButton("Close")
+        self.grid.addWidget(self.button,1,1)
+        self.button.clicked.connect(self.close)
+        self.button_refresh = QPushButton("Refresh")
+        self.grid.addWidget(self.button_refresh,1,2)
+        self.button_refresh.clicked.connect(self.generate_views)
         
+        self.bottom = QWidget()
+        #self.fbox = QFormLayout()
+        self.grid_curves = QGridLayout()
+        self.bottom.setLayout(self.grid_curves)
+
+        self.scroll_area = QtWidgets.QScrollArea()
+        self.scroll_widget = QtWidgets.QWidget()
+        self.scroll_widget_layout = QtWidgets.QVBoxLayout()
+
+        self.scroll_widget.setLayout(self.scroll_widget_layout)
+        self.scroll_area.setWidget(self.bottom)
+        self.scroll_area.setWidgetResizable(True)
+        self.grid.addWidget(self.scroll_area,2,1,2,2)
+        
+        self.generate_views()
+
+    def generate_views(self):
+
+        #delete stuff already here
+        for i in reversed(range(self.grid_curves.count())): 
+            self.grid_curves.itemAt(i).widget().setParent(None)
+
+        #for i in range(10):
+        #    control = CurveControl(self,None)
+        #    self.grid_curves.addWidget(control)
+
+        for curve in self.parent.curve_list:
+            label = QLabel("Re:"+str(curve.Re)+":")
+            control = CurveControl(self,curve)
+            control.update()
+            self.grid_curves.addWidget(label)
+            self.grid_curves.addWidget(control)
+
+
+class CurveControl(QWidget):
+    def __init__(self, parent=None, curve=None):
+        super(CurveControl, self).__init__(parent)
+        #self.setMinimumSize(300,400)
+        self.parent = parent
+
+        self.layout = QGridLayout()
+        self.setLayout(self.layout)
+        
+        self.curve = curve
+        
+        self.right=QWidget()
+        self.right_layout=QFormLayout()
+        self.right.setLayout(self.right_layout)
+        
+        self.A = QLineEdit(str(self.curve.A))
+        self.B = QLineEdit(str(self.curve.B))
+        self.Am = QLineEdit(str(self.curve.Am))
+        self.Bm = QLineEdit(str(self.curve.Bm))
+
+        self.A = QSlider(Qt.Horizontal)
+        self.A.setMinimum(-10)
+        self.A.setMaximum(30)
+        self.A.setValue(self.curve.A)
+        self.A.setTickPosition(QSlider.TicksBelow)
+        self.A.setTickInterval(1)
+        self.A.valueChanged.connect(self.update)
+
+        self.B = QSlider(Qt.Horizontal)
+        self.B.setMinimum(1)
+        self.B.setMaximum(100)
+        self.B.setValue(self.curve.B)
+        self.B.setTickPosition(QSlider.TicksBelow)
+        self.B.setTickInterval(1)
+        self.B.valueChanged.connect(self.update)
+
+        self.Am = QSlider(Qt.Horizontal)
+        self.Am.setMinimum(1)
+        self.Am.setMaximum(80)
+        self.Am.setValue(self.curve.Am)
+        self.Am.setTickPosition(QSlider.TicksBelow)
+        self.Am.setTickInterval(1)
+        self.Am.valueChanged.connect(self.update)
+
+        self.Bm = QSlider(Qt.Horizontal)
+        self.Bm.setMinimum(1)
+        self.Bm.setMaximum(70)
+        self.Bm.setValue(self.curve.Bm)
+        self.Bm.setTickPosition(QSlider.TicksBelow)
+        self.Bm.setTickInterval(1)
+        self.Bm.valueChanged.connect(self.update)
+        
+        self.right_layout.addRow("A",self.A)
+        self.right_layout.addRow("B",self.B)
+        self.right_layout.addRow("A-",self.Am)
+        self.right_layout.addRow("B-",self.Bm)
+
+        self.layout.addWidget(self.right,1,2)
+
+        self.left = QWidget()
+        self.left_layout = QGridLayout()
+        self.left.setLayout(self.left_layout)
+
+        self.figure = plt.figure(figsize=(10,5))
+        self.canvas = FigureCanvas(self.figure)
+        self.canvas.setMinimumSize(500,500)
+        self.toolbar = NavigationToolbar(self.canvas,self)
+        self.ax = self.figure.add_subplot(111)
+        self.left_layout.addWidget(self.canvas)
+        self.left_layout.addWidget(self.toolbar)
+
+        self.layout.addWidget(self.left,1,1)
+
+        self.button_update = QPushButton("update")
+        self.button_update.clicked.connect(self.draw_extrapolation)
+        self.left_layout.addWidget(self.button_update)
+
+        #self.draw_base()
+
+        self.show()
+
+    def clear(self):
+        self.ax.cla()
+
+    def draw_base(self):
+        self.ax.plot(self.curve.alpha,self.curve.cl)
+        self.canvas.draw()
+
+    def draw_extrapolation(self):
+        self.clear()
+
+        self.draw_base()
+
+        alpha,cl,cd = self.curve.get_extrapolated_curve()
+        self.ax.plot(alpha,cl,"ro")
+        self.canvas.draw()
+
+    def update(self):
+        self.curve.A = int(self.A.value())
+        self.curve.B = int(self.B.value())
+        self.curve.Am = int(self.Am.value())
+        self.curve.Bm = int(self.Bm.value())
+        self.draw_extrapolation()
 
 
 class Analysis(QWidget):

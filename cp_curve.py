@@ -42,7 +42,7 @@ def calculate_power(inp_args):
     p = Printer(inp_args["return_print"])
 
     for f in inp_args["foils_in"]:
-        if not f in inp_args["curves"].keys():
+        if not f in inp_args["airfoils"].keys():
             p.print("Section foil %s does not exist in airfoil list." % f)
             raise Exception("Section foil not matching airfoil list error")
 
@@ -50,7 +50,7 @@ def calculate_power(inp_args):
         if inp_args["add_angle"] != None:
             inp_args["theta"] = inp_args["theta"] + inp_args["add_angle"]
     try:
-        results = Calculator(inp_args["curves"]).run_array(**inp_args)
+        results = Calculator(inp_args["airfoils"]).run_array(**inp_args)
         return results
     except:
         p.print("!!!!EOF!!!!")
