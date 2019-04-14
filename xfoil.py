@@ -16,21 +16,19 @@ import scipy.interpolate
 import math
 import matplotlib.cm as cm
 
-
-
 xfoil_path = os.path.join("xfoil_executables", "xfoil.exe")
 if sys.platform.startswith("darwin"):
     xfoil_path = os.path.join("xfoil_executables", "xfoil")
 
 
 def xfoil_runner(airfoil, reynolds, alpha, printer=None, print_all=False):
-    #alpha = round(degrees(alpha))
-    #alpha in degrees
+    # alpha = round(degrees(alpha))
+    # alpha in degrees
     if print_all:
         if printer != None:
             printer.print("        xfoil runner, alpha=", alpha, "re=", reynolds)
     out = run_xfoil_analysis(airfoil, reynolds, alpha)
-    #if out == False:
+    # if out == False:
     #    return xfoil_runner(airfoil, reynolds * 0.5, radians(alpha), printer, print_all=print_all)
     return out
 
@@ -57,14 +55,14 @@ def get_coefficients_from_output(output_str):
         return False
     if math.isinf(float(CL)) or math.isinf(float(CD)):
         return False
-    
+
     out = {"CL": float(CL), "CD": float(CD), "Cm": float(Cm), "CDf": float(CDf), "CDp": float(CDp), "out": output_str}
     return out
 
 
 def run_xfoil_analysis(airfoil, reynolds, alpha, iterations=70, max_next_angle=2., print_output=False):
     # print("running xfoil for %s,Re=%s,alpha=%s" % (airfoil,reynolds,alpha))
-    #alpha in degrees
+    # alpha in degrees
     with Popen(os.path.abspath(xfoil_path), stdin=PIPE, stdout=PIPE, universal_newlines=True) as process:
 
         def call(_str, proc=process):
@@ -126,12 +124,12 @@ def run_xfoil_analysis(airfoil, reynolds, alpha, iterations=70, max_next_angle=2
                 for l in output.splitlines():
                     print(l)  # print(output)
         finally:
-            timer.cancel()  # print("")
-            #return False
+            timer.cancel()  # print("")  # return False
 
     return get_coefficients_from_output(output)
 
-def draw_to_matplotlib(x,y,z,shrani=False,unit='CL'):
+
+def draw_to_matplotlib(x, y, z, shrani=False, unit='CL'):
     # Ne vem ali je to potrebno. Menda je.
     x = numpy.array(x)
     y = numpy.array(y)
@@ -142,44 +140,45 @@ def draw_to_matplotlib(x,y,z,shrani=False,unit='CL'):
     xi, yi = numpy.meshgrid(xi, yi)
 
     # Linearna interpolacija ozadja, glede na x,y,z
-    rbf = scipy.interpolate.Rbf(x, y, z, function='quintic') #interpolacija je lahko linear, cubic, itd.
+    rbf = scipy.interpolate.Rbf(x, y, z, function='quintic')  # interpolacija je lahko linear, cubic, itd.
     zi = rbf(xi, yi)
 
     # Barvno ozadje
-    #plt.imshow(zi, vmin=z.min(), vmax=z.max(), origin='lower',
+    # plt.imshow(zi, vmin=z.min(), vmax=z.max(), origin='lower',
     #           extent=[x.min(), x.max(), y.min(), y.max()], cmap=cm.jet)
 
-    plt.scatter(xi,yi,c=zi)
+    plt.scatter(xi, yi, c=zi)
     plt.scatter(x, y, c=z, cmap=cm.jet)
 
     ##ODKOMENTIRAJ ZA ABSOLUTNO SKALO
-    #plt.clim(0,10)
+    # plt.clim(0,10)
 
-    #nastavitev min/max vrednosti na osi
-    #plt.xlim(-1000,0)
-    #plt.ylim(-1000,0)
+    # nastavitev min/max vrednosti na osi
+    # plt.xlim(-1000,0)
+    # plt.ylim(-1000,0)
 
-    #X Label
-    #plt.xlabel('alfa' % (z.min(),z.max(),numpy.mean(z)))
+    # X Label
+    # plt.xlabel('alfa' % (z.min(),z.max(),numpy.mean(z)))
 
-    #Y Label
+    # Y Label
     plt.ylabel('re')
 
-    #Title
-    #plt.title('Hitrost')
+    # Title
+    # plt.title('Hitrost')
 
-    #Color bar
+    # Color bar
     cbar = plt.colorbar()
     cbar.ax.set_xlabel(unit)
-    
-    #Za shranjevanje
+
+    # Za shranjevanje
     if shrani:
         filename = "hitrosti.png"
-        path = os.path.join(os.pwd(),filename)
-        print(filename,"saved to",path)
+        path = os.path.join(os.pwd(), filename)
+        print(filename, "saved to", path)
         plt.savefig(path)
 
     plt.show()
+
 
 def generate_polars(foil):
     all_re = []
@@ -187,41 +186,43 @@ def generate_polars(foil):
     all_cl = []
     all_cd = []
 
-    for Re in np.linspace(10e3,1e6,10):
-        for a in np.linspace(-45,45,21):
+    for Re in np.linspace(10e3, 1e6, 10):
+        for a in np.linspace(-45, 45, 21):
             Re = int(Re)
             cl = None
             cd = None
-            print("re",Re,"a",a)
+            print("re", Re, "a", a)
             o = None
-            o = xfoil_runner(foil,Re,a)
+            o = xfoil_runner(foil, Re, a)
             if o != False:
                 cl = o["CL"]
                 cd = o["CD"]
             if cl != None and cd != None:
-                print("    ",o["CL"],o["CD"])
+                print("    ", o["CL"], o["CD"])
                 all_re.append(Re)
                 all_a.append(a)
                 all_cl.append(cl)
                 all_cd.append(cd)
-    return all_a,all_re,all_cl,all_cd
+    return all_a, all_re, all_cl, all_cd
+
 
 def generate_polars_data(foil):
-    all_a,all_re,all_cl,all_cd = generate_polars(foil)
+    all_a, all_re, all_cl, all_cd = generate_polars(foil)
     out = []
     ncrit = 0
     for i in range(len(all_a)):
-        out.append([all_re[i],ncrit,all_a[i],all_cl[i],all_cd[i]])
+        out.append([all_re[i], ncrit, all_a[i], all_cl[i], all_cd[i]])
     out = np.array(out)
     return out
 
-#all_a,all_re,all_cl,all_cd = generate_polars()
-#data = generate_polars_data("s826.dat")
-#print(data)
-#from s826 import all_re,all_a,all_cl,all_cd
+
+# all_a,all_re,all_cl,all_cd = generate_polars()
+# data = generate_polars_data("s826.dat")
+# print(data)
+# from s826 import all_re,all_a,all_cl,all_cd
 
 
-def draw_scatter(x,y,z):
+def draw_scatter(x, y, z):
     fig = plt.figure()
     ax = Axes3D(fig)
     ax.scatter(all_a, all_re, all_cl)
@@ -230,14 +231,14 @@ def draw_scatter(x,y,z):
     ax.set_zlabel('lift')
     plt.show()
 
-#X,Y,Z = create_approximation_plane(all_a,all_re,all_cl)
-#surf = ax.plot_surface(X, Y, Z, rstride=1, cstride=1, alpha=0.2,label="interp")
+# X,Y,Z = create_approximation_plane(all_a,all_re,all_cl)
+# surf = ax.plot_surface(X, Y, Z, rstride=1, cstride=1, alpha=0.2,label="interp")
 
-#print("all_a",all_a)
-#print("all_re",all_re)
-#print("all_cl",all_cl)
-#print("all_cd",all_cd)
+# print("all_a",all_a)
+# print("all_re",all_re)
+# print("all_cl",all_cl)
+# print("all_cd",all_cd)
 
-#draw_to_matplotlib(all_a,all_re,all_cl)
-#draw_scatter(all_a,all_re,all_cl)
+# draw_to_matplotlib(all_a,all_re,all_cl)
+# draw_scatter(all_a,all_re,all_cl)
 #

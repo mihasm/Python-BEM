@@ -117,6 +117,7 @@ def sort_xy(array_x, array_y):
         )
 
 
+# noinspection PyUnboundLocalVariable
 def transitions_to_nearest_profiles(r, foils):
     # print("transitioning foils")
     # print("transition foils before",foils)
@@ -156,6 +157,8 @@ def transitions_to_nearest_profiles(r, foils):
             if nearest_i_up == None and nearest_i_down == None:
                 raise Exception("Transition %s doesn't end with any profile" % i)
 
+            dr_down,dr_up = None, None
+
             if nearest_i_down != None:
                 dr_down = abs(_r - r[nearest_i_down])
 
@@ -163,6 +166,7 @@ def transitions_to_nearest_profiles(r, foils):
                 dr_up = abs(_r - r[nearest_i_up])
 
             if nearest_i_up != None and nearest_i_down != None:
+                # noinspection PyUnboundLocalVariable
                 if dr_down < dr_up:
                     best_i = nearest_i_down
                 else:
@@ -210,9 +214,9 @@ def interpolate_geom(r, c, theta, foils, num=None, linspace_interp=False):
     return r, c, theta, foils, dr
 
 
-def find_nearest(array, value):
-    array = numpy.asarray(array)
-    idx = (numpy.abs(array - value)).argmin()
+def find_nearest(_array, value):
+    _array = numpy.asarray(_array)
+    idx = (numpy.abs(_array - value)).argmin()
     return idx
 
 

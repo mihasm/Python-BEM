@@ -15,7 +15,7 @@ from matplotlib.backends.backend_qt4agg import NavigationToolbar2QT as Navigatio
 import matplotlib.pyplot as plt
 import numpy as np
 
-from cp_curve import max_calculate
+from calculation_runner import max_calculate
 from table import Table
 from utils import sort_xy, dict_to_ar
 
@@ -92,7 +92,10 @@ class ResultsWindow(QMainWindow):
 
         # CL check
         f7 = self.tab_widget.add_tab_figure("check CL")
-        self.tab_widget.add_3d_scatter_plot(f7,np.array(results_3d["Re"]).flatten(),np.array(results_3d["alpha"]).flatten(),np.array(results_3d["cL"]).flatten(), 111, "Title","Re","alpha[deg]","cL")
+        self.tab_widget.add_3d_scatter_plot(f7, np.array(results_3d["Re"]).flatten(),
+                                            np.array(results_3d["alpha"]).flatten(),
+                                            np.array(results_3d["cL"]).flatten(), 111, "Title", "Re", "alpha[deg]",
+                                            "cL")
 
         data = dict_to_ar(results_3d)
         t = Table()
@@ -183,7 +186,7 @@ class TabWidget(QtWidgets.QTabWidget):
             x_max=None, y_min=None, y_max=None, z_min=None, z_max=None, legend=False, ):
         ax = f.add_subplot(whi, projection="3d")
         p0 = ax.scatter(x, y, z, cmap=plt.cm.CMRmap)
-        #cbar = plt.colorbar(p0)
+        # cbar = plt.colorbar(p0)
 
         if title:
             plt.title(title)
@@ -192,8 +195,7 @@ class TabWidget(QtWidgets.QTabWidget):
         if y_name:
             ax.set_ylabel(y_name)
         if z_name:
-            ax.set_zlabel(z_name)
-            #cbar.set_label(z_name)
+            ax.set_zlabel(z_name)  # cbar.set_label(z_name)
         if x_min != None and x_max != None:
             ax.set_xlim(x_min, x_max)
         if y_min != None and y_max != None:

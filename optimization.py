@@ -1,22 +1,23 @@
 from turbine_data import SET_INIT
-from induction_factors import Calculator
+from calculation import Calculator
 from utils import Printer
 from numpy import radians, degrees
+import numpy as np,numpy
 from math import pi
 import traceback
-
+from matplotlib import pyplot as plt
 
 
 # noinspection PyBroadException
 def optimize_angles(inp_args):
     p = Printer(inp_args["return_print"])
     try:
-        p.print("Optimizing angles for target variable:",inp_args["optimization_variable"])
+        p.print("Optimizing angles for target variable:", inp_args["optimization_variable"])
         return_results = inp_args["return_results"]
 
         v = inp_args["target_speed"]
         rpm = inp_args["target_rpm"]
-        #print(v,pi,rpm)
+        # print(v,pi,rpm)
         omega = 2 * pi * rpm / 60
         # optimization_variable = "dT"
         optimization_variable = inp_args["optimization_variable"]
@@ -48,8 +49,9 @@ def optimize_angles(inp_args):
                     if not _theta in done_angles:
                         p.print("   calculating out")
                         try:
-                            out = C.calculate_section(v=v,omega=omega,_airfoil=_airfoil,_airfoil_dat=_airfoil_dat, max_thickness=max_thickness,
-                                                    _r=_r, _c=_c, _dr=_dr, _theta=_theta, printer=p, **inp_args)
+                            out = C.calculate_section(v=v, omega=omega, _airfoil=_airfoil, _airfoil_dat=_airfoil_dat,
+                                                      max_thickness=max_thickness, _r=_r, _c=_c, _dr=_dr, _theta=_theta,
+                                                      printer=p, **inp_args)
                         except Exception as e:
                             print(e)
                             print(traceback.format_exc())
@@ -65,8 +67,9 @@ def optimize_angles(inp_args):
                     if not _theta + radians(dtheta) in done_angles:
                         p.print("   calculating out_up")
                         try:
-                            out_up = C.calculate_section(v=v,omega=omega,_airfoil=_airfoil,_airfoil_dat=_airfoil_dat, max_thickness=max_thickness,
-                                                    _r=_r, _c=_c, _dr=_dr, _theta=_theta+radians(dtheta), printer=p, **inp_args)
+                            out_up = C.calculate_section(v=v, omega=omega, _airfoil=_airfoil, _airfoil_dat=_airfoil_dat,
+                                                         max_thickness=max_thickness, _r=_r, _c=_c, _dr=_dr,
+                                                         _theta=_theta + radians(dtheta), printer=p, **inp_args)
                         except Exception as e:
                             print()
                             print(traceback.format_exc())
@@ -82,8 +85,10 @@ def optimize_angles(inp_args):
                     if not _theta - radians(dtheta) in done_angles:
                         p.print("   calculating out_down")
                         try:
-                            out_down = C.calculate_section(v=v,omega=omega,_airfoil=_airfoil,_airfoil_dat=_airfoil_dat, max_thickness=max_thickness,
-                                                    _r=_r, _c=_c, _dr=_dr, _theta=_theta-radians(dtheta), printer=p, **inp_args)
+                            out_down = C.calculate_section(v=v, omega=omega, _airfoil=_airfoil,
+                                                           _airfoil_dat=_airfoil_dat, max_thickness=max_thickness,
+                                                           _r=_r, _c=_c, _dr=_dr, _theta=_theta - radians(dtheta),
+                                                           printer=p, **inp_args)
                         except Exception as e:
                             print(e)
                             print(traceback.format_exc())
@@ -152,3 +157,73 @@ def optimize_angles(inp_args):
         p.print("Error in running optimizer")
         p.print("!!!!EOF!!!!")
         raise
+
+def maximize_for_both(inp_args):
+    p = Printer(inp_args["return_print"])
+    p.print("Optimizing angles for target variable:", inp_args["optimization_variable"])
+    return_results = inp_args["return_results"]
+
+    v = inp_args["target_speed"]
+    rpm = inp_args["target_rpm"]
+    # print(v,pi,rpm)
+    omega = 2 * pi * rpm / 60
+    # optimization_variable = "dT"
+    optimization_variable = inp_args["optimization_variable"]
+
+    output_angles = []
+
+    C = Calculator(inp_args["airfoils"])
+    plt.figure(2)
+
+    for section_number in range(len(inp_args["r_in"]))[-2:-1]:
+        p.print("section_number is", section_number)
+
+        _r = inp_args["r_in"][section_number]
+        _c = inp_args["c_in"][section_number]
+        _theta = radians(inp_args["theta_in"][section_number])
+        _dr = inp_args["dr"][section_number]
+        _airfoil = inp_args["foils_in"][section_number]
+        max_thickness = inp_args["airfoils"][_airfoil]["max_thickness"] * _c
+        _airfoil_dat = _airfoil + ".dat"
+
+        #done_angles = {}  # key is theta, value is out
+
+        p.print("initial theta is", degrees(_theta))
+        out_x,out_y_1,out_y_2 = [],[],[]
+        for _theta in radians(np.linspace(0,90,100)):
+            dT,dQ = None, None
+            #print(_theta)
+            inp_args["propeller_mode"] = False
+            out = C.calculate_section(v=15, omega=omega, _airfoil=_airfoil,_airfoil_dat=_airfoil_dat, max_thickness=max_thickness,_r=_r, _c=_c, _dr=_dr, _theta=_theta,printer=p, **inp_args)
+            if out != None and out != False:
+                dQ = out["dQ"]
+            inp_args["propeller_mode"] = True
+            out_prop = C.calculate_section(v=0.01, omega=omega, _airfoil=_airfoil,_airfoil_dat=_airfoil_dat, max_thickness=max_thickness,_r=_r, _c=_c, _dr=_dr, _theta=_theta,printer=p, **inp_args)
+            if out_prop != None and out_prop != False:
+                dT = out_prop["dT"]
+
+            if dT != None and dQ != None:
+                out_x.append(degrees(_theta))
+                out_y_1.append(dT)
+                out_y_2.append(dQ)
+
+        plt.plot(out_x,out_y_1,"g-",label="dT"+str(section_number))
+        plt.plot(out_x,out_y_2,"r-",label="dQ"+str(section_number))
+
+    
+    plt.legend()
+    plt.show()
+
+"""
+from polars import get_cl_cd_from_link
+f_cl,f_cd = get_cl_cd_from_link("http://airfoiltools.com/airfoil/details?airfoil=s826-nr")
+settings = SET_INIT
+SET_INIT["fix_reynolds"] = True
+SET_INIT["reynolds"] = 200000
+SET_INIT["method"] = SET_INIT["method"]+1
+SET_INIT["return_print"] = []
+SET_INIT["return_results"] = []
+SET_INIT["airfoils"]["s826"]["interp_function_cl"] = f_cl
+SET_INIT["airfoils"]["s826"]["interp_function_cd"] = f_cd
+maximize_for_both(SET_INIT)
+"""

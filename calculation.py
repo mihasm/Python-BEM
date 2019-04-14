@@ -123,7 +123,7 @@ class Calculator:
 
         # create results array placeholders
         results = {}
-        arrays = ["a", "a'", "cL", "alpha", "phi", "F", "dFt", "M", "TSR", "Ct", "dFn", "foils", "dT", "dQ","Re"]
+        arrays = ["a", "a'", "cL", "alpha", "phi", "F", "dFt", "M", "TSR", "Ct", "dFn", "foils", "dT", "dQ", "Re"]
         for array in arrays:
             results[array] = numpy.array([])
 
@@ -225,12 +225,13 @@ class Calculator:
         results["J"] = J
         return results
 
-    def calculate_section(self,v, omega, _r, _c, _theta, _dr, B, R, _airfoil_dat, _airfoil, max_thickness, propeller_mode, psi=0.0,
-            fix_reynolds=False, reynolds=1e6, tip_loss=False, new_tip_loss=False, hub_loss=False, new_hub_loss=False,
-            cascade_correction=False, rotational_augmentation_correction=False, rotational_augmentation_correction_method=0,
-            mach_number_correction=False, method=5, kin_viscosity=1.4207E-5, rho=1.225, convergence_limit=0.001,
-            max_iterations=100, relaxation_factor=0.3, printer=None, print_all=False, print_out=False, *args, **kwargs):
-        #print(v)
+    def calculate_section(self, v, omega, _r, _c, _theta, _dr, B, R, _airfoil_dat, _airfoil, max_thickness,
+            propeller_mode, psi=0.0, fix_reynolds=False, reynolds=1e6, tip_loss=False, new_tip_loss=False,
+            hub_loss=False, new_hub_loss=False, cascade_correction=False, rotational_augmentation_correction=False,
+            rotational_augmentation_correction_method=0, mach_number_correction=False, method=5,
+            kin_viscosity=1.4207E-5, rho=1.225, convergence_limit=0.001, max_iterations=100, relaxation_factor=0.3,
+            printer=None, print_all=False, print_out=False, *args, **kwargs):
+        # print(v)
 
         p = printer
 
@@ -308,10 +309,10 @@ class Calculator:
 
             # cascade correction
             if cascade_correction:
-                alpha = cascadeEffectsCorrection(alpha=alpha, v=v, omega=omega, r=_r, R=R, c=_c, B=B, a=a, aprime=aprime,
-                                                 max_thickness=max_thickness)
+                alpha = cascadeEffectsCorrection(alpha=alpha, v=v, omega=omega, r=_r, R=R, c=_c, B=B, a=a,
+                                                 aprime=aprime, max_thickness=max_thickness)
 
-            #if print_all:
+            # if print_all:
             #    p.print("        Running xfoil for %s,Re=%s,alpha=%s" % (_airfoil_dat, Re, alpha))
 
             """
@@ -322,9 +323,10 @@ class Calculator:
                 return None
             """
 
-            #Cl, Cd = xfoil_return["CL"], xfoil_return["CD"] #direct xfoil calculation - no interpolation
-            Cl,Cd = self.airfoils[_airfoil]["interp_function_cl"](Re,degrees(alpha)), self.airfoils[_airfoil]["interp_function_cd"](Re,degrees(alpha))
-            
+            # Cl, Cd = xfoil_return["CL"], xfoil_return["CD"] #direct xfoil calculation - no interpolation
+            Cl, Cd = self.airfoils[_airfoil]["interp_function_cl"](Re, degrees(alpha)), self.airfoils[_airfoil][
+                "interp_function_cd"](Re, degrees(alpha))
+
             if print_all:
                 p.print("        CL:", Cl, "Cd:", Cd)
 
@@ -332,8 +334,8 @@ class Calculator:
                 if print_all:
                     p.print("--")
                     p.print("  Cl:", Cl, "Cd:", Cd)
-                Cl, Cd = calc_rotational_augmentation_correction(alpha=alpha, Cl=Cl, Cd=Cd, omega=omega, r=_r, R=R, c=_c,
-                                                                 theta=_theta, v=v, Vrel=Vrel_norm,
+                Cl, Cd = calc_rotational_augmentation_correction(alpha=alpha, Cl=Cl, Cd=Cd, omega=omega, r=_r, R=R,
+                                                                 c=_c, theta=_theta, v=v, Vrel=Vrel_norm,
                                                                  method=rotational_augmentation_correction_method, )
 
                 if print_all:
@@ -351,10 +353,11 @@ class Calculator:
             a_last = a
             aprime_last = aprime
 
-            input_arguments = {"F": F, "lambda_r": lambda_r, "phi": phi, "sigma": sigma, "C_norm": C_norm, "C_tang": C_tang,
-                               "Cl": Cl, "Cd": Cd, "B": B, "c": _c, "r": _r, "R": R, "psi": 0.0, "aprime_last": aprime,
-                               "omega": omega, "v": v, "a_last": a_last,  # "alpha_zero": airfoils[_airfoil]["alpha_zero"],
-                               "method": method, "alpha":alpha, "alpha_deg":degrees(alpha)}
+            input_arguments = {"F": F, "lambda_r": lambda_r, "phi": phi, "sigma": sigma, "C_norm": C_norm,
+                               "C_tang": C_tang, "Cl": Cl, "Cd": Cd, "B": B, "c": _c, "r": _r, "R": R, "psi": 0.0,
+                               "aprime_last": aprime, "omega": omega, "v": v, "a_last": a_last,
+                               # "alpha_zero": airfoils[_airfoil]["alpha_zero"],
+                               "method": method, "alpha": alpha, "alpha_deg": degrees(alpha)}
 
             if print_all:
                 args_to_print = sorted([key for key, value in input_arguments.items()])
@@ -384,7 +387,8 @@ class Calculator:
 
             # thrust and torque from https://apps.dtic.mil/dtic/tr/fulltext/u2/1013408.pdf
             dT_p = B * rho * (omega * _r / cos(phi) * cos(_theta)) ** 2 * _c * _dr * (Cl * cos(phi) - Cd * sin(phi))
-            dQ_p = B * rho * (omega * _r / cos(phi) * cos(_theta)) ** 2 * _c * _r * _dr * (Cl * sin(phi) + Cd * cos(phi))
+            dQ_p = B * rho * (omega * _r / cos(phi) * cos(_theta)) ** 2 * _c * _r * _dr * (
+                    Cl * sin(phi) + Cd * cos(phi))
 
             # thrust and torque from http://www.icas.org/ICAS_ARCHIVE/ICAS2010/PAPERS/434.PDF
             # dT_p = sigma*pi*rho*v**2*(1+a)**2/(sin(phi)**2)*(Cl*cos(phi)-Cd*sin(phi))*_r*_dr
@@ -393,7 +397,8 @@ class Calculator:
             # thrust-propeller
             dT_MT_p = 4 * pi * _r * rho * v ** 2 * (1 + a) * a * _dr
             dQ_MT_p = 4 * pi * _r ** 3 * rho * v * omega * (1 + a) * aprime * _dr
-            dT_BET_p = 0.5 * rho * v ** 2 * _c * B * (1 + a) ** 2 / (sin(phi) ** 2) * (Cl * cos(phi) - Cd * sin(phi)) * _dr
+            dT_BET_p = 0.5 * rho * v ** 2 * _c * B * (1 + a) ** 2 / (sin(phi) ** 2) * (
+                    Cl * cos(phi) - Cd * sin(phi)) * _dr
             dQ_BET_p = 0.5 * rho * v * _c * B * omega * _r ** 2 * (1 + a) * (1 - aprime) / (sin(phi) * cos(phi)) * (
                     Cl * sin(phi) + Cd * cos(phi)) * _dr
 
@@ -445,5 +450,5 @@ class Calculator:
             p.print(prepend, "    ----------------------------")
 
         out = {"a": a, "aprime": aprime, "Cl": Cl, "alpha": alpha, "phi": phi, "F": F, "dFt": dFt, "Ct": Ct, "dFn": dFn,
-               "_airfoil": _airfoil_dat, "U4": U4, "dT": dT, "dQ": dQ, "Re":Re}
+               "_airfoil": _airfoil_dat, "U4": U4, "dT": dT, "dQ": dQ, "Re": Re}
         return out
