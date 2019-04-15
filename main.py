@@ -39,6 +39,7 @@ from xfoil import generate_polars_data
 from multiprocessing import Process, Manager
 import multiprocessing
 import json
+from pprint import pprint
 
 TITLE_STR = "BEM analiza v%s" % __version__
 
@@ -142,7 +143,7 @@ class MainWindow(QMainWindow):
             r, c, theta, foils, dr = interpolate_geom(_r, _c, _theta, _foils, out["num_interp"], out["linspace_interp"])
             out["r"], out["c"], out["theta"], out["foils"], out["dr"] = r, c, theta, foils, dr
             out["r_in"], out["c_in"], out["theta_in"], out["foils_in"] = _r, _c, _theta, _foils
-            print(out)
+            pprint(out)
             return out
         except Exception as e:
             msg = QMessageBox()
@@ -389,11 +390,13 @@ class PopupText(QWidget):
         self.close()
 
 
+
+
 class Airfoils(QWidget):
     def __init__(self, airfoil_name, parent=None):
         super(Airfoils, self).__init__(parent)
 
-        self.curve_list = []
+        self.curves = Curves()
 
         self.viewer = CurveViewer(self)
 
@@ -468,7 +471,7 @@ class Airfoils(QWidget):
 
     def gather_curves(self):
         out = []
-        for curve in self.curve_list:
+        for curve in self.curves.curve_list:
             alpha, cl, cd = curve.get_combined_curve()
             # print(alpha,cl,cd)
             for i in range(len(alpha)):
@@ -495,7 +498,7 @@ class Airfoils(QWidget):
         print("Done")
 
     def populate_curve_list(self, data):
-        self.curve_list = []
+        self.curves.curve_list = []
         x, y = self.get_x_y()
         Re_list = np.unique(data[:, 0])
         ncrit_list = np.unique(data[:, 1])
@@ -506,8 +509,9 @@ class Airfoils(QWidget):
             _alpha = rows_with_Re[:, 2].flatten()
             _cl = rows_with_Re[:, 3].flatten()
             _cd = rows_with_Re[:, 4].flatten()
-            c = Curve(x=x, y=y, Re=Re, ncrit=ncrit_selected, alpha=_alpha, cl=_cl, cd=_cd)
-            self.curve_list.append(c)
+            c = Curve()
+            c.create(x=x, y=y, Re=Re, ncrit=ncrit_selected, alpha=_alpha, cl=_cl, cd=_cd)
+            self.curves.add(c)
 
     def draw_airfoil(self):
         self.ax.clear()
@@ -565,7 +569,8 @@ class Airfoils(QWidget):
         x, y = self.get_x_y()
 
         return {"x": x, "y": y, "max_thickness": self.get_max_thickness(), "link": self.link.text(),
-                "interp_function_cl": self.interp_function_cl, "interp_function_cd": self.interp_function_cd}
+                "interp_function_cl": self.interp_function_cl, "interp_function_cd": self.interp_function_cd,
+                "curves":self.curves.save_curves()}
 
     def set_settings(self, dict_settings):
         array_dat = []
@@ -576,6 +581,7 @@ class Airfoils(QWidget):
             self.draw_airfoil()
 
         self.link.setText(dict_settings["link"])
+        self.curves.load_curves(dict_settings["curves"])
 
 
 class MatplotlibWindow(QWidget):
@@ -594,12 +600,47 @@ class MatplotlibWindow(QWidget):
         self.show()
 
 
+class Curves:
+    def __init__(self):
+        self.curve_list = []
+
+    def add(self,curve):
+        self.curve_list.append(curve)
+
+    def save_curves(self):
+        out_list = []
+        for c in self.curve_list:
+            data_curve = c.save_curve()
+            out_list.append(data_curve)
+        return out_list
+
+    def load_curves(self,out):
+        self.curve_list = []
+        for data_curve in out:
+            c = Curve()
+            c.load_curve(data_curve)
+            self.curve_list.append(c)
+
+
 class Curve:
-    def __init__(self, x, y, Re, ncrit, alpha, cl, cd):
+    def __init__(self):
+        self.x = None
+        self.y = None
+        self.Re = None
+        self.ncrit = None
+        self.alpha = None
+        self.cl = None
+        self.cd = None
+        self.A = None
+        self.B = None
+        self.Am = None
+        self.Bm = None
+
+    def create(self, x, y, Re, ncrit, alpha, cl, cd):
         self.x = x
         self.y = y
         self.Re = Re
-        self.ncrit = 0.0
+        self.ncrit = 0.0 #doesnt make any difference for now
         self.alpha = alpha
         self.cl = cl
         self.cd = cd
@@ -639,6 +680,35 @@ class Curve:
             cl_out.append(cl)
             cd_out.append(cd)
         return _alpha, cl_out, cd_out
+
+    def save_curve(self):
+        out = {
+            "x":list(self.x),
+            "y":list(self.y),
+            "Re":self.Re,
+            "ncrit":self.ncrit,
+            "alpha":list(self.alpha),
+            "cl":list(self.cl),
+            "cd":list(self.cd),
+            "A":self.A,
+            "B":self.B,
+            "Am":self.Am,
+            "Bm":self.Bm,
+        }
+        return out
+
+    def load_curve(self,out):
+        self.x = out["x"]
+        self.y = out["y"]
+        self.Re = out["Re"]
+        self.ncrit = out["ncrit"]
+        self.alpha = out["alpha"]
+        self.cl = out["cl"]
+        self.cd = out["cd"]
+        self.A = out["A"]
+        self.B = out["B"]
+        self.Am = out["Am"]
+        self.Bm = out["Bm"]
 
 
 class CurveViewer(QWidget):
@@ -681,7 +751,7 @@ class CurveViewer(QWidget):
         #    control = CurveControl(self,None)
         #    self.grid_curves.addWidget(control)
 
-        for curve in self.parent.curve_list:
+        for curve in self.parent.curves.curve_list:
             label = QLabel("Re:" + str(curve.Re) + ":")
             control = CurveControl(self, curve)
             control.update()
