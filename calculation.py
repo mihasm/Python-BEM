@@ -11,11 +11,13 @@ from math import sin, cos, atan, acos, pi, exp, sqrt, radians, atan2, degrees, t
 import os
 
 import numpy
+import numpy as np
 from scipy import interpolate
 
 from utils import Printer, generate_dat
 from popravki import *
 from xfoil import run_xfoil_analysis, xfoil_runner
+from interpolator import interp
 
 numpy.seterr(all="raise")
 numpy.seterr(invalid="raise")
@@ -31,6 +33,21 @@ class Calculator:
         for blade_name in self.airfoils:
             self.airfoils[blade_name]["alpha_zero"] = 0.0  # TODO FIX
             generate_dat(blade_name, self.airfoils[blade_name]["x"], self.airfoils[blade_name]["y"])
+            data = self.airfoils[blade_name]["gathered_curves"]
+            data = data[data[:,0].argsort()] #sort by reynolds
+            data = data[data[:,2].argsort(kind="mergesort")] #sort by alpha
+
+            re = data[:,0].flatten()
+            alpha = data[:,2].flatten()
+            cl = data[:,3].flatten()
+            cd = data[:,4].flatten()
+
+            def interpolation_function_cl(x,y,re=re,alpha=alpha,cl=cl):
+                return interp(x,y,re,alpha,cl)
+            def interpolation_function_cd(x,y,re=re,alpha=alpha,cd=cd):
+                return interp(x,y,re,alpha,cd)
+            self.airfoils[blade_name]["interp_function_cl"] = interpolation_function_cl
+            self.airfoils[blade_name]["interp_function_cd"] = interpolation_function_cd
 
     def printer(self, _locals, p):
         p.print("----Running induction calculation for following parameters----")
@@ -326,6 +343,7 @@ class Calculator:
             # Cl, Cd = xfoil_return["CL"], xfoil_return["CD"] #direct xfoil calculation - no interpolation
             Cl, Cd = self.airfoils[_airfoil]["interp_function_cl"](Re, degrees(alpha)), self.airfoils[_airfoil][
                 "interp_function_cd"](Re, degrees(alpha))
+            #p.print(Re,Cl,Cd)
 
             if print_all:
                 p.print("        CL:", Cl, "Cd:", Cd)

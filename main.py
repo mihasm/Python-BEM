@@ -32,7 +32,8 @@ import time
 from turbine_data import SET_INIT
 from optimization import optimize_angles
 from utils import interpolate_geom, to_float, fltr
-from polars import get_cl_cd_interpolation_function, scrape_data
+from interpolator import interp_at
+from polars import scrape_data
 from montgomerie import Montgomerie
 from xfoil import generate_polars_data
 
@@ -424,9 +425,9 @@ class Airfoils(QWidget):
         self.buttonRefresh.clicked.connect(self.draw_airfoil)
         self.link = QLineEdit("link (airfoiltools.com)")
         grid.addWidget(self.link, 3, 1)
-        self.button_generate_interp = QPushButton("Generate interp functions")
-        self.button_generate_interp.clicked.connect(self.generate_interp_functions)
-        grid.addWidget(self.button_generate_interp, 3, 2)
+        #self.button_generate_interp = QPushButton("Generate interp functions")
+        #self.button_generate_interp.clicked.connect(self.generate_interp_functions)
+        #grid.addWidget(self.button_generate_interp, 3, 2)
         self.button_open_viewer = QPushButton("Open Curve Viewer")
         self.button_open_viewer.clicked.connect(self.open_viewer)
         grid.addWidget(self.button_open_viewer, 4, 2)
@@ -442,23 +443,24 @@ class Airfoils(QWidget):
 
     def visualize(self):
         print("Visualizing")
-        if self.interp_function_cl == None or self.interp_function_cd == None:
-            print("No interpolation functions,man")
-            return
-        data = self.gather_curves()
+        data = self.curves.gather_curves()
+
+        re = data[:,0]
+        alpha = data[:,2]
+        cl = data[:,3]
+        cd = data[:,4]
+
         re_min, re_max = data[:, 0].min(), data[:, 0].max()
         alpha_min, alpha_max = data[:, 2].min(), data[:, 2].max()
-        x, y, z_1, z_2 = [], [], [], []
-        for _re in np.linspace(re_min, re_max, 10):
-            for _alpha in np.linspace(alpha_min, alpha_max):
-                x.append(_re)
-                y.append(_alpha)
-                z_1.append(self.interp_function_cl(_re, _alpha))
-                z_2.append(self.interp_function_cd(_re, _alpha))
+        x,y = np.linspace(re_min,re_max,30),np.linspace(alpha_min,alpha_max,30)
+        xi,yi = np.meshgrid(x,y)
+        xi,yi = xi.flatten(),yi.flatten()
+        z_1 = interp_at(re,alpha,cl,xi,yi)
+        z_2 = interp_at(re,alpha,cd,xi,yi)
         w = MatplotlibWindow(self)
         w.ax = w.figure.add_subplot(111, projection="3d")
-        w.ax.scatter(x, y, z_1)
-        w.ax.scatter(x, y, z_2)
+        w.ax.scatter(xi, yi, z_1)
+        w.ax.scatter(xi, yi, z_2)
 
     def open_viewer(self):
         print("opening viewwer")
@@ -469,21 +471,6 @@ class Airfoils(QWidget):
         x, y = self.get_x_y()
         self.interp_function_cl, self.interp_function_cd = get_cl_cd_interpolation_function(data, x, y)
 
-    def gather_curves(self):
-        out = []
-        for curve in self.curves.curve_list:
-            alpha, cl, cd = curve.get_combined_curve()
-            # print(alpha,cl,cd)
-            for i in range(len(alpha)):
-                Re = curve.Re
-                ncrit = curve.ncrit
-                _alpha = alpha[i]
-                _cl = cl[i]
-                _cd = cd[i]
-
-                out.append([Re, ncrit, _alpha, _cl, _cd])
-        out = np.array(out)
-        return out
 
     def generate_curves_xfoil(self):
         print("Generating xfoil curves")
@@ -570,7 +557,7 @@ class Airfoils(QWidget):
 
         return {"x": x, "y": y, "max_thickness": self.get_max_thickness(), "link": self.link.text(),
                 "interp_function_cl": self.interp_function_cl, "interp_function_cd": self.interp_function_cd,
-                "curves":self.curves.save_curves()}
+                "curves":self.curves.save_curves(),"gathered_curves":self.curves.gather_curves()}
 
     def set_settings(self, dict_settings):
         array_dat = []
@@ -596,7 +583,6 @@ class MatplotlibWindow(QWidget):
         self.layout.addWidget(self.canvas)
         self.layout.addWidget(self.toolbar)
         # self.ax = self.figure.add_subplot(111)
-
         self.show()
 
 
@@ -620,6 +606,22 @@ class Curves:
             c = Curve()
             c.load_curve(data_curve)
             self.curve_list.append(c)
+
+    def gather_curves(self):
+        out = []
+        for curve in self.curve_list:
+            alpha, cl, cd = curve.get_combined_curve()
+            # print(alpha,cl,cd)
+            for i in range(len(alpha)):
+                Re = curve.Re
+                ncrit = curve.ncrit
+                _alpha = alpha[i]
+                _cl = cl[i]
+                _cd = cd[i]
+
+                out.append([Re, ncrit, _alpha, _cl, _cd])
+        out = np.array(out)
+        return out
 
 
 class Curve:
@@ -673,10 +675,12 @@ class Curve:
                 cl = f_cl(a)
             except ValueError:
                 cl = _cl[i]
-            try:
-                cd = f_cd(a)
-            except ValueError:
-                cd = _cd[i]
+            #try:
+            #    cd = f_cd(a)
+            #except ValueError:
+            #    cd = _cd[i]
+            #tukaj vzamem  samo Montgomerie interpolacijo cd, za lazjo interpolacijo
+            cd = _cd[i]
             cl_out.append(cl)
             cd_out.append(cd)
         return _alpha, cl_out, cd_out
@@ -845,6 +849,7 @@ class CurveControl(QWidget):
 
     def draw_base(self):
         self.ax.plot(self.curve.alpha, self.curve.cl)
+        self.ax.plot(self.curve.alpha, self.curve.cd, "o-")
         self.canvas.draw()
 
     def draw_extrapolation(self):

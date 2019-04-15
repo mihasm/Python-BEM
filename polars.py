@@ -13,79 +13,6 @@ import matplotlib.cm as cm
 from scipy.interpolate import griddata
 import numpy
 
-
-def interp_at(x, y, v, xp, yp, algorithm='cubic', extrapolate=False):
-    """
-    Interpolate data onto the specified points.
- 
-    Parameters:
- 
-    * x, y : 1D arrays
-        Arrays with the x and y coordinates of the data points.
-    * v : 1D array
-        Array with the scalar value assigned to the data points.
-    * xp, yp : 1D arrays
-        Points where the data values will be interpolated
-    * algorithm : string
-        Interpolation algorithm. Either ``'cubic'``, ``'nearest'``,
-        ``'linear'`` (see scipy.interpolate.griddata)
-    * extrapolate : True or False
-        If True, will extrapolate values outside of the convex hull of the data
-        points.
- 
-    Returns:
- 
-    * v : 1D array
-        1D array with the interpolated v values.
- 
-    """
-    if algorithm not in ['cubic', 'linear', 'nearest']:
-        raise ValueError("Invalid interpolation algorithm: " + str(algorithm))
-    grid = scipy.interpolate.griddata((x, y), v, (xp, yp), method=algorithm).ravel()
-    if extrapolate and algorithm != 'nearest' and numpy.any(numpy.isnan(grid)):
-        grid = extrapolate_nans(xp, yp, grid)
-    return grid
-
-
-def extrapolate_nans(x, y, v):
-    """
-    Extrapolate the NaNs or masked values in a grid INPLACE using nearest
-    value.
- 
-    .. warning:: Replaces the NaN or masked values of the original array!
- 
-    Parameters:
- 
-    * x, y : 1D arrays
-        Arrays with the x and y coordinates of the data points.
-    * v : 1D array
-        Array with the scalar value assigned to the data points.
- 
-    Returns:
- 
-    * v : 1D array
-        The array with NaNs or masked values extrapolated.
- 
-    """
-    if numpy.ma.is_masked(v):
-        nans = v.mask
-    else:
-        nans = numpy.isnan(v)
-    notnans = numpy.logical_not(nans)
-    v[nans] = scipy.interpolate.griddata((x[notnans], y[notnans]), v[notnans], (x[nans], y[nans]),
-                                         method='nearest').ravel()
-    return v
-
-
-def get_interpolation_function(x, y, z, num_x=10, num_y=360):
-    x, y, z = np.array(x), np.array(y), np.array(z)
-    xi, yi = np.linspace(x.min(), x.max(), num_x), np.linspace(y.min(), y.max(), num_y)
-    xi, yi = np.meshgrid(xi, yi)
-    zi = interp_at(x, y, z, xi.ravel(), yi.ravel(), algorithm="linear", extrapolate=True)
-    fun = scipy.interpolate.interp2d(xi, yi, zi, kind='linear')
-    return fun
-
-
 def scrape_data(link):
     out = []
     data = get_polars(link)
@@ -98,22 +25,7 @@ def scrape_data(link):
     out = np.array(out)
     return out
 
-
-# print(scrape_data("http://airfoiltools.com/airfoil/details?airfoil=s826-nr"))
-
-def get_cl_cd_from_link(link, airfoil_x=None, airfoil_y=[]):
-    if airfoil_x is None:
-        airfoil_x = []
-    data = scrape_data(link)
-    return get_cl_cd_interpolation_function(data, airfoil_x, airfoil_y)
-
-
-def get_cl_cd_from_xfoil(foil, airfoil_x=[], airfoil_y=[]):
-    data = generate_polars_data(foil)
-    return get_cl_cd_interpolation_function(data, airfoil_x, airfoil_y)
-
-
-def get_cl_cd_interpolation_function(data, airfoil_x=[], airfoil_y=[]):
+def get_extrapolated_data(data, airfoil_x=[], airfoil_y=[]):
     # imp_polar = np.loadtxt(open("foils/NACA_0015_polar.csv", "rb"), delimiter=",", skiprows=1)
     print("Getting inteprolation function")
 
@@ -149,27 +61,7 @@ def get_cl_cd_interpolation_function(data, airfoil_x=[], airfoil_y=[]):
                 cd = m_Cd[i]
             z_cl.append(cl)
             z_cd.append(cd)
-
-    fig = plt.figure()
-    ax = Axes3D(fig)
-    ax.set_xlabel('re')
-    ax.set_ylabel('alpha')
-    ax.set_zlabel('cl')
-
-    x, y, z_cl, z_cd = np.array(x), np.array(y), np.array(z_cl), np.array(z_cd)
-    ax.scatter(x, y, z_cl)
-
-    print("interp1")
-    fun_cl = get_interpolation_function(x, y, z_cl)
-
-    print("interp2")
-    fun_cd = get_interpolation_function(x, y, z_cd)
-
-    # plt.show()
-
-    print("Done with interp!")
-
-    return fun_cl, fun_cd
+    return x,y,z_cl,z_cd
 
 # f,f2 = get_cl_cd_from_link("http://airfoiltools.com/airfoil/details?airfoil=s826-nr")
 # f,f2 = get_cl_cd_from_xfoil("s826.dat")

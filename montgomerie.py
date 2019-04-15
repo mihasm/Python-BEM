@@ -17,20 +17,26 @@ class POLAR_CLASS:
 
 class Montgomerie:
     def __init__(self, x, y, alpha, Cl, Cd, Re=100000, A=30, Am=5, B=5, Bm=5):
-        self.CLzero = 0.0
-        self.CL180 = 0
-        self.alphazero = 0
-        self.deltaCD = 0
+        self.CLzero = np.interp(0,alpha,Cl) # coefficient of lift at AoA  == 0 
+        self.CL180 = 0 # lift coefficient at AoA == 180
+        self.alphazero = np.interp(0,Cl,alpha) # angle of attack where lift  == 0
+
+        self.deltaCD = 0 
         self.deltaalpha = 1
 
         self.slope = 0.106  # ocitno od 0 do 1
+        self.m_CD90 = 1.0  # Drag coefficientat AoA == 90
 
         self.m_pctrlA = A  # -10, 30
         self.m_pctrlB = B  # 1-100
         self.m_pctrlAm = Am  # 1-80
         self.m_pctrlBm = Bm  # 1-70
-        self.m_CD90 = 1.8  # tko je bilo line 367 v BEM.cpp
-        self.m_fThickness = 0.14
+        
+        if len(y) > 0:
+            self.m_fThickness = np.max(y)-np.min(y)
+        else:
+            self.m_fThickness = 0.1
+        
         self.m_fCamber = 0.043
 
         # self.m_pCurPolar = POLAR_CLA
