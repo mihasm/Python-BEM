@@ -117,39 +117,3 @@ def get_interpolation_function(x, y, z, num_x=10, num_y=360):
     zi = interp_at(x, y, z, xi.ravel(), yi.ravel(), algorithm="linear", extrapolate=True)
     fun = scipy.interpolate.interp2d(xi, yi, zi, kind='linear')
     return fun
-
-
-"""
-fig = pyplot.figure()
-ax = Axes3D(fig)
-
-data = scrape_data("http://airfoiltools.com/airfoil/details?airfoil=s826-nr")
-
-#print(data)
-#print(data)
-re,alpha,z_cl,z_cd = get_extrapolated_data(data)
-
-re_array = np.array(re)
-alpha_array = np.array(alpha)
-z_cl_array = np.array(z_cl)
-out = []
-for i in range(len(re_array)):
-	out.append([re_array[i],alpha_array[i],z_cl_array[i]])
-data = np.array(out)
-data = data[data[:,0].argsort()]
-data = data[data[:,1].argsort(kind="mergesort")]
-
-#print(data)
-x,y = np.linspace(10000,1e6,10),np.linspace(-180,180,100)
-#xi,yi = np.meshgrid(x,y)
-a,b,c = [],[],[]
-for _x in x:
-	for _y in y:
-		_z = interp(_x,_y,data[:,0].flatten(),data[:,1].flatten(),data[:,2].flatten())
-		a.append(_x)
-		b.append(_y)
-		c.append(_z)
-
-ax.scatter(a,b,c)
-pyplot.show()
-"""

@@ -30,7 +30,7 @@ from results import ResultsWindow
 from table import Table
 import time
 from turbine_data import SET_INIT
-from optimization import optimize_angles
+from optimization import optimize_angles, maximize_for_both
 from utils import interpolate_geom, to_float, fltr
 from interpolator import interp_at
 from polars import scrape_data
@@ -1130,6 +1130,16 @@ class Optimization(QWidget):
         self.buttonAngles = QPushButton("Run angle optimization")
         self.buttonAngles.clicked.connect(self.run)
 
+        self.target_rpm_propeller = QLineEdit()
+        self.target_rpm_propeller.setValidator(self.validator)
+        self.target_rpm_propeller.textChanged.connect(self.check_state)
+        self.target_rpm.textChanged.emit(self.target_rpm_propeller.text())
+        self._target_rpm_propeller = QLabel('Target rpm (prop.) [RPM]')
+        self.form_list.append([self._target_rpm_propeller,self.target_rpm_propeller])
+
+        self.buttonBoth = QPushButton('Run optimization for turbine/propeller')
+        self.buttonBoth.clicked.connect(self.run_both)
+
         self.buttonStop = QPushButton("Stop")
         self.buttonStop.clicked.connect(self.terminate)
 
@@ -1151,8 +1161,10 @@ class Optimization(QWidget):
         self.fbox.addRow(self._target_rpm, self.target_rpm)
         self.fbox.addRow(self._form, self.form)
 
-        self.fbox.addRow(QLabel("--------"))
+        #self.fbox.addRow(QLabel("--------"))
         self.fbox.addRow(self.buttonAngles)
+        self.fbox.addRow(self._target_rpm_propeller,self.target_rpm_propeller)
+        self.fbox.addRow(self.buttonBoth)
 
         self.fbox.addRow(self.buttonClear, self.buttonStop)
         self.fbox.addRow(self.buttonEOFdescription, self.buttonEOF)
@@ -1221,6 +1233,42 @@ class Optimization(QWidget):
             msg.setDetailedText("Currently tha value MainWindow.running is %s, \
                 it should be False." % str(self.main.running))
 
+    def run_both(self):
+        self.clear()
+        check = self.check_forms_angles()
+        check_analysis = self.main.analysis.check_forms()
+        if check != True or check_analysis != True:
+            if check == True:
+                check = ""
+            if check_analysis == True:
+                check_analysis = ""
+            check = check + check_analysis
+            msg = QMessageBox()
+            msg.setIcon(QMessageBox.Warning)
+            msg.setText("Input validation error")
+            msg.setDetailedText(check)
+            msg.exec_()
+            return
+
+        self.main.emitter_add.connect(self.add_text)
+        self.main.emitter_done.connect(self.done)
+
+        if not self.main.running:
+            self.main.set_buttons_running()
+            self.main.running = True
+            self.runner_input = self.main.get_input_params()
+            self.main.getter.start()
+            self.p = Process(target=maximize_for_both, args=[self.runner_input])
+            self.p.start()
+        else:
+            msg = QMessageBox()
+            msg.setIcon(QMessageBox.Warning)
+            msg.setText("Cannot run while existing operation is running")
+            msg.setInformativeText("The program detected that an existing operation is running.")
+            msg.setWindowTitle("Runtime error")
+            msg.setDetailedText("Currently tha value MainWindow.running is %s, \
+                it should be False." % str(self.main.running))
+
     def clear(self):
         self.textEdit.clear()
 
@@ -1251,11 +1299,9 @@ class Optimization(QWidget):
 
     def get_settings(self):
         out = {}
-        if self.target_rpm.text() == "":
-            out["target_rpm"] = None
-        else:
-            out["target_rpm"] = self.target_rpm.text()
+        out["target_rpm"] = self.target_rpm.text()
         out["target_speed"] = self.target_speed.text()
+        out['target_rpm_propeller'] = self.target_rpm_propeller.text() 
         if int(self.form.currentIndex()) == 0:
             out["optimization_variable"] = "dT"
         else:
@@ -1274,6 +1320,7 @@ class Optimization(QWidget):
     def set_settings(self, inp_dict):
         self.target_rpm.setText(str(inp_dict["target_rpm"]))
         self.target_speed.setText(str(inp_dict["target_speed"]))
+        self.target_rpm_propeller.setText(str(inp_dict['target_rpm_propeller']))
 
 
 class ThreadGetter(QThread):
