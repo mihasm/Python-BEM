@@ -12,12 +12,12 @@ CD = [0.0818635, 0.078751752, 0.074613041, 0.07123231, 0.067382034, 0.064386331,
 get_cd = interp1d(alpha_CD,CD)
 get_cl = interp1d(alpha_CL,CL)
 
-R = 4 #radius
+R = 2 #radius
 D = 2*R #diameter
-c=0.05 #chord
-B=2 #num blades
-h = 2 #blade span [m]
-U=5 #wind speed
+c=0.2 #chord
+B=3 #num blades
+h = 1 #blade height [m]
+U=6 #wind speed
 phi = linspace(0,2*pi,360)
 rho = 1.225 #kg/m^3
 din_visc = 1.82e-5
@@ -66,7 +66,7 @@ for rpm in list(linspace(40,200,10)):
                 uiprime = (1-u)*(1-2*u)*U
                 U_rel = sqrt((uiprime*sin(p))**2+(uiprime*cos(p)+omega*R)**2)
                 alpha = arctan2(-(1-u)*sin(p),(1-u)*cos(p)+TSR)
-
+            #print(degrees(alpha))
             CL = get_cl(degrees(alpha))
             CD = get_cd(degrees(alpha))
 
@@ -121,7 +121,7 @@ for rpm in list(linspace(40,200,10)):
             Q_all.append(0)
             alpha_all.append(0)
 
-    plt.plot(phi,Q_all)
+    plt.plot(phi,U_rel_all)
     
     Qa = mean(Q_all)
     P = Qa * omega
