@@ -14,15 +14,16 @@ $pyinstaller preracun_vetrnica.py
 >>--paths C:\\Users\\miha\\AppData\\Local\\Programs\\Python\\Python36-32\\lib\\site-packages\\scipy\\extra-dll
 >>--hidden-import='scipy._lib.messagestream'
 """
-import sys, traceback
+import datetime
+import sys
+import time
+import traceback
+from math import pi
 
 import numpy
 from mpl_toolkits.mplot3d import Axes3D
-import time
-import datetime
-from math import pi
 
-from induction_factors import Calculator
+from calculation import Calculator
 from utils import Printer
 
 a = Axes3D  # only for passing code inspection -> Axes3D needs to be imported
@@ -42,7 +43,7 @@ def calculate_power(inp_args):
     p = Printer(inp_args["return_print"])
 
     for f in inp_args["foils_in"]:
-        if not f in inp_args["curves"].keys():
+        if f not in inp_args["airfoils"].keys():
             p.print("Section foil %s does not exist in airfoil list." % f)
             raise Exception("Section foil not matching airfoil list error")
 
@@ -50,7 +51,8 @@ def calculate_power(inp_args):
         if inp_args["add_angle"] != None:
             inp_args["theta"] = inp_args["theta"] + inp_args["add_angle"]
     try:
-        results = Calculator(inp_args["curves"]).run_array(**inp_args)
+        c = Calculator(inp_args["airfoils"])
+        results = c.run_array(**inp_args)
         return results
     except:
         p.print("!!!!EOF!!!!")
@@ -69,21 +71,11 @@ def calculate_power_3d(inp_args, print_eof=True, prepend="", print_out=True):
     p = Printer(inp_args["return_print"])
     return_results = inp_args["return_results"]
     results_3d = {}
-    speeds = list(
-        numpy.linspace(
-            start=inp_args["v_min"],
-            stop=inp_args["v_max"],
-            num=inp_args["v_num"]
-        ))
-    rpms = list(
-        numpy.linspace(
-            start=inp_args["rpm_min"],
-            stop=inp_args["rpm_max"],
-            num=inp_args["rpm_num"],
-        )
-    )
+    speeds = list(numpy.linspace(start=inp_args["v_min"], stop=inp_args["v_max"], num=inp_args["v_num"]))
+    rpms = list(numpy.linspace(start=inp_args["rpm_min"], stop=inp_args["rpm_max"], num=inp_args["rpm_num"], ))
     total_iterations = int(len(speeds) * len(rpms))
     i = 0
+
     time_start = time.time()
     for v in speeds:
         for rpm in rpms:

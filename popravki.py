@@ -202,6 +202,7 @@ def fInductionCoefficients3(lambda_r, phi, sigma, Cl, C_norm, *args, **kwargs):
     #the same as original
     #DOES NOT INCLDUE DRAG
 
+    :param C_norm:
     :param lambda_r: local speed ratio
     :param Cl: lift coefficient
     :param phi: relative wind [rad]
@@ -225,6 +226,7 @@ def fInductionCoefficients4(a_last, F, phi, sigma, C_norm, C_tang, Cl, *args, **
     Glauert
 
 
+    :param C_tang:
     :param C_norm: normal coefficient
     :param F: loss factors
     :param a_last: axial induction factor
@@ -253,6 +255,7 @@ def fInductionCoefficients5(
     Calculates induction coefficients using method from
     PROPX: Definitions, Derivations and Data Flow, C. Harman, 1994
 
+    :param C_norm:
     :param omega: rotational velocity [rad/s]
     :param v: wind speed [m/s]
     :param R: tip radius [m]
@@ -315,6 +318,7 @@ def fInductionCoefficients6(a_last, F, phi, sigma, C_norm, C_tang, Cl, *args, **
 
     This is equal to Advanced brake state model.
 
+    :param C_tang:
     :param C_norm: normal coefficient
     :param a_last: axial induction factor
     :param F: loss factors
@@ -394,28 +398,28 @@ def fInductionCoefficients8(a_last, F, phi, sigma, lambda_r, B, r, R, C_norm, Cl
     :param kwargs:
     :return: a, aprime, Ct
     """
-    try:
-        if F == 0:
-            F = 1e-6
-        a = a_last
-        # Ct = sigma * (1 - a) ** 2 * C_norm / (sin(phi) ** 2)  # Qblade
-        g = exp(-0.125 * (B * lambda_r - 21)) + 0.1
-        F1 = (2 / pi) * acos(exp(-g * B * (R - r) / (2 * r * sin(phi))))
-        Y1 = 4 * F * sin(phi) ** 2 / (sigma * F1 * C_norm)
-        Y2 = 4 * F * sin(phi) * cos(phi) / (sigma * F1 * Ct)
-        a_c = 1 / 3
-        # if a <= a_c:
-        #    Ct = 4*a*F*(1-a*F)
-        # else:
-        #    Ct = 4*(a_c**2*F**2+(1-2*a_c*F)*a*F)
-        Ct = sigma * (1 - a_last) ** 2 * C_norm / (sin(phi) ** 2)  # Qblade
-        if Ct <= 0.888:
-            a = (1 - sqrt(1 - Ct)) / (2 * F)
-        else:
-            a = (2 + Y1 - sqrt(4 * Y1 * (1 - F) + Y1 ** 2)) / (2 * (1 + F * Y1))
-        aprime = 1 / ((1 - a * F) * Y2 / (1 - a) - 1)
-    except:
-        return None
+
+    Ct = sigma * (1 - a_last) ** 2 * C_norm / (sin(phi) ** 2)  # Qblade
+
+    if F == 0:
+        F = 1e-6
+    a = a_last
+    # Ct = sigma * (1 - a) ** 2 * C_norm / (sin(phi) ** 2)  # Qblade
+    g = exp(-0.125 * (B * lambda_r - 21)) + 0.1
+    F1 = (2 / pi) * acos(exp(-g * B * (R - r) / (2 * r * sin(phi))))
+    Y1 = 4 * F * sin(phi) ** 2 / (sigma * F1 * C_norm)
+    Y2 = 4 * F * sin(phi) * cos(phi) / (sigma * F1 * Ct)
+    a_c = 1 / 3
+    # if a <= a_c:
+    #    Ct = 4*a*F*(1-a*F)
+    # else:
+    #    Ct = 4*(a_c**2*F**2+(1-2*a_c*F)*a*F)
+    # Ct = sigma * (1 - a_last) ** 2 * C_norm / (sin(phi) ** 2)  # Qblade
+    if Ct <= 0.888:
+        a = (1 - sqrt(1 - Ct)) / (2 * F)
+    else:
+        a = (2 + Y1 - sqrt(4 * Y1 * (1 - F) + Y1 ** 2)) / (2 * (1 + F * Y1))
+    aprime = 1 / ((1 - a * F) * Y2 / (1 - a) - 1)
 
     return a, aprime, Ct
 
