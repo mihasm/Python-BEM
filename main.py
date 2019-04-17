@@ -452,7 +452,7 @@ class Airfoils(QWidget):
 
         re_min, re_max = data[:, 0].min(), data[:, 0].max()
         alpha_min, alpha_max = data[:, 2].min(), data[:, 2].max()
-        x,y = np.linspace(re_min,re_max,30),np.linspace(alpha_min,alpha_max,30)
+        x,y = np.linspace(re_min,re_max,5),np.linspace(alpha_min,alpha_max,30)
         xi,yi = np.meshgrid(x,y)
         xi,yi = xi.flatten(),yi.flatten()
         z_1 = interp_at(re,alpha,cl,xi,yi)

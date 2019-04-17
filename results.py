@@ -93,7 +93,7 @@ class ResultsWindow(QMainWindow):
         # CL check
         f7 = self.tab_widget.add_tab_figure("check CL")
         self.tab_widget.add_3d_scatter_plot(f7, np.array(results_3d["Re"]).flatten(),
-                                            np.array(results_3d["alpha"]).flatten(),
+                                            np.degrees(np.array(results_3d["alpha"]).flatten()),
                                             np.array(results_3d["cL"]).flatten(), 111, "Title", "Re", "alpha[deg]",
                                             "cL")
 
