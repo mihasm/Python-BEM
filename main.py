@@ -847,10 +847,17 @@ class CurveControl(QWidget):
         self.Bm.setTickInterval(1)
         self.Bm.valueChanged.connect(self.update)
 
+        self.m_CD90 = QLineEdit(str(self.curve.m_CD90))
+        self.m_CD90.textChanged.connect(self.update)
+        self.slope = QLineEdit(str(self.curve.slope))
+        self.slope.textChanged.connect(self.update)
+
         self.right_layout.addRow("A", self.A)
         self.right_layout.addRow("B", self.B)
         self.right_layout.addRow("A-", self.Am)
         self.right_layout.addRow("B-", self.Bm)
+        self.right_layout.addRow("CD@90°",self.m_CD90)
+        self.right_layout.addRow("Slope",self.slope)
 
         self.layout.addWidget(self.right, 1, 2)
 
@@ -899,6 +906,13 @@ class CurveControl(QWidget):
         self.curve.B = int(self.B.value())
         self.curve.Am = int(self.Am.value())
         self.curve.Bm = int(self.Bm.value())
+        try:
+            self.curve.m_CD90 = float(self.m_CD90.text())
+            self.curve.slope = float(self.slope.text())
+            if self.curve.slope == 0:
+                self.curve.slope = 1.0
+        except:
+            print("Error in slope or m_CD90")
         self.draw_extrapolation()
 
 
