@@ -14,7 +14,7 @@ import numpy
 import numpy as np
 from scipy import interpolate
 
-from utils import Printer, generate_dat
+from utils import Printer, generate_dat, sort_data
 from popravki import *
 from xfoil import run_xfoil_analysis, xfoil_runner
 from interpolator import interp
@@ -33,9 +33,9 @@ class Calculator:
         for blade_name in self.airfoils:
             self.airfoils[blade_name]["alpha_zero"] = 0.0  # TODO FIX
             generate_dat(blade_name, self.airfoils[blade_name]["x"], self.airfoils[blade_name]["y"])
+
             data = self.airfoils[blade_name]["gathered_curves"]
-            data = data[data[:,0].argsort()] #sort by reynolds
-            data = data[data[:,2].argsort(kind="mergesort")] #sort by alpha
+            data = sort_data(data)
 
             re = data[:,0].flatten()
             alpha = data[:,2].flatten()
@@ -46,6 +46,7 @@ class Calculator:
                 return interp(x,y,re,alpha,cl)
             def interpolation_function_cd(x,y,re=re,alpha=alpha,cd=cd):
                 return interp(x,y,re,alpha,cd)
+            
             self.airfoils[blade_name]["interp_function_cl"] = interpolation_function_cl
             self.airfoils[blade_name]["interp_function_cd"] = interpolation_function_cd
 

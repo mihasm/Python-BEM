@@ -165,17 +165,16 @@ def maximize_for_both(inp_args):
 
     v = inp_args["target_speed"]
     rpm = inp_args["target_rpm"]
-    # print(v,pi,rpm)
+    rpm_prop = inp_args["target_rpm_propeller"]
     omega = 2 * pi * rpm / 60
-    # optimization_variable = "dT"
+    omega_prop = 2*pi*rpm / 60
     optimization_variable = inp_args["optimization_variable"]
 
     output_angles = []
 
     C = Calculator(inp_args["airfoils"])
-    plt.figure(2)
 
-    for section_number in range(len(inp_args["r_in"]))[-2:-1]:
+    for section_number in range(len(inp_args["r_in"]))[1:]:
         p.print("section_number is", section_number)
 
         _r = inp_args["r_in"][section_number]
@@ -188,42 +187,142 @@ def maximize_for_both(inp_args):
 
         #done_angles = {}  # key is theta, value is out
 
-        p.print("initial theta is", degrees(_theta))
-        out_x,out_y_1,out_y_2 = [],[],[]
+        #p.print("initial theta is", degrees(_theta))
+        theta_array,dT_array,dQ_array = [],[],[]
         for _theta in radians(np.linspace(0,90,100)):
             dT,dQ = None, None
-            #print(_theta)
+            
+            #Test for wind turbine mode
             inp_args["propeller_mode"] = False
-            out = C.calculate_section(v=15, omega=omega, _airfoil=_airfoil,_airfoil_dat=_airfoil_dat, max_thickness=max_thickness,_r=_r, _c=_c, _dr=_dr, _theta=_theta,printer=p, **inp_args)
+            out = C.calculate_section(v=v, omega=omega, _airfoil=_airfoil,_airfoil_dat=_airfoil_dat, max_thickness=max_thickness,_r=_r, _c=_c, _dr=_dr, _theta=_theta,printer=p, **inp_args)
             if out != None and out != False:
                 dQ = out["dQ"]
+            
+            #Test for propeller
             inp_args["propeller_mode"] = True
-            out_prop = C.calculate_section(v=0.01, omega=omega, _airfoil=_airfoil,_airfoil_dat=_airfoil_dat, max_thickness=max_thickness,_r=_r, _c=_c, _dr=_dr, _theta=_theta,printer=p, **inp_args)
+            out_prop = C.calculate_section(v=0.01, omega=omega_prop, _airfoil=_airfoil,_airfoil_dat=_airfoil_dat, max_thickness=max_thickness,_r=_r, _c=_c, _dr=_dr, _theta=_theta,printer=p, **inp_args)
             if out_prop != None and out_prop != False:
                 dT = out_prop["dT"]
 
             if dT != None and dQ != None:
-                out_x.append(degrees(_theta))
-                out_y_1.append(dT)
-                out_y_2.append(dQ)
+                theta_array.append(degrees(_theta))
+                dT_array.append(dT)
+                dQ_array.append(dQ)
 
-        plt.plot(out_x,out_y_1,"g-",label="dT"+str(section_number))
-        plt.plot(out_x,out_y_2,"r-",label="dQ"+str(section_number))
+        theta_array = np.array(theta_array)
+        dT_array = np.array(dT_array)
+        dQ_array = np.array(dQ_array)
 
-    
-    plt.legend()
-    plt.show()
+        #plt.plot(theta_array,dT_array,"g-",label="dT"+str(section_number))
+        #plt.plot(theta_array,dQ_array,"r-",label="dQ"+str(section_number))
+
+        #indexes_positive_values_dT = numpy.where(dT_array > 0)
+        #indexes_positive_values_dQ = numpy.where(dQ_array > 0)
+        
+        positive_indexes = numpy.logical_and(dT_array > 0, dQ_array > 0)
+        positive_dT_array = dT_array[positive_indexes]
+        positive_dQ_array = dQ_array[positive_indexes]
+        positive_theta_array = theta_array[positive_indexes]
+        #plt.plot(positive_theta_array,positive_dT_array,"g",label="dT")
+        #plt.plot(positive_theta_array,positive_dQ_array,"r",label="dQ")
+        normalized_dT_array = (positive_dT_array - positive_dT_array.min())/positive_dT_array.max()
+        normalized_dQ_array = (positive_dQ_array - positive_dQ_array.min())/positive_dQ_array.max()
+        crossings = get_crossings(positive_theta_array,normalized_dT_array,normalized_dQ_array)
+        _max_i = np.where(crossings[:,1] == crossings[:,1].max())[0][0]
+        #print("crossings",crossings)
+        #print('_max_i',_max_i)
+
+        dT_only_rising = np.all(np.diff(normalized_dT_array) > 0)
+        dQ_only_rising = np.all(np.diff(normalized_dQ_array) > 0)
+        dT_only_falling = np.all(np.diff(normalized_dT_array) < 0)
+        dQ_only_falling = np.all(np.diff(normalized_dQ_array) < 0)
+
+        if dT_only_rising and dQ_only_rising:
+            _max_theta = positive_theta_array[-1]
+        elif dT_only_falling and dQ_only_falling:
+            _max_theta = positive_theta_array[0]
+        else:
+            _max_theta = crossings[:,0][_max_i]
+
+        p.print("max_theta",_max_theta)
+        output_angles.append(_max_theta)
+        #plt.plot(positive_theta_array,normalized_dT_array,"g",label="dT"+str(section_number))
+        #plt.plot(positive_theta_array,normalized_dQ_array,"b",label="dQ"+str(section_number))
+        #plt.plot(crossings[:,0],crossings[:,1],'r*')
+        #plt.axvline(_max_theta)
+
+        #plt.legend()
+        #plt.show()
+    p.print("Angles:")
+    for a in output_angles:
+        p.print(a)
+
+    p.print("!!!!EOF!!!!")
+    #plt.legend()
+    #plt.show()
+"""
+x = np.linspace(0,2*np.pi,40)
+y = np.sin(x)
+y_2 = np.cos(x)
+plt.plot(x,y,'b.')
+plt.plot(x,y_2,'g-')
+"""
+
+
+def get_crossings(x,y_1,y_2):
+    """
+    This function fetches x-es and y-s where y_1 and y_2 intersect.
+    """
+    #initial status
+    top_indexes = []
+    for i in range(len(x)):
+        if i == 0:
+            status = y_1[i] > y_2[i]
+        else:
+            new_status = y_1[i] > y_2[i]
+            if new_status != status:
+                top_indexes.append(i)
+                status = new_status
+    top_indexes = np.array(top_indexes)
+    bottom_indexes = top_indexes-1
+    out = []
+    for i in range(len(top_indexes)):
+        i1 = bottom_indexes[i]
+        i2 = top_indexes[i]
+        x1 = x[i1]
+        y1 = y_1[i1]
+        x2 = x[i2]
+        y2 = y_1[i2]
+        x3 = x1
+        y3 = y_2[i1]
+        x4 = x2
+        y4 = y_2[i2]
+        x_out,y_out = findIntersection(x1,y1,x2,y2,x3,y3,x4,y4)
+        out.append([x_out,y_out])
+    out = np.array(out)
+    return out
+
+def findIntersection(x1,y1,x2,y2,x3,y3,x4,y4):
+    #https://en.wikipedia.org/wiki/Line%E2%80%93line_intersection
+    px= ( (x1*y2-y1*x2)*(x3-x4)-(x1-x2)*(x3*y4-y3*x4) ) / ( (x1-x2)*(y3-y4)-(y1-y2)*(x3-x4) ) 
+    py= ( (x1*y2-y1*x2)*(y3-y4)-(y1-y2)*(x3*y4-y3*x4) ) / ( (x1-x2)*(y3-y4)-(y1-y2)*(x3-x4) )
+    return [px, py]
+
+
 
 """
-from polars import get_cl_cd_from_link
-f_cl,f_cd = get_cl_cd_from_link("http://airfoiltools.com/airfoil/details?airfoil=s826-nr")
+from polars import scrape_data,get_extrapolated_data
+from utils import sort_data
+data = scrape_data("http://airfoiltools.com/airfoil/details?airfoil=s826-nr")
+data = get_extrapolated_data(data)
+data = sort_data(data)
 settings = SET_INIT
-SET_INIT["fix_reynolds"] = True
-SET_INIT["reynolds"] = 200000
+#SET_INIT["fix_reynolds"] = True
+#SET_INIT["reynolds"] = 200000
 SET_INIT["method"] = SET_INIT["method"]+1
 SET_INIT["return_print"] = []
 SET_INIT["return_results"] = []
-SET_INIT["airfoils"]["s826"]["interp_function_cl"] = f_cl
-SET_INIT["airfoils"]["s826"]["interp_function_cd"] = f_cd
+SET_INIT["airfoils"]["s826"]["gathered_curves"] = data
+#SET_INIT["airfoils"]["s826"]["interp_function_cd"] = f_cd
 maximize_for_both(SET_INIT)
 """

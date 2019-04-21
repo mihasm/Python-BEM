@@ -349,3 +349,16 @@ class QDarkPalette(QPalette):
         app.setStyle("Fusion")
         app.setPalette(self)
         self.set_stylesheet(app)
+
+def sort_data(data,columns=[0,2]):
+    if len(columns) == 0:
+        raise Exception("Sorting must be done for more than zero columns.")
+    first = False
+    for i in columns:
+        if first == False:
+            data = data[data[:,i].argsort()] #sort by reynolds
+            first = True
+        else:
+            data = data[data[:,i].argsort(kind="mergesort")] #sort by alpha
+    return data
+

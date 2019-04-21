@@ -29,6 +29,8 @@ def get_extrapolated_data(data, airfoil_x=[], airfoil_y=[]):
     # imp_polar = np.loadtxt(open("foils/NACA_0015_polar.csv", "rb"), delimiter=",", skiprows=1)
     print("Getting inteprolation function")
 
+    out = []
+
     x, y, z_cl, z_cd = [], [], [], []
 
     Re_list = np.unique(data[:, 0])
@@ -61,8 +63,6 @@ def get_extrapolated_data(data, airfoil_x=[], airfoil_y=[]):
                 cd = m_Cd[i]
             z_cl.append(cl)
             z_cd.append(cd)
-    return x,y,z_cl,z_cd
+            out.append([Re,ncrit_selected,m_Alpha[i],cl,cd])
+    return np.array(out)
 
-# f,f2 = get_cl_cd_from_link("http://airfoiltools.com/airfoil/details?airfoil=s826-nr")
-# f,f2 = get_cl_cd_from_xfoil("s826.dat")
-# print(f(200000,13))
