@@ -7,6 +7,7 @@ __email__ = "miha.smrekar9@gmail.com"
 __status__ = "Development"
 
 import sys
+import ctypes
 
 import numpy
 from PyQt5 import QtWidgets
@@ -31,7 +32,7 @@ from table import Table
 import time
 from turbine_data import SET_INIT
 from optimization import optimize_angles
-from utils import interpolate_geom, to_float, fltr
+from utils import interpolate_geom, to_float, fltr, QDarkPalette
 from interpolator import interp_at
 from polars import scrape_data
 from montgomerie import Montgomerie
@@ -41,6 +42,7 @@ from multiprocessing import Process, Manager
 import multiprocessing
 import json
 from pprint import pprint
+
 
 TITLE_STR = "BEM analiza v%s" % __version__
 
@@ -77,7 +79,8 @@ class MainWindow(QMainWindow):
 
         self.screen_width = width
         self.screen_height = height
-        self.setGeometry(width * 0.125, height * 0.125, width * 0.75, height * 0.75)
+        self.setGeometry(width * 0.125, height * 0.125,
+                         width * 0.75, height * 0.75)
         self.setWindowTitle(TITLE_STR)
         self.tab_widget = TabWidget(self)
         self.setCentralWidget(self.tab_widget)
@@ -130,18 +133,21 @@ class MainWindow(QMainWindow):
         self.set_title()
 
     def get_all_settings(self):
-        valid_foils = list(self.curve_manager.get_settings()["airfoils"].keys()) + ["transition", "Transition"]
+        valid_foils = list(self.curve_manager.get_settings()[
+                           "airfoils"].keys()) + ["transition", "Transition"]
         try:
             properties = self.wind_turbine_properties.get_settings()
             settings = self.analysis.get_settings()
             opt_settings = self.optimization.get_settings()
             curve_manager_settings = self.curve_manager.get_settings()
-            out = {**properties, **settings, **opt_settings, **curve_manager_settings}  # , **curves}
+            # , **curves}
+            out = {**properties, **settings, **opt_settings, **curve_manager_settings}
             _r = out["r"]
             _c = out["c"]
             _theta = out["theta"]
             _foils = out["foils"]
-            r, c, theta, foils, dr = interpolate_geom(_r, _c, _theta, _foils, out["num_interp"], out["linspace_interp"])
+            r, c, theta, foils, dr = interpolate_geom(
+                _r, _c, _theta, _foils, out["num_interp"], out["linspace_interp"])
             out["r"], out["c"], out["theta"], out["foils"], out["dr"] = r, c, theta, foils, dr
             out["r_in"], out["c_in"], out["theta_in"], out["foils_in"] = _r, _c, _theta, _foils
             pprint(out)
@@ -156,7 +162,7 @@ class MainWindow(QMainWindow):
             return None
 
     # noinspection PyBroadException
-    def set_all_settings(self, inp_dict, suppress=False):
+    def set_all_settings(self, inp_dict, suppress=True):
         try:
             self.analysis.set_settings(inp_dict)
         except:
@@ -221,7 +227,8 @@ class WindTurbineProperties(QWidget):
 
         self.table_properties = Table()
         self.table_properties.createEmpty(4, 30)
-        self.table_properties.set_labels(["r [m]", "c [m]", "theta [deg]", "airfoil"])
+        self.table_properties.set_labels(
+            ["r [m]", "c [m]", "theta [deg]", "airfoil"])
 
         grid.addWidget(left, 1, 1)
         grid.addWidget(self.table_properties, 1, 2)
@@ -312,7 +319,8 @@ class AirfoilManager(QWidget):
         self.button_add_foil = QPushButton("Add airfoil")
         self.button_add_foil.clicked.connect(self.add_foil_popup)
         self.button_remove_foil = QPushButton("Remove foil")
-        self.button_remove_foil.clicked.connect(self.tab_widget.remove_current_tab)
+        self.button_remove_foil.clicked.connect(
+            self.tab_widget.remove_current_tab)
         self.button_rename_foil = QPushButton("Rename foil")
         self.button_rename_foil.clicked.connect(self.rename_foil_popup)
         self.button_get_settings = QPushButton("get settings")
@@ -325,7 +333,8 @@ class AirfoilManager(QWidget):
 
     def add_foil_popup(self):
         self.emitter.connect(self.add_foil)
-        self.p = PopupText(self, "foil name", "airfoil_name", self.emitter, "Add foil")
+        self.p = PopupText(self, "foil name", "airfoil_name",
+                           self.emitter, "Add foil")
         self.p.setGeometry(QRect(100, 100, 400, 200))
         self.p.show()
 
@@ -335,7 +344,8 @@ class AirfoilManager(QWidget):
 
     def rename_foil_popup(self):
         self.emitter.connect(self.rename_foil)
-        self.p = PopupText(self, "foil name", self.tab_widget.current_tab_name(), self.emitter, "Rename foil")
+        self.p = PopupText(self, "foil name", self.tab_widget.current_tab_name(
+        ), self.emitter, "Rename foil")
         self.p.setGeometry(QRect(100, 100, 400, 200))
         self.p.show()
 
@@ -359,8 +369,11 @@ class AirfoilManager(QWidget):
             if len(dict_settings["airfoils"]) > 0:
                 for c_name, c_dict in dict_settings["airfoils"].items():
                     curve_widget = Airfoils(c_name, self)
-                    curve_widget.set_settings(c_dict)
-                    self.tab_widget.add_tab(curve_widget, c_name)
+                    try:
+                        curve_widget.set_settings(c_dict)
+                        self.tab_widget.add_tab(curve_widget, c_name)
+                    except:
+                        pass
 
 
 class PopupText(QWidget):
@@ -389,8 +402,6 @@ class PopupText(QWidget):
         self.emitter.emit(self.inp.text())
         self.emitter.disconnect()
         self.close()
-
-
 
 
 class Airfoils(QWidget):
@@ -426,16 +437,20 @@ class Airfoils(QWidget):
         self.link = QLineEdit("link (airfoiltools.com)")
         grid.addWidget(self.link, 3, 1)
         #self.button_generate_interp = QPushButton("Generate interp functions")
-        #self.button_generate_interp.clicked.connect(self.generate_interp_functions)
+        # self.button_generate_interp.clicked.connect(self.generate_interp_functions)
         #grid.addWidget(self.button_generate_interp, 3, 2)
         self.button_open_viewer = QPushButton("Open Curve Viewer")
         self.button_open_viewer.clicked.connect(self.open_viewer)
         grid.addWidget(self.button_open_viewer, 4, 2)
-        self.button_generate_curves_xfoil = QPushButton("Generate xfoil curves [debug]")
-        self.button_generate_curves_xfoil.clicked.connect(self.generate_curves_xfoil)
+        self.button_generate_curves_xfoil = QPushButton(
+            "Generate xfoil curves [debug]")
+        self.button_generate_curves_xfoil.clicked.connect(
+            self.generate_curves_xfoil)
         grid.addWidget(self.button_generate_curves_xfoil, 4, 1)
-        self.button_generate_curves_link = QPushButton("Generate curves from link")
-        self.button_generate_curves_link.clicked.connect(self.generate_curves_link)
+        self.button_generate_curves_link = QPushButton(
+            "Generate curves from link")
+        self.button_generate_curves_link.clicked.connect(
+            self.generate_curves_link)
         grid.addWidget(self.button_generate_curves_link, 5, 1)
         self.button_visualize = QPushButton("Create curve visualization")
         self.button_visualize.clicked.connect(self.visualize)
@@ -445,18 +460,19 @@ class Airfoils(QWidget):
         print("Visualizing")
         data = self.curves.gather_curves()
 
-        re = data[:,0]
-        alpha = data[:,2]
-        cl = data[:,3]
-        cd = data[:,4]
+        re = data[:, 0]
+        alpha = data[:, 2]
+        cl = data[:, 3]
+        cd = data[:, 4]
 
         re_min, re_max = data[:, 0].min(), data[:, 0].max()
         alpha_min, alpha_max = data[:, 2].min(), data[:, 2].max()
-        x,y = np.linspace(re_min,re_max,30),np.linspace(alpha_min,alpha_max,30)
-        xi,yi = np.meshgrid(x,y)
-        xi,yi = xi.flatten(),yi.flatten()
-        z_1 = interp_at(re,alpha,cl,xi,yi)
-        z_2 = interp_at(re,alpha,cd,xi,yi)
+        x, y = np.linspace(re_min, re_max, 30), np.linspace(
+            alpha_min, alpha_max, 30)
+        xi, yi = np.meshgrid(x, y)
+        xi, yi = xi.flatten(), yi.flatten()
+        z_1 = interp_at(re, alpha, cl, xi, yi)
+        z_2 = interp_at(re, alpha, cd, xi, yi)
         w = MatplotlibWindow(self)
         w.ax = w.figure.add_subplot(111, projection="3d")
         w.ax.scatter(xi, yi, z_1)
@@ -465,12 +481,13 @@ class Airfoils(QWidget):
     def open_viewer(self):
         print("opening viewwer")
         self.viewer.show()
+        self.viewer.generate_views()
 
     def generate_interp_functions(self):
         data = self.gather_curves()
         x, y = self.get_x_y()
-        self.interp_function_cl, self.interp_function_cd = get_cl_cd_interpolation_function(data, x, y)
-
+        self.interp_function_cl, self.interp_function_cd = get_cl_cd_interpolation_function(
+            data, x, y)
 
     def generate_curves_xfoil(self):
         print("Generating xfoil curves")
@@ -492,12 +509,14 @@ class Airfoils(QWidget):
         ncrit_selected = np.min(ncrit_list)
         for Re in Re_list:
             rows_with_Re = data[np.in1d(data[:, 0], Re)]
-            rows_with_Re = rows_with_Re[np.in1d(rows_with_Re[:, 1], ncrit_selected)]
+            rows_with_Re = rows_with_Re[np.in1d(
+                rows_with_Re[:, 1], ncrit_selected)]
             _alpha = rows_with_Re[:, 2].flatten()
             _cl = rows_with_Re[:, 3].flatten()
             _cd = rows_with_Re[:, 4].flatten()
             c = Curve()
-            c.create(x=x, y=y, Re=Re, ncrit=ncrit_selected, alpha=_alpha, cl=_cl, cd=_cd)
+            c.create(x=x, y=y, Re=Re, ncrit=ncrit_selected,
+                     alpha=_alpha, cl=_cl, cd=_cd)
             self.curves.add(c)
 
     def draw_airfoil(self):
@@ -557,13 +576,14 @@ class Airfoils(QWidget):
 
         return {"x": x, "y": y, "max_thickness": self.get_max_thickness(), "link": self.link.text(),
                 "interp_function_cl": self.interp_function_cl, "interp_function_cd": self.interp_function_cd,
-                "curves":self.curves.save_curves(),"gathered_curves":self.curves.gather_curves()}
+                "curves": self.curves.save_curves(), "gathered_curves": self.curves.gather_curves()}
 
     def set_settings(self, dict_settings):
         array_dat = []
         if len(dict_settings["x"]) > 0 and len(dict_settings["y"]) > 0:
             for r in range(len(dict_settings["x"])):
-                array_dat.append([str(dict_settings["x"][r]), str(dict_settings["y"][r])])
+                array_dat.append([str(dict_settings["x"][r]),
+                                  str(dict_settings["y"][r])])
             self.table_dat.createTable(array_dat)
             self.draw_airfoil()
 
@@ -590,7 +610,7 @@ class Curves:
     def __init__(self):
         self.curve_list = []
 
-    def add(self,curve):
+    def add(self, curve):
         self.curve_list.append(curve)
 
     def save_curves(self):
@@ -600,7 +620,7 @@ class Curves:
             out_list.append(data_curve)
         return out_list
 
-    def load_curves(self,out):
+    def load_curves(self, out):
         self.curve_list = []
         for data_curve in out:
             c = Curve()
@@ -637,12 +657,14 @@ class Curve:
         self.B = None
         self.Am = None
         self.Bm = None
+        self.m_CD90=None
+        self.slope=None
 
     def create(self, x, y, Re, ncrit, alpha, cl, cd):
         self.x = x
         self.y = y
         self.Re = Re
-        self.ncrit = 0.0 #doesnt make any difference for now
+        self.ncrit = 0.0  # doesnt make any difference for now
         self.alpha = alpha
         self.cl = cl
         self.cd = cd
@@ -650,19 +672,21 @@ class Curve:
         self.B = 5
         self.Am = 5
         self.Bm = 5
+        self.m_CD90=1.0
+        self.slope=0.106
 
     def get_cl_curve(self):
         return self.alpha_cl, self.cl
 
     def get_extrapolated_curve(self):
         M = Montgomerie(x=self.x, y=self.y, alpha=self.alpha, Cl=self.cl, Cd=self.cd, Re=self.Re, A=self.A, Am=self.Am,
-                        B=self.B, Bm=self.Bm)
+                        B=self.B, Bm=self.Bm, m_CD90=self.m_CD90, slope=self.slope)
         alpha, cl, cd = M.calculate_extrapolation()
         return alpha, cl, cd
 
     def get_combined_curve(self):
         M = Montgomerie(x=self.x, y=self.y, alpha=self.alpha, Cl=self.cl, Cd=self.cd, Re=self.Re, A=self.A, Am=self.Am,
-                        B=self.B, Bm=self.Bm)
+                        B=self.B, Bm=self.Bm, m_CD90=self.m_CD90, slope=self.slope)
         _alpha, _cl, _cd = M.calculate_extrapolation()
         cl_out, cd_out = [], []
         f_cl = interp1d(self.alpha, self.cl, bounds_error=True)
@@ -675,11 +699,11 @@ class Curve:
                 cl = f_cl(a)
             except ValueError:
                 cl = _cl[i]
-            #try:
-            #    cd = f_cd(a)
-            #except ValueError:
-            #    cd = _cd[i]
-            #tukaj vzamem  samo Montgomerie interpolacijo cd, za lazjo interpolacijo
+            # try:
+            #     cd = f_cd(a)
+            # except ValueError:
+            #     cd = _cd[i]
+            # tukaj vzamem  samo Montgomerie interpolacijo cd, za lazjo interpolacijo
             cd = _cd[i]
             cl_out.append(cl)
             cd_out.append(cd)
@@ -687,21 +711,23 @@ class Curve:
 
     def save_curve(self):
         out = {
-            "x":list(self.x),
-            "y":list(self.y),
-            "Re":self.Re,
-            "ncrit":self.ncrit,
-            "alpha":list(self.alpha),
-            "cl":list(self.cl),
-            "cd":list(self.cd),
-            "A":self.A,
-            "B":self.B,
-            "Am":self.Am,
-            "Bm":self.Bm,
+            "x": list(self.x),
+            "y": list(self.y),
+            "Re": self.Re,
+            "ncrit": self.ncrit,
+            "alpha": list(self.alpha),
+            "cl": list(self.cl),
+            "cd": list(self.cd),
+            "A": self.A,
+            "B": self.B,
+            "Am": self.Am,
+            "Bm": self.Bm,
+            "m_CD90" : self.m_CD90,
+            "slope" : self.slope
         }
         return out
 
-    def load_curve(self,out):
+    def load_curve(self, out):
         self.x = out["x"]
         self.y = out["y"]
         self.Re = out["Re"]
@@ -713,6 +739,8 @@ class Curve:
         self.B = out["B"]
         self.Am = out["Am"]
         self.Bm = out["Bm"]
+        self.m_CD90 = out["m_CD90"]
+        self.slope = out["slope"]
 
 
 class CurveViewer(QWidget):
@@ -743,7 +771,7 @@ class CurveViewer(QWidget):
         self.scroll_area.setWidgetResizable(True)
         self.grid.addWidget(self.scroll_area, 2, 1, 2, 2)
 
-        self.generate_views()
+        #self.generate_views()
 
     def generate_views(self):
 
@@ -905,7 +933,8 @@ class Analysis(QWidget):
         self.methods_to_names = METHODS_STRINGS
 
         self.name_to_methods = {v: k for k, v in self.methods_to_names.items()}
-        self.name_to_settings = {v: k for k, v in self.settings_to_name.items()}
+        self.name_to_settings = {v: k for k,
+                                 v in self.settings_to_name.items()}
 
         self.grid = QGridLayout()
         self.setLayout(self.grid)
@@ -936,7 +965,8 @@ class Analysis(QWidget):
         for key, value in self.settings.items():
             if key == "method":
                 form = QComboBox()
-                form.addItems([self.methods_to_names[k] for k, v in self.methods_to_names.items()])
+                form.addItems([self.methods_to_names[k]
+                               for k, v in self.methods_to_names.items()])
                 form.setCurrentIndex(7)
             elif key == "rotational_augmentation_correction_method":
                 form = QComboBox()
@@ -1047,13 +1077,15 @@ class Analysis(QWidget):
                 self.terminate()
                 return self.done(True)
             self.main.getter.start()
-            self.p = Process(target=calculate_power_3d, args=[self.runner_input])
+            self.p = Process(target=calculate_power_3d,
+                             args=[self.runner_input])
             self.p.start()
         else:
             msg = QMessageBox()
             msg.setIcon(QMessageBox.Warning)
             msg.setText("Cannot run while existing operation is running")
-            msg.setInformativeText("The program detected that an existing operation is running.")
+            msg.setInformativeText(
+                "The program detected that an existing operation is running.")
             msg.setWindowTitle("Runtime error")
             msg.setDetailedText("Currently tha value MainWindow.running is %s, \
                 it should be False." % str(self.main.running))
@@ -1077,7 +1109,8 @@ class Analysis(QWidget):
                 if "v" in results:
                     if len(results["v"]) > 0:
                         inp_params = self.runner_input
-                        r = ResultsWindow(self, self.main.screen_width, self.main.screen_width, results, inp_params, )
+                        r = ResultsWindow(
+                            self, self.main.screen_width, self.main.screen_width, results, inp_params, )
                     else:
                         print("Not enough points to print results...")
                 else:
@@ -1159,7 +1192,8 @@ class Optimization(QWidget):
 
     def check_forms_angles(self):
         out = ""
-        _needed_vars = [[self._target_speed, self.target_speed], [self._target_rpm, self.target_rpm], ]
+        _needed_vars = [[self._target_speed, self.target_speed], [
+            self._target_rpm, self.target_rpm], ]
         for n, f in _needed_vars:
             if isinstance(f, QLineEdit):
                 state = self.validator.validate(f.text(), 0)[0]
@@ -1216,7 +1250,8 @@ class Optimization(QWidget):
             msg = QMessageBox()
             msg.setIcon(QMessageBox.Warning)
             msg.setText("Cannot run while existing operation is running")
-            msg.setInformativeText("The program detected that an existing operation is running.")
+            msg.setInformativeText(
+                "The program detected that an existing operation is running.")
             msg.setWindowTitle("Runtime error")
             msg.setDetailedText("Currently tha value MainWindow.running is %s, \
                 it should be False." % str(self.main.running))
@@ -1335,63 +1370,18 @@ class TabWidget(QtWidgets.QTabWidget):
         return self.tabText(self.currentIndex())
 
 
-WHITE = QColor(255, 255, 255)
-BLACK = QColor(0, 0, 0)
-RED = QColor(255, 0, 0)
-PRIMARY = QColor(53, 53, 53)
-SECONDARY = QColor(35, 35, 35)
-TERTIARY = QColor(42, 130, 218)
-LIGHT_GRAY = QColor(180, 180, 180)
-DARK_GRAY = QColor(50, 50, 50)
-
-
-def css_rgb(color, a=False):
-    """Get a CSS `rgb` or `rgba` string from a `QtGui.QColor`."""
-    return ("rgba({}, {}, {}, {})" if a else "rgb({}, {}, {})").format(*color.getRgb())
-
-
-class QDarkPalette(QPalette):
-    """Dark palette for a Qt application meant to be used with the Fusion theme."""
-
-    def __init__(self, *__args):
-        super().__init__(*__args)
-
-        # Set all the colors based on the constants in globals
-        self.setColor(QPalette.Window, PRIMARY)
-        self.setColor(QPalette.WindowText, WHITE)
-        self.setColor(QPalette.Base, SECONDARY)
-        self.setColor(QPalette.AlternateBase, PRIMARY)
-        self.setColor(QPalette.ToolTipBase, WHITE)
-        self.setColor(QPalette.ToolTipText, WHITE)
-        self.setColor(QPalette.Text, LIGHT_GRAY)
-        self.setColor(QPalette.Button, PRIMARY)
-        self.setColor(QPalette.ButtonText, WHITE)
-        self.setColor(QPalette.BrightText, RED)
-        self.setColor(QPalette.Link, TERTIARY)
-        self.setColor(QPalette.Highlight, TERTIARY)
-        self.setColor(QPalette.HighlightedText, BLACK)
-
-    @staticmethod
-    def set_stylesheet(app):
-        """Static method to set the tooltip stylesheet to a `QtWidgets.QApplication`."""
-        app.setStyleSheet("QToolTip {{"
-                          "color: {white};"
-                          "background-color: {tertiary};"
-                          "border: 1px solid {white};"
-                          "}}".format(white=css_rgb(WHITE), tertiary=css_rgb(TERTIARY)))
-
-    def set_app(self, app):
-        """Set the Fusion theme and this palette to a `QtWidgets.QApplication`."""
-        app.setStyle("Fusion")
-        app.setPalette(self)
-        self.set_stylesheet(app)
-
 
 if __name__ == "__main__":
     if sys.platform.startswith("win"):
-        # On Windows calling this function is necessary.
+        # On Windows calling this function is necessary for multiprocessing.
         multiprocessing.freeze_support()
+        # To show icon in taskbar
+        myappid = 'mycompany.myproduct.subproduct.version'  # arbitrary string
+        ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
+
     app = QtWidgets.QApplication([])
+    app_icon = QtGui.QIcon("icon_bem.ico")
+    app.setWindowIcon(app_icon)
     app.setStyle("Fusion")
     if sys.platform.startswith("darwin"):
         # dark theme fix on OSX
