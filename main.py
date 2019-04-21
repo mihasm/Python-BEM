@@ -206,12 +206,14 @@ class MainWindow(QMainWindow):
     def set_buttons_running(self):
         self.analysis.buttonRun.setEnabled(False)
         self.optimization.buttonAngles.setEnabled(False)
+        self.optimization.buttonBoth.setEnabled(False)
         self.analysis.buttonStop.setEnabled(True)
         self.optimization.buttonStop.setEnabled(True)
 
     def set_buttons_await(self):
         self.analysis.buttonRun.setEnabled(True)
         self.optimization.buttonAngles.setEnabled(True)
+        self.optimization.buttonBoth.setEnabled(True)
         self.analysis.buttonStop.setEnabled(False)
         self.optimization.buttonStop.setEnabled(False)
 
