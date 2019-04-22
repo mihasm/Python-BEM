@@ -207,6 +207,7 @@ class MainWindow(QMainWindow):
         self.analysis.buttonRun.setEnabled(False)
         self.optimization.buttonAngles.setEnabled(False)
         self.optimization.buttonBoth.setEnabled(False)
+        self.optimization.buttonOptimalPitch.setEnabled(False)
         self.analysis.buttonStop.setEnabled(True)
         self.optimization.buttonStop.setEnabled(True)
 
@@ -214,6 +215,7 @@ class MainWindow(QMainWindow):
         self.analysis.buttonRun.setEnabled(True)
         self.optimization.buttonAngles.setEnabled(True)
         self.optimization.buttonBoth.setEnabled(True)
+        self.optimization.buttonOptimalPitch.setEnabled(True)
         self.analysis.buttonStop.setEnabled(False)
         self.optimization.buttonStop.setEnabled(False)
 
@@ -950,6 +952,8 @@ class Analysis(QWidget):
                                  "fix_reynolds": "Fix Reynolds", "reynolds": "Reynolds",
                                  "mach_number_correction": "Mach number correction", "pitch":"Pitch"}
 
+        self.list_settings_for_updating_tsr = ["v_min","v_max","v_num","rpm_min","rpm_max","rpm_num"]
+
         self.methods_to_names = METHODS_STRINGS
 
         self.name_to_methods = {v: k for k, v in self.methods_to_names.items()}
@@ -1000,11 +1004,15 @@ class Analysis(QWidget):
                 form.textChanged.connect(self.check_state)
                 form.textChanged.emit(form.text())
                 form.insert(str(value))
+                if key in self.list_settings_for_updating_tsr:
+                    form.textChanged.connect(self.update_tsr_and_j)
             key_orig = key
             key = self.settings_to_name[key]
             self.fbox.addRow(key, form)
             self.form_list.append([key, form, key_orig])
 
+        self.tsr_string = QLabel("0")
+        self.J_string = QLabel("0")
         self.emptyLabel = QLabel(" ")
         self.buttonRun.clicked.connect(self.run)
         self.buttonClear = QPushButton("Clear screen")
@@ -1018,6 +1026,23 @@ class Analysis(QWidget):
         self.fbox.addRow(self.emptyLabel, self.buttonRun)
         self.fbox.addRow(self.buttonClear, self.buttonStop)
         self.fbox.addRow(self.buttonEOFdescription, self.buttonEOF)
+        self.fbox.addRow("TSR:",self.tsr_string)
+        self.fbox.addRow("J:",self.J_string)
+
+    def update_tsr_and_j(self):
+        try:
+            s = self.get_settings()
+            R = float(self.main.wind_turbine_properties.R.text())
+            tsr_min = 2*np.pi*float(s["rpm_min"])*R/60/float(s["v_max"])
+            tsr_max = 2*np.pi*float(s["rpm_max"])*R/60/float(s["v_min"])
+            self.tsr_string.setText("%.2f - %.2f" % (tsr_min,tsr_max))
+            J_min = float(s["v_min"])/(float(s["rpm_max"])/60*2*R)
+            J_max = float(s["v_max"])/(float(s["rpm_min"])/60*2*R)
+            self.J_string.setText("%.2f - %.2f" % (J_min,J_max))
+        except:
+            print("couldnt update tsr min/max or J min/max")
+
+
 
     def check_forms(self):
         out = ""
@@ -1219,9 +1244,10 @@ class Optimization(QWidget):
 
         #self.fbox.addRow(QLabel("--------"))
         self.fbox.addRow(self.buttonAngles)
+        self.fbox.addRow(self.buttonOptimalPitch)
+        self.fbox.addRow("",QLabel())
         self.fbox.addRow(self._target_rpm_propeller,self.target_rpm_propeller)
         self.fbox.addRow(self.buttonBoth)
-        self.fbox.addRow(self.buttonOptimalPitch)
 
         self.fbox.addRow(self.buttonClear, self.buttonStop)
         self.fbox.addRow(self.buttonEOFdescription, self.buttonEOF)

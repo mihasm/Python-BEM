@@ -317,7 +317,6 @@ def optimal_pitch(inp_args):
 
         v = inp_args["target_speed"]
         rpm = inp_args["target_rpm"]
-        # print(v,pi,rpm)
         omega = 2 * pi * rpm / 60
         optimization_variable = inp_args["optimization_variable"]
 
@@ -339,8 +338,8 @@ def optimal_pitch(inp_args):
                         args["pitch"] = _pitch
                         out = C.run_array(**args,rpm=rpm,v=v)
                     except Exception as e:
-                        print(e)
-                        print(traceback.format_exc())
+                        p.print(e)
+                        p.print(traceback.format_exc())
                         out = None
                     if out == False or out == None:
                         break
@@ -357,8 +356,8 @@ def optimal_pitch(inp_args):
                         args["pitch"] = _pitch_up
                         out_up = C.run_array(**args,rpm=rpm,v=v)
                     except Exception as e:
-                        print()
-                        print(traceback.format_exc())
+                        p.print()
+                        p.print(traceback.format_exc())
                         out_up = None
                     if out_up == False or out_up == None:
                         break
@@ -375,8 +374,8 @@ def optimal_pitch(inp_args):
                         args["pitch"] = _pitch_down
                         out_down = C.run_array(**args,rpm=rpm,v=v)
                     except Exception as e:
-                        print(e)
-                        print(traceback.format_exc())
+                        p.print(e)
+                        p.print(traceback.format_exc())
                         out_down = None
                     if out_down == False or out_down == None:
                         break
