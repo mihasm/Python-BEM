@@ -308,6 +308,135 @@ def findIntersection(x1,y1,x2,y2,x3,y3,x4,y4):
     py= ( (x1*y2-y1*x2)*(y3-y4)-(y1-y2)*(x3*y4-y3*x4) ) / ( (x1-x2)*(y3-y4)-(y1-y2)*(x3-x4) )
     return [px, py]
 
+# noinspection PyBroadException
+def optimal_pitch(inp_args):
+    p = Printer(inp_args["return_print"])
+    try:
+        p.print("Optimizing angles for target variable:", inp_args["optimization_variable"])
+        return_results = inp_args["return_results"]
+
+        v = inp_args["target_speed"]
+        rpm = inp_args["target_rpm"]
+        # print(v,pi,rpm)
+        omega = 2 * pi * rpm / 60
+        optimization_variable = inp_args["optimization_variable"]
+
+        output_angles = []
+
+        C = Calculator(inp_args["airfoils"])
+
+        done_pitches = {}
+        _pitch = 0 # is in radians
+
+        args = {**inp_args}
+
+        for dpitch in [45,30,20,10,5,2,1,0.1]:
+            while True:
+                # middle angle
+                if not _pitch in done_pitches:
+                    p.print("   calculating out (pitch:%s)" % _pitch)
+                    try:
+                        args["pitch"] = _pitch
+                        out = C.run_array(**args,rpm=rpm,v=v)
+                    except Exception as e:
+                        print(e)
+                        print(traceback.format_exc())
+                        out = None
+                    if out == False or out == None:
+                        break
+                    done_pitches[_pitch] = out
+                else:
+                    p.print(_pitch, "already calculated, reusing...")
+                    out = done_pitches[_pitch]
+
+                _pitch_up = _pitch + dpitch
+                # upper angle
+                if not _pitch_up in done_pitches:
+                    p.print("   calculating out_up (pitch:%s)" %_pitch_up)
+                    try:
+                        args["pitch"] = _pitch_up
+                        out_up = C.run_array(**args,rpm=rpm,v=v)
+                    except Exception as e:
+                        print()
+                        print(traceback.format_exc())
+                        out_up = None
+                    if out_up == False or out_up == None:
+                        break
+                    done_pitches[_pitch_up] = out_up
+                else:
+                    p.print(_pitch_up, "already calculated, reusing...")
+                    out_up = done_pitches[_pitch_up]
+
+                _pitch_down = _pitch - dpitch
+                # lower angle
+                if not _pitch_down in done_pitches:
+                    p.print("   calculating out_down (pitch:%s)" % _pitch_down)
+                    try:
+                        args["pitch"] = _pitch_down
+                        out_down = C.run_array(**args,rpm=rpm,v=v)
+                    except Exception as e:
+                        print(e)
+                        print(traceback.format_exc())
+                        out_down = None
+                    if out_down == False or out_down == None:
+                        break
+                    done_pitches[_pitch_down] = out_down
+                else:
+                    p.print(_pitch_down, "already calculated, reusing...")
+                    out_down = done_pitches[_pitch_down]
+
+                if out_up == False or out_down == False or out == False:
+                    p.print("   one is False, breaking...")
+                    break
+                if out_up == None or out_down == None or out == None:
+                    p.print("   one is None, breaking...")
+                    break
+
+                var = np.sum(out[optimization_variable])
+                var_up = np.sum(out_up[optimization_variable])
+                var_down = np.sum(out_down[optimization_variable])
+                p.print("   %s" % optimization_variable, var, "%s_up" % optimization_variable, var_up,
+                        "%s_down" % optimization_variable, var_down)
+
+                if var_up <= var and var_down <= var:
+                    p.print("   none is bigger, breaking...")
+                    break
+
+                if var_up > var > var_down:
+                    p.print("   going up")
+                    _pitch = _pitch_up
+                    var = var_up
+                    out = out_up
+
+                if var_down > var > var_up:
+                    p.print("   going down")
+                    _pitch = _pitch_down
+                    var = var_down
+                    out = out_down
+
+                if var_down > var and var_up > var:
+                    if var_up > var_down:
+                        p.print("   both up and down are bigger, going up")
+                        _pitch = _pitch_up
+                        var = var_up
+                        out = out_up
+                    else:
+                        p.print("   both up and down are smaller, going down")
+                        _pitch = _pitch_down
+                        var = var_down
+                        out = out_down
+                if var_up == var and var_down == var:
+                    p.print("   both are equal, breaking")
+                    break
+        p.print("Final pitch:",_pitch)
+        p.print("Angles:")
+        for t in args["theta"]:
+            p.print(t+_pitch)
+        p.print("!!!!EOF!!!!")
+    except:
+        p.print("Error in running optimizer")
+        p.print("!!!!EOF!!!!")
+        raise
 
 
 """
@@ -326,3 +455,4 @@ SET_INIT["airfoils"]["s826"]["gathered_curves"] = data
 #SET_INIT["airfoils"]["s826"]["interp_function_cd"] = f_cd
 maximize_for_both(SET_INIT)
 """
+

@@ -16,7 +16,7 @@ class POLAR_CLASS:
 
 
 class Montgomerie:
-    def __init__(self, x, y, alpha, Cl, Cd, Re=100000, A=30, Am=5, B=5, Bm=5, m_CD90=1.0, slope=0.106):
+    def __init__(self, x, y, alpha, Cl, Cd, Re=100000, A=30, Am=5, B=5, Bm=5, m_CD90=2.0, slope=0.106):
         self.CLzero = np.interp(0,alpha,Cl) # coefficient of lift at AoA  == 0 
         self.CL180 = 0 # lift coefficient at AoA == 180
         self.alphazero = np.interp(0,Cl,alpha) # angle of attack where lift  == 0

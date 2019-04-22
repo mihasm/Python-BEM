@@ -362,3 +362,14 @@ def sort_data(data,columns=[0,2]):
             data = data[data[:,i].argsort(kind="mergesort")] #sort by alpha
     return data
 
+
+def normalize_angle(angle):
+    #reduce the angle
+    angle =  angle % 360
+    #force it to be the positive remainder, so that 0 <= angle < 360
+    angle = (angle + 360) % 360
+    #force into the minimum absolute value residue class, so that -180 < angle <= 180
+    if (angle > 180):
+        angle -= 360
+
+    return angle

@@ -14,7 +14,7 @@ import numpy
 import numpy as np
 from scipy import interpolate
 
-from utils import Printer, generate_dat, sort_data
+from utils import Printer, generate_dat, sort_data, normalize_angle
 from popravki import *
 from xfoil import run_xfoil_analysis, xfoil_runner
 from interpolator import interp
@@ -83,7 +83,7 @@ class Calculator:
             return None
 
     # noinspection PyUnusedLocal,PyUnusedLocal
-    def run_array(self, theta, B, c, r, foils, dr, R, Rhub, rpm, v, method, propeller_mode, print_out, tip_loss,
+    def run_array(self, theta, B, c, r, foils, dr, R, Rhub, rpm, v, pitch, method, propeller_mode, print_out, tip_loss,
             hub_loss, new_tip_loss, new_hub_loss, cascade_correction, max_iterations, convergence_limit, rho,
             relaxation_factor, print_all, return_print, return_results, rotational_augmentation_correction,
             rotational_augmentation_correction_method, mach_number_correction, fix_reynolds, reynolds, *args,
@@ -123,6 +123,7 @@ class Calculator:
         :param v: wind speed [m]
         :param r: sections radiuses [m]
         :param c: sections chord lengths [m]
+        :param pitch: blade pitch (twist) [degrees]
         :param theta: twist - theta [deg]
         :param rpm: rotational velocity [rpm]
         :param dr: np array of section heights [m]
@@ -244,7 +245,7 @@ class Calculator:
         return results
 
     def calculate_section(self, v, omega, _r, _c, _theta, _dr, B, R, _airfoil_dat, _airfoil, max_thickness,
-            propeller_mode, psi=0.0, fix_reynolds=False, reynolds=1e6, tip_loss=False, new_tip_loss=False,
+            propeller_mode, pitch=0.0, psi=0.0, fix_reynolds=False, reynolds=1e6, tip_loss=False, new_tip_loss=False,
             hub_loss=False, new_hub_loss=False, cascade_correction=False, rotational_augmentation_correction=False,
             rotational_augmentation_correction_method=0, mach_number_correction=False, method=5,
             kin_viscosity=1.4207E-5, rho=1.225, convergence_limit=0.001, max_iterations=100, relaxation_factor=0.3,
@@ -272,6 +273,9 @@ class Calculator:
 
         # tip mach number
         M = omega * _r / 343
+
+        #convert pitch to radians
+        _pitch = radians(pitch)
 
         ############ START ITERATION ############
         while True:
@@ -321,9 +325,11 @@ class Calculator:
 
             # angle of attack
             if propeller_mode:
-                alpha = _theta - phi
+                alpha = (_theta + _pitch) - phi
             else:
-                alpha = phi - _theta
+                alpha = phi - (_theta + _pitch)
+
+            alpha = radians(normalize_angle(degrees(alpha)))
 
             # cascade correction
             if cascade_correction:

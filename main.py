@@ -35,7 +35,7 @@ from turbine_data import SET_INIT
 from optimization import optimize_angles
 from utils import interpolate_geom, to_float, fltr, QDarkPalette
 
-from optimization import optimize_angles, maximize_for_both
+from optimization import optimize_angles, maximize_for_both, optimal_pitch
 from utils import interpolate_geom, to_float, fltr
 from interpolator import interp_at
 from polars import scrape_data
@@ -678,7 +678,7 @@ class Curve:
         self.B = 5
         self.Am = 5
         self.Bm = 5
-        self.m_CD90=1.0
+        self.m_CD90=2.0
         self.slope=0.106
 
     def get_cl_curve(self):
@@ -929,7 +929,7 @@ class Analysis(QWidget):
                          "rotational_augmentation_correction": False, "rotational_augmentation_correction_method": 1,
                          "mach_number_correction": False, "max_iterations": 100, "convergence_limit": 0.001,
                          "rho": 1.225, "method": 10, "linspace_interp": False, "num_interp": 25, "v_min": 3,
-                         "v_max": 20, "v_num": 10, "rpm_min": 100, "rpm_max": 3000, "rpm_num": 10,
+                         "v_max": 20, "v_num": 10, "rpm_min": 100, "rpm_max": 3000, "rpm_num": 10, "pitch":0.0,
                          "relaxation_factor": 0.3, "print_all": False, "print_out": False, "reynolds": 50000,
                          "fix_reynolds": False}
 
@@ -948,7 +948,7 @@ class Analysis(QWidget):
                                  "rotational_augmentation_correction": "Rot. augmentation cor.",
                                  "rotational_augmentation_correction_method": "Rot. augmentation cor. method",
                                  "fix_reynolds": "Fix Reynolds", "reynolds": "Reynolds",
-                                 "mach_number_correction": "Mach number correction", }
+                                 "mach_number_correction": "Mach number correction", "pitch":"Pitch"}
 
         self.methods_to_names = METHODS_STRINGS
 
@@ -1193,6 +1193,9 @@ class Optimization(QWidget):
         self.buttonBoth = QPushButton('Run optimization for turbine/propeller')
         self.buttonBoth.clicked.connect(self.run_both)
 
+        self.buttonOptimalPitch = QPushButton("Find optimal pitch")
+        self.buttonOptimalPitch.clicked.connect(self.run_optimal_pitch)
+
         self.buttonStop = QPushButton("Stop")
         self.buttonStop.clicked.connect(self.terminate)
 
@@ -1218,6 +1221,7 @@ class Optimization(QWidget):
         self.fbox.addRow(self.buttonAngles)
         self.fbox.addRow(self._target_rpm_propeller,self.target_rpm_propeller)
         self.fbox.addRow(self.buttonBoth)
+        self.fbox.addRow(self.buttonOptimalPitch)
 
         self.fbox.addRow(self.buttonClear, self.buttonStop)
         self.fbox.addRow(self.buttonEOFdescription, self.buttonEOF)
@@ -1314,6 +1318,42 @@ class Optimization(QWidget):
             self.runner_input = self.main.get_input_params()
             self.main.getter.start()
             self.p = Process(target=maximize_for_both, args=[self.runner_input])
+            self.p.start()
+        else:
+            msg = QMessageBox()
+            msg.setIcon(QMessageBox.Warning)
+            msg.setText("Cannot run while existing operation is running")
+            msg.setInformativeText("The program detected that an existing operation is running.")
+            msg.setWindowTitle("Runtime error")
+            msg.setDetailedText("Currently tha value MainWindow.running is %s, \
+                it should be False." % str(self.main.running))
+
+    def run_optimal_pitch(self):
+        self.clear()
+        check = self.check_forms_angles()
+        check_analysis = self.main.analysis.check_forms()
+        if check != True or check_analysis != True:
+            if check == True:
+                check = ""
+            if check_analysis == True:
+                check_analysis = ""
+            check = check + check_analysis
+            msg = QMessageBox()
+            msg.setIcon(QMessageBox.Warning)
+            msg.setText("Input validation error")
+            msg.setDetailedText(check)
+            msg.exec_()
+            return
+
+        self.main.emitter_add.connect(self.add_text)
+        self.main.emitter_done.connect(self.done)
+
+        if not self.main.running:
+            self.main.set_buttons_running()
+            self.main.running = True
+            self.runner_input = self.main.get_input_params()
+            self.main.getter.start()
+            self.p = Process(target=optimal_pitch, args=[self.runner_input])
             self.p.start()
         else:
             msg = QMessageBox()
