@@ -1525,3 +1525,5 @@ if __name__ == "__main__":
     size = screen.size()
     main = MainWindow(size.width(), size.height())
     sys.exit(app.exec_())
+
+

@@ -142,7 +142,7 @@ class Calculator:
 
         # create results array placeholders
         results = {}
-        arrays = ["a", "a'", "cL", "alpha", "phi", "F", "dFt", "M", "TSR", "Ct", "dFn", "foils", "dT", "dQ", "Re"]
+        arrays = ["a", "a'", "cL", "alpha", "phi", "F", "dFt", "M", "TSR", "Ct", "dFn", "foils", "dT", "dQ", "Re", "U1", "U2", "U3", "U4"]
         for array in arrays:
             results[array] = numpy.array([])
 
@@ -197,6 +197,10 @@ class Calculator:
             results["dT"] = numpy.append(results["dT"], out_results["dT"])
             results["dQ"] = numpy.append(results["dQ"], out_results["dQ"])
             results["Re"] = numpy.append(results["Re"], out_results["Re"])
+            results["U1"] = numpy.append(results["U1"], out_results["U1"])
+            results["U2"] = numpy.append(results["U2"], out_results["U2"])
+            results["U3"] = numpy.append(results["U3"], out_results["U3"])
+            results["U4"] = numpy.append(results["U4"], out_results["U4"])
 
         if not print_all and not print_out:
             p.print("")
@@ -209,6 +213,7 @@ class Calculator:
         power_p = Q * omega
         Msum = numpy.sum(M)
         power = numpy.sum(M) * omega
+        p.print(power_p,power)
         Pmax = 0.5 * rho * v ** 3 * pi * R ** 2
         cp_w = power / Pmax
         cp_p = power_p / (rho * (rpm / 60) ** 3 * (2 * R) ** 5)
@@ -435,10 +440,21 @@ class Calculator:
                 dQ = dQ_BET
 
             # wind after
-            U4 = v * (1 - 2 * a)
+            if propeller_mode:
+                #p.print('propeller_mode_U')
+                U1 = v
+                U2 = None
+                U3 = U1*(1+a)
+                U4 = U1*(1+2*a)
+            else:
+                #p.print('wind turbine mode_a')
+                U1 = v
+                U2 = U1*(1-a)
+                U3 = None
+                U4 = U1 * (1 - 2 * a)
 
             # check convergence
-            if abs(a - a_last) < convergence_limit and abs(aprime - aprime_last) < convergence_limit:
+            if abs(a - a_last) < convergence_limit:
                 break
 
             # p.print("dT_MT %.2f dT_BET %.2f" % (dT_MT,dT_BET))
@@ -466,6 +482,9 @@ class Calculator:
             p.print(prepend, "        foil:", _airfoil_dat)
             p.print(prepend, "        Cl:", Cl)
             p.print(prepend, "        Cd:", Cd)
+            p.print(prepend, "        U1:", U1)
+            p.print(prepend, "        U2:", U2)
+            p.print(prepend, "        U3:", U3)
             p.print(prepend, "        U4:", U4)
             p.print(prepend, "        dT_MT %.2f dT_BET %.2f" % (dT_MT, dT_BET))
             p.print(prepend, "        dQ_MT %.2f dQ_BET %.2f" % (dQ_MT, dQ_BET))
@@ -475,5 +494,5 @@ class Calculator:
             p.print(prepend, "    ----------------------------")
 
         out = {"a": a, "aprime": aprime, "Cl": Cl, "alpha": alpha, "phi": phi, "F": F, "dFt": dFt, "Ct": Ct, "dFn": dFn,
-               "_airfoil": _airfoil_dat, "U4": U4, "dT": dT, "dQ": dQ, "Re": Re}
+               "_airfoil": _airfoil_dat, "dT": dT, "dQ": dQ, "Re": Re, 'U1': U1, 'U2':U2, 'U3':U3, 'U4':U4}
         return out

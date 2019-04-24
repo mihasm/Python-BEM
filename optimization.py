@@ -40,9 +40,9 @@ def optimize_angles(inp_args):
             done_angles = {}  # key is theta, value is out
 
             p.print("initial theta is", degrees(_theta))
+            got_through = False
             for dtheta in [10, 5, 1, 0.5, 0.1]:
                 p.print("dtheta", dtheta)
-
                 while True:
 
                     # middle angle
@@ -53,8 +53,8 @@ def optimize_angles(inp_args):
                                                       max_thickness=max_thickness, _r=_r, _c=_c, _dr=_dr, _theta=_theta,
                                                       printer=p, **inp_args)
                         except Exception as e:
-                            print(e)
-                            print(traceback.format_exc())
+                            p.print(e)
+                            p.print(traceback.format_exc())
                             out = None
                         if out == False or out == None:
                             break
@@ -71,8 +71,8 @@ def optimize_angles(inp_args):
                                                          max_thickness=max_thickness, _r=_r, _c=_c, _dr=_dr,
                                                          _theta=_theta + radians(dtheta), printer=p, **inp_args)
                         except Exception as e:
-                            print()
-                            print(traceback.format_exc())
+                            p.print(e)
+                            p.print(traceback.format_exc())
                             out_up = None
                         if out_up == False or out_up == None:
                             break
@@ -90,8 +90,8 @@ def optimize_angles(inp_args):
                                                            _r=_r, _c=_c, _dr=_dr, _theta=_theta - radians(dtheta),
                                                            printer=p, **inp_args)
                         except Exception as e:
-                            print(e)
-                            print(traceback.format_exc())
+                            p.print(e)
+                            p.print(traceback.format_exc())
                             out_down = None
                         if out_down == False or out_down == None:
                             break
@@ -106,6 +106,7 @@ def optimize_angles(inp_args):
                     if out_up == None or out_down == None or out == None:
                         p.print("   one is None, breaking...")
                         break
+                    got_through = True
 
                     var = out[optimization_variable]
                     var_up = out_up[optimization_variable]
@@ -145,6 +146,11 @@ def optimize_angles(inp_args):
                         break
                     p.print("   ***")
                 p.print("***")
+            if not got_through:
+                p.print('optimization failed for section',section_number)
+                p.print("!!!!EOF!!!!")
+                return
+
             output_angles.append(_theta)
             p.print("final theta is", degrees(_theta))
             p.print("*******************************")
@@ -153,14 +159,14 @@ def optimize_angles(inp_args):
         for a in degrees(output_angles):
             p.print(a)
         p.print("!!!!EOF!!!!")
-    except:
-        p.print("Error in running optimizer")
+    except Exception as e:
+        p.print("Error in running optimizer: %s" % str(e))
         p.print("!!!!EOF!!!!")
-        raise
+        #raise
 
 def maximize_for_both(inp_args):
     p = Printer(inp_args["return_print"])
-    p.print("Optimizing angles for target variable:", inp_args["optimization_variable"])
+    p.print("Optimizing angles for both propeller and generator operation...")
     return_results = inp_args["return_results"]
 
     v = inp_args["target_speed"]

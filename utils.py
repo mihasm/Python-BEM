@@ -212,6 +212,7 @@ def interpolate_geom(r, c, theta, foils, num=None, linspace_interp=False):
         r_shifted.append(_r)
     r_shifted = array(r_shifted[:-1])
     dr = r - r_shifted
+    dr[0] = dr[1] #TODO: what
     # print("foils after",foils)
     return r, c, theta, foils, dr
 

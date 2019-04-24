@@ -96,6 +96,12 @@ class ResultsWindow(QMainWindow):
                                             np.degrees(np.array(results_3d["alpha"]).flatten()),
                                             np.array(results_3d["cL"]).flatten(), 111, "Title", "Re", "alpha[deg]",
                                             "cL")
+        #print(results_3d['U4'])
+        f8 = self.tab_widget.add_tab_figure("hitrosti")
+        for _u in results_3d['U4']:
+            ax = self.tab_widget.add_2d_plot_to_figure(f8, _u, input_data['r'], 111, 'hitrosti', 'U','r',look="-",c=numpy.random.rand(3,))
+        ax.legend(np.array(results_3d["TSR"]).astype(int))
+            
 
         data = dict_to_ar(results_3d)
         t = Table()
@@ -141,12 +147,12 @@ class TabWidget(QtWidgets.QTabWidget):
         return self.figures[-1]
 
     def add_2d_plot_to_figure(self, f, x, y, whi, title=None, x_name=None, y_name=None, x_min=None, x_max=None,
-            y_min=None, y_max=None, look=None, legend=False, ):
+            y_min=None, y_max=None, look=None, legend=False, **kwargs):
         ax = f.add_subplot(whi)
         if look:
-            ax.plot(x, y, look)
+            ax.plot(x, y, look, **kwargs)
         else:
-            ax.plot(x, y)
+            ax.plot(x, y, **kwargs)
         if title:
             plt.title(title)
         if x_name:
@@ -158,6 +164,7 @@ class TabWidget(QtWidgets.QTabWidget):
         if y_min != None and y_max != None:
             ax.set_ylim(y_min, y_max)
         self.canvas[-1].draw()
+        return ax
 
     def add_surface_plot(self, f, x, y, z, whi, title=None, x_name=None, y_name=None, z_name=None, x_min=None,
             x_max=None, y_min=None, y_max=None, z_min=None, z_max=None, legend=False, ):
