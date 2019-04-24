@@ -25,19 +25,13 @@ delta = np.arctan(Lambda/epsilon_i*(1+K))
 """
 
 def chord_distribution(B,Cl,rpm,V,R):
-	#B = 3
-	#Cl = 1
-	#rpm = 750
-	#V = 11
-	#print("r/R\tc/R\tc")
 	out = []
 	for _r in np.linspace(0,1,11):
-		lambda_r = 2*np.pi*_r*rpm/60/V
+		lambda_r = 2*np.pi*R*rpm/60/V*(_r/R)
 		phi = np.arctan(2/(3*lambda_r))
 		_c = 8*np.pi*_r*np.sin(phi)/(3*B*Cl*lambda_r)
-		#print(str(r/R)+"\t"+str(c)+'\t'+str(c*R))
 		out.append((_c*R,_r*R))
 	[print(str(r)+'\t'+str(c)) for c,r in out]
 	return
 
-#chord_distribution(3,1,750,11,2.9)
+chord_distribution(3,1.2,1500,10,1.5)

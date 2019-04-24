@@ -1305,6 +1305,10 @@ class Optimization(QWidget):
             self.main.set_buttons_running()
             self.main.running = True
             self.runner_input = self.main.get_input_params()
+            if self.runner_input["optimization_variable"] == "dT":
+                self.runner_input["propeller_mode"] = True
+            else:
+                self.runner_input["propeller_mode"] = False
             self.main.getter.start()
             self.p = Process(target=optimize_angles, args=[self.runner_input])
             self.p.start()

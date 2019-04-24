@@ -125,24 +125,25 @@ class Table(QWidget):
         text = self.clip.text()
         text = text.replace("   ", "\t")
         text = text.replace("  ", "\t")
-        reader = csv.reader(text.splitlines(), delimiter="\t")  # change contents to floats
-        for row in reader:  # each row is a list
-            results.append(row)
-        numrows = len(results)
-        numcolumns = len(results[0])
-        selected_row = sorted(set(index.row() for index in self.tableWidget.selectedIndexes()))[0]
-        selected_column = sorted(set(index.column() for index in self.tableWidget.selectedIndexes()))[0]
-        if selected_row + numrows >= self.tableWidget.rowCount():
-            self.tableWidget.setRowCount(selected_row + numrows)
-        if selected_column + numcolumns >= self.tableWidget.columnCount():
-            self.tableWidget.setColumnCount(selected_column + numcolumns)
-        currow = selected_row
-        for r in results:
-            curcolumn = selected_column
-            for c in r:
-                self.tableWidget.setItem(currow, curcolumn, QTableWidgetItem(c))
-                curcolumn += 1
-            currow += 1
+        if len(text) > 0:
+            reader = csv.reader(text.splitlines(), delimiter="\t")  # change contents to floats
+            for row in reader:  # each row is a list
+                results.append(row)
+            numrows = len(results)
+            numcolumns = len(results[0])
+            selected_row = sorted(set(index.row() for index in self.tableWidget.selectedIndexes()))[0]
+            selected_column = sorted(set(index.column() for index in self.tableWidget.selectedIndexes()))[0]
+            if selected_row + numrows >= self.tableWidget.rowCount():
+                self.tableWidget.setRowCount(selected_row + numrows)
+            if selected_column + numcolumns >= self.tableWidget.columnCount():
+                self.tableWidget.setColumnCount(selected_column + numcolumns)
+            currow = selected_row
+            for r in results:
+                curcolumn = selected_column
+                for c in r:
+                    self.tableWidget.setItem(currow, curcolumn, QTableWidgetItem(c))
+                    curcolumn += 1
+                currow += 1
         return
 
     def delete_data(self):

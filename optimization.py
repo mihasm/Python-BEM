@@ -166,106 +166,112 @@ def optimize_angles(inp_args):
 
 def maximize_for_both(inp_args):
     p = Printer(inp_args["return_print"])
-    p.print("Optimizing angles for both propeller and generator operation...")
-    return_results = inp_args["return_results"]
+    try:
+        p.print("Optimizing angles for both propeller and generator operation...")
+        return_results = inp_args["return_results"]
 
-    v = inp_args["target_speed"]
-    rpm = inp_args["target_rpm"]
-    rpm_prop = inp_args["target_rpm_propeller"]
-    omega = 2 * pi * rpm / 60
-    omega_prop = 2*pi*rpm / 60
-    optimization_variable = inp_args["optimization_variable"]
+        v = inp_args["target_speed"]
+        rpm = inp_args["target_rpm"]
+        rpm_prop = inp_args["target_rpm_propeller"]
+        omega = 2 * pi * rpm / 60
+        omega_prop = 2*pi*rpm / 60
+        optimization_variable = inp_args["optimization_variable"]
 
-    output_angles = []
+        output_angles = []
 
-    C = Calculator(inp_args["airfoils"])
+        C = Calculator(inp_args["airfoils"])
 
-    for section_number in range(len(inp_args["r_in"]))[1:]:
-        p.print("section_number is", section_number)
+        for section_number in range(len(inp_args["r_in"])):
+            p.print("section_number is", section_number)
 
-        _r = inp_args["r_in"][section_number]
-        _c = inp_args["c_in"][section_number]
-        _theta = radians(inp_args["theta_in"][section_number])
-        _dr = inp_args["dr"][section_number]
-        _airfoil = inp_args["foils_in"][section_number]
-        max_thickness = inp_args["airfoils"][_airfoil]["max_thickness"] * _c
-        _airfoil_dat = _airfoil + ".dat"
+            _r = inp_args["r_in"][section_number]
+            _c = inp_args["c_in"][section_number]
+            _theta = radians(inp_args["theta_in"][section_number])
+            _dr = inp_args["dr"][section_number]
+            _airfoil = inp_args["foils_in"][section_number]
+            max_thickness = inp_args["airfoils"][_airfoil]["max_thickness"] * _c
+            _airfoil_dat = _airfoil + ".dat"
 
-        #done_angles = {}  # key is theta, value is out
+            #done_angles = {}  # key is theta, value is out
 
-        #p.print("initial theta is", degrees(_theta))
-        theta_array,dT_array,dQ_array = [],[],[]
-        for _theta in radians(np.linspace(0,90,100)):
-            dT,dQ = None, None
+            #p.print("initial theta is", degrees(_theta))
+            theta_array,dT_array,dQ_array = [],[],[]
+            for _theta in radians(np.linspace(0,90,100)):
+                dT,dQ = None, None
+                
+                #Test for wind turbine mode
+                inp_args["propeller_mode"] = False
+                out = C.calculate_section(v=v, omega=omega, _airfoil=_airfoil,_airfoil_dat=_airfoil_dat, max_thickness=max_thickness,_r=_r, _c=_c, _dr=_dr, _theta=_theta,printer=p, **inp_args)
+                if out != None and out != False:
+                    dQ = out["dQ"]
+                
+                #Test for propeller
+                inp_args["propeller_mode"] = True
+                out_prop = C.calculate_section(v=0.01, omega=omega_prop, _airfoil=_airfoil,_airfoil_dat=_airfoil_dat, max_thickness=max_thickness,_r=_r, _c=_c, _dr=_dr, _theta=_theta,printer=p, **inp_args)
+                if out_prop != None and out_prop != False:
+                    dT = out_prop["dT"]
+
+                if dT != None and dQ != None:
+                    theta_array.append(degrees(_theta))
+                    dT_array.append(dT)
+                    dQ_array.append(dQ)
+
+            theta_array = np.array(theta_array)
+            dT_array = np.array(dT_array)
+            dQ_array = np.array(dQ_array)
+
+            #plt.plot(theta_array,dT_array,"g-",label="dT"+str(section_number))
+            #plt.plot(theta_array,dQ_array,"r-",label="dQ"+str(section_number))
+
+            #indexes_positive_values_dT = numpy.where(dT_array > 0)
+            #indexes_positive_values_dQ = numpy.where(dQ_array > 0)
             
-            #Test for wind turbine mode
-            inp_args["propeller_mode"] = False
-            out = C.calculate_section(v=v, omega=omega, _airfoil=_airfoil,_airfoil_dat=_airfoil_dat, max_thickness=max_thickness,_r=_r, _c=_c, _dr=_dr, _theta=_theta,printer=p, **inp_args)
-            if out != None and out != False:
-                dQ = out["dQ"]
-            
-            #Test for propeller
-            inp_args["propeller_mode"] = True
-            out_prop = C.calculate_section(v=0.01, omega=omega_prop, _airfoil=_airfoil,_airfoil_dat=_airfoil_dat, max_thickness=max_thickness,_r=_r, _c=_c, _dr=_dr, _theta=_theta,printer=p, **inp_args)
-            if out_prop != None and out_prop != False:
-                dT = out_prop["dT"]
+            positive_indexes = numpy.logical_and(dT_array > 0, dQ_array > 0)
+            positive_dT_array = dT_array[positive_indexes]
+            positive_dQ_array = dQ_array[positive_indexes]
+            positive_theta_array = theta_array[positive_indexes]
+            #plt.plot(positive_theta_array,positive_dT_array,"g",label="dT")
+            #plt.plot(positive_theta_array,positive_dQ_array,"r",label="dQ")
+            normalized_dT_array = (positive_dT_array - positive_dT_array.min())/positive_dT_array.max()
+            normalized_dQ_array = (positive_dQ_array - positive_dQ_array.min())/positive_dQ_array.max()
+            crossings = get_crossings(positive_theta_array,normalized_dT_array,normalized_dQ_array)
+            _max_i = np.where(crossings[:,1] == crossings[:,1].max())[0][0]
+            #print("crossings",crossings)
+            #print('_max_i',_max_i)
 
-            if dT != None and dQ != None:
-                theta_array.append(degrees(_theta))
-                dT_array.append(dT)
-                dQ_array.append(dQ)
+            dT_only_rising = np.all(np.diff(normalized_dT_array) > 0)
+            dQ_only_rising = np.all(np.diff(normalized_dQ_array) > 0)
+            dT_only_falling = np.all(np.diff(normalized_dT_array) < 0)
+            dQ_only_falling = np.all(np.diff(normalized_dQ_array) < 0)
 
-        theta_array = np.array(theta_array)
-        dT_array = np.array(dT_array)
-        dQ_array = np.array(dQ_array)
+            if dT_only_rising and dQ_only_rising:
+                _max_theta = positive_theta_array[-1]
+            elif dT_only_falling and dQ_only_falling:
+                _max_theta = positive_theta_array[0]
+            else:
+                _max_theta = crossings[:,0][_max_i]
 
-        #plt.plot(theta_array,dT_array,"g-",label="dT"+str(section_number))
-        #plt.plot(theta_array,dQ_array,"r-",label="dQ"+str(section_number))
+            p.print("max_theta",_max_theta)
+            output_angles.append(_max_theta)
+            #plt.plot(positive_theta_array,normalized_dT_array,"g",label="dT"+str(section_number))
+            #plt.plot(positive_theta_array,normalized_dQ_array,"b",label="dQ"+str(section_number))
+            #plt.plot(crossings[:,0],crossings[:,1],'r*')
+            #plt.axvline(_max_theta)
 
-        #indexes_positive_values_dT = numpy.where(dT_array > 0)
-        #indexes_positive_values_dQ = numpy.where(dQ_array > 0)
-        
-        positive_indexes = numpy.logical_and(dT_array > 0, dQ_array > 0)
-        positive_dT_array = dT_array[positive_indexes]
-        positive_dQ_array = dQ_array[positive_indexes]
-        positive_theta_array = theta_array[positive_indexes]
-        #plt.plot(positive_theta_array,positive_dT_array,"g",label="dT")
-        #plt.plot(positive_theta_array,positive_dQ_array,"r",label="dQ")
-        normalized_dT_array = (positive_dT_array - positive_dT_array.min())/positive_dT_array.max()
-        normalized_dQ_array = (positive_dQ_array - positive_dQ_array.min())/positive_dQ_array.max()
-        crossings = get_crossings(positive_theta_array,normalized_dT_array,normalized_dQ_array)
-        _max_i = np.where(crossings[:,1] == crossings[:,1].max())[0][0]
-        #print("crossings",crossings)
-        #print('_max_i',_max_i)
+            #plt.legend()
+            #plt.show()
+        p.print("Angles:")
+        for a in output_angles:
+            p.print(a)
 
-        dT_only_rising = np.all(np.diff(normalized_dT_array) > 0)
-        dQ_only_rising = np.all(np.diff(normalized_dQ_array) > 0)
-        dT_only_falling = np.all(np.diff(normalized_dT_array) < 0)
-        dQ_only_falling = np.all(np.diff(normalized_dQ_array) < 0)
-
-        if dT_only_rising and dQ_only_rising:
-            _max_theta = positive_theta_array[-1]
-        elif dT_only_falling and dQ_only_falling:
-            _max_theta = positive_theta_array[0]
-        else:
-            _max_theta = crossings[:,0][_max_i]
-
-        p.print("max_theta",_max_theta)
-        output_angles.append(_max_theta)
-        #plt.plot(positive_theta_array,normalized_dT_array,"g",label="dT"+str(section_number))
-        #plt.plot(positive_theta_array,normalized_dQ_array,"b",label="dQ"+str(section_number))
-        #plt.plot(crossings[:,0],crossings[:,1],'r*')
-        #plt.axvline(_max_theta)
-
+        p.print("!!!!EOF!!!!")
         #plt.legend()
         #plt.show()
-    p.print("Angles:")
-    for a in output_angles:
-        p.print(a)
+    except Exception as e:
+        p.print(str(e))
+        p.print(traceback.format_exc())
+        p.print("!!!!EOF!!!!")
 
-    p.print("!!!!EOF!!!!")
-    #plt.legend()
-    #plt.show()
 """
 x = np.linspace(0,2*np.pi,40)
 y = np.sin(x)
