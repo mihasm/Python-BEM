@@ -24,6 +24,8 @@ def optimize_angles(inp_args):
 
         output_angles = []
 
+        inp_args["theta_in"] = np.array([120]*len(inp_args["theta_in"]))
+
         C = Calculator(inp_args["airfoils"])
 
         for section_number in range(len(inp_args["r_in"])):
@@ -31,7 +33,7 @@ def optimize_angles(inp_args):
 
             _r = inp_args["r_in"][section_number]
             _c = inp_args["c_in"][section_number]
-            _theta = radians(inp_args["theta_in"][section_number])
+            _theta = inp_args["theta_in"][section_number]
             _dr = inp_args["dr"][section_number]
             _airfoil = inp_args["foils_in"][section_number]
             max_thickness = inp_args["airfoils"][_airfoil]["max_thickness"] * _c
@@ -39,18 +41,36 @@ def optimize_angles(inp_args):
 
             done_angles = {}  # key is theta, value is out
 
-            p.print("initial theta is", degrees(_theta))
+            p.print("initial theta is", _theta)
             got_through = False
-            for dtheta in [10, 5, 1, 0.5, 0.1]:
+            for dtheta in [90,60,45,30,10, 5, 1, 0.5, 0.1]:
                 p.print("dtheta", dtheta)
                 while True:
+                    initial = False
+                    if not initial:
+                        while _theta > -90.0:
+                            # initial angle
+                            try:
+                                out = C.calculate_section(v=v, omega=omega, _airfoil=_airfoil, _airfoil_dat=_airfoil_dat,
+                                                          max_thickness=max_thickness, _r=_r, _c=_c, _dr=_dr, _theta=radians(_theta),
+                                                          printer=p, **inp_args)
+                            except Exception as e:
+                                p.print(e)
+                                p.print(traceback.format_exc())
+                                out = None
+                            if out == False or out == None:
+                                _theta = _theta - 10
+                            else:
+                                done_angles[_theta] = out
+                                initial = True
+                                break
 
                     # middle angle
                     if not _theta in done_angles:
                         p.print("   calculating out")
                         try:
                             out = C.calculate_section(v=v, omega=omega, _airfoil=_airfoil, _airfoil_dat=_airfoil_dat,
-                                                      max_thickness=max_thickness, _r=_r, _c=_c, _dr=_dr, _theta=_theta,
+                                                      max_thickness=max_thickness, _r=_r, _c=_c, _dr=_dr, _theta=radians(_theta),
                                                       printer=p, **inp_args)
                         except Exception as e:
                             p.print(e)
@@ -64,30 +84,30 @@ def optimize_angles(inp_args):
                         out = done_angles[_theta]
 
                     # upper angle
-                    if not _theta + radians(dtheta) in done_angles:
+                    if not _theta + dtheta in done_angles:
                         p.print("   calculating out_up")
                         try:
                             out_up = C.calculate_section(v=v, omega=omega, _airfoil=_airfoil, _airfoil_dat=_airfoil_dat,
                                                          max_thickness=max_thickness, _r=_r, _c=_c, _dr=_dr,
-                                                         _theta=_theta + radians(dtheta), printer=p, **inp_args)
+                                                         _theta=radians(_theta + dtheta), printer=p, **inp_args)
                         except Exception as e:
                             p.print(e)
                             p.print(traceback.format_exc())
                             out_up = None
                         if out_up == False or out_up == None:
                             break
-                        done_angles[_theta + radians(dtheta)] = out_up
+                        done_angles[_theta + dtheta] = out_up
                     else:
-                        p.print(_theta + radians(dtheta), "already calculated, reusing...")
-                        out_up = done_angles[_theta + radians(dtheta)]
+                        p.print(_theta + dtheta, "already calculated, reusing...")
+                        out_up = done_angles[_theta + dtheta]
 
                     # lower angle
-                    if not _theta - radians(dtheta) in done_angles:
+                    if not _theta - dtheta in done_angles:
                         p.print("   calculating out_down")
                         try:
                             out_down = C.calculate_section(v=v, omega=omega, _airfoil=_airfoil,
                                                            _airfoil_dat=_airfoil_dat, max_thickness=max_thickness,
-                                                           _r=_r, _c=_c, _dr=_dr, _theta=_theta - radians(dtheta),
+                                                           _r=_r, _c=_c, _dr=_dr, _theta=radians(_theta - dtheta),
                                                            printer=p, **inp_args)
                         except Exception as e:
                             p.print(e)
@@ -95,10 +115,10 @@ def optimize_angles(inp_args):
                             out_down = None
                         if out_down == False or out_down == None:
                             break
-                        done_angles[_theta - radians(dtheta)] = out_down
+                        done_angles[_theta - dtheta] = out_down
                     else:
-                        p.print(_theta - radians(dtheta), "already calculated, reusing...")
-                        out_down = done_angles[_theta - radians(dtheta)]
+                        p.print(_theta - dtheta, "already calculated, reusing...")
+                        out_down = done_angles[_theta - dtheta]
 
                     if out_up == False or out_down == False or out == False:
                         p.print("   one is False, breaking...")
@@ -120,25 +140,25 @@ def optimize_angles(inp_args):
 
                     if var_up > var > var_down:
                         p.print("   going up")
-                        _theta = _theta + radians(dtheta)
+                        _theta = _theta + dtheta
                         var = var_up
                         out = out_up
 
                     if var_down > var > var_up:
                         p.print("   going down")
-                        _theta = _theta - radians(dtheta)
+                        _theta = _theta - dtheta
                         var = var_down
                         out = out_down
 
                     if var_down > var and var_up > var:
                         if var_up > var_down:
                             p.print("   both up and down are bigger, going up")
-                            _theta = _theta + radians(dtheta)
+                            _theta = _theta + dtheta
                             var = var_up
                             out = out_up
                         else:
                             p.print("   both up and down are bigger, going down")
-                            _theta = _theta - radians(dtheta)
+                            _theta = _theta - dtheta
                             var = var_down
                             out = out_down
                     if var_up == var and var_down == var:
@@ -152,11 +172,11 @@ def optimize_angles(inp_args):
                 return
 
             output_angles.append(_theta)
-            p.print("final theta is", degrees(_theta))
+            p.print("final theta is", _theta)
             p.print("*******************************")
         p.print("angles:")
-        p.print(degrees(output_angles))
-        for a in degrees(output_angles):
+        p.print(output_angles)
+        for a in output_angles:
             p.print(a)
         p.print("!!!!EOF!!!!")
     except Exception as e:
@@ -186,7 +206,7 @@ def maximize_for_both(inp_args):
 
             _r = inp_args["r_in"][section_number]
             _c = inp_args["c_in"][section_number]
-            _theta = radians(inp_args["theta_in"][section_number])
+            _theta = inp_args["theta_in"][section_number]
             _dr = inp_args["dr"][section_number]
             _airfoil = inp_args["foils_in"][section_number]
             max_thickness = inp_args["airfoils"][_airfoil]["max_thickness"] * _c
@@ -196,23 +216,23 @@ def maximize_for_both(inp_args):
 
             #p.print("initial theta is", degrees(_theta))
             theta_array,dT_array,dQ_array = [],[],[]
-            for _theta in radians(np.linspace(0,90,100)):
+            for _theta in np.linspace(0,90,100):
                 dT,dQ = None, None
                 
                 #Test for wind turbine mode
                 inp_args["propeller_mode"] = False
-                out = C.calculate_section(v=v, omega=omega, _airfoil=_airfoil,_airfoil_dat=_airfoil_dat, max_thickness=max_thickness,_r=_r, _c=_c, _dr=_dr, _theta=_theta,printer=p, **inp_args)
+                out = C.calculate_section(v=v, omega=omega, _airfoil=_airfoil,_airfoil_dat=_airfoil_dat, max_thickness=max_thickness,_r=_r, _c=_c, _dr=_dr, _theta=radians(_theta),printer=p, **inp_args)
                 if out != None and out != False:
                     dQ = out["dQ"]
                 
                 #Test for propeller
                 inp_args["propeller_mode"] = True
-                out_prop = C.calculate_section(v=0.01, omega=omega_prop, _airfoil=_airfoil,_airfoil_dat=_airfoil_dat, max_thickness=max_thickness,_r=_r, _c=_c, _dr=_dr, _theta=_theta,printer=p, **inp_args)
+                out_prop = C.calculate_section(v=0.01, omega=omega_prop, _airfoil=_airfoil,_airfoil_dat=_airfoil_dat, max_thickness=max_thickness,_r=_r, _c=_c, _dr=_dr, _theta=radians(_theta),printer=p, **inp_args)
                 if out_prop != None and out_prop != False:
                     dT = out_prop["dT"]
 
                 if dT != None and dQ != None:
-                    theta_array.append(degrees(_theta))
+                    theta_array.append(_theta)
                     dT_array.append(dT)
                     dQ_array.append(dQ)
 

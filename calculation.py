@@ -225,6 +225,9 @@ class Calculator:
         ct_w = T / (0.5 * rho * v ** 2 * pi * R ** 2)
         ct_p = T / (rho * (2 * R) ** 4 * (rpm / 60) ** 2)
 
+        cq_p = Q / (rho * (2*R)**5 * (rpm/60)**2)
+        eff_p = J/2/pi*ct_p/cq_p
+
         results["R"] = R
         results["rpm"] = rpm
         results["v"] = v
@@ -247,6 +250,7 @@ class Calculator:
         results["c"] = c
         results["theta"] = theta
         results["J"] = J
+        results["eff_p"] = eff_p
         return results
 
     def calculate_section(self, v, omega, _r, _c, _theta, _dr, B, R, _airfoil_dat, _airfoil, max_thickness,
@@ -255,6 +259,8 @@ class Calculator:
             rotational_augmentation_correction_method=0, mach_number_correction=False, method=5,
             kin_viscosity=1.4207E-5, rho=1.225, convergence_limit=0.001, max_iterations=100, relaxation_factor=0.3,
             printer=None, print_all=False, print_out=False, *args, **kwargs):
+
+        #theta in degrees!!!
         # print(v)
 
         p = printer
@@ -432,9 +438,15 @@ class Calculator:
             dQ_BET_p = 0.5 * rho * v * _c * B * omega * _r ** 2 * (1 + a) * (1 - aprime) / (sin(phi) * cos(phi)) * (
                     Cl * sin(phi) + Cd * cos(phi)) * _dr
 
+            #from http://www.aerodynamics4students.com/propel.m
+            dT_BET_p_2 = 0.5*rho*Vrel_norm**2*B*_c*(Cl * cos(phi) - Cd * sin(phi))*_dr
+            dQ_BET_p_2 = 0.5*rho*Vrel_norm**2*B*_c*_r*(Cl * sin(phi) + Cd * cos(phi)) * _dr
+            dT_MT_p_2 = 4*pi*_r*rho*v**2*(1+a)
+            dQ_MT_p_2 = 4*pi*_r**3*rho*v*(1+a)*omega
+
             if propeller_mode:
-                dT = dT_BET_p
-                dQ = dQ_BET_p
+                dT = dT_BET_p_2
+                dQ = dQ_BET_p_2
             else:
                 dT = dT_BET
                 dQ = dQ_BET

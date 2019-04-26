@@ -34,4 +34,4 @@ def chord_distribution(B,Cl,rpm,V,R):
 	[print(str(r)+'\t'+str(c)) for c,r in out]
 	return
 
-chord_distribution(3,1.2,1500,10,1.5)
+chord_distribution(2,1.2,1500,10,1.5)

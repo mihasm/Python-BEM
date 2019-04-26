@@ -1510,10 +1510,10 @@ class TabWidget(QtWidgets.QTabWidget):
 
 if __name__ == "__main__":
     if sys.platform.startswith("win"):
-        # On Windows calling this function is necessary for multiprocessing.
+    # On Windows calling this function is necessary for multiprocessing.
         multiprocessing.freeze_support()
         # To show icon in taskbar
-        myappid = 'mycompany.myproduct.subproduct.version'  # arbitrary string
+        myappid = 'FEUM.BEM_Analiza.v0.3.0'  # arbitrary string
         ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
 
     app = QtWidgets.QApplication([])
@@ -1529,5 +1529,3 @@ if __name__ == "__main__":
     size = screen.size()
     main = MainWindow(size.width(), size.height())
     sys.exit(app.exec_())
-
-

@@ -90,6 +90,11 @@ class ResultsWindow(QMainWindow):
         self.tab_widget.add_2d_plot_to_figure(f6, results_3d['J'], results_3d['cp_p'], 111, 'cp_p(J) krivulja', 'J',
                                               'cp', look='-', x_min=0, x_max=1, y_min=0, y_max=0.1)
 
+        # cp_p(J) krivulja
+        f6 = self.tab_widget.add_tab_figure("eff/J krivulja (propeler)")
+        self.tab_widget.add_2d_plot_to_figure(f6, results_3d['J'], results_3d['eff_p'], 111, 'eff_p(J) krivulja', 'J',
+                                              'cp', look='-', x_min=0, x_max=1, y_min=0, y_max=1.0)
+
         # CL check
         f7 = self.tab_widget.add_tab_figure("check CL")
         self.tab_widget.add_3d_scatter_plot(f7, np.array(results_3d["Re"]).flatten(),
