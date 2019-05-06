@@ -6,13 +6,13 @@ void DData::OnDMS(CBlade *pBlade)
     QList <double> it_loc;
     QList <double> alpha_loc, alpha_deg_loc;
     QList <double> Ftip_loc, u_loc, V_loc, Re_loc, vrel_loc, DeltaRe_loc;
-	QList <double> CD_loc, CL_loc, LD_loc, Cn_loc, Ct_loc;
+    QList <double> CD_loc, CL_loc, LD_loc, Cn_loc, Ct_loc;
     double Cn = 0, Ct = 0, f, zeta, eta;
-	QList <double> tempCFN, tempCFT, tempT, CFN, CFT, T, tempFN, tempFT;
-	QList<QList<double> > tempCFNlist, tempCFTlist, tempTlist, tempFNlist, tempFTlist;
+    QList <double> tempCFN, tempCFT, tempT, CFN, CFT, T, tempFN, tempFT;
+    QList<QList<double> > tempCFNlist, tempCFTlist, tempTlist, tempFNlist, tempFTlist;
     QList <double> bladepos;
     QList <int> bladeto, bladefrom;
-	QList <double> CF_blade_length, CF_blade_cross, F_blade_length, F_blade_cross;
+    QList <double> CF_blade_length, CF_blade_cross, F_blade_length, F_blade_cross;
     double CQ1, CQ2, CP1, CP2, CP;
     int stop;
 
@@ -26,13 +26,13 @@ void DData::OnDMS(CBlade *pBlade)
         T.append(0);
         tempCFN.append(0);
         tempCFT.append(0);
-		tempFN.append(0);
-		tempFT.append(0);
+        tempFN.append(0);
+        tempFT.append(0);
         tempT.append(0);
-		CF_blade_length.append(0);
-		CF_blade_cross.append(0);
-		F_blade_length.append(0);
-		F_blade_cross.append(0);
+        CF_blade_length.append(0);
+        CF_blade_cross.append(0);
+        F_blade_length.append(0);
+        F_blade_cross.append(0);
     }
 
     for (int l=0; l<72; l++)
@@ -62,7 +62,7 @@ void DData::OnDMS(CBlade *pBlade)
 
     stop=0;
     // tower height
-//    h_tower = m_pos.at(elements-1) - height;
+    // h_tower = m_pos.at(elements-1) - height;
 
 
     // variable interference factors
@@ -79,11 +79,11 @@ void DData::OnDMS(CBlade *pBlade)
 
             //computation of the blade inclination angle delta
 
-			if (i==0)               delta = atan(fabs(m_radius_local.at(i+1)-m_radius_local.at(i))/fabs(m_pos.at(i+1)-m_pos.at(i)));
-			else if (i==elements-1) delta = atan(fabs(m_radius_local.at(i)-m_radius_local.at(i-1))/fabs(m_pos.at(i)-m_pos.at(i-1)));
-			else                    delta = atan(fabs(m_radius_local.at(i+1)-m_radius_local.at(i-1))/fabs(m_pos.at(i+1)-m_pos.at(i-1)));
+            if (i==0)               delta = atan(fabs(m_radius_local.at(i+1)-m_radius_local.at(i))/fabs(m_pos.at(i+1)-m_pos.at(i)));
+            else if (i==elements-1) delta = atan(fabs(m_radius_local.at(i)-m_radius_local.at(i-1))/fabs(m_pos.at(i)-m_pos.at(i-1)));
+            else                    delta = atan(fabs(m_radius_local.at(i+1)-m_radius_local.at(i-1))/fabs(m_pos.at(i+1)-m_pos.at(i-1)));
 
-			m_delta.append(delta/PI*180);
+            m_delta.append(delta/PI*180);
 
             // loop over all upwind azi angles
             for (int l=0; l<36; l++)
@@ -91,10 +91,10 @@ void DData::OnDMS(CBlade *pBlade)
                 theta = m_theta.at(l);
 
                 // upwind interference factor
-				u = 0;
+                u = 0;
                 delta_u = 10000;
                 u_old=u;
-//                u_older=u;
+                // u_older=u;
 
                 // iterations counter
                 int count = 0;
@@ -123,7 +123,7 @@ void DData::OnDMS(CBlade *pBlade)
                     }
 
                     // local induced velocity and local tip speed ratio
-					V = (1-u)*m_velocity_inf.at(i);
+                    V = (1-u)*m_velocity_inf.at(i);
                     X = m_radius_local.at(i) * omega/V;
 
                     //upwind function
@@ -150,21 +150,21 @@ void DData::OnDMS(CBlade *pBlade)
                     // local angle of attack
                     if (F * cos(theta) * cos(delta) * V/W >= 1)
                     {
-						alpha = asin(1);
+                        alpha = asin(1);
                     }
                     else
                     {
-						alpha = asin(F * cos(theta) * cos(delta) * V/W);
-					}
+                        alpha = asin(F * cos(theta) * cos(delta) * V/W);
+                    }
 
-					alpha_deg  = asin(F * cos(theta) * cos(delta) * V/W)*180/PI+m_twist[i]*cos(delta);
+                    alpha_deg  = asin(F * cos(theta) * cos(delta) * V/W)*180/PI+m_twist[i]*cos(delta);
 
                     if ((X-sin(theta)<0))
                     {
                         alpha = PI-alpha;
                         alpha_deg = 180.0-alpha_deg;
-						alpha_deg = 180.0-asin(F * cos(theta) * cos(delta) * V/W)*180/PI+m_twist[i]*cos(delta);
-					}
+                        alpha_deg = 180.0-asin(F * cos(theta) * cos(delta) * V/W)*180/PI+m_twist[i]*cos(delta);
+                    }
 
                     double alpha_corrected;
                     alpha_corrected = alpha_deg;
@@ -187,7 +187,7 @@ void DData::OnDMS(CBlade *pBlade)
                     }
                     // implementation of the tiploss correction
                     // (Willmer modification of Prandtl method)
-					if (m_bTipLoss)
+                    if (m_bTipLoss)
                     {
                         double a0 = 1.8*PI*(1+0.8*m_t_local.at(i)/m_c_local.at(i));
                         double AR = height/m_c_local.at(i);
@@ -202,41 +202,41 @@ void DData::OnDMS(CBlade *pBlade)
 
                     tempCFN[l] = Cn * pow((W/m_velocity_inf.at(i)),2) * eta/cos(delta);
                     tempCFT[l] = Ct * pow((W/m_velocity_inf.at(i)),2) * eta/cos(delta);
-					tempFN[l] = Cn * pow(W,2)/cos(delta);
-					tempFT[l] = Ct * pow(W,2)/cos(delta);
+                    tempFN[l] = Cn * pow(W,2)/cos(delta);
+                    tempFT[l] = Ct * pow(W,2)/cos(delta);
                     tempT[l]   = Ct * pow(W,2) * m_radius_local.at(i)/cos(delta);
 
                     // normal iteration
                     if (save==0)
                     {
 
-						double Fx;
+                        double Fx;
 
-						Fx = blades*m_c_local.at(i)/8/PI/m_radius_local.at(i)*pow(W/m_velocity_inf.at(i),2)*((Cn*cos(theta)+Ct*sin(theta)/cos(delta)));
+                        Fx = blades*m_c_local.at(i)/8/PI/m_radius_local.at(i)*pow(W/m_velocity_inf.at(i),2)*((Cn*cos(theta)+Ct*sin(theta)/cos(delta)));
 
-						u_old   = u;
-						u = pow(u,2)+Fx;
+                        u_old   = u;
+                        u = pow(u,2)+Fx;
 
 
-												double CTT;
-												CTT = 4*u*(1-u);
+                                                double CTT;
+                                                CTT = 4*u*(1-u);
 
-												if (CTT>0.96*F)
-												{
+                                                if (CTT>0.96*F)
+                                                {
 
-													u = (18*F-20-3*pow(fabs(CTT*(50-36*F)+12*F*(3*F-4)),0.5))/(36*F-50);
-												}
+                                                    u = (18*F-20-3*pow(fabs(CTT*(50-36*F)+12*F*(3*F-4)),0.5))/(36*F-50);
+                                                }
 
-												if (u<=0) u=0.01;
-												if (u>=1) u=0.99;
+                                                if (u<=0) u=0.01;
+                                                if (u>=1) u=0.99;
 
-						delta_u = fabs(u_old-u);
+                        delta_u = fabs(u_old-u);
 
                     }
 
-				}// convergence
+                }// convergence
 
-				u = (1-u);
+                u = (1-u);
 
                 // save final azi results
                 it_loc[l] = count-1;
@@ -259,10 +259,10 @@ void DData::OnDMS(CBlade *pBlade)
             tempCFNlist.append(tempCFN);
             tempCFTlist.append(tempCFT);
             tempTlist.append(tempT);
-			tempFNlist.append(tempFN);
-			tempFTlist.append(tempFT);
+            tempFNlist.append(tempFN);
+            tempFTlist.append(tempFT);
 
-			// average upwind interference and tiploss factor and local tipspeed ratio
+            // average upwind interference and tiploss factor and local tipspeed ratio
             u = 0;
             F = 0;
             double count = 0;
@@ -324,14 +324,14 @@ void DData::OnDMS(CBlade *pBlade)
             tempCFN = tempCFNlist.at(i);
             tempCFT = tempCFTlist.at(i);
             tempT   = tempTlist.at(i);
-			tempFN = tempFNlist.at(i);
-			tempFT = tempFTlist.at(i);
+            tempFN = tempFNlist.at(i);
+            tempFT = tempFTlist.at(i);
 
             //computation of the blade inclination angle delta
 
-			if (i==0)               delta = atan(fabs(m_radius_local.at(i+1)-m_radius_local.at(i))/fabs(m_pos.at(i+1)-m_pos.at(i)));
-			else if (i==elements-1) delta = atan(fabs(m_radius_local.at(i)-m_radius_local.at(i-1))/fabs(m_pos.at(i)-m_pos.at(i-1)));
-			else                    delta = atan(fabs(m_radius_local.at(i+1)-m_radius_local.at(i-1))/fabs(m_pos.at(i+1)-m_pos.at(i-1)));
+            if (i==0)               delta = atan(fabs(m_radius_local.at(i+1)-m_radius_local.at(i))/fabs(m_pos.at(i+1)-m_pos.at(i)));
+            else if (i==elements-1) delta = atan(fabs(m_radius_local.at(i)-m_radius_local.at(i-1))/fabs(m_pos.at(i)-m_pos.at(i-1)));
+            else                    delta = atan(fabs(m_radius_local.at(i+1)-m_radius_local.at(i-1))/fabs(m_pos.at(i+1)-m_pos.at(i-1)));
 
             // loop over downwind azimuthal angles theta
             for (int l=36; l<72; l++)
@@ -339,10 +339,10 @@ void DData::OnDMS(CBlade *pBlade)
                 theta = m_theta.at(l);
 
                 // up and downwind interference factor
-				u2 = 0;
+                u2 = 0;
                 delta_u = 10000;
                 u2_old=u2;
-//                u2_older=u2;
+                //                u2_older=u2;
 
                 // iterations counter
                 int count =0;
@@ -369,8 +369,8 @@ void DData::OnDMS(CBlade *pBlade)
 
                     // local induced velocity and local tip speed ratio
                     //V = u2*m_velocity_equil.at(i);
-					V = (1-u2)*m_velocity_inf.at(i)*(2*m_u[i].at(36-(l-35))-1);
-					if (V<=0) V=0.01;                    //X = (m_radius_local.at(i)/max_radius) * lambda_global * m_velocity_inf.at(i)/V;;
+                    V = (1-u2)*m_velocity_inf.at(i)*(2*m_u[i].at(36-(l-35))-1);
+                    if (V<=0) V=0.01;                    //X = (m_radius_local.at(i)/max_radius) * lambda_global * m_velocity_inf.at(i)/V;;
                     X = m_radius_local.at(i)*omega/V;
 
                     // downwind function
@@ -404,7 +404,7 @@ void DData::OnDMS(CBlade *pBlade)
                     {
                         alpha = -PI-alpha;
                         alpha_deg = -180.0-asin(F * cos(theta) * cos(delta) * V/W)*180/PI+m_twist[i]*cos(delta);
-					}
+                    }
 
                     double alpha_corrected;
                     alpha_corrected = alpha_deg;
@@ -429,7 +429,7 @@ void DData::OnDMS(CBlade *pBlade)
 
                     // implementation of the tiploss correction
                     // (Willmer modification of Prandtl method)
-					if (m_bTipLoss)
+                    if (m_bTipLoss)
                     {
                         double a0 = 1.8*PI*(1+0.8*m_t_local.at(i)/m_c_local.at(i));
                         double AR = height/m_c_local.at(i);
@@ -444,30 +444,30 @@ void DData::OnDMS(CBlade *pBlade)
 
                     tempCFN[l] = Cn * pow((W/m_velocity_inf.at(i)),2) * eta/cos(delta);
                     tempCFT[l] = Ct * pow((W/m_velocity_inf.at(i)),2) * eta/cos(delta);
-					tempFN[l] = Cn * pow(W,2)/cos(delta);
-					tempFT[l] = Ct * pow(W,2)/cos(delta);
+                    tempFN[l] = Cn * pow(W,2)/cos(delta);
+                    tempFT[l] = Ct * pow(W,2)/cos(delta);
                     tempT[l]   = Ct * pow(W,2) * m_radius_local.at(i)/cos(delta);
 
                     //normal iteration
                     if (save==0)
                     {
 
-						double Fx;
+                        double Fx;
 
-						Fx = blades*m_c_local.at(i)/8/PI/m_radius_local.at(i)*pow(W/m_velocity_equil.at(i),2)*((Cn*cos(theta)+Ct*sin(theta)/cos(delta)));
+                        Fx = blades*m_c_local.at(i)/8/PI/m_radius_local.at(i)*pow(W/m_velocity_equil.at(i),2)*((Cn*cos(theta)+Ct*sin(theta)/cos(delta)));
 
-						u2_old   = u2;
-						u2 = pow(u2,2)+Fx;
+                        u2_old   = u2;
+                        u2 = pow(u2,2)+Fx;
 
-						if (u2>=1) u2 = 0.99;
-						if (u2<=0) u2 = 0.01;
+                        if (u2>=1) u2 = 0.99;
+                        if (u2<=0) u2 = 0.01;
 
-						delta_u = fabs(u2_old-u2);
+                        delta_u = fabs(u2_old-u2);
 
                     }
 
                 }// convergence
-				u2 = 1-u2;
+                u2 = 1-u2;
 
                 // save final azi results
                 it_loc[l] = count-1;
@@ -489,8 +489,8 @@ void DData::OnDMS(CBlade *pBlade)
             tempCFNlist[i] = tempCFN;
             tempCFTlist[i] = tempCFT;
             tempTlist[i]   = tempT;
-			tempFNlist[i] = tempFN;
-			tempFTlist[i] = tempFT;
+            tempFNlist[i] = tempFN;
+            tempFTlist[i] = tempFT;
 
             // average downwind interference factor
             u2 = 0;
@@ -507,7 +507,7 @@ void DData::OnDMS(CBlade *pBlade)
             count = count/36.0;
 
             //// save downwind data
-			m_it_dw.append(count);
+            m_it_dw.append(count);
             // average height data
             m_Ftip_dw.append(F);
             m_u_down[i]=u2;
@@ -568,7 +568,7 @@ void DData::OnDMS(CBlade *pBlade)
             u = 1;
             delta_u = 10000;
             u_old=u;
-//            u_older=u;
+            //            u_older=u;
 
             // iterations counter
             int count =0;
@@ -576,11 +576,11 @@ void DData::OnDMS(CBlade *pBlade)
 
             //computation of the blade inclination angle delta
 
-			if (i==0)               delta = atan(fabs(m_radius_local.at(i+1)-m_radius_local.at(i))/fabs(m_pos.at(i+1)-m_pos.at(i)));
-			else if (i==elements-1) delta = atan(fabs(m_radius_local.at(i)-m_radius_local.at(i-1))/fabs(m_pos.at(i)-m_pos.at(i-1)));
-			else                    delta = atan(fabs(m_radius_local.at(i+1)-m_radius_local.at(i-1))/fabs(m_pos.at(i+1)-m_pos.at(i-1)));
+            if (i==0)               delta = atan(fabs(m_radius_local.at(i+1)-m_radius_local.at(i))/fabs(m_pos.at(i+1)-m_pos.at(i)));
+            else if (i==elements-1) delta = atan(fabs(m_radius_local.at(i)-m_radius_local.at(i-1))/fabs(m_pos.at(i)-m_pos.at(i-1)));
+            else                    delta = atan(fabs(m_radius_local.at(i+1)-m_radius_local.at(i-1))/fabs(m_pos.at(i+1)-m_pos.at(i-1)));
 
-			m_delta.append(delta/PI*180);
+            m_delta.append(delta/PI*180);
 
             // convergence criterion
             while (delta_u > epsilon || u<=0 || save==0)
@@ -648,7 +648,7 @@ void DData::OnDMS(CBlade *pBlade)
                         alpha_deg = 180.0-alpha_deg;
                         alpha_deg = 180.0-asin(F * cos(theta) * cos(delta) * V/W)*180/PI+m_twist[i]*cos(delta);
 
-					}
+                    }
 
                     double alpha_corrected;
                     alpha_corrected = alpha_deg;
@@ -672,7 +672,7 @@ void DData::OnDMS(CBlade *pBlade)
                     }
                     // implementation of the tiploss correction
                     // (Willmer modification of Prandtl method)
-					if (m_bTipLoss)
+                    if (m_bTipLoss)
                     {
                         double a0 = 1.8*PI*(1+0.8*m_t_local.at(i)/m_c_local.at(i));
                         double AR = height/m_c_local.at(i);
@@ -687,8 +687,8 @@ void DData::OnDMS(CBlade *pBlade)
 
                     tempCFN[l] = Cn * pow((W/m_velocity_inf.at(i)),2) * eta/cos(delta);
                     tempCFT[l] = Ct * pow((W/m_velocity_inf.at(i)),2) * eta/cos(delta);
-					tempFN[l] = Cn * pow(W,2)/cos(delta);
-					tempFT[l] = Ct * pow(W,2)/cos(delta);
+                    tempFN[l] = Cn * pow(W,2)/cos(delta);
+                    tempFT[l] = Ct * pow(W,2)/cos(delta);
                     tempT[l]   = Ct * pow(W,2) * m_radius_local.at(i)/cos(delta);
 
                     // normal iteration
@@ -726,7 +726,7 @@ void DData::OnDMS(CBlade *pBlade)
                     // iteration final upwind function
                     f = f * m_c_local.at(i) * blades/(8*max_radius*36);
                     // update interference factor
-//                    u_older = u_old;
+                    //                    u_older = u_old;
                     u_old   = u;
                     u       = PI*m_radius_local.at(i)/max_radius / (f + PI*m_radius_local.at(i)/max_radius);
 
@@ -738,11 +738,11 @@ void DData::OnDMS(CBlade *pBlade)
                     if (CTT>0.96*F)
                     {
 
-						u = 1 - (18*F-20-3*pow(fabs(CTT*(50-36*F)+12*F*(3*F-4)),0.5))/(36*F-50);
+                        u = 1 - (18*F-20-3*pow(fabs(CTT*(50-36*F)+12*F*(3*F-4)),0.5))/(36*F-50);
                     }
 
-					if (u>=1) u2 = 0.99;
-					if (u<=0) u2 = 0.01;
+                    if (u>=1) u2 = 0.99;
+                    if (u<=0) u2 = 0.01;
 
                     //implementation of the relaxation factor
                     u       = relax*u+(1-relax)*u_old;
@@ -756,8 +756,8 @@ void DData::OnDMS(CBlade *pBlade)
             tempCFNlist.append(tempCFN);
             tempCFTlist.append(tempCFT);
             tempTlist.append(tempT);
-			tempFNlist.append(tempFN);
-			tempFTlist.append(tempFT);
+            tempFNlist.append(tempFN);
+            tempFTlist.append(tempFT);
 
             //// save upwind data
             m_it_up.append(count-1);
@@ -767,7 +767,7 @@ void DData::OnDMS(CBlade *pBlade)
             m_a_up.append(1-u);
             V = u * m_velocity_inf.at(i);
             m_velocity_up.append(V);
-			X = m_radius_local.at(i)*omega/V;
+            X = m_radius_local.at(i)*omega/V;
             m_lambda_up.append(X);
             m_velocity_equil.append((2*u-1)*m_velocity_inf.at(i));
             // azimuthal blade data
@@ -811,16 +811,16 @@ void DData::OnDMS(CBlade *pBlade)
             int save = 0;
 
             //computation of the blade inclination angle delta
-			if (i==0)               delta = atan(fabs(m_radius_local.at(i+1)-m_radius_local.at(i))/fabs(m_pos.at(i+1)-m_pos.at(i)));
-			else if (i==elements-1) delta = atan(fabs(m_radius_local.at(i)-m_radius_local.at(i-1))/fabs(m_pos.at(i)-m_pos.at(i-1)));
-			else                    delta = atan(fabs(m_radius_local.at(i+1)-m_radius_local.at(i-1))/fabs(m_pos.at(i+1)-m_pos.at(i-1)));
+            if (i==0)               delta = atan(fabs(m_radius_local.at(i+1)-m_radius_local.at(i))/fabs(m_pos.at(i+1)-m_pos.at(i)));
+            else if (i==elements-1) delta = atan(fabs(m_radius_local.at(i)-m_radius_local.at(i-1))/fabs(m_pos.at(i)-m_pos.at(i-1)));
+            else                    delta = atan(fabs(m_radius_local.at(i+1)-m_radius_local.at(i-1))/fabs(m_pos.at(i+1)-m_pos.at(i-1)));
 
             // force distribution
             tempCFN = tempCFNlist.at(i);
             tempCFT = tempCFTlist.at(i);
             tempT   = tempTlist.at(i);
-			tempFN = tempFNlist.at(i);
-			tempFT = tempFTlist.at(i);
+            tempFN = tempFNlist.at(i);
+            tempFT = tempFTlist.at(i);
 
 
             // convergence criterion
@@ -907,7 +907,7 @@ void DData::OnDMS(CBlade *pBlade)
 
                     // implementation of the tiploss correction
                     // (Willmer modification of Prandtl method)
-					if (m_bTipLoss)
+                    if (m_bTipLoss)
                     {
                         double a0 = 1.8*PI*(1+0.8*m_t_local.at(i)/m_c_local.at(i));
                         double AR = height/m_c_local.at(i);
@@ -922,8 +922,8 @@ void DData::OnDMS(CBlade *pBlade)
 
                     tempCFN[l] = Cn * pow((W/m_velocity_inf.at(i)),2) * eta/cos(delta);
                     tempCFT[l] = Ct * pow((W/m_velocity_inf.at(i)),2) * eta/cos(delta);
-					tempFN[l] = Cn * pow(W,2)/cos(delta);
-					tempFT[l] = Ct * pow(W,2)/cos(delta);
+                    tempFN[l] = Cn * pow(W,2)/cos(delta);
+                    tempFT[l] = Ct * pow(W,2)/cos(delta);
                     tempT[l]   = Ct * pow(W,2) * m_radius_local.at(i)/cos(delta);
 
                     // normal iteration
@@ -963,8 +963,8 @@ void DData::OnDMS(CBlade *pBlade)
                     u2_old   = u2;
                     u2       = PI*m_radius_local.at(i)/max_radius / (f + PI*m_radius_local.at(i)/max_radius);
 
-					if (u2>=1) u2 = 0.99;
-					if (u2<=0) u2 = 0.01;
+                    if (u2>=1) u2 = 0.99;
+                    if (u2<=0) u2 = 0.01;
 
                     //implementation of the relaxation factor
                     u2       = relax*u2+(1-relax)*u2_old;
@@ -977,8 +977,8 @@ void DData::OnDMS(CBlade *pBlade)
             tempCFNlist[i] = tempCFN;
             tempCFTlist[i] = tempCFT;
             tempTlist[i]   = tempT;
-			tempFNlist[i] = tempFN;
-			tempFTlist[i] = tempFT;
+            tempFNlist[i] = tempFN;
+            tempFTlist[i] = tempFT;
 
             //// save downwind data
             m_it_dw.append(count-1);
@@ -1034,8 +1034,8 @@ void DData::OnDMS(CBlade *pBlade)
         tempCFN = tempCFNlist.at(i);
         tempCFT = tempCFTlist.at(i);
         tempT   = tempTlist.at(i);
-		tempFN = tempFNlist.at(i);
-		tempFT = tempFTlist.at(i);
+        tempFN = tempFNlist.at(i);
+        tempFT = tempFTlist.at(i);
 
         // add load contribution of current height for all theta
         for (int l=0; l<72; l++)
@@ -1060,13 +1060,13 @@ void DData::OnDMS(CBlade *pBlade)
             //Delta theta = 5 deg
             double between = (tempTheta-m_theta_deg.at(from))/(m_theta_deg.at(to)-m_theta_deg.at(from));
 
-			CFN[l] = CFN[l] + m_c_local.at(i) * (tempCFN[from] + between * (tempCFN[to]-tempCFN[from])) * deltas.at(i);
-			CFT[l] = CFT[l] + m_c_local.at(i) * (tempCFT[from] + between * (tempCFT[to]-tempCFT[from])) * deltas.at(i);
+            CFN[l] = CFN[l] + m_c_local.at(i) * (tempCFN[from] + between * (tempCFN[to]-tempCFN[from])) * deltas.at(i);
+            CFT[l] = CFT[l] + m_c_local.at(i) * (tempCFT[from] + between * (tempCFT[to]-tempCFT[from])) * deltas.at(i);
             T[l]   = T[l]   + m_c_local.at(i) * (tempT[from]   + between * (tempT[to]-tempT[from]))     * deltas.at(i);
-			CF_blade_length[l] = CF_blade_length[l] + m_c_local.at(i) * cos(tempTheta/360.0*2*PI)*(tempCFN[from] + between * (tempCFN[to]-tempCFN[from])) * deltas.at(i)+ m_c_local.at(i) * sin(tempTheta/360.0*2*PI) * (tempCFT[from] + between * (tempCFT[to]-tempCFT[from])) * deltas.at(i);
-			CF_blade_cross[l] = CF_blade_cross[l] + m_c_local.at(i) *sin(tempTheta/360.0*2*PI)*(tempCFN[from] + between * (tempCFN[to]-tempCFN[from])) * deltas.at(i)- m_c_local.at(i) * cos(tempTheta/360.0*2*PI) * (tempCFT[from] + between * (tempCFT[to]-tempCFT[from])) * deltas.at(i);
-			F_blade_length[l] = F_blade_length[l] + m_c_local.at(i) * cos(tempTheta/360.0*2*PI)*(tempFN[from] + between * (tempFN[to]-tempFN[from])) * deltas.at(i)+ m_c_local.at(i) * sin(tempTheta/360.0*2*PI) * (tempFT[from] + between * (tempFT[to]-tempFT[from])) * deltas.at(i);
-			F_blade_cross[l] = F_blade_cross[l] + m_c_local.at(i) *sin(tempTheta/360.0*2*PI)*(tempFN[from] + between * (tempFN[to]-tempFN[from])) * deltas.at(i)- m_c_local.at(i) * cos(tempTheta/360.0*2*PI) * (tempFT[from] + between * (tempFT[to]-tempFT[from])) * deltas.at(i);
+            CF_blade_length[l] = CF_blade_length[l] + m_c_local.at(i) * cos(tempTheta/360.0*2*PI)*(tempCFN[from] + between * (tempCFN[to]-tempCFN[from])) * deltas.at(i)+ m_c_local.at(i) * sin(tempTheta/360.0*2*PI) * (tempCFT[from] + between * (tempCFT[to]-tempCFT[from])) * deltas.at(i);
+            CF_blade_cross[l] = CF_blade_cross[l] + m_c_local.at(i) *sin(tempTheta/360.0*2*PI)*(tempCFN[from] + between * (tempCFN[to]-tempCFN[from])) * deltas.at(i)- m_c_local.at(i) * cos(tempTheta/360.0*2*PI) * (tempCFT[from] + between * (tempCFT[to]-tempCFT[from])) * deltas.at(i);
+            F_blade_length[l] = F_blade_length[l] + m_c_local.at(i) * cos(tempTheta/360.0*2*PI)*(tempFN[from] + between * (tempFN[to]-tempFN[from])) * deltas.at(i)+ m_c_local.at(i) * sin(tempTheta/360.0*2*PI) * (tempFT[from] + between * (tempFT[to]-tempFT[from])) * deltas.at(i);
+            F_blade_cross[l] = F_blade_cross[l] + m_c_local.at(i) *sin(tempTheta/360.0*2*PI)*(tempFN[from] + between * (tempFN[to]-tempFN[from])) * deltas.at(i)- m_c_local.at(i) * cos(tempTheta/360.0*2*PI) * (tempFT[from] + between * (tempFT[to]-tempFT[from])) * deltas.at(i);
         }
     }
 
@@ -1082,13 +1082,13 @@ void DData::OnDMS(CBlade *pBlade)
     for (int l=0; l<72; l++)
     {
         // one blade
-		m_FN[l] = CFN[l]/sweptArea;
-		m_FT[l] = CFT[l]/sweptArea;
-		m_CF_cross[l] = CF_blade_cross[l]/sweptArea;
-		m_CF_length[l] = CF_blade_length[l]/sweptArea;
-		m_F_cross[l] = F_blade_cross[l] * 0.5 * rho;
-		m_F_length[l] = F_blade_length[l] * 0.5 * rho;
-		m_T[l]  = 0.5*rho*T[l];
+        m_FN[l] = CFN[l]/sweptArea;
+        m_FT[l] = CFT[l]/sweptArea;
+        m_CF_cross[l] = CF_blade_cross[l]/sweptArea;
+        m_CF_length[l] = CF_blade_length[l]/sweptArea;
+        m_F_cross[l] = F_blade_cross[l] * 0.5 * rho;
+        m_F_length[l] = F_blade_length[l] * 0.5 * rho;
+        m_T[l]  = 0.5*rho*T[l];
     }
 
     for (int l=0; l<72; l++)
@@ -1118,10 +1118,10 @@ void DData::OnDMS(CBlade *pBlade)
 
             m_FN_tot[l] = m_FN_tot[l] + m_FN[from] + between * (m_FN[to] - m_FN[from]);
             m_FT_tot[l] = m_FT_tot[l] + m_FT[from] + between * (m_FT[to] - m_FT[from]);
-			m_CF_cross_tot[l] = m_CF_cross_tot[l] + m_CF_cross[from] + between * (m_CF_cross[to] - m_CF_cross[from]);
-			m_CF_length_tot[l] = m_CF_length_tot[l] + m_CF_length[from] + between * (m_CF_length[to] - m_CF_length[from]);
-			m_F_cross_tot[l] = m_F_cross_tot[l] + m_F_cross[from] + between * (m_F_cross[to] - m_F_cross[from]);
-			m_F_length_tot[l] = m_F_length_tot[l] + m_F_length[from] + between * (m_F_length[to] - m_F_length[from]);
+            m_CF_cross_tot[l] = m_CF_cross_tot[l] + m_CF_cross[from] + between * (m_CF_cross[to] - m_CF_cross[from]);
+            m_CF_length_tot[l] = m_CF_length_tot[l] + m_CF_length[from] + between * (m_CF_length[to] - m_CF_length[from]);
+            m_F_cross_tot[l] = m_F_cross_tot[l] + m_F_cross[from] + between * (m_F_cross[to] - m_F_cross[from]);
+            m_F_length_tot[l] = m_F_length_tot[l] + m_F_length[from] + between * (m_F_length[to] - m_F_length[from]);
             m_T_tot[l]  = m_T_tot[l]  + m_T[from]  + between * (m_T[to]  - m_T[from]);
         }
     }
@@ -1134,7 +1134,7 @@ void DData::OnDMS(CBlade *pBlade)
 
     // average half-torque coefficients
     for (int l=0; l<36; l++)
-		CQ1 = CQ1 + m_FT[l];
+        CQ1 = CQ1 + m_FT[l];
     for (int l=36; l<72; l++)
         CQ2 = CQ2 + m_FT[l];
 
@@ -1172,14 +1172,14 @@ void DData::OnDMS(CBlade *pBlade)
 
     // calculate torque and power for turbine
     if (windspeed>0)
-	{
+    {
         torque = 0;
         for (int l=0; l<72; l++)
         {
             torque = torque + blades/72.0*m_T[l];
         }
 
-//		torque -= TPA;
+        //      torque -= TPA;
 
 
         power = 0;

@@ -23,7 +23,7 @@ K = T/(F1*rho*4*np.pi*V**2)
 b = c1*beta**(-epsilon_i-m)**2
 delta = np.arctan(Lambda/epsilon_i*(1+K))
 """
-
+"""
 def chord_distribution(B,Cl,rpm,V,R):
 	out = []
 	for _r in np.linspace(0,1,11):
@@ -35,3 +35,4 @@ def chord_distribution(B,Cl,rpm,V,R):
 	return
 
 chord_distribution(2,1.2,1500,10,1.5)
+"""
