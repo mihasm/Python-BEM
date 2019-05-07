@@ -6,10 +6,12 @@ import numpy as np,numpy
 from math import pi
 import traceback
 from matplotlib import pyplot as plt
+from scipy.signal import argrelextrema
+
 
 
 # noinspection PyBroadException
-def optimize_angles(inp_args):
+def optimize_angles_old(inp_args):
     p = Printer(inp_args["return_print"])
     try:
         p.print("Optimizing angles for target variable:", inp_args["optimization_variable"])
@@ -46,28 +48,9 @@ def optimize_angles(inp_args):
             for dtheta in [90,60,45,30,10, 5, 1, 0.5, 0.1]:
                 p.print("dtheta", dtheta)
                 while True:
-                    initial = False
-                    if not initial:
-                        while _theta > -90.0:
-                            # initial angle
-                            try:
-                                out = C.calculate_section(v=v, omega=omega, _airfoil=_airfoil, _airfoil_dat=_airfoil_dat,
-                                                          max_thickness=max_thickness, _r=_r, _c=_c, _dr=_dr, _theta=radians(_theta),
-                                                          printer=p, **inp_args)
-                            except Exception as e:
-                                p.print(e)
-                                p.print(traceback.format_exc())
-                                out = None
-                            if out == False or out == None:
-                                _theta = _theta - 10
-                            else:
-                                done_angles[_theta] = out
-                                initial = True
-                                break
-
                     # middle angle
                     if not _theta in done_angles:
-                        p.print("   calculating out")
+                        p.print("   calculating middle angle",_theta)
                         try:
                             out = C.calculate_section(v=v, omega=omega, _airfoil=_airfoil, _airfoil_dat=_airfoil_dat,
                                                       max_thickness=max_thickness, _r=_r, _c=_c, _dr=_dr, _theta=radians(_theta),
@@ -80,12 +63,12 @@ def optimize_angles(inp_args):
                             break
                         done_angles[_theta] = out
                     else:
-                        p.print(_theta, "already calculated, reusing...")
+                        p.print("   ",_theta, "already calculated, reusing...")
                         out = done_angles[_theta]
 
                     # upper angle
                     if not _theta + dtheta in done_angles:
-                        p.print("   calculating out_up")
+                        p.print("   calculating up_angle",_theta+dtheta)
                         try:
                             out_up = C.calculate_section(v=v, omega=omega, _airfoil=_airfoil, _airfoil_dat=_airfoil_dat,
                                                          max_thickness=max_thickness, _r=_r, _c=_c, _dr=_dr,
@@ -98,12 +81,12 @@ def optimize_angles(inp_args):
                             break
                         done_angles[_theta + dtheta] = out_up
                     else:
-                        p.print(_theta + dtheta, "already calculated, reusing...")
+                        p.print("   ",_theta + dtheta, "already calculated, reusing...")
                         out_up = done_angles[_theta + dtheta]
 
                     # lower angle
                     if not _theta - dtheta in done_angles:
-                        p.print("   calculating out_down")
+                        p.print("   calculating out_down",_theta-dtheta)
                         try:
                             out_down = C.calculate_section(v=v, omega=omega, _airfoil=_airfoil,
                                                            _airfoil_dat=_airfoil_dat, max_thickness=max_thickness,
@@ -117,7 +100,7 @@ def optimize_angles(inp_args):
                             break
                         done_angles[_theta - dtheta] = out_down
                     else:
-                        p.print(_theta - dtheta, "already calculated, reusing...")
+                        p.print("   ",_theta - dtheta, "already calculated, reusing...")
                         out_down = done_angles[_theta - dtheta]
 
                     if out_up == False or out_down == False or out == False:
@@ -183,6 +166,108 @@ def optimize_angles(inp_args):
         p.print("Error in running optimizer: %s" % str(e))
         p.print("!!!!EOF!!!!")
         #raise
+
+
+# noinspection PyBroadException
+def optimize_angles(inp_args):
+
+    #brute force method
+
+    p = Printer(inp_args["return_print"])
+    try:
+        p.print("Optimizing angles for target variable:", inp_args["optimization_variable"])
+        return_results = inp_args["return_results"]
+
+        v = inp_args["target_speed"]
+        rpm = inp_args["target_rpm"]
+        # print(v,pi,rpm)
+        omega = 2 * pi * rpm / 60
+        # optimization_variable = "dT"
+        optimization_variable = inp_args["optimization_variable"]
+        p.print("Optimization variable is",optimization_variable)
+        p.print("Propeller mode:",inp_args["propeller_mode"])
+
+        output_angles = []
+        output_alphas = []
+
+        inp_args["theta_in"] = np.array([120]*len(inp_args["theta_in"]))
+
+        C = Calculator(inp_args["airfoils"])
+
+        for section_number in range(len(inp_args["r_in"])):
+            p.print("section_number is", section_number)
+
+            _r = inp_args["r_in"][section_number]
+            _c = inp_args["c_in"][section_number]
+            _theta = inp_args["theta_in"][section_number]
+            _dr = inp_args["dr"][section_number]
+            _airfoil = inp_args["foils_in"][section_number]
+            max_thickness = inp_args["airfoils"][_airfoil]["max_thickness"] * _c
+            _airfoil_dat = _airfoil + ".dat"
+
+            done_angles = []  # key is theta, value is out
+            done_thrusts = []
+            done_alphas = []
+
+            p.print("initial theta is", _theta)
+            got_through = False
+            for _theta in np.linspace(-10,90,200):
+                p.print("_theta", _theta)
+                try:
+                    out = C.calculate_section(v=v, omega=omega, _airfoil=_airfoil, _airfoil_dat=_airfoil_dat,
+                                              max_thickness=max_thickness, _r=_r, _c=_c, _dr=_dr, _theta=radians(_theta),
+                                              printer=p, **inp_args)
+                    #p.print("out",out)
+                except Exception as e:
+                    p.print(e)
+                    p.print(traceback.format_exc())
+                    out = None
+
+                if out != False and out != None:
+                    if optimization_variable == "dT":
+                        if degrees(out["alpha"]) >=20:
+                            p.print("Reached maximum alpha: 20 degrees, breaking ...")
+                            break
+                    done_thrusts.append(out[optimization_variable])
+                    #p.print("Target variable value:",out[optimization_variable])
+                    done_angles.append(_theta)
+                    done_alphas.append(out["alpha"])
+
+            #max_i = np.argmax(np.array(done_thrusts))
+            #output_angles.append(done_angles[max_i])
+            done_alphas = np.array(degrees(done_alphas))
+            done_angles = np.array(done_angles)
+            done_thrusts = np.array(done_thrusts)
+            #pol = np.polyfit(done_angles,done_thrusts,4)
+            #val = np.polyval(pol,done_angles)
+            #plt.plot(done_angles,done_thrusts,"b-",label="thrust")
+            plt.plot(done_alphas,done_thrusts)
+            #plt.plot(done_angles,val,"g-",label="interpolated thrust")
+            maxima = argrelextrema(done_thrusts, np.greater)
+            plt.plot(done_alphas[maxima],done_thrusts[maxima],'r*')
+            max_i = np.argmax(done_thrusts)
+            max_angle  = done_angles[max_i]
+            chosen_alpha = done_alphas[max_i]
+            output_angles.append(max_angle)
+            output_alphas.append(chosen_alpha)
+            plt.show()
+            p.print("final theta is", max_angle)
+            p.print("*******************************")
+
+        p.print("angles of attack:")
+        p.print(output_alphas)
+        p.print("angles:")
+        p.print(output_angles)
+        for a in output_angles:
+            p.print(a)
+        p.print("!!!!EOF!!!!")
+    except Exception as e:
+        p.print("Error in running optimizer: %s" % str(e))
+        p.print("!!!!EOF!!!!")
+        #raise
+
+
+
 
 def maximize_for_both(inp_args):
     p = Printer(inp_args["return_print"])
@@ -291,6 +376,8 @@ def maximize_for_both(inp_args):
         p.print(str(e))
         p.print(traceback.format_exc())
         p.print("!!!!EOF!!!!")
+
+
 
 """
 x = np.linspace(0,2*np.pi,40)

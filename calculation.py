@@ -445,8 +445,8 @@ class Calculator:
             dQ_MT_p_2 = 4*pi*_r**3*rho*v*(1+a)*omega
 
             if propeller_mode:
-                dT = dT_BET_p_2
-                dQ = dQ_BET_p_2
+                dT = dT_BET_p
+                dQ = dQ_BET_p
             else:
                 dT = dT_BET
                 dQ = dQ_BET
