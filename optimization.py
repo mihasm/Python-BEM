@@ -243,15 +243,18 @@ def optimize_angles(inp_args):
             #plt.plot(done_angles,done_thrusts,"b-",label="thrust")
             plt.plot(done_alphas,done_thrusts)
             #plt.plot(done_angles,val,"g-",label="interpolated thrust")
-            maxima = argrelextrema(done_thrusts, np.greater)
-            plt.plot(done_alphas[maxima],done_thrusts[maxima],'r*')
+            #maxima = argrelextrema(done_thrusts, np.greater)
+            #plt.plot(done_alphas[maxima],done_thrusts[maxima],'r*')
             max_i = np.argmax(done_thrusts)
-            max_angle  = done_angles[max_i]
+            chosen_angle  = done_angles[max_i]
             chosen_alpha = done_alphas[max_i]
-            output_angles.append(max_angle)
+            chosen_thrust = done_thrusts[max_i]
+
+            plt.plot([chosen_alpha],[chosen_thrust],"ro")
+            output_angles.append(chosen_angle)
             output_alphas.append(chosen_alpha)
             plt.show()
-            p.print("final theta is", max_angle)
+            p.print("final theta is", chosen_angle)
             p.print("*******************************")
 
         p.print("angles of attack:")

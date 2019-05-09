@@ -12,6 +12,8 @@ desktop.ini
 /foils
 /foils/*
 
+/export/*
+
 # User-specific stuff
 .idea/**/workspace.xml
 .idea/**/tasks.xml

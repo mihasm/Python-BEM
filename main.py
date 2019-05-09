@@ -6,8 +6,15 @@ __maintainer__ = "Miha Smrekar"
 __email__ = "miha.smrekar9@gmail.com"
 __status__ = "Development"
 
+
+from multiprocessing import Process, Manager
+import multiprocessing
+import json
+from pprint import pprint
+import time
 import sys
 import ctypes
+import os
 
 import numpy
 from PyQt5 import QtWidgets
@@ -25,27 +32,24 @@ from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.backends.backend_qt4agg import NavigationToolbar2QT as NavigationToolbar
 import matplotlib.pyplot as plt
 from matplotlib.widgets import Slider, Button, RadioButtons
+import mpl_toolkits.mplot3d as mp3d
+
 
 from calculation_runner import calculate_power_3d
 from results import ResultsWindow
 from table import Table
-import time
 from turbine_data import SET_INIT
-
-from optimization import optimize_angles
-from utils import interpolate_geom, to_float, fltr, QDarkPalette
-
+from utils import interpolate_geom, to_float, fltr, QDarkPalette, create_folder
 from optimization import optimize_angles, maximize_for_both, optimal_pitch
 from utils import interpolate_geom, to_float, fltr
 from interpolator import interp_at
 from polars import scrape_data
 from montgomerie import Montgomerie
 from xfoil import generate_polars_data
+from visualize import create_3d_blade
+from sw_macro_builder import create_macro_text
 
-from multiprocessing import Process, Manager
-import multiprocessing
-import json
-from pprint import pprint
+
 
 
 TITLE_STR = "BEM analiza v%s" % __version__
@@ -106,6 +110,8 @@ class MainWindow(QMainWindow):
         self.running = False
         self.manager = Manager()
         self.set_all_settings(SET_INIT)
+
+        create_folder("foils") #Used by XFoil
 
         self.show()
 
@@ -261,6 +267,16 @@ class WindTurbineProperties(QWidget):
         self.B.setText("5")
         fbox.addRow(_B, self.B)
 
+        self.export_button = QPushButton("Export curve data")
+        self.export_button.clicked.connect(self.export)
+        fbox.addRow("Export:", self.export_button)
+
+        self.flip_turning_direction = QCheckBox()
+        fbox.addRow("Flip turning direction",self.flip_turning_direction)
+
+        self.propeller_geom = QCheckBox()
+        fbox.addRow("Propeller",self.propeller_geom)
+
     def get_settings(self):
         out_properties = {"Rhub": to_float(self.Rhub.text()), "R": to_float(self.R.text()), "B": int(self.B.text()),
                           "turbine_name": self.name.text(), }
@@ -302,6 +318,50 @@ class WindTurbineProperties(QWidget):
             self.name.setText(t)
         else:
             self.name.setText("")
+
+    def export(self):
+        print("Getting settings...")
+        SET_INIT = self.parent().parent().parent().get_all_settings()
+        data = create_3d_blade(SET_INIT,self.flip_turning_direction.isChecked(),self.propeller_geom.isChecked())
+        w = MatplotlibWindow(self)
+        w.ax = w.figure.add_subplot(111, projection="3d")
+        w.ax.scatter(data["X"],data["Y"],data["Z"])
+        X,Y,Z = np.array(data["X"]),np.array(data["Y"]),np.array(data["Z"])
+        max_range = np.array([X.max()-X.min(), Y.max()-Y.min(), Z.max()-Z.min()]).max() / 2.0
+        mid_x = (X.max()+X.min()) * 0.5
+        mid_y = (Y.max()+Y.min()) * 0.5
+        mid_z = (Z.max()+Z.min()) * 0.5
+        w.ax.set_xlim(mid_x - max_range, mid_x + max_range)
+        w.ax.set_ylim(mid_y - max_range, mid_y + max_range)
+        w.ax.set_zlim(mid_z - max_range, mid_z + max_range)
+        w.ax.set_aspect("equal")
+
+        create_folder("export")
+        folder_path = os.path.join("export",SET_INIT["turbine_name"])
+        create_folder(folder_path)
+
+        filenames = []
+        print("Exporting... (and converting m to mm)")
+        for z,x_data,y_data in data["data"]:
+            print("Exporting z="+str(z),"[m]")
+            z = z*1e3 #in mm
+            file_name = os.path.join(folder_path,"z_%s.txt"%z)
+            filenames.append(os.path.join(os.getcwd(),file_name))
+            #print(file_name)
+            f = open(os.path.join(folder_path,"z_%s.txt"%z),"w")
+            for x,y in zip(x_data,y_data):
+                x,y = x*1e3,y*1e3 #in mm
+                f.write("%s\t%s\t%s\n" % (x,y,z))
+            f.close()
+        print("Filenames:",filenames)
+        macro_text = create_macro_text(filenames)
+
+        print("'===============MACRO START==================")
+        print(macro_text)
+        print("'===============MACRO   END==================")
+        #print("Done")
+
+
 
 
 class AirfoilManager(QWidget):
