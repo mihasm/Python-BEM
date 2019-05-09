@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 import mpl_toolkits.mplot3d as mp3d
-from turbine_data import SET_INIT
+from hye_propeller_data import SET_INIT
 import numpy as np
 from matplotlib import cm
 """
@@ -26,6 +26,7 @@ ax.add_collection3d(face1)
 ax.add_collection3d(face2)
 plt.show()
 """
+
 facecolors = [cm.jet(x) for x in np.random.rand(20)]
 
 
@@ -65,12 +66,6 @@ def get_centroid(foil_x,foil_y):
 
 
 
-theta = SET_INIT["theta_in"]
-r = SET_INIT["r_in"]
-c = SET_INIT["c_in"]
-foil = SET_INIT["foils_in"]
-airfoils = SET_INIT["airfoils"]
-foil_x,foil_y = SET_INIT["airfoils"]["s826"]["x"],SET_INIT["airfoils"]["s826"]["y"]
 
 def scale_and_normalize(foil_x,foil_y,scale):
 	foil_x,foil_y = np.array(foil_x),np.array(foil_y)
@@ -79,74 +74,108 @@ def scale_and_normalize(foil_x,foil_y,scale):
 	foil_x,foil_y = foil_x*scale,foil_y*scale
 	return foil_x,foil_y
 
-#foil_x,foil_y = scale_and_normalize(foil_x,foil_y,5)
-rot_x,rot_y = rotate_array(foil_x,foil_y,(0,0),45)
+def create_3d_blade(SET_INIT):
+	theta = SET_INIT["theta_in"]
+	r = SET_INIT["r_in"]
+	c = SET_INIT["c_in"]
+	foil = SET_INIT["foils_in"]
+	airfoils = SET_INIT["airfoils"]
+	#foil_x,foil_y = SET_INIT["airfoils"]["s826"]["x"],SET_INIT["airfoils"]["s826"]["y"]
 
-fig = plt.figure()
-ax = fig.add_subplot(111, projection='3d')
-out_x,out_y,out_z = [],[],[]
-data_faces = []
-for i in range(len(r)):
-	z = r[i]
-	data_faces.append([z])
-	_c = c[i]
-	_foil = foil[i]
-	_theta = theta[i]
-	_foil_x,_foil_y = airfoils[_foil]["x"],airfoils[_foil]["y"]
-	_foil_x,_foil_y = scale_and_normalize(_foil_x,_foil_y,_c)
-	_foil_x,_foil_y = rotate_array(_foil_x,_foil_y,(0,0),_theta)
-	list_x,list_y = [],[]
-	for _x,_y in zip(_foil_x,_foil_y):
-		out_x.append(_x)
-		out_y.append(_y)
-		out_z.append(z)
-		list_x.append(_x)
-		list_y.append(_y)
-	data_faces[-1].append(list_x)
-	data_faces[-1].append(list_y)
+	#foil_x,foil_y = scale_and_normalize(foil_x,foil_y,5)
+	#rot_x,rot_y = rotate_array(foil_x,foil_y,(0,0),45)
+
+	fig = plt.figure()
+	ax = fig.add_subplot(111, projection='3d')
+	out_x,out_y,out_z = [],[],[]
+	out_x2,out_y2,out_z2 = [],[],[]
+	data_faces = []
+	for i in range(len(r)):
+		z = r[i]
+		data_faces.append([z])
+		_c = c[i]
+		_foil = foil[i]
+		_theta = theta[i]
+		_foil_x,_foil_y = airfoils[_foil]["x"],airfoils[_foil]["y"]
 
 
-#plt.plot(foil_x,foil_y)
-#plt.plot(rot_x,rot_y,"-r")
-#ax.scatter(out_x,out_y,out_z)
-X,Y,Z = np.array(out_x),np.array(out_y),np.array(out_z)
-max_range = np.array([X.max()-X.min(), Y.max()-Y.min(), Z.max()-Z.min()]).max() / 2.0
 
-mid_x = (X.max()+X.min()) * 0.5
-mid_y = (Y.max()+Y.min()) * 0.5
-mid_z = (Z.max()+Z.min()) * 0.5
-ax.set_xlim(mid_x - max_range, mid_x + max_range)
-ax.set_ylim(mid_y - max_range, mid_y + max_range)
-ax.set_zlim(mid_z - max_range, mid_z + max_range)
-ax.set_aspect("equal")
-Axes3D.mouse_init(ax,rotate_btn=1,zoom_btn=2)
+		#_foil_x,_foil_y = scale_and_normalize(_foil_x,_foil_y,_c)
+		_foil_x,_foil_y = np.array(_foil_x),np.array(_foil_y)
+		centroid = get_centroid(_foil_x,_foil_y)
 
+		_foil_x = _foil_x-centroid[0]
+		
+		
+		_foil_x,_foil_y = rotate_array(_foil_x,_foil_y,(0,0),_theta)
+		_foil_x_up,_foil_y_up = rotate_array(_foil_x_up,_foil_y_up,(0,0),_theta)
+		_foil_x_down,_foil_y_down = rotate_array(_foil_x_down,_foil_y_down,(0,0),_theta)
+		
+		list_x,list_y = [],[]
+		for _x,_y in zip(_foil_x_up,_foil_y_up):
+			out_x.append(_x)
+			out_y.append(_y)
+			out_z.append(z)
+			list_x.append(_x)
+			list_y.append(_y)
 
-from matplotlib.colors import LightSource
+		for _x,_y in zip(_foil_x_down,_foil_y_down):
+			out_x2.append(_x)
+			out_y2.append(_y)
+			out_z2.append(z)
+			list_x.append(_x)
+			list_y.append(_y)
 
-#ls = LightSource(azdeg=0, altdeg=65)
-# shade data, creating an rgb array.
-#rgb = ls.shade(z, plt.cm.RdYlBu)
-
-
-for i in range(len(data_faces)-1):
-	z = data_faces[i][0]
-	z_up = data_faces[i+1][0]
-	for j in range(len(data_faces[i][1])-1):
-		x = data_faces[i][1][j]
-		y = data_faces[i][2][j]
-		x_up = data_faces[i+1][1][j]
-		y_up = data_faces[i+1][2][j]
-		x_next = data_faces[i][1][j+1]
-		y_next = data_faces[i][2][j+1]
-		x_up_next = data_faces[i+1][1][j+1]
-		y_up_next = data_faces[i+1][2][j+1]
-		face = create_face((x,y,z),(x_next,y_next,z),(x_up_next,y_up_next,z_up),(x_up,y_up,z_up))
-		ax.add_collection3d(face)
+		data_faces[-1].append(list_x)
+		data_faces[-1].append(list_y)
 
 
-#face = create_face((0,0,0),(0,0,1),(1,0,0),(1,1,0))
-#ax.add_collection3d(face)
-#plt.axis("equal")
-plt.show()
+	#plt.plot(foil_x,foil_y)
+	#plt.plot(rot_x,rot_y,"-r")
+	#ax.scatter(out_x,out_y,out_z)
+	X,Y,Z = np.array(out_x),np.array(out_y),np.array(out_z)
+	X2,Y2,Z2 = np.array(out_x2),np.array(out_y2),np.array(out_z2)
+	max_range = np.array([X.max()-X.min(), Y.max()-Y.min(), Z.max()-Z.min()]).max() / 2.0
 
+	mid_x = (X.max()+X.min()) * 0.5
+	mid_y = (Y.max()+Y.min()) * 0.5
+	mid_z = (Z.max()+Z.min()) * 0.5
+	ax.set_xlim(mid_x - max_range, mid_x + max_range)
+	ax.set_ylim(mid_y - max_range, mid_y + max_range)
+	ax.set_zlim(mid_z - max_range, mid_z + max_range)
+	ax.set_aspect("equal")
+	Axes3D.mouse_init(ax,rotate_btn=1,zoom_btn=2)
+
+	ax.scatter(X,Y,Z)
+	ax.scatter(X2,Y2,Z2,'r.')
+
+	from matplotlib.colors import LightSource
+
+	#ls = LightSource(azdeg=0, altdeg=65)
+	# shade data, creating an rgb array.
+	#rgb = ls.shade(z, plt.cm.RdYlBu)
+
+	"""
+	for i in range(len(data_faces)-1):
+		z = data_faces[i][0]
+		z_up = data_faces[i+1][0]
+		for j in range(len(data_faces[i][1])-1):
+			x = data_faces[i][1][j]
+			y = data_faces[i][2][j]
+			x_up = data_faces[i+1][1][j]
+			y_up = data_faces[i+1][2][j]
+			x_next = data_faces[i][1][j+1]
+			y_next = data_faces[i][2][j+1]
+			x_up_next = data_faces[i+1][1][j+1]
+			y_up_next = data_faces[i+1][2][j+1]
+			face = create_face((x,y,z),(x_next,y_next,z),(x_up_next,y_up_next,z_up),(x_up,y_up,z_up))
+			ax.add_collection3d(face)
+	"""
+
+	#face = create_face((0,0,0),(0,0,1),(1,0,0),(1,1,0))
+	#ax.add_collection3d(face)
+	#plt.axis("equal")
+
+	plt.show()
+
+create_3d_blade(SET_INIT)
