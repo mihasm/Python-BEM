@@ -17,6 +17,7 @@ import ctypes
 import os
 
 import numpy
+numpy.set_printoptions(threshold=sys.maxsize)
 from PyQt5 import QtWidgets
 from PyQt5.QtCore import QThread, QTextStream, pyqtSignal, QProcess, QRect, Qt
 from PyQt5 import QtCore, QtGui
@@ -40,7 +41,7 @@ from results import ResultsWindow
 from table import Table
 from turbine_data import SET_INIT
 from utils import interpolate_geom, to_float, fltr, QDarkPalette, create_folder
-from optimization import optimize_angles, maximize_for_both, optimal_pitch
+from optimization import optimize_angles_genetic, maximize_for_both, optimal_pitch
 from utils import interpolate_geom, to_float, fltr
 from interpolator import interp_at
 from polars import scrape_data
@@ -1370,7 +1371,7 @@ class Optimization(QWidget):
             else:
                 self.runner_input["propeller_mode"] = False
             self.main.getter.start()
-            self.p = Process(target=optimize_angles, args=[self.runner_input])
+            self.p = Process(target=optimize_angles_genetic, args=[self.runner_input])
             self.p.start()
         else:
             msg = QMessageBox()
