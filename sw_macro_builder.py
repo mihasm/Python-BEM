@@ -33,7 +33,7 @@ import pythoncom
 import pywintypes
 import os
 import win32job
-
+"""
 print(dir(pywintypes))
 
 cwd = os.getcwd()
@@ -85,3 +85,4 @@ app.create_part()
 app.create_curve(list_of_coordinates)
 app.insert_sketch()
 app.create_point(1,0,0)
+"""

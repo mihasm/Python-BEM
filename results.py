@@ -83,17 +83,17 @@ class ResultsWindow(QMainWindow):
         # ct_p(J) krivulja
         f5 = self.tab_widget.add_tab_figure("ct/J krivulja (propeler)")
         self.tab_widget.add_2d_plot_to_figure(f5, results_3d["J"], results_3d["ct_p"], 111, "ct_p(J) krivulja",
-                                              "J = 1/lambda", "ct", look="-", x_min=0, x_max=1, y_min=0, y_max=0.25)
+                                              "J = 1/lambda", "ct", look="b.", x_min=0, x_max=1, y_min=0, y_max=0.25)
 
         # cp_p(J) krivulja
         f6 = self.tab_widget.add_tab_figure("cp/J krivulja (propeler)")
         self.tab_widget.add_2d_plot_to_figure(f6, results_3d['J'], results_3d['cp_p'], 111, 'cp_p(J) krivulja', 'J',
-                                              'cp', look='-', x_min=0, x_max=1, y_min=0, y_max=0.1)
+                                              'cp', look='b.', x_min=0, x_max=1, y_min=0, y_max=0.1)
 
         # cp_p(J) krivulja
         f6 = self.tab_widget.add_tab_figure("eff/J krivulja (propeler)")
         self.tab_widget.add_2d_plot_to_figure(f6, results_3d['J'], results_3d['eff_p'], 111, 'eff_p(J) krivulja', 'J',
-                                              'cp', look='-', x_min=0, x_max=1, y_min=0, y_max=1.0)
+                                              'cp', look='b.', x_min=0, x_max=1, y_min=0, y_max=1.0)
 
         # CL check
         f7 = self.tab_widget.add_tab_figure("check CL")
