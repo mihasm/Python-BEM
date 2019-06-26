@@ -34,6 +34,8 @@ from matplotlib.backends.backend_qt4agg import NavigationToolbar2QT as Navigatio
 import matplotlib.pyplot as plt
 from matplotlib.widgets import Slider, Button, RadioButtons
 import mpl_toolkits.mplot3d as mp3d
+from matplotlib import cm
+
 
 
 from calculation_runner import calculate_power_3d
@@ -537,15 +539,41 @@ class Airfoils(QWidget):
         re_min, re_max = data[:, 0].min(), data[:, 0].max()
         alpha_min, alpha_max = data[:, 2].min(), data[:, 2].max()
 
-        x,y = np.linspace(re_min,re_max,5),np.linspace(alpha_min,alpha_max,30)
+        x,y = np.linspace(re_min,re_max,10),np.linspace(alpha_min,alpha_max,180)
         xi,yi = np.meshgrid(x,y)
         xi,yi = xi.flatten(),yi.flatten()
         z_1 = interp_at(re,alpha,cl,xi,yi)
         z_2 = interp_at(re,alpha,cd,xi,yi)
         w = MatplotlibWindow(self)
         w.ax = w.figure.add_subplot(111, projection="3d")
-        w.ax.scatter(xi, yi, z_1)
-        w.ax.scatter(xi, yi, z_2)
+        #w.ax.scatter(xi, yi, z_1)
+        #w.ax.scatter(xi, yi, z_2)
+        p = w.ax.plot_trisurf(xi,yi,z_1,cmap=cm.coolwarm)
+        w.ax.set_xlabel("Reynolds",fontsize=15,labelpad=20)
+        w.ax.set_ylabel(r'$\alpha$ [°]',fontsize=15,labelpad=20)
+        w.ax.set_zlabel("Cl",fontsize=15,labelpad=20)
+        w.ax.xaxis.set_tick_params(labelsize=12)
+        w.ax.yaxis.set_tick_params(labelsize=12)
+        w.ax.zaxis.set_tick_params(labelsize=12)
+        bar = w.figure.colorbar(p)
+        bar.ax.set_xlabel('Cl', fontsize=15,labelpad=20)
+
+        w2 = MatplotlibWindow(self)
+        w2.ax = w2.figure.add_subplot(111, projection="3d")
+        #w.ax.scatter(xi, yi, z_1)
+        #w.ax.scatter(xi, yi, z_2)
+        p = w2.ax.plot_trisurf(xi,yi,z_2,cmap=cm.coolwarm)
+        w2.ax.set_xlabel("Reynolds",fontsize=15,labelpad=20)
+        w2.ax.set_ylabel(r'$\alpha$ [°]',fontsize=15,labelpad=20)
+        w2.ax.set_zlabel("Cd",fontsize=15,labelpad=20)
+        w2.ax.xaxis.set_tick_params(labelsize=12)
+        w2.ax.yaxis.set_tick_params(labelsize=12)
+        w2.ax.zaxis.set_tick_params(labelsize=12)
+        bar2 = w2.figure.colorbar(p)
+        bar2.ax.set_xlabel('Cd', fontsize=15,labelpad=20)
+
+
+
 
     def open_viewer(self):
         print("opening viewwer")

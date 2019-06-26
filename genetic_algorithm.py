@@ -96,57 +96,90 @@ def optimize_angles_genetic(inp_args):
 
 #https://pablormier.github.io/2017/09/05/a-tutorial-on-differential-evolution-with-python/#
 
-def de(fobj, bounds, mut=0.8, crossp=0.7, popsize=20, its=50):
+def de(fobj, bounds, mut=0.8, crossp=0.3, num_individuals=100, its=100):
+    #stevilo dimenzij
     dimensions = len(bounds)
-    pop = np.random.rand(popsize, dimensions)
-    min_b, max_b = np.asarray(bounds).T
-    diff = np.fabs(min_b - max_b)
-    pop_denorm = min_b + pop * diff
+
+    #populacija
+    pop = np.random.rand(num_individuals, dimensions)
+
+    #normalizacija
+    min_bound, max_bound = np.asarray(bounds).T
+    diff = np.fabs(min_bound - max_bound)
+    pop_denorm = min_bound + pop * diff
+
+    #zacetni fintes
     fitness = np.asarray([fobj(ind) for ind in pop_denorm])
-    best_idx = np.argmin(fitness)
+
+    #najmocnejsi posameznik
+    best_idx = np.argmax(fitness)
+
+    #vrednost najmocnejsega posameznika
     best = pop_denorm[best_idx]
+
     for i in range(its):
-        print("iteration",i)
-        for j in range(popsize):
-            idxs = [idx for idx in range(popsize) if idx != j]
+        #print("i",i)
+        for j in range(num_individuals):
+            #print("\tj",j)
+            #print("\tj_value",pop[j])
+
+            #vsi posamezniki, ki niso trenutni posameznik
+            idxs = [idx for idx in range(num_individuals) if idx != j]
+            #print("\t\tidxs",idxs)
+
+            #tri nakljucni ostali posamezniki
             a, b, c = pop[np.random.choice(idxs, 3, replace = False)]
+            #print("\t\ta,b,c",a,b,c)
+
+            #mutacija
             mutant = np.clip(a + mut * (b - c), 0, 1)
+            #print("\t\tmutant",mutant)
+
+            #izbira zamenjave
             cross_points = np.random.rand(dimensions) < crossp
             if not np.any(cross_points):
                 cross_points[np.random.randint(0, dimensions)] = True
+            cross_points = [False]
+            #print("\t\tcross_points",cross_points)
+
+            #poskusni posameznik
             trial = np.where(cross_points, mutant, pop[j])
-            trial_denorm = min_b + trial * diff
+            #print("\t\ttrial",trial)
+
+            #normalizacija poskusnega posameznika
+            trial_denorm = min_bound + trial * diff
+
+            #preverjanje ciljne funkcije
             f = fobj(trial_denorm)
             if f > fitness[j]:
+                #ce je novi fitnes boljsi, izberi novega posameznika
                 fitness[j] = f
                 pop[j] = trial
                 if f > fitness[best_idx]:
                     best_idx = j
                     best = trial_denorm
-        yield best, fitness[best_idx]
+        #yield best, fitness[best_idx]
+    return best
 
 
-SET_INIT["return_print"] = []
-SET_INIT["return_results"] = []
-optimize_angles_genetic(SET_INIT)
+#SET_INIT["return_print"] = []
+#SET_INIT["return_results"] = []
+#optimize_angles_genetic(SET_INIT)
 
-"""
+
 def fobj(x):
-    #print(x)
     value = 0
     for i in range(len(x)):
-        value += x[i]**2
-    #print(value/len(x))
+        value += -x[i]**2
     return value / len(x)
 
 #fobj = lambda x: sum(x**2)/len(x)
 
 it = list(de(fobj, bounds=[(-100, 100)]))
 
-
-
 print(it)
 """
 
 #plt.plot(range(len(it)),np.array(it)[:,0])
 #plt.show()
+"""

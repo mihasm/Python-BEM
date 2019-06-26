@@ -260,8 +260,41 @@ class Calculator:
             kin_viscosity=1.4207E-5, rho=1.225, convergence_limit=0.001, max_iterations=100, relaxation_factor=0.3,
             printer=None, print_all=False, print_out=False, *args, **kwargs):
 
-        #theta in degrees!!!
-        # print(v)
+        """
+        Function that calculates each section of the blade.
+
+        Inputs:
+        v:float: Wind speed [m/s].
+        omega:float: Rotational velocity [s^-1].
+        _r:float: Section radius [m].
+        _c:float: Section chord length [m].
+        _theta:float: Section angle [rad].
+        _dr:float: Section height [m].
+        B:int: Number of blades.
+        R:float: Wind turbine radius [m].
+        _airfoil_dat:str: Airfoil file name.
+        _airfoil:str: Airfoil name.
+        max_thickness:float: Foil thickness in percentage of chord length.
+        propeller_mode:bool: Boolean that turns on propeller calculation mode if True.
+        pitch:float: Pitch in degrees that adds fixed angle to _theta.
+        psi:float: Coning angle.
+        fix_reynolds:bool: True if only data at one Reynolds number is to be used.
+        reynolds:float: Reynolds number if fix_reynolds is True.
+        tip_loss:bool: Prandtl tip loss.
+        hub_loss:bool: Prandtl hub loss.
+        new_tip_loss:bool: Shen tip loss.
+        new_hub_loss:bool: Shen hub loss.
+        cascade_correction:bool: Cascade correction.
+        rotational_augmentation_correction:bool: Rotational augmentation correction.
+        rotational_augmentation_correction_method:int: Rotational augmentation correction method.
+        mach_number_correction:bool: Mach number correction (for propellers).
+        method:int: Method for calculating axial and tangential induction.
+        kin_viscosity:float: Kinematic viscosity.
+        rho:float: Air density [kgm^-3].
+        convergence_limit:float: Convergence limit.
+        max_iterations:int: Maximum iterations.
+        relaxation_factor: Relaxation factor.
+        """
 
         p = printer
 
@@ -269,15 +302,11 @@ class Calculator:
         lambda_r = omega * _r / v
 
         # solidity
-        # sigma=_c*B/(2*pi*_r)
-
-        # solidity
-        sigma = _c * B / (2 * pi * _r)  # * abs(cos(_theta)) implemented in QBlade/XBEM/BDATA.cpp
+        sigma = _c * B / (2 * pi * _r)
 
         ## initial guess
         a = 0.01
         aprime = 0.01
-        # a,aprime = guessInductionFactors(lambda_r,sigma,_theta)
 
         # iterations counter
         i = 0
@@ -347,21 +376,20 @@ class Calculator:
                 alpha = cascadeEffectsCorrection(alpha=alpha, v=v, omega=omega, r=_r, R=R, c=_c, B=B, a=a,
                                                  aprime=aprime, max_thickness=max_thickness)
 
-            # if print_all:
-            #    p.print("        Running xfoil for %s,Re=%s,alpha=%s" % (_airfoil_dat, Re, alpha))
-
+           
             """
+            # For xFoil cL,cD
             xfoil_return = xfoil_runner(airfoil=_airfoil_dat, reynolds=Re, alpha=alpha, printer=p, print_all=print_all)
 
             if xfoil_return == False:
                 p.print("        Xfoil failed")
                 return None
+
+            #Cl, Cd = xfoil_return["CL"], xfoil_return["CD"] #direct xfoil calculation - no interpolation
             """
 
-            # Cl, Cd = xfoil_return["CL"], xfoil_return["CD"] #direct xfoil calculation - no interpolation
             Cl, Cd = self.airfoils[_airfoil]["interp_function_cl"](Re, degrees(alpha)), self.airfoils[_airfoil][
                 "interp_function_cd"](Re, degrees(alpha))
-            #p.print(Re,Cl,Cd)
 
             if print_all:
                 p.print("        CL:", Cl, "Cd:", Cd)
@@ -372,7 +400,7 @@ class Calculator:
                     p.print("  Cl:", Cl, "Cd:", Cd)
                 Cl, Cd = calc_rotational_augmentation_correction(alpha=alpha, Cl=Cl, Cd=Cd, omega=omega, r=_r, R=R,
                                                                  c=_c, theta=_theta, v=v, Vrel=Vrel_norm,
-                                                                 method=rotational_augmentation_correction_method, )
+                                                                 method=rotational_augmentation_correction_method)
 
                 if print_all:
                     p.print("  Cl_cor:", Cl, "Cd_cor:", Cd)
@@ -453,13 +481,11 @@ class Calculator:
 
             # wind after
             if propeller_mode:
-                #p.print('propeller_mode_U')
                 U1 = v
                 U2 = None
                 U3 = U1*(1+a)
                 U4 = U1*(1+2*a)
             else:
-                #p.print('wind turbine mode_a')
                 U1 = v
                 U2 = U1*(1-a)
                 U3 = None

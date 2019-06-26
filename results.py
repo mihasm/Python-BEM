@@ -20,7 +20,7 @@ from table import Table
 from utils import sort_xy, dict_to_ar
 
 #### TO REMOVE
-from comparison import TSR_exp, CP_exp
+from comparison import TSR_exp, CP_exp, exp_lambda_ct, exp_ct
 
 
 class ResultsWindow(QMainWindow):
@@ -57,15 +57,17 @@ class ResultsWindow(QMainWindow):
         self.tab_widget.add_tab_widget(t_geom, "Geometry check")
 
         # Veter v odvisnosti od moči
-        f2 = self.tab_widget.add_tab_figure("Moč in Cp")
-        self.tab_widget.add_2d_plot_to_figure(f2, max_x, max_z, 121, "Moč vs veter", "veter [m/s]", "moč [W]")
+        f2 = self.tab_widget.add_tab_figure("Cp krivulja")
+        #self.tab_widget.add_2d_plot_to_figure(f2, max_x, max_z, 121, "Moč vs veter", "veter [m/s]", "moč [W]")
 
         # Cp krivulja
         TSR, CP = sort_xy(results_3d["TSR"], results_3d["cp_w"])
-        self.tab_widget.add_2d_plot_to_figure(f2, TSR, CP, 122, "Cp krivulja", "lambda", "Cp", look="o")
+        ax_cp = self.tab_widget.add_2d_plot_to_figure(f2, TSR, CP, 111, "Krivulji koeficientov moči", r"$\lambda$", r"$C_P$", look="-b",label="analitična Cp krivulja")
 
         # Cp krivulja for comparison Karlsen et al., S826, 0.45m, 3B
-        self.tab_widget.add_2d_plot_to_figure(f2, TSR_exp, CP_exp, 122, "Cp_exp", "lambda", "Cp", look="-r")
+        self.tab_widget.add_2d_plot_to_figure(f2, TSR_exp, CP_exp, 111, "Krivulji koeficientov moči", r"$\lambda$", r"$C_P$", look="-r",label="eksperimentalna Cp krivulja")
+
+        ax_cp.legend(fontsize=20)
 
         # noinspection PyBroadException
         try:
@@ -76,24 +78,36 @@ class ResultsWindow(QMainWindow):
             print("Could not create 3D surface plot...")
 
         # Ct(a) krivulja
-        f4 = self.tab_widget.add_tab_figure("Ct krivulja")
-        self.tab_widget.add_2d_plot_to_figure(f4, results_3d["a"], results_3d["Ct"], 111, "Ct(a) krivulja", "a", "Ct",
-                                              look="o", x_min=0, x_max=1, y_min=0, y_max=1)
+        f4 = self.tab_widget.add_tab_figure("Ct_r(a) krivulja")
+        ax_ct_r = self.tab_widget.add_2d_plot_to_figure(f4, results_3d["a"], results_3d["Ct"], 111, r"$C_{T_r}$(a) krivulja", "a", r"$C_{T_r}$",
+                                              look="o", x_min=0, x_max=1)
+        leg = ax_ct_r.legend(np.round(np.array(results_3d["TSR"]),2),fontsize=20)
+        leg.set_title(r"$\lambda$",prop={'size':20})
+
+
+        # ct(lambda) krivulja
+        f4_2 = self.tab_widget.add_tab_figure("ct(lambda) krivulja")
+        self.tab_widget.add_2d_plot_to_figure(f4_2, results_3d["TSR"], results_3d["ct_w"], 111, "Krivulji koeficientov potiska", r"$\lambda$", r"$C_P$",
+                                              look="b-")
+        ax_ct = self.tab_widget.add_2d_plot_to_figure(f4_2, exp_lambda_ct, exp_ct, 111, "Krivulji koeficientov potiska", r"$\lambda$", r"$C_P$",
+                                              look="r-")
+        ax_ct.legend(fontsize=20)
 
         # ct_p(J) krivulja
-        f5 = self.tab_widget.add_tab_figure("ct/J krivulja (propeler)")
-        self.tab_widget.add_2d_plot_to_figure(f5, results_3d["J"], results_3d["ct_p"], 111, "ct_p(J) krivulja",
-                                              "J = 1/lambda", "ct", look="b.", x_min=0, x_max=1, y_min=0, y_max=0.25)
+        f5 = self.tab_widget.add_tab_figure("ct(J) krivulja (propeler)")
+        self.tab_widget.add_2d_plot_to_figure(f5, results_3d["J"], results_3d["ct_p"], 111, "Krivulje propelerja",
+                                              "J = 1/lambda", "ct", look="b-", x_min=0, x_max=1, y_min=0, y_max=0.25, label="Ct (Thrust)")
 
         # cp_p(J) krivulja
-        f6 = self.tab_widget.add_tab_figure("cp/J krivulja (propeler)")
-        self.tab_widget.add_2d_plot_to_figure(f6, results_3d['J'], results_3d['cp_p'], 111, 'cp_p(J) krivulja', 'J',
-                                              'cp', look='b.', x_min=0, x_max=1, y_min=0, y_max=0.1)
+        #f6 = self.tab_widget.add_tab_figure("cp/J krivulja (propeler)")
+        self.tab_widget.add_2d_plot_to_figure(f5, results_3d['J'], results_3d['cp_p'], 111, None, None,
+                                              None, look='r-', x_min=0, x_max=1, y_min=0, y_max=0.1, label="Cp (Power)")
 
         # cp_p(J) krivulja
-        f6 = self.tab_widget.add_tab_figure("eff/J krivulja (propeler)")
-        self.tab_widget.add_2d_plot_to_figure(f6, results_3d['J'], results_3d['eff_p'], 111, 'eff_p(J) krivulja', 'J',
-                                              'cp', look='b.', x_min=0, x_max=1, y_min=0, y_max=1.0)
+        #f6 = self.tab_widget.add_tab_figure("eff/J krivulja (propeler)")
+        ax1 = self.tab_widget.add_2d_plot_to_figure(f5, results_3d['J'], results_3d['eff_p'], 111, None, None,
+                                              None, look='g-', x_min=0, x_max=1, y_min=0, y_max=1.0, label="Eff (Efficiency)")
+        ax1.legend()
 
         # CL check
         f7 = self.tab_widget.add_tab_figure("check CL")
@@ -104,8 +118,8 @@ class ResultsWindow(QMainWindow):
         #print(results_3d['U4'])
         f8 = self.tab_widget.add_tab_figure("hitrosti")
         for _u in results_3d['U4']:
-            ax = self.tab_widget.add_2d_plot_to_figure(f8, _u, input_data['r'], 111, 'hitrosti', 'U','r',look="-",c=numpy.random.rand(3,))
-        ax.legend(np.array(results_3d["TSR"]).astype(int))
+            ax2 = self.tab_widget.add_2d_plot_to_figure(f8, _u, input_data['r'], 111, 'hitrosti', 'U','r',look="-",c=numpy.random.rand(3,))
+        ax2.legend(np.array(results_3d["TSR"]).astype(int),title=r"$\lambda$")
             
 
         data = dict_to_ar(results_3d)
@@ -159,15 +173,17 @@ class TabWidget(QtWidgets.QTabWidget):
         else:
             ax.plot(x, y, **kwargs)
         if title:
-            plt.title(title)
+            plt.title(title,fontsize=25)
         if x_name:
-            ax.set_xlabel(x_name)
+            ax.set_xlabel(x_name,fontsize=20)
         if y_name:
-            ax.set_ylabel(y_name)
+            ax.set_ylabel(y_name,fontsize=20)
         if x_min != None and x_max != None:
             ax.set_xlim(x_min, x_max)
         if y_min != None and y_max != None:
             ax.set_ylim(y_min, y_max)
+        ax.xaxis.set_tick_params(labelsize=15)
+        ax.yaxis.set_tick_params(labelsize=15)
         self.canvas[-1].draw()
         return ax
 
