@@ -20,7 +20,11 @@ from table import Table
 from utils import sort_xy, dict_to_ar
 
 #### TO REMOVE
-from comparison import TSR_exp, CP_exp, exp_lambda_ct, exp_ct
+from comparison import TSR_exp, CP_exp
+from comparison import error_x,error_y,error_size
+from comparison import exp_lambda_ct, exp_ct
+from comparison import exp_ct_error_size
+
 
 
 class ResultsWindow(QMainWindow):
@@ -62,12 +66,15 @@ class ResultsWindow(QMainWindow):
 
         # Cp krivulja
         TSR, CP = sort_xy(results_3d["TSR"], results_3d["cp_w"])
-        ax_cp = self.tab_widget.add_2d_plot_to_figure(f2, TSR, CP, 111, "Krivulji koeficientov moči", r"$\lambda$", r"$C_P$", look="-b",label="analitična Cp krivulja")
+        ax_cp = self.tab_widget.add_2d_plot_to_figure(f2, TSR, CP, 121, "", r"$\lambda$", r"$C_P$", look="-b",label=r"analitična $C_P$ krivulja")
 
         # Cp krivulja for comparison Karlsen et al., S826, 0.45m, 3B
-        self.tab_widget.add_2d_plot_to_figure(f2, TSR_exp, CP_exp, 111, "Krivulji koeficientov moči", r"$\lambda$", r"$C_P$", look="-r",label="eksperimentalna Cp krivulja")
+        self.tab_widget.add_2d_plot_to_figure(f2, TSR_exp, CP_exp, 121, "", r"$\lambda$", r"$C_P$", look="-r",label=r"eksperimentalna $C_P$ krivulja")
 
-        ax_cp.legend(fontsize=20)
+        # Error bar
+        ax_cp.errorbar(error_x,error_y,error_size, capsize=2, color="red", linestyle="")
+
+        ax_cp.legend(fontsize=18)
 
         # noinspection PyBroadException
         try:
@@ -79,19 +86,21 @@ class ResultsWindow(QMainWindow):
 
         # Ct(a) krivulja
         f4 = self.tab_widget.add_tab_figure("Ct_r(a) krivulja")
-        ax_ct_r = self.tab_widget.add_2d_plot_to_figure(f4, results_3d["a"], results_3d["Ct"], 111, r"$C_{T_r}$(a) krivulja", "a", r"$C_{T_r}$",
+        ax_ct_r = self.tab_widget.add_2d_plot_to_figure(f4, results_3d["a"], results_3d["Ct"], 111, "", "a", r"$C_{T_r}$",
                                               look="o", x_min=0, x_max=1)
         leg = ax_ct_r.legend(np.round(np.array(results_3d["TSR"]),2),fontsize=20)
         leg.set_title(r"$\lambda$",prop={'size':20})
+        
 
 
         # ct(lambda) krivulja
-        f4_2 = self.tab_widget.add_tab_figure("ct(lambda) krivulja")
-        self.tab_widget.add_2d_plot_to_figure(f4_2, results_3d["TSR"], results_3d["ct_w"], 111, "Krivulji koeficientov potiska", r"$\lambda$", r"$C_P$",
-                                              look="b-")
-        ax_ct = self.tab_widget.add_2d_plot_to_figure(f4_2, exp_lambda_ct, exp_ct, 111, "Krivulji koeficientov potiska", r"$\lambda$", r"$C_P$",
-                                              look="r-")
-        ax_ct.legend(fontsize=20)
+        #f4_2 = self.tab_widget.add_tab_figure("ct(lambda) krivulja")
+        self.tab_widget.add_2d_plot_to_figure(f2, results_3d["TSR"], results_3d["ct_w"], 122, "", r"$\lambda$", r"$C_P$",
+                                              look="b-",label=r"analitična $C_T$ krivulja")
+        ax_ct = self.tab_widget.add_2d_plot_to_figure(f2, exp_lambda_ct, exp_ct, 122, "", r"$\lambda$", r"$C_T$",
+                                              look="r-",label=r"eksperimentalna $C_T$ krivulja")
+        ax_ct.legend(fontsize=18)
+        ax_ct.errorbar(exp_lambda_ct,exp_ct,exp_ct_error_size,capsize=2, color="red", linestyle="")
 
         # ct_p(J) krivulja
         f5 = self.tab_widget.add_tab_figure("ct(J) krivulja (propeler)")
@@ -118,9 +127,10 @@ class ResultsWindow(QMainWindow):
         #print(results_3d['U4'])
         f8 = self.tab_widget.add_tab_figure("hitrosti")
         for _u in results_3d['U4']:
-            ax2 = self.tab_widget.add_2d_plot_to_figure(f8, _u, input_data['r'], 111, 'hitrosti', 'U','r',look="-",c=numpy.random.rand(3,))
-        ax2.legend(np.array(results_3d["TSR"]).astype(int),title=r"$\lambda$")
-            
+            ax2 = self.tab_widget.add_2d_plot_to_figure(f8, _u, input_data['r'], 111, '', r'$v_4$ [m/s]','r [m]',look="-",c=numpy.random.rand(3,))
+        leg_hitrosti = ax2.legend(np.round(np.array(results_3d["TSR"]),2))
+        leg_hitrosti.set_title(r"$\lambda$",prop={'size':20})
+        
 
         data = dict_to_ar(results_3d)
         t = Table()

@@ -253,7 +253,7 @@ class Calculator:
         results["eff_p"] = eff_p
         return results
 
-    def calculate_section(self, v, omega, _r, _c, _theta, _dr, B, R, _airfoil_dat, _airfoil, max_thickness,
+    def calculate_section(self, v, omega, _r, _c, _theta, _dr, B, R, _airfoil_dat, _airfoil, max_thickness, Rhub,
             propeller_mode, pitch=0.0, psi=0.0, fix_reynolds=False, reynolds=1e6, tip_loss=False, new_tip_loss=False,
             hub_loss=False, new_hub_loss=False, cascade_correction=False, rotational_augmentation_correction=False,
             rotational_augmentation_correction_method=0, mach_number_correction=False, method=5,
@@ -305,7 +305,7 @@ class Calculator:
         sigma = _c * B / (2 * pi * _r)
 
         ## initial guess
-        a = 0.01
+        a = 1/3
         aprime = 0.01
 
         # iterations counter
@@ -400,7 +400,8 @@ class Calculator:
                     p.print("  Cl:", Cl, "Cd:", Cd)
                 Cl, Cd = calc_rotational_augmentation_correction(alpha=alpha, Cl=Cl, Cd=Cd, omega=omega, r=_r, R=R,
                                                                  c=_c, theta=_theta, v=v, Vrel=Vrel_norm,
-                                                                 method=rotational_augmentation_correction_method)
+                                                                 method=rotational_augmentation_correction_method,
+                                                                 alpha_zero=radians(-5))
 
                 if print_all:
                     p.print("  Cl_cor:", Cl, "Cd_cor:", Cd)
@@ -492,7 +493,7 @@ class Calculator:
                 U4 = U1 * (1 - 2 * a)
 
             # check convergence
-            if abs(a - a_last) < convergence_limit:
+            if abs(a - a_last) < convergence_limit and abs(aprime-aprime_last) < convergence_limit:
                 break
 
             # p.print("dT_MT %.2f dT_BET %.2f" % (dT_MT,dT_BET))

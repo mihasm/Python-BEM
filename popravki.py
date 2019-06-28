@@ -435,15 +435,17 @@ def fInductionCoefficients9(a_last, F, phi, Cl, C_norm, C_tang, sigma, *args, **
     """
 
     a = a_last
-    Ct = sigma * (1 - a_last) ** 2 * C_norm / (sin(phi) ** 2)  # Qblade
-    if F == 0:
-        F = 1e-6
+    #a = (sigma * C_norm) / (4 * F * sin(phi) ** 2 + sigma * C_norm)
+    if a <= 1/3:
+        Ct = 4*a*F*(1-a)
+    else:
+        Ct = 4*a*F*(1-1/4*(5-3*a))*a
     if Ct <= 0.888 * F:
         a = (1 - sqrt(1 - Ct / F)) / 2
     else:
         Y = (sqrt(1 / 36 * (Ct / F) ** 2 - 145 / 2187 * Ct / F + 92 / 2187) + Ct / (6 * F) - 145 / 729) ** (1 / 3)
         a = Y - 11 / (81 * Y) + 5 / 9
-    aprime = (4 * F * sin(phi) * cos(phi) / (sigma * Ct) - 1) ** -1
+    aprime = (4 * F * sin(phi)**2 / (sigma * Ct) - 1) ** -1
     return a, aprime, Ct
 
 
@@ -642,19 +644,22 @@ def cascadeEffectsCorrection(alpha, v, omega, r, R, c, B, a, aprime, max_thickne
     """
 
     delta_alpha_1 = (
-            1
-            / 4
+            1/ 4
             * (
-                    atan((1 - a) * v / ((1 + a * aprime) * r * omega))
-                    - atan(((1 - a) * v) / (r * omega))
+                    atan2((1 - a) * v,((1 + 2 * aprime) * r * omega))
+                    - atan2(((1 - a) * v),(r * omega))
             )
     )
     delta_alpha_2 = (
             0.109
             * (B * c * max_thickness * R * omega / v)
-            / (R * c * sqrt((1 - a) ** 2 + (r * omega / v) ** 2))
+            / (R * c * sqrt((1 - a) ** 2 + (r*R*omega/v/R) ** 2))
     )
+    print(alpha)
     out = alpha + delta_alpha_1 + delta_alpha_2
+    print("dalpha1",delta_alpha_1)
+    print("dalpha2",delta_alpha_2)
+    print("new alpha",out)
 
     return out
 
@@ -721,8 +726,7 @@ def calc_rotational_augmentation_correction(
         gd = 1.25
         fl = 1 - exp(-gd / (r / c - 1))
         fd = 0
-    # Cl_3D = Cl + fl*(2*pi*sin(alpha-alpha_zero)-Cl)
-    Cl_3D = Cl + fl * Cl
+    Cl_3D = Cl + fl*(2*pi*sin(alpha-alpha_zero)-Cl)
     Cd_3D = Cd + fd * Cd
     return Cl_3D, Cd_3D
 
