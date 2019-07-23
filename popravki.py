@@ -655,11 +655,8 @@ def cascadeEffectsCorrection(alpha, v, omega, r, R, c, B, a, aprime, max_thickne
             * (B * c * max_thickness * R * omega / v)
             / (R * c * sqrt((1 - a) ** 2 + (r*R*omega/v/R) ** 2))
     )
-    print(alpha)
+    
     out = alpha + delta_alpha_1 + delta_alpha_2
-    print("dalpha1",delta_alpha_1)
-    print("dalpha2",delta_alpha_2)
-    print("new alpha",out)
 
     return out
 

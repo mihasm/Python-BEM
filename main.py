@@ -1292,7 +1292,7 @@ class Optimization(QWidget):
 
         self._form = QLabel("Optimization variable")
         self.form = QComboBox()
-        self.form.addItems(["Thrust (propeller)", "Torque (Turbine)"])
+        self.form.addItems(["Thrust (propeller)", "Torque (Turbine)", "max dQ min dT"])
 
         self.buttonAngles = QPushButton("Run angle optimization")
         self.buttonAngles.clicked.connect(self.run)
@@ -1518,8 +1518,10 @@ class Optimization(QWidget):
         out['target_rpm_propeller'] = self.target_rpm_propeller.text() 
         if int(self.form.currentIndex()) == 0:
             out["optimization_variable"] = "dT"
-        else:
+        elif int(self.form.currentIndex()) == 1:
             out["optimization_variable"] = "dQ"
+        elif int(self.form.currentIndex()) == 2:
+            out["optimization_variable"] = "max dT min dQ"
         for k, v in out.items():
             if v == "":
                 v = None

@@ -3,7 +3,7 @@ from calculation import Calculator
 from utils import Printer
 from numpy import radians, degrees
 import numpy as np,numpy
-from math import pi
+from math import pi, exp
 import traceback
 from matplotlib import pyplot as plt
 from scipy.signal import argrelextrema
@@ -380,6 +380,8 @@ def maximize_for_both(inp_args):
         p.print(traceback.format_exc())
         p.print("!!!!EOF!!!!")
 
+def sigmoid(x):
+  return 1 / (1 + exp(-x))
 
 # noinspection PyBroadException
 def optimize_angles_genetic(inp_args):
@@ -425,45 +427,33 @@ def optimize_angles_genetic(inp_args):
             max_thickness = inp_args["airfoils"][_airfoil]["max_thickness"] * _c
             _airfoil_dat = _airfoil + ".dat"
 
-            
-            #out = C.calculate_section(v=v, omega=omega, _airfoil=_airfoil, _airfoil_dat=_airfoil_dat,
-            #      max_thickness=max_thickness, _r=_r, _c=_c, _dr=_dr, _theta=radians(_theta),
-            #      printer=p, **inp_args)
-
-            done_thrusts = []
-            done_angles = []
-
-            #iterations_counter = 0
-            
             def fobj(x):
-                value = 0
-                p.print(x[0])
-                for i in range(len(x)):
-                    d =  C.calculate_section(v=v, omega=omega, _airfoil=_airfoil, _airfoil_dat=_airfoil_dat,
-                        max_thickness=max_thickness, _r=_r, _c=_c, _dr=_dr, _theta=radians(x[i]),
+                global dT_max
+                global dQ_max
+                d =  C.calculate_section(v=v, omega=omega, _airfoil=_airfoil, _airfoil_dat=_airfoil_dat,
+                        max_thickness=max_thickness, _r=_r, _c=_c, _dr=_dr, _theta=radians(x),
                         printer=p, **inp_args)
-                    if d == None or d == False:
-                        return 0.0001
-                    var_opt = d[optimization_variable]
-                    done_angles.append(x[i])
-                    done_thrusts.append(var_opt)
-                    value += var_opt
-                return value / len(x)
+                if d == None or d == False:
+                    p.print("none")
+                    return -1e10
+                #p.print(d[optimization_variable])
+                if optimization_variable == "max dT min dQ":
+                    return d["dQ"]/d["dT"]
 
-            it = list(de(fobj, bounds=[(-45, 45)]))
+                return d[optimization_variable]
+
+            #p.print("should start de function")
+
+            it = list(de2(fobj, bounds=[(-10, 45)],printer=p))
 
             d_final = C.calculate_section(v=v, omega=omega, _airfoil=_airfoil, _airfoil_dat=_airfoil_dat,
-                        max_thickness=max_thickness, _r=_r, _c=_c, _dr=_dr, _theta=radians(it[-1][0][0]),
+                        max_thickness=max_thickness, _r=_r, _c=_c, _dr=_dr, _theta=radians(it[-1]),
                         printer=p, **inp_args)
-            #print(it[-1])
-            #plt.plot(done_angles,done_thrusts,"b.")
-            #plt.plot(it[-1][0],[d_final[optimization_variable]],"ro")
-            #plt.show()
 
-            output_angles.append(it[-1][0][0])
+            output_angles.append(it[-1])
             output_alphas.append(d_final["alpha"])
 
-            p.print("    final theta is", it[-1][0][0])
+            p.print("    final theta is", it[-1])
         p.print("Final angles:")
         for a in output_angles:
             p.print(a)
@@ -477,35 +467,54 @@ def optimize_angles_genetic(inp_args):
 
 #https://pablormier.github.io/2017/09/05/a-tutorial-on-differential-evolution-with-python/#
 
-def de(fobj, bounds, mut=0.8, crossp=0.7, popsize=20, its=50):
+def de2(function,bounds,M=0.8,num_individuals=30,iterations=50,printer=None):
+    """
+    Function that uses the DE genetic optimisation algorithm to maximize
+    the fitness function "function".
+    
+    Inputs:
+    function:function: Python function that is used to determine
+        the fitness score of each indicidual. Can be one or N-dimensional.
+    bounds:list: List of tuple pairs that correspond to the upper and
+        lower boundary for each dimension information.
+    M:float: Mutation coefficient.
+    num_individuals:int: Number of individuals in the calculation.
+    iterations:int: Maximum number of iterations per calculation.
+
+    Output:
+    return:float:Individual with the highest fitness.
+    """
+    p = printer
     dimensions = len(bounds)
-    pop = np.random.rand(popsize, dimensions)
-    min_b, max_b = np.asarray(bounds).T
-    diff = np.fabs(min_b - max_b)
-    pop_denorm = min_b + pop * diff
-    fitness = np.asarray([fobj(ind) for ind in pop_denorm])
-    best_idx = np.argmin(fitness)
-    best = pop_denorm[best_idx]
-    for i in range(its):
-        print(i)
-        for j in range(popsize):
-            idxs = [idx for idx in range(popsize) if idx != j]
-            a, b, c = pop[np.random.choice(idxs, 3, replace = False)]
-            mutant = np.clip(a + mut * (b - c), 0, 1)
-            cross_points = np.random.rand(dimensions) < crossp
-            if not np.any(cross_points):
-                cross_points[np.random.randint(0, dimensions)] = True
-            trial = np.where(cross_points, mutant, pop[j])
-            trial_denorm = min_b + trial * diff
-            f = fobj(trial_denorm)
+    min_bound, max_bound = np.asarray(bounds).T
+    population = np.random.uniform(min_bound,max_bound,(num_individuals,dimensions))
+    fitness = np.asarray([function(p) for p in population])
+    best_i = np.argmax(fitness)
+    best = population[best_i]
+    for i in range(iterations):
+        #p.print("iteration",i)
+        for j in range(num_individuals):
+            other_i = list(set(range(num_individuals))-set([j]))
+            a, b, c = population[np.random.choice(other_i, 3,
+                                                  replace = False)]
+            mutation_vector = a+M*(b-c)
+            for k in range(dimensions):
+                if mutation_vector[k] < min_bound[k]:
+                    mutation_vector[k] = min_bound[k]
+                if mutation_vector[k] > max_bound[k]:
+                    mutation_vector[k] = max_bound[k]
+            random_locations = np.random.choice(a=[False, True],
+                                                size=(1, dimensions))[0]
+            trial = np.where(random_locations,mutation_vector,population[j])
+            f = function(trial)
             if f > fitness[j]:
                 fitness[j] = f
-                pop[j] = trial
-                if f > fitness[best_idx]:
-                    best_idx = j
-                    best = trial_denorm
-        yield best, fitness[best_idx]
-
+                population[j] = trial
+                if f > fitness[best_i]:
+                    best_i = j
+                    best = trial
+        p.print(best)
+    return best
 
 
 """

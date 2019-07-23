@@ -175,7 +175,7 @@ def fobj(x):
 
 #fobj = lambda x: sum(x**2)/len(x)
 
-it = list(de(fobj, bounds=[(-100, 100)]))
+#it = list(de(fobj, bounds=[(-100, 100)]))
 
 print(it)
 """
