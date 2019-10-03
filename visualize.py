@@ -72,6 +72,7 @@ def get_centroid(foil_x,foil_y):
 def scale_and_normalize(foil_x,foil_y,scale):
 	foil_x,foil_y = np.array(foil_x),np.array(foil_y)
 	centroid = get_centroid(foil_x,foil_y)
+	#centroid = (0.45484495454545454, 0.022852227272727274) #S826
 	foil_x = foil_x-centroid[0]
 	foil_x,foil_y = foil_x*scale,foil_y*scale
 	return foil_x,foil_y
@@ -89,7 +90,6 @@ def create_3d_blade(SET_INIT,flip_turning_direction=False,propeller_geom=False):
 	data = []
 	for i in range(len(r)):
 		z = r[i]
-		#data_faces.append([z])
 		_c = c[i]
 		_foil = foil[i]
 		_theta = theta[i] #- because of direction
@@ -99,19 +99,12 @@ def create_3d_blade(SET_INIT,flip_turning_direction=False,propeller_geom=False):
 
 		_foil_x,_foil_y = airfoils[_foil]["x"],airfoils[_foil]["y"]
 		if flip_turning_direction:
-			#_foil_y = -np.array(_foil_y)
 			_foil_x = -np.array(_foil_x)
 			_theta = -_theta
 
 		_foil_x,_foil_y = scale_and_normalize(_foil_x,_foil_y,_c)
-		centroid = get_centroid(_foil_x,_foil_y)
-		_foil_x = _foil_x-centroid[0]
-		
 		_foil_x,_foil_y = rotate_array(_foil_x,_foil_y,(0,0),_theta)
-		
-		#_foil_x_up,_foil_y_up = rotate_array(_foil_x_up,_foil_y_up,(0,0),_theta)
-		#_foil_x_down,_foil_y_down = rotate_array(_foil_x_down,_foil_y_down,(0,0),_theta)
-		
+
 		list_x,list_y = [],[]
 		for _x,_y in zip(_foil_x,_foil_y):
 			out_x.append(_x)
@@ -127,10 +120,11 @@ def create_3d_blade(SET_INIT,flip_turning_direction=False,propeller_geom=False):
 	mid_x = (X.max()+X.min()) * 0.5
 	mid_y = (Y.max()+Y.min()) * 0.5
 	mid_z = (Z.max()+Z.min()) * 0.5
+	print(mid_x,mid_y,mid_z)
 	ax.set_xlim(mid_x - max_range, mid_x + max_range)
 	ax.set_ylim(mid_y - max_range, mid_y + max_range)
 	ax.set_zlim(mid_z - max_range, mid_z + max_range)
-	ax.set_aspect("equal")
+	#ax.set_aspect("equal")
 	Axes3D.mouse_init(ax,rotate_btn=1,zoom_btn=2)
 
 	ax.scatter(X,Y,Z)

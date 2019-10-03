@@ -337,7 +337,7 @@ class WindTurbineProperties(QWidget):
         w.ax.set_xlim(mid_x - max_range, mid_x + max_range)
         w.ax.set_ylim(mid_y - max_range, mid_y + max_range)
         w.ax.set_zlim(mid_z - max_range, mid_z + max_range)
-        w.ax.set_aspect("equal")
+        #w.ax.set_aspect("equal")
 
         create_folder("export")
         folder_path = os.path.join("export",SET_INIT["turbine_name"])

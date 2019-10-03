@@ -27,12 +27,13 @@ End Sub
 	for f in list_of_files:
 		str_between += 'boolstatus = part.InsertCurveFile("%s")\n' % f
 	return template_start+"\n"+str_between+"\n"+template_end
-
+"""
 import win32com.client
 import pythoncom
 import pywintypes
 import os
 import win32job
+"""
 """
 print(dir(pywintypes))
 
