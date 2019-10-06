@@ -17,11 +17,13 @@ class POLAR_CLASS:
 
 class Montgomerie:
     def __init__(self, x, y, alpha, Cl, Cd, Re=100000, A=30, Am=5, B=5, Bm=5, m_CD90=2.0, slope=0.106):
-        self.CLzero = np.interp(0,alpha,Cl) # coefficient of lift at AoA  == 0 
-        self.CL180 = 0 # lift coefficient at AoA == 180
-        self.alphazero = np.interp(0,Cl,alpha) # angle of attack where lift  == 0
+        # coefficient of lift at AoA  == 0
+        self.CLzero = np.interp(0, alpha, Cl)
+        self.CL180 = 0  # lift coefficient at AoA == 180
+        # angle of attack where lift  == 0
+        self.alphazero = np.interp(0, Cl, alpha)
 
-        self.deltaCD = 0 
+        self.deltaCD = 0
         self.deltaalpha = 1
 
         self.slope = slope  # ocitno od 0 do 1
@@ -31,12 +33,12 @@ class Montgomerie:
         self.m_pctrlB = B  # 1-100
         self.m_pctrlAm = Am  # 1-80
         self.m_pctrlBm = Bm  # 1-70
-        
+
         if len(y) > 0:
             self.m_fThickness = np.max(y)-np.min(y)
         else:
             self.m_fThickness = 0.1
-        
+
         self.m_fCamber = 0.043
 
         # self.m_pCurPolar = POLAR_CLA
@@ -47,7 +49,8 @@ class Montgomerie:
         self.reynolds = Re
 
     def CD90(self, alpha):
-        res = self.m_CD90 - 1.46 * self.m_fThickness / 2 + 1.46 * self.m_fCamber * sin(alpha / 360 * 2 * PI)
+        res = self.m_CD90 - 1.46 * self.m_fThickness / 2 + \
+            1.46 * self.m_fCamber * sin(alpha / 360 * 2 * PI)
         return res
 
     def PlateFlow(self, alphazero, CLzero, alpha):
@@ -73,28 +76,39 @@ class Montgomerie:
         # positive extrapolation
 
         if len(self.m_pCurPolar.m_Alpha) > self.m_pctrlA + self.posalphamax >= 0:
-            a1plus = self.m_pCurPolar.m_Alpha[int(self.posalphamax + self.m_pctrlA)]
-            CL1plus = self.m_pCurPolar.m_Cl[int(self.posalphamax + self.m_pctrlA)]
+            a1plus = self.m_pCurPolar.m_Alpha[int(
+                self.posalphamax + self.m_pctrlA)]
+            CL1plus = self.m_pCurPolar.m_Cl[int(
+                self.posalphamax + self.m_pctrlA)]
         else:
             a1plus = (self.posalphamax + self.m_pctrlA) * self.deltaalpha
-            CL1plus = self.PlateFlow(self.alphazero, self.CLzero, a1plus) + 0.03
+            CL1plus = self.PlateFlow(
+                self.alphazero, self.CLzero, a1plus) + 0.03
 
         if (self.posalphamax + self.m_pctrlB + self.m_pctrlA) < len(
                 self.m_pCurPolar.m_Alpha) and self.posalphamax + self.m_pctrlB + self.m_pctrlA >= 0:
-            a2plus = self.m_pCurPolar.m_Alpha[int(self.posalphamax + self.m_pctrlB + self.m_pctrlA)]
-            CL2plus = self.m_pCurPolar.m_Cl[int(self.posalphamax + self.m_pctrlB + self.m_pctrlA)]
+            a2plus = self.m_pCurPolar.m_Alpha[int(
+                self.posalphamax + self.m_pctrlB + self.m_pctrlA)]
+            CL2plus = self.m_pCurPolar.m_Cl[int(
+                self.posalphamax + self.m_pctrlB + self.m_pctrlA)]
         else:
-            a2plus = (self.posalphamax + self.m_pctrlB + self.m_pctrlA) * self.deltaalpha
-            CL2plus = self.PlateFlow(self.alphazero, self.CLzero, a2plus) + 0.03
+            a2plus = (self.posalphamax + self.m_pctrlB +
+                      self.m_pctrlA) * self.deltaalpha
+            CL2plus = self.PlateFlow(
+                self.alphazero, self.CLzero, a2plus) + 0.03
 
-        A = (self.PotFlow(self.CLzero, self.slope, a1plus) - self.PlateFlow(self.alphazero, self.CLzero, a1plus))
+        A = (self.PotFlow(self.CLzero, self.slope, a1plus) -
+             self.PlateFlow(self.alphazero, self.CLzero, a1plus))
         if A == 0.:
             A = 1e-5
-        f1plus = ((CL1plus - self.PlateFlow(self.alphazero, self.CLzero, a1plus)) / A)
-        B = (self.PotFlow(self.CLzero, self.slope, a2plus) - self.PlateFlow(self.alphazero, self.CLzero, a2plus))
+        f1plus = (
+            (CL1plus - self.PlateFlow(self.alphazero, self.CLzero, a1plus)) / A)
+        B = (self.PotFlow(self.CLzero, self.slope, a2plus) -
+             self.PlateFlow(self.alphazero, self.CLzero, a2plus))
         if B == 0.:
             B = 1e-5
-        f2plus = ((CL2plus - self.PlateFlow(self.alphazero, self.CLzero, a2plus)) / B)
+        f2plus = (
+            (CL2plus - self.PlateFlow(self.alphazero, self.CLzero, a2plus)) / B)
 
         if (f1plus == 1):
             f1plus += 10e-6
@@ -125,11 +139,11 @@ class Montgomerie:
         CL2plus = self.PlateFlow(self.alphazero, self.CLzero, a2plus) - 0.01
 
         f1plus = (CL1plus - self.PlateFlow(self.alphazero, self.CLzero, a1plus)) / (
-                self.PotFlow(self.CL180, self.slope2, a1plus - 180) - self.PlateFlow(self.alphazero, self.CLzero,
-                                                                                     a1plus))
+            self.PotFlow(self.CL180, self.slope2, a1plus - 180) - self.PlateFlow(self.alphazero, self.CLzero,
+                                                                                 a1plus))
         f2plus = (CL2plus - self.PlateFlow(self.alphazero, self.CLzero, a2plus)) / (
-                self.PotFlow(self.CL180, self.slope2, a2plus - 180) - self.PlateFlow(self.alphazero, self.CLzero,
-                                                                                     a2plus))
+            self.PotFlow(self.CL180, self.slope2, a2plus - 180) - self.PlateFlow(self.alphazero, self.CLzero,
+                                                                                 a2plus))
 
         G2 = pow(fabs(((1 / f1plus - 1) / (1 / f2plus - 1))), 0.25)
 
@@ -188,9 +202,9 @@ class Montgomerie:
         CL2minus = self.PlateFlow(self.alphazero, self.CLzero, a2minus) - 0.03
 
         f1minus = (CL1minus - self.PlateFlow(self.alphazero, self.CLzero, a1minus)) / (
-                self.PotFlow(self.CLzero, self.slope, a1minus) - self.PlateFlow(self.alphazero, self.CLzero, a1minus))
+            self.PotFlow(self.CLzero, self.slope, a1minus) - self.PlateFlow(self.alphazero, self.CLzero, a1minus))
         f2minus = (CL2minus - self.PlateFlow(self.alphazero, self.CLzero, a2minus)) / (
-                self.PotFlow(self.CLzero, self.slope, a2minus) - self.PlateFlow(self.alphazero, self.CLzero, a2minus))
+            self.PotFlow(self.CLzero, self.slope, a2minus) - self.PlateFlow(self.alphazero, self.CLzero, a2minus))
 
         G = abs((1 / f1minus - 1) / (1 / f2minus - 1)) ** 0.25
 
@@ -206,11 +220,11 @@ class Montgomerie:
         CL2minus = self.PlateFlow(self.alphazero, self.CLzero, a2minus) - 0.01
 
         f1minus = (CL1minus - self.PlateFlow(self.alphazero, self.CLzero, a1minus)) / (
-                self.PotFlow(self.CL180, self.slope2, a1minus + 180) - self.PlateFlow(self.alphazero, self.CLzero,
-                                                                                      a1minus))
+            self.PotFlow(self.CL180, self.slope2, a1minus + 180) - self.PlateFlow(self.alphazero, self.CLzero,
+                                                                                  a1minus))
         f2minus = (CL2minus - self.PlateFlow(self.alphazero, self.CLzero, a2minus)) / (
-                self.PotFlow(self.CL180, self.slope2, a2minus + 180) - self.PlateFlow(self.alphazero, self.CLzero,
-                                                                                      a2minus))
+            self.PotFlow(self.CL180, self.slope2, a2minus + 180) - self.PlateFlow(self.alphazero, self.CLzero,
+                                                                                  a2minus))
 
         G2 = abs(((1 / f1minus - 1) / (1 / f2minus - 1))) ** 0.25
 
@@ -249,7 +263,7 @@ class Montgomerie:
                 delta = am - alpha
             f = 1 / (1 + k * delta ** 4)
             self.deltaCD = 0.13 * (
-                    self.PotFlow(self.CLzero, self.slope, alpha) - f * self.PotFlow(self.CLzero, self.slope, alpha) - (
+                self.PotFlow(self.CLzero, self.slope, alpha) - f * self.PotFlow(self.CLzero, self.slope, alpha) - (
                     1 - f) * self.PlateFlow(self.alphazero, self.CLzero, alpha))
 
             if (self.deltaCD <= 0):

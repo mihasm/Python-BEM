@@ -11,7 +11,8 @@ import sys
 
 from PyQt5 import QtCore
 from PyQt5.QtCore import pyqtSlot
-from PyQt5.QtWidgets import (QApplication, QWidget, QTableWidget, QTableWidgetItem, QVBoxLayout, QMenu, )
+from PyQt5.QtWidgets import (
+    QApplication, QWidget, QTableWidget, QTableWidgetItem, QVBoxLayout, QMenu, )
 
 from utils import array_to_csv
 
@@ -30,11 +31,14 @@ class Table(QWidget):
 
     def set_headers(self):
         self.horizontal_headers = self.tableWidget.horizontalHeader()
-        self.horizontal_headers.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
-        self.horizontal_headers.customContextMenuRequested.connect(self.horizontal_header_popup)
+        self.horizontal_headers.setContextMenuPolicy(
+            QtCore.Qt.CustomContextMenu)
+        self.horizontal_headers.customContextMenuRequested.connect(
+            self.horizontal_header_popup)
         self.vertical_headers = self.tableWidget.verticalHeader()
         self.vertical_headers.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
-        self.vertical_headers.customContextMenuRequested.connect(self.vertical_header_popup)
+        self.vertical_headers.customContextMenuRequested.connect(
+            self.vertical_header_popup)
 
     def set_labels(self, arr):
         self.tableWidget.setHorizontalHeaderLabels(arr)
@@ -85,8 +89,10 @@ class Table(QWidget):
     def get_selected(self):
         self.selected_array = []
 
-        rows_added = sorted(set(index.row() for index in self.tableWidget.selectedIndexes()))
-        columns_added = sorted(set(index.column() for index in self.tableWidget.selectedIndexes()))
+        rows_added = sorted(set(index.row()
+                                for index in self.tableWidget.selectedIndexes()))
+        columns_added = sorted(set(index.column()
+                                   for index in self.tableWidget.selectedIndexes()))
 
         delta_r = rows_added[0]
         delta_c = columns_added[0]
@@ -126,13 +132,16 @@ class Table(QWidget):
         text = text.replace("   ", "\t")
         text = text.replace("  ", "\t")
         if len(text) > 0:
-            reader = csv.reader(text.splitlines(), delimiter="\t")  # change contents to floats
+            # change contents to floats
+            reader = csv.reader(text.splitlines(), delimiter="\t")
             for row in reader:  # each row is a list
                 results.append(row)
             numrows = len(results)
             numcolumns = len(results[0])
-            selected_row = sorted(set(index.row() for index in self.tableWidget.selectedIndexes()))[0]
-            selected_column = sorted(set(index.column() for index in self.tableWidget.selectedIndexes()))[0]
+            selected_row = sorted(
+                set(index.row() for index in self.tableWidget.selectedIndexes()))[0]
+            selected_column = sorted(
+                set(index.column() for index in self.tableWidget.selectedIndexes()))[0]
             if selected_row + numrows >= self.tableWidget.rowCount():
                 self.tableWidget.setRowCount(selected_row + numrows)
             if selected_column + numcolumns >= self.tableWidget.columnCount():
@@ -141,27 +150,33 @@ class Table(QWidget):
             for r in results:
                 curcolumn = selected_column
                 for c in r:
-                    self.tableWidget.setItem(currow, curcolumn, QTableWidgetItem(c))
+                    self.tableWidget.setItem(
+                        currow, curcolumn, QTableWidgetItem(c))
                     curcolumn += 1
                 currow += 1
         return
 
     def delete_data(self):
-        rows = sorted(set(index.row() for index in self.tableWidget.selectedIndexes()))
-        columns = sorted(set(index.column() for index in self.tableWidget.selectedIndexes()))
+        rows = sorted(set(index.row()
+                          for index in self.tableWidget.selectedIndexes()))
+        columns = sorted(set(index.column()
+                             for index in self.tableWidget.selectedIndexes()))
         for r in rows:
             for c in columns:
                 self.tableWidget.setItem(r, c, QTableWidgetItem(""))
 
     def select_next_row(self):
-        rows = sorted(set(index.row() for index in self.tableWidget.selectedIndexes()))
-        columns = sorted(set(index.column() for index in self.tableWidget.selectedIndexes()))
+        rows = sorted(set(index.row()
+                          for index in self.tableWidget.selectedIndexes()))
+        columns = sorted(set(index.column()
+                             for index in self.tableWidget.selectedIndexes()))
         last_selected_row = rows[-1]
         first_selected_column = columns[0]
         num_rows = self.tableWidget.rowCount()
         if last_selected_row + 1 >= num_rows:
             self.tableWidget.insertRow(num_rows)
-        self.tableWidget.setCurrentCell(last_selected_row + 1, first_selected_column)
+        self.tableWidget.setCurrentCell(
+            last_selected_row + 1, first_selected_column)
 
     def get_values(self):
         data = []
@@ -191,8 +206,10 @@ class Table(QWidget):
 
         action = menu.exec_(self.mapToGlobal(event.pos()))
 
-        rows = sorted(set(index.row() for index in self.tableWidget.selectedIndexes()), reverse=True, )
-        columns = sorted(set(index.column() for index in self.tableWidget.selectedIndexes()), reverse=True, )
+        rows = sorted(set(index.row()
+                          for index in self.tableWidget.selectedIndexes()), reverse=True, )
+        columns = sorted(set(index.column()
+                             for index in self.tableWidget.selectedIndexes()), reverse=True, )
 
         if action == insert_row:
             if len(rows) == 0:

@@ -14,9 +14,12 @@ def get_polars(link):
     links = []
     for r in rows:
         data = r.find_all("td")
-        checkbox, name, reynolds, ncrit, maxclcd, description, source, details = [d for d in data]
-        details_link = "http://airfoiltools.com" + details.find_all("a")[0].get('href')
-        links.append(details_link)  # print(details_link)  # print(name,reynolds,details)
+        checkbox, name, reynolds, ncrit, maxclcd, description, source, details = [
+            d for d in data]
+        details_link = "http://airfoiltools.com" + \
+            details.find_all("a")[0].get('href')
+        # print(details_link)  # print(name,reynolds,details)
+        links.append(details_link)
 
     csv_links = []
 
@@ -30,7 +33,7 @@ def get_polars(link):
         _links = details_table.find_all("a")
         # print(links)
         for _l in _links:
-            #print(_l)
+            # print(_l)
             if "csv?polar" in _l.get("href"):
                 csv_links.append("http://airfoiltools.com" + _l.get("href"))
                 break
@@ -43,7 +46,8 @@ def get_polars(link):
         text = r.text
         lines = text.splitlines()
         start = lines.index("Alpha,Cl,Cd,Cdp,Cm,Top_Xtr,Bot_Xtr")
-        reynolds_number = [float(i.split(",")[1]) for i in lines if "Reynolds number," in i][0]
+        reynolds_number = [float(i.split(",")[1])
+                           for i in lines if "Reynolds number," in i][0]
         ncrit = [float(i.split(",")[1]) for i in lines if "Ncrit," in i][0]
         mach = [float(i.split(",")[1]) for i in lines if "Mach," in i][0]
         # print(ncrit)

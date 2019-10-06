@@ -18,7 +18,7 @@ SET_INIT["return_results"] = []
 # cycler_map = (cycler('color', ['k']) * cycler('linestyle', ['-.','--', ':']) * cycler('marker', ['^',',','.','x'])) #Monochrome
 # cycler_map = (cycler('linestyle', ['-','-.','--', ':']) * cycler('color', ['r','g','b']) * cycler('marker', ['']))
 cycler_map = (
-        cycler('linestyle', ['-', '--']) * cycler('marker', ['', "^", "o"]) * cycler('color', ['r', 'g', 'b', "y"]))
+    cycler('linestyle', ['-', '--']) * cycler('marker', ['', "^", "o"]) * cycler('color', ['r', 'g', 'b', "y"]))
 
 
 def title_gen(params):
@@ -98,8 +98,10 @@ exp_ct_error_size = [0.002816901, 0.016901408, 0.014084507, 0.012676056, 0.04788
 
 # [tiploss,hubloss,newtiploss,newhubloss,cascadeffects]
 variants = [[False, False, False, False, False], [True, False, False, False, False], [True, True, False, False, False],
-            [False, False, True, False, False], [False, False, True, True, False], [False, False, False, False, True],
-            [True, False, False, False, True], [True, True, False, False, True], [False, False, True, False, True],
+            [False, False, True, False, False], [False, False, True,
+                                                 True, False], [False, False, False, False, True],
+            [True, False, False, False, True], [True, True, False,
+                                                False, True], [False, False, True, False, True],
             [False, False, True, True, True]]
 
 
@@ -110,7 +112,7 @@ def comparison_runner(inp_settings, TSR_exp, CP_exp, error_x, error_y, error_siz
 
         p.print("Running variant", i, "/", len(variants))
         inp_settings["tip_loss"], inp_settings["hub_loss"], inp_settings["new_tip_loss"], inp_settings["new_hub_loss"], \
-        inp_settings["cascade_correction"] = variants[i]
+            inp_settings["cascade_correction"] = variants[i]
 
         title = title_gen(inp_settings)
         # fig, (ax0,ax1) = plt.subplots(1,2,figsize=(10, 4),num=i)
@@ -119,7 +121,8 @@ def comparison_runner(inp_settings, TSR_exp, CP_exp, error_x, error_y, error_siz
 
         # draw defaults on left ax
         ax0.plot(TSR_exp, CP_exp, label="Experimental data", color="black")
-        ax0.errorbar(error_x, error_y, error_size, capsize=2, color="black", linestyle="")
+        ax0.errorbar(error_x, error_y, error_size,
+                     capsize=2, color="black", linestyle="")
         ax0.set_prop_cycle(cycler_map)
         ax0.grid(which="both")
 
@@ -138,7 +141,8 @@ def comparison_runner(inp_settings, TSR_exp, CP_exp, error_x, error_y, error_siz
         # calculate and draw BEM results
         for j in [0, 9, 1, 13, 8, 6, 4][:]:
             inp_settings["method"] = j
-            p.print("    Calculating using method", j, "(%s)" % METHODS_STRINGS[str(j)])
+            p.print("    Calculating using method", j, "(%s)" %
+                    METHODS_STRINGS[str(j)])
             res = calculate_power_3d(inp_settings, False, "    ", False)
             TSR, CP = sort_xy(res["TSR"], res["cp"])
             ax0.plot(TSR, CP, label=METHODS_STRINGS[

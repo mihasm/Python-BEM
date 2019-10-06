@@ -2,19 +2,20 @@ from turbine_data import SET_INIT
 from calculation import Calculator
 from utils import Printer
 from numpy import radians, degrees
-import numpy as np,numpy
+import numpy as np
+import numpy
 from math import pi, exp
 import traceback
 from matplotlib import pyplot as plt
 from scipy.signal import argrelextrema
 
 
-
 # noinspection PyBroadException
 def optimize_angles_old(inp_args):
     p = Printer(inp_args["return_print"])
     try:
-        p.print("Optimizing angles for target variable:", inp_args["optimization_variable"])
+        p.print("Optimizing angles for target variable:",
+                inp_args["optimization_variable"])
         return_results = inp_args["return_results"]
 
         v = inp_args["target_speed"]
@@ -45,15 +46,16 @@ def optimize_angles_old(inp_args):
 
             p.print("initial theta is", _theta)
             got_through = False
-            for dtheta in [90,60,45,30,10, 5, 1, 0.5, 0.1]:
+            for dtheta in [90, 60, 45, 30, 10, 5, 1, 0.5, 0.1]:
                 p.print("dtheta", dtheta)
                 while True:
                     # middle angle
                     if not _theta in done_angles:
-                        p.print("   calculating middle angle",_theta)
+                        p.print("   calculating middle angle", _theta)
                         try:
                             out = C.calculate_section(v=v, omega=omega, _airfoil=_airfoil, _airfoil_dat=_airfoil_dat,
-                                                      max_thickness=max_thickness, _r=_r, _c=_c, _dr=_dr, _theta=radians(_theta),
+                                                      max_thickness=max_thickness, _r=_r, _c=_c, _dr=_dr, _theta=radians(
+                                                          _theta),
                                                       printer=p, **inp_args)
                         except Exception as e:
                             p.print(e)
@@ -63,12 +65,12 @@ def optimize_angles_old(inp_args):
                             break
                         done_angles[_theta] = out
                     else:
-                        p.print("   ",_theta, "already calculated, reusing...")
+                        p.print("   ", _theta, "already calculated, reusing...")
                         out = done_angles[_theta]
 
                     # upper angle
                     if not _theta + dtheta in done_angles:
-                        p.print("   calculating up_angle",_theta+dtheta)
+                        p.print("   calculating up_angle", _theta+dtheta)
                         try:
                             out_up = C.calculate_section(v=v, omega=omega, _airfoil=_airfoil, _airfoil_dat=_airfoil_dat,
                                                          max_thickness=max_thickness, _r=_r, _c=_c, _dr=_dr,
@@ -81,16 +83,18 @@ def optimize_angles_old(inp_args):
                             break
                         done_angles[_theta + dtheta] = out_up
                     else:
-                        p.print("   ",_theta + dtheta, "already calculated, reusing...")
+                        p.print("   ", _theta + dtheta,
+                                "already calculated, reusing...")
                         out_up = done_angles[_theta + dtheta]
 
                     # lower angle
                     if not _theta - dtheta in done_angles:
-                        p.print("   calculating out_down",_theta-dtheta)
+                        p.print("   calculating out_down", _theta-dtheta)
                         try:
                             out_down = C.calculate_section(v=v, omega=omega, _airfoil=_airfoil,
                                                            _airfoil_dat=_airfoil_dat, max_thickness=max_thickness,
-                                                           _r=_r, _c=_c, _dr=_dr, _theta=radians(_theta - dtheta),
+                                                           _r=_r, _c=_c, _dr=_dr, _theta=radians(
+                                                               _theta - dtheta),
                                                            printer=p, **inp_args)
                         except Exception as e:
                             p.print(e)
@@ -100,7 +104,8 @@ def optimize_angles_old(inp_args):
                             break
                         done_angles[_theta - dtheta] = out_down
                     else:
-                        p.print("   ",_theta - dtheta, "already calculated, reusing...")
+                        p.print("   ", _theta - dtheta,
+                                "already calculated, reusing...")
                         out_down = done_angles[_theta - dtheta]
 
                     if out_up == False or out_down == False or out == False:
@@ -150,7 +155,7 @@ def optimize_angles_old(inp_args):
                     p.print("   ***")
                 p.print("***")
             if not got_through:
-                p.print('optimization failed for section',section_number)
+                p.print('optimization failed for section', section_number)
                 p.print("!!!!EOF!!!!")
                 return
 
@@ -165,17 +170,18 @@ def optimize_angles_old(inp_args):
     except Exception as e:
         p.print("Error in running optimizer: %s" % str(e))
         p.print("!!!!EOF!!!!")
-        #raise
+        # raise
 
 
 # noinspection PyBroadException
 def optimize_angles(inp_args):
 
-    #brute force method
+    # brute force method
 
     p = Printer(inp_args["return_print"])
     try:
-        p.print("Optimizing angles for target variable:", inp_args["optimization_variable"])
+        p.print("Optimizing angles for target variable:",
+                inp_args["optimization_variable"])
         return_results = inp_args["return_results"]
 
         v = inp_args["target_speed"]
@@ -184,8 +190,8 @@ def optimize_angles(inp_args):
         omega = 2 * pi * rpm / 60
         # optimization_variable = "dT"
         optimization_variable = inp_args["optimization_variable"]
-        p.print("Optimization variable is",optimization_variable)
-        p.print("Propeller mode:",inp_args["propeller_mode"])
+        p.print("Optimization variable is", optimization_variable)
+        p.print("Propeller mode:", inp_args["propeller_mode"])
 
         output_angles = []
         output_alphas = []
@@ -211,13 +217,14 @@ def optimize_angles(inp_args):
 
             p.print("initial theta is", _theta)
             got_through = False
-            for _theta in np.linspace(-10,90,200):
+            for _theta in np.linspace(-10, 90, 200):
                 p.print("_theta", _theta)
                 try:
                     out = C.calculate_section(v=v, omega=omega, _airfoil=_airfoil, _airfoil_dat=_airfoil_dat,
-                                              max_thickness=max_thickness, _r=_r, _c=_c, _dr=_dr, _theta=radians(_theta),
+                                              max_thickness=max_thickness, _r=_r, _c=_c, _dr=_dr, _theta=radians(
+                                                  _theta),
                                               printer=p, **inp_args)
-                    #p.print("out",out)
+                    # p.print("out",out)
                 except Exception as e:
                     p.print(e)
                     p.print(traceback.format_exc())
@@ -225,8 +232,9 @@ def optimize_angles(inp_args):
 
                 if out != False and out != None:
                     if optimization_variable == "dT":
-                        if degrees(out["alpha"]) >=20:
-                            p.print("Reached maximum alpha: 20 degrees, breaking ...")
+                        if degrees(out["alpha"]) >= 20:
+                            p.print(
+                                "Reached maximum alpha: 20 degrees, breaking ...")
                             break
                     done_thrusts.append(out[optimization_variable])
                     #p.print("Target variable value:",out[optimization_variable])
@@ -234,23 +242,23 @@ def optimize_angles(inp_args):
                     done_alphas.append(out["alpha"])
 
             #max_i = np.argmax(np.array(done_thrusts))
-            #output_angles.append(done_angles[max_i])
+            # output_angles.append(done_angles[max_i])
             done_alphas = np.array(degrees(done_alphas))
             done_angles = np.array(done_angles)
             done_thrusts = np.array(done_thrusts)
             #pol = np.polyfit(done_angles,done_thrusts,4)
             #val = np.polyval(pol,done_angles)
-            #plt.plot(done_angles,done_thrusts,"b-",label="thrust")
-            plt.plot(done_alphas,done_thrusts)
+            # plt.plot(done_angles,done_thrusts,"b-",label="thrust")
+            plt.plot(done_alphas, done_thrusts)
             #plt.plot(done_angles,val,"g-",label="interpolated thrust")
             #maxima = argrelextrema(done_thrusts, np.greater)
-            #plt.plot(done_alphas[maxima],done_thrusts[maxima],'r*')
+            # plt.plot(done_alphas[maxima],done_thrusts[maxima],'r*')
             max_i = np.argmax(done_thrusts)
-            chosen_angle  = done_angles[max_i]
+            chosen_angle = done_angles[max_i]
             chosen_alpha = done_alphas[max_i]
             chosen_thrust = done_thrusts[max_i]
 
-            plt.plot([chosen_alpha],[chosen_thrust],"ro")
+            plt.plot([chosen_alpha], [chosen_thrust], "ro")
             output_angles.append(chosen_angle)
             output_alphas.append(chosen_alpha)
             plt.show()
@@ -267,9 +275,7 @@ def optimize_angles(inp_args):
     except Exception as e:
         p.print("Error in running optimizer: %s" % str(e))
         p.print("!!!!EOF!!!!")
-        #raise
-
-
+        # raise
 
 
 def maximize_for_both(inp_args):
@@ -300,22 +306,24 @@ def maximize_for_both(inp_args):
             max_thickness = inp_args["airfoils"][_airfoil]["max_thickness"] * _c
             _airfoil_dat = _airfoil + ".dat"
 
-            #done_angles = {}  # key is theta, value is out
+            # done_angles = {}  # key is theta, value is out
 
             #p.print("initial theta is", degrees(_theta))
-            theta_array,dT_array,dQ_array = [],[],[]
-            for _theta in np.linspace(0,90,100):
-                dT,dQ = None, None
-                
-                #Test for wind turbine mode
+            theta_array, dT_array, dQ_array = [], [], []
+            for _theta in np.linspace(0, 90, 100):
+                dT, dQ = None, None
+
+                # Test for wind turbine mode
                 inp_args["propeller_mode"] = False
-                out = C.calculate_section(v=v, omega=omega, _airfoil=_airfoil,_airfoil_dat=_airfoil_dat, max_thickness=max_thickness,_r=_r, _c=_c, _dr=_dr, _theta=radians(_theta),printer=p, **inp_args)
+                out = C.calculate_section(v=v, omega=omega, _airfoil=_airfoil, _airfoil_dat=_airfoil_dat,
+                                          max_thickness=max_thickness, _r=_r, _c=_c, _dr=_dr, _theta=radians(_theta), printer=p, **inp_args)
                 if out != None and out != False:
                     dQ = out["dQ"]
-                
-                #Test for propeller
+
+                # Test for propeller
                 inp_args["propeller_mode"] = True
-                out_prop = C.calculate_section(v=0.01, omega=omega_prop, _airfoil=_airfoil,_airfoil_dat=_airfoil_dat, max_thickness=max_thickness,_r=_r, _c=_c, _dr=_dr, _theta=radians(_theta),printer=p, **inp_args)
+                out_prop = C.calculate_section(v=0.01, omega=omega_prop, _airfoil=_airfoil, _airfoil_dat=_airfoil_dat,
+                                               max_thickness=max_thickness, _r=_r, _c=_c, _dr=_dr, _theta=radians(_theta), printer=p, **inp_args)
                 if out_prop != None and out_prop != False:
                     dT = out_prop["dT"]
 
@@ -328,24 +336,27 @@ def maximize_for_both(inp_args):
             dT_array = np.array(dT_array)
             dQ_array = np.array(dQ_array)
 
-            #plt.plot(theta_array,dT_array,"g-",label="dT"+str(section_number))
-            #plt.plot(theta_array,dQ_array,"r-",label="dQ"+str(section_number))
+            # plt.plot(theta_array,dT_array,"g-",label="dT"+str(section_number))
+            # plt.plot(theta_array,dQ_array,"r-",label="dQ"+str(section_number))
 
             #indexes_positive_values_dT = numpy.where(dT_array > 0)
             #indexes_positive_values_dQ = numpy.where(dQ_array > 0)
-            
+
             positive_indexes = numpy.logical_and(dT_array > 0, dQ_array > 0)
             positive_dT_array = dT_array[positive_indexes]
             positive_dQ_array = dQ_array[positive_indexes]
             positive_theta_array = theta_array[positive_indexes]
-            #plt.plot(positive_theta_array,positive_dT_array,"g",label="dT")
-            #plt.plot(positive_theta_array,positive_dQ_array,"r",label="dQ")
-            normalized_dT_array = (positive_dT_array - positive_dT_array.min())/positive_dT_array.max()
-            normalized_dQ_array = (positive_dQ_array - positive_dQ_array.min())/positive_dQ_array.max()
-            crossings = get_crossings(positive_theta_array,normalized_dT_array,normalized_dQ_array)
-            _max_i = np.where(crossings[:,1] == crossings[:,1].max())[0][0]
-            #print("crossings",crossings)
-            #print('_max_i',_max_i)
+            # plt.plot(positive_theta_array,positive_dT_array,"g",label="dT")
+            # plt.plot(positive_theta_array,positive_dQ_array,"r",label="dQ")
+            normalized_dT_array = (
+                positive_dT_array - positive_dT_array.min())/positive_dT_array.max()
+            normalized_dQ_array = (
+                positive_dQ_array - positive_dQ_array.min())/positive_dQ_array.max()
+            crossings = get_crossings(
+                positive_theta_array, normalized_dT_array, normalized_dQ_array)
+            _max_i = np.where(crossings[:, 1] == crossings[:, 1].max())[0][0]
+            # print("crossings",crossings)
+            # print('_max_i',_max_i)
 
             dT_only_rising = np.all(np.diff(normalized_dT_array) > 0)
             dQ_only_rising = np.all(np.diff(normalized_dQ_array) > 0)
@@ -357,40 +368,44 @@ def maximize_for_both(inp_args):
             elif dT_only_falling and dQ_only_falling:
                 _max_theta = positive_theta_array[0]
             else:
-                _max_theta = crossings[:,0][_max_i]
+                _max_theta = crossings[:, 0][_max_i]
 
-            p.print("max_theta",_max_theta)
+            p.print("max_theta", _max_theta)
             output_angles.append(_max_theta)
-            #plt.plot(positive_theta_array,normalized_dT_array,"g",label="dT"+str(section_number))
-            #plt.plot(positive_theta_array,normalized_dQ_array,"b",label="dQ"+str(section_number))
-            #plt.plot(crossings[:,0],crossings[:,1],'r*')
-            #plt.axvline(_max_theta)
+            # plt.plot(positive_theta_array,normalized_dT_array,"g",label="dT"+str(section_number))
+            # plt.plot(positive_theta_array,normalized_dQ_array,"b",label="dQ"+str(section_number))
+            # plt.plot(crossings[:,0],crossings[:,1],'r*')
+            # plt.axvline(_max_theta)
 
-            #plt.legend()
-            #plt.show()
+            # plt.legend()
+            # plt.show()
         p.print("Angles:")
         for a in output_angles:
             p.print(a)
 
         p.print("!!!!EOF!!!!")
-        #plt.legend()
-        #plt.show()
+        # plt.legend()
+        # plt.show()
     except Exception as e:
         p.print(str(e))
         p.print(traceback.format_exc())
         p.print("!!!!EOF!!!!")
 
+
 def sigmoid(x):
-  return 1 / (1 + exp(-x))
+    return 1 / (1 + exp(-x))
 
 # noinspection PyBroadException
+
+
 def optimize_angles_genetic(inp_args):
 
-    #brute force method
+    # brute force method
 
     p = Printer(inp_args["return_print"])
     try:
-        p.print("Optimizing angles for target variable:", inp_args["optimization_variable"])
+        p.print("Optimizing angles for target variable:",
+                inp_args["optimization_variable"])
         p.print("Using genetic algorithm")
         return_results = inp_args["return_results"]
 
@@ -401,8 +416,8 @@ def optimize_angles_genetic(inp_args):
         # optimization_variable = "dT"
         optimization_variable = inp_args["optimization_variable"]
         #optimization_variable = "dQ"
-        p.print("Optimization variable is",optimization_variable)
-        p.print("Propeller mode:",inp_args["propeller_mode"])
+        p.print("Optimization variable is", optimization_variable)
+        p.print("Propeller mode:", inp_args["propeller_mode"])
 
         output_angles = []
         output_alphas = []
@@ -430,13 +445,14 @@ def optimize_angles_genetic(inp_args):
             def fobj(x):
                 global dT_max
                 global dQ_max
-                d =  C.calculate_section(v=v, omega=omega, _airfoil=_airfoil, _airfoil_dat=_airfoil_dat,
-                        max_thickness=max_thickness, _r=_r, _c=_c, _dr=_dr, _theta=radians(x),
-                        printer=p, **inp_args)
+                d = C.calculate_section(v=v, omega=omega, _airfoil=_airfoil, _airfoil_dat=_airfoil_dat,
+                                        max_thickness=max_thickness, _r=_r, _c=_c, _dr=_dr, _theta=radians(
+                                            x),
+                                        printer=p, **inp_args)
                 if d == None or d == False:
                     p.print("none")
                     return -1e10
-                #p.print(d[optimization_variable])
+                # p.print(d[optimization_variable])
                 if optimization_variable == "max dT min dQ":
                     return d["dQ"]/d["dT"]
 
@@ -444,11 +460,12 @@ def optimize_angles_genetic(inp_args):
 
             #p.print("should start de function")
 
-            it = list(de2(fobj, bounds=[(-10, 45)],printer=p))
+            it = list(de2(fobj, bounds=[(-10, 45)], printer=p))
 
             d_final = C.calculate_section(v=v, omega=omega, _airfoil=_airfoil, _airfoil_dat=_airfoil_dat,
-                        max_thickness=max_thickness, _r=_r, _c=_c, _dr=_dr, _theta=radians(it[-1]),
-                        printer=p, **inp_args)
+                                          max_thickness=max_thickness, _r=_r, _c=_c, _dr=_dr, _theta=radians(
+                                              it[-1]),
+                                          printer=p, **inp_args)
 
             output_angles.append(it[-1])
             output_alphas.append(d_final["alpha"])
@@ -467,11 +484,11 @@ def optimize_angles_genetic(inp_args):
 
 #https://pablormier.github.io/2017/09/05/a-tutorial-on-differential-evolution-with-python/#
 
-def de2(function,bounds,M=0.8,num_individuals=30,iterations=50,printer=None):
+def de2(function, bounds, M=0.8, num_individuals=30, iterations=50, printer=None):
     """
     Function that uses the DE genetic optimisation algorithm to maximize
     the fitness function "function".
-    
+
     Inputs:
     function:function: Python function that is used to determine
         the fitness score of each indicidual. Can be one or N-dimensional.
@@ -487,16 +504,17 @@ def de2(function,bounds,M=0.8,num_individuals=30,iterations=50,printer=None):
     p = printer
     dimensions = len(bounds)
     min_bound, max_bound = np.asarray(bounds).T
-    population = np.random.uniform(min_bound,max_bound,(num_individuals,dimensions))
+    population = np.random.uniform(
+        min_bound, max_bound, (num_individuals, dimensions))
     fitness = np.asarray([function(p) for p in population])
     best_i = np.argmax(fitness)
     best = population[best_i]
     for i in range(iterations):
-        #p.print("iteration",i)
+        # p.print("iteration",i)
         for j in range(num_individuals):
             other_i = list(set(range(num_individuals))-set([j]))
             a, b, c = population[np.random.choice(other_i, 3,
-                                                  replace = False)]
+                                                  replace=False)]
             mutation_vector = a+M*(b-c)
             for k in range(dimensions):
                 if mutation_vector[k] < min_bound[k]:
@@ -505,7 +523,7 @@ def de2(function,bounds,M=0.8,num_individuals=30,iterations=50,printer=None):
                     mutation_vector[k] = max_bound[k]
             random_locations = np.random.choice(a=[False, True],
                                                 size=(1, dimensions))[0]
-            trial = np.where(random_locations,mutation_vector,population[j])
+            trial = np.where(random_locations, mutation_vector, population[j])
             f = function(trial)
             if f > fitness[j]:
                 fitness[j] = f
@@ -526,11 +544,11 @@ plt.plot(x,y_2,'g-')
 """
 
 
-def get_crossings(x,y_1,y_2):
+def get_crossings(x, y_1, y_2):
     """
     This function fetches x-es and y-s where y_1 and y_2 intersect.
     """
-    #initial status
+    # initial status
     top_indexes = []
     for i in range(len(x)):
         if i == 0:
@@ -554,22 +572,28 @@ def get_crossings(x,y_1,y_2):
         y3 = y_2[i1]
         x4 = x2
         y4 = y_2[i2]
-        x_out,y_out = findIntersection(x1,y1,x2,y2,x3,y3,x4,y4)
-        out.append([x_out,y_out])
+        x_out, y_out = findIntersection(x1, y1, x2, y2, x3, y3, x4, y4)
+        out.append([x_out, y_out])
     out = np.array(out)
     return out
 
-def findIntersection(x1,y1,x2,y2,x3,y3,x4,y4):
-    #https://en.wikipedia.org/wiki/Line%E2%80%93line_intersection
-    px= ( (x1*y2-y1*x2)*(x3-x4)-(x1-x2)*(x3*y4-y3*x4) ) / ( (x1-x2)*(y3-y4)-(y1-y2)*(x3-x4) ) 
-    py= ( (x1*y2-y1*x2)*(y3-y4)-(y1-y2)*(x3*y4-y3*x4) ) / ( (x1-x2)*(y3-y4)-(y1-y2)*(x3-x4) )
+
+def findIntersection(x1, y1, x2, y2, x3, y3, x4, y4):
+    # https://en.wikipedia.org/wiki/Line%E2%80%93line_intersection
+    px = ((x1*y2-y1*x2)*(x3-x4)-(x1-x2)*(x3*y4-y3*x4)) / \
+        ((x1-x2)*(y3-y4)-(y1-y2)*(x3-x4))
+    py = ((x1*y2-y1*x2)*(y3-y4)-(y1-y2)*(x3*y4-y3*x4)) / \
+        ((x1-x2)*(y3-y4)-(y1-y2)*(x3-x4))
     return [px, py]
 
 # noinspection PyBroadException
+
+
 def optimal_pitch(inp_args):
     p = Printer(inp_args["return_print"])
     try:
-        p.print("Optimizing angles for target variable:", inp_args["optimization_variable"])
+        p.print("Optimizing angles for target variable:",
+                inp_args["optimization_variable"])
         return_results = inp_args["return_results"]
 
         v = inp_args["target_speed"]
@@ -582,18 +606,18 @@ def optimal_pitch(inp_args):
         C = Calculator(inp_args["airfoils"])
 
         done_pitches = {}
-        _pitch = 0 # is in radians
+        _pitch = 0  # is in radians
 
         args = {**inp_args}
 
-        for dpitch in [45,30,20,10,5,2,1,0.1]:
+        for dpitch in [45, 30, 20, 10, 5, 2, 1, 0.1]:
             while True:
                 # middle angle
                 if not _pitch in done_pitches:
                     p.print("   calculating out (pitch:%s)" % _pitch)
                     try:
                         args["pitch"] = _pitch
-                        out = C.run_array(**args,rpm=rpm,v=v)
+                        out = C.run_array(**args, rpm=rpm, v=v)
                     except Exception as e:
                         p.print(e)
                         p.print(traceback.format_exc())
@@ -608,10 +632,10 @@ def optimal_pitch(inp_args):
                 _pitch_up = _pitch + dpitch
                 # upper angle
                 if not _pitch_up in done_pitches:
-                    p.print("   calculating out_up (pitch:%s)" %_pitch_up)
+                    p.print("   calculating out_up (pitch:%s)" % _pitch_up)
                     try:
                         args["pitch"] = _pitch_up
-                        out_up = C.run_array(**args,rpm=rpm,v=v)
+                        out_up = C.run_array(**args, rpm=rpm, v=v)
                     except Exception as e:
                         p.print()
                         p.print(traceback.format_exc())
@@ -629,7 +653,7 @@ def optimal_pitch(inp_args):
                     p.print("   calculating out_down (pitch:%s)" % _pitch_down)
                     try:
                         args["pitch"] = _pitch_down
-                        out_down = C.run_array(**args,rpm=rpm,v=v)
+                        out_down = C.run_array(**args, rpm=rpm, v=v)
                     except Exception as e:
                         p.print(e)
                         p.print(traceback.format_exc())
@@ -684,7 +708,7 @@ def optimal_pitch(inp_args):
                 if var_up == var and var_down == var:
                     p.print("   both are equal, breaking")
                     break
-        p.print("Final pitch:",_pitch)
+        p.print("Final pitch:", _pitch)
         p.print("Angles:")
         for t in args["theta"]:
             p.print(t+_pitch)
@@ -711,4 +735,3 @@ SET_INIT["airfoils"]["s826"]["gathered_curves"] = data
 #SET_INIT["airfoils"]["s826"]["interp_function_cd"] = f_cd
 maximize_for_both(SET_INIT)
 """
-

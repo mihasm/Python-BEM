@@ -6,6 +6,7 @@ __maintainer__ = "Miha Smrekar"
 __email__ = "miha.smrekar9@gmail.com"
 __status__ = "Development"
 
+import copy
 import numpy
 from scipy import interpolate
 from numpy import array
@@ -157,9 +158,10 @@ def transitions_to_nearest_profiles(r, foils):
             # print("##nearest_i_up",nearest_i_up)
 
             if nearest_i_up == None and nearest_i_down == None:
-                raise Exception("Transition %s doesn't end with any profile" % i)
+                raise Exception(
+                    "Transition %s doesn't end with any profile" % i)
 
-            dr_down,dr_up = None, None
+            dr_down, dr_up = None, None
 
             if nearest_i_down != None:
                 dr_down = abs(_r - r[nearest_i_down])
@@ -212,7 +214,7 @@ def interpolate_geom(r, c, theta, foils, num=None, linspace_interp=False):
         r_shifted.append(_r)
     r_shifted = array(r_shifted[:-1])
     dr = r - r_shifted
-    dr[0] = dr[1] #TODO: what
+    dr[0] = dr[1]  # TODO: what
     # print("foils after",foils)
     return r, c, theta, foils, dr
 
@@ -248,9 +250,6 @@ class Printer:
             out_str += "\n"
         self.out.append(out_str)
         return out_str
-
-
-import copy
 
 
 def fltr(node, vals):
@@ -351,32 +350,40 @@ class QDarkPalette(QPalette):
         app.setPalette(self)
         self.set_stylesheet(app)
 
-def sort_data(data,columns=[0,2]):
+
+def sort_data(data, columns=[0, 2]):
     if len(columns) == 0:
         raise Exception("Sorting must be done for more than zero columns.")
     first = False
     for i in columns:
         if first == False:
-            data = data[data[:,i].argsort()] #sort by reynolds
+            data = data[data[:, i].argsort()]  # sort by reynolds
             first = True
         else:
-            data = data[data[:,i].argsort(kind="mergesort")] #sort by alpha
+            data = data[data[:, i].argsort(kind="mergesort")]  # sort by alpha
     return data
 
 
 def normalize_angle(angle):
-    #reduce the angle
-    angle =  angle % 360
-    #force it to be the positive remainder, so that 0 <= angle < 360
+    # reduce the angle
+    angle = angle % 360
+    # force it to be the positive remainder, so that 0 <= angle < 360
     angle = (angle + 360) % 360
-    #force into the minimum absolute value residue class, so that -180 < angle <= 180
+    # force into the minimum absolute value residue class, so that -180 < angle <= 180
     if (angle > 180):
         angle -= 360
 
     return angle
 
+
 def create_folder(name_path):
     if not os.path.exists(name_path):
-        print("Creating folder",name_path)
+        print("Creating folder", name_path)
         os.makedirs(name_path)
-    print("Folder",name_path,"already exists!")
+    print("Folder", name_path, "already exists!")
+
+
+def get_centroid_coordinates(foil_x, foil_y):
+    centroid = (numpy.sum(foil_x) / len(foil_x),
+                numpy.sum(foil_y) / len(foil_y))
+    return centroid

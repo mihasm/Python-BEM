@@ -27,7 +27,8 @@ for RE in [1e5, 5e5]:
     # Settings
     ncrit = 10.2
     Mach = 0.04 * RE / 5e5  # c = 0.5m, assuming 20°C
-    s = vf.setup(Re=RE, Ma=Mach, ncrit=ncrit, alpha=AOARange[0], tolerance=1e-2)
+    s = vf.setup(Re=RE, Ma=Mach, ncrit=ncrit,
+                 alpha=AOARange[0], tolerance=1e-2)
     s.silent = True
 
     # (Maximum) internal iterations
@@ -63,16 +64,16 @@ for RE in [1e5, 5e5]:
             # faults += 1
             # init = True
             flag = False  # del vf
-        # If converged add to cl/cd vectors (could check flag as well, but this allows custom tolerance 
+        # If converged add to cl/cd vectors (could check flag as well, but this allows custom tolerance
         # to use the results anyways)
         if flag:
             results[RE]["AOA"].append(alpha)
             results[RE]["CL"].append(p.CL)
             results[RE]["CD"].append(bl[0].CD)
             # Calculate transition position based on BL variable
-            results[RE]["TRUP"].append( \
+            results[RE]["TRUP"].append(
                 vft.interpLinear(p.foils[0].S, p.foils[0].X[0, :], bl[0].ST - bl[0].bl_fl.node_tr_up.xi[0]))
-            results[RE]["TRLO"].append( \
+            results[RE]["TRLO"].append(
                 vft.interpLinear(p.foils[0].S, p.foils[0].X[0, :], bl[0].ST + bl[0].bl_fl.node_tr_lo.xi[0]))
             faults = 0
         else:

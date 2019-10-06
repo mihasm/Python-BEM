@@ -26,7 +26,8 @@ def xfoil_runner(airfoil, reynolds, alpha, printer=None, print_all=False):
     # alpha in degrees
     if print_all:
         if printer != None:
-            printer.print("        xfoil runner, alpha=", alpha, "re=", reynolds)
+            printer.print("        xfoil runner, alpha=",
+                          alpha, "re=", reynolds)
     out = run_xfoil_analysis(airfoil, reynolds, alpha)
     # if out == False:
     #    return xfoil_runner(airfoil, reynolds * 0.5, radians(alpha), printer, print_all=print_all)
@@ -47,7 +48,8 @@ def get_coefficients_from_output(output_str):
         a = regex.match("(.+)a =(.+)CL =(.+)", l)
         _, a, CL = a.groups() if a != None else [_, a, CL]
         b = regex.match("(.+)Cm =(.+)CD =(.+)=>.+CDf =(.+)CDp =(.+)", l)
-        __, Cm, CD, CDf, CDp = b.groups() if b != None else [__, Cm, CD, CDf, CDp]
+        __, Cm, CD, CDf, CDp = b.groups() if b != None else [
+            __, Cm, CD, CDf, CDp]
     # Weird cases
     if CL == None or CD == None:
         return False
@@ -56,7 +58,8 @@ def get_coefficients_from_output(output_str):
     if math.isinf(float(CL)) or math.isinf(float(CD)):
         return False
 
-    out = {"CL": float(CL), "CD": float(CD), "Cm": float(Cm), "CDf": float(CDf), "CDp": float(CDp), "out": output_str}
+    out = {"CL": float(CL), "CD": float(CD), "Cm": float(
+        Cm), "CDf": float(CDf), "CDp": float(CDp), "out": output_str}
     return out
 
 
@@ -136,11 +139,13 @@ def draw_to_matplotlib(x, y, z, shrani=False, unit='CL'):
     z = numpy.array(z)
 
     # x/y tocke za risati ozadje
-    xi, yi = numpy.linspace(x.min(), x.max(), 100), numpy.linspace(y.min(), y.max(), 100)
+    xi, yi = numpy.linspace(x.min(), x.max(), 100), numpy.linspace(
+        y.min(), y.max(), 100)
     xi, yi = numpy.meshgrid(xi, yi)
 
     # Linearna interpolacija ozadja, glede na x,y,z
-    rbf = scipy.interpolate.Rbf(x, y, z, function='quintic')  # interpolacija je lahko linear, cubic, itd.
+    # interpolacija je lahko linear, cubic, itd.
+    rbf = scipy.interpolate.Rbf(x, y, z, function='quintic')
     zi = rbf(xi, yi)
 
     # Barvno ozadje
@@ -150,7 +155,7 @@ def draw_to_matplotlib(x, y, z, shrani=False, unit='CL'):
     plt.scatter(xi, yi, c=zi)
     plt.scatter(x, y, c=z, cmap=cm.jet)
 
-    ##ODKOMENTIRAJ ZA ABSOLUTNO SKALO
+    # ODKOMENTIRAJ ZA ABSOLUTNO SKALO
     # plt.clim(0,10)
 
     # nastavitev min/max vrednosti na osi

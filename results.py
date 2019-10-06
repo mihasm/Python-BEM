@@ -19,12 +19,11 @@ from calculation_runner import max_calculate
 from table import Table
 from utils import sort_xy, dict_to_ar
 
-#### TO REMOVE
+# TO REMOVE
 from comparison import TSR_exp, CP_exp
-from comparison import error_x,error_y,error_size
+from comparison import error_x, error_y, error_size
 from comparison import exp_lambda_ct, exp_ct
 from comparison import exp_ct_error_size
-
 
 
 class ResultsWindow(QMainWindow):
@@ -53,7 +52,8 @@ class ResultsWindow(QMainWindow):
             _c = input_data["c"][r]
             _theta = input_data["theta"][r]
             _dr = input_data["dr"][r]
-            array_geom.append([input_data["r"][r], input_data["c"][r], input_data["theta"][r], input_data["dr"][r], ])
+            array_geom.append([input_data["r"][r], input_data["c"]
+                               [r], input_data["theta"][r], input_data["dr"][r], ])
 
         t_geom = Table()
         t_geom.createTable(array_geom)
@@ -66,13 +66,16 @@ class ResultsWindow(QMainWindow):
 
         # Cp krivulja
         TSR, CP = sort_xy(results_3d["TSR"], results_3d["cp_w"])
-        ax_cp = self.tab_widget.add_2d_plot_to_figure(f2, TSR, CP, 121, "", r"$\lambda$", r"$C_P$", look="-b",label=r"analitična $C_P$ krivulja")
+        ax_cp = self.tab_widget.add_2d_plot_to_figure(
+            f2, TSR, CP, 121, "", r"$\lambda$", r"$C_P$", look="-b", label=r"analitična $C_P$ krivulja")
 
         # Cp krivulja for comparison Karlsen et al., S826, 0.45m, 3B
-        self.tab_widget.add_2d_plot_to_figure(f2, TSR_exp, CP_exp, 121, "", r"$\lambda$", r"$C_P$", look="-r",label=r"eksperimentalna $C_P$ krivulja")
+        self.tab_widget.add_2d_plot_to_figure(
+            f2, TSR_exp, CP_exp, 121, "", r"$\lambda$", r"$C_P$", look="-r", label=r"eksperimentalna $C_P$ krivulja")
 
         # Error bar
-        ax_cp.errorbar(error_x,error_y,error_size, capsize=2, color="red", linestyle="")
+        ax_cp.errorbar(error_x, error_y, error_size,
+                       capsize=2, color="red", linestyle="")
 
         ax_cp.legend(fontsize=18)
 
@@ -80,27 +83,28 @@ class ResultsWindow(QMainWindow):
         try:
             if len(X) >= 3 and len(Y) >= 3:
                 f3 = self.tab_widget.add_tab_figure("3D moč")
-                self.tab_widget.add_surface_plot(f3, X, Y, Z, 111, "Moč (veter,rpm)", "veter[m/s]", "rpm", "moč [W]")
+                self.tab_widget.add_surface_plot(
+                    f3, X, Y, Z, 111, "Moč (veter,rpm)", "veter[m/s]", "rpm", "moč [W]")
         except:
             print("Could not create 3D surface plot...")
 
         # Ct(a) krivulja
         f4 = self.tab_widget.add_tab_figure("Ct_r(a) krivulja")
         ax_ct_r = self.tab_widget.add_2d_plot_to_figure(f4, results_3d["a"], results_3d["Ct"], 111, "", "a", r"$C_{T_r}$",
-                                              look="o", x_min=0, x_max=1)
-        leg = ax_ct_r.legend(np.round(np.array(results_3d["TSR"]),2),fontsize=20)
-        leg.set_title(r"$\lambda$",prop={'size':20})
-        
-
+                                                        look="o", x_min=0, x_max=1)
+        leg = ax_ct_r.legend(
+            np.round(np.array(results_3d["TSR"]), 2), fontsize=20)
+        leg.set_title(r"$\lambda$", prop={'size': 20})
 
         # ct(lambda) krivulja
         #f4_2 = self.tab_widget.add_tab_figure("ct(lambda) krivulja")
         self.tab_widget.add_2d_plot_to_figure(f2, results_3d["TSR"], results_3d["ct_w"], 122, "", r"$\lambda$", r"$C_P$",
-                                              look="b-",label=r"analitična $C_T$ krivulja")
+                                              look="b-", label=r"analitična $C_T$ krivulja")
         ax_ct = self.tab_widget.add_2d_plot_to_figure(f2, exp_lambda_ct, exp_ct, 122, "", r"$\lambda$", r"$C_T$",
-                                              look="r-",label=r"eksperimentalna $C_T$ krivulja")
+                                                      look="r-", label=r"eksperimentalna $C_T$ krivulja")
         ax_ct.legend(fontsize=18)
-        ax_ct.errorbar(exp_lambda_ct,exp_ct,exp_ct_error_size,capsize=2, color="red", linestyle="")
+        ax_ct.errorbar(exp_lambda_ct, exp_ct, exp_ct_error_size,
+                       capsize=2, color="red", linestyle="")
 
         # ct_p(J) krivulja
         f5 = self.tab_widget.add_tab_figure("ct(J) krivulja (propeler)")
@@ -115,22 +119,24 @@ class ResultsWindow(QMainWindow):
         # cp_p(J) krivulja
         #f6 = self.tab_widget.add_tab_figure("eff/J krivulja (propeler)")
         ax1 = self.tab_widget.add_2d_plot_to_figure(f5, results_3d['J'], results_3d['eff_p'], 111, None, None,
-                                              None, look='g-', x_min=0, x_max=1, y_min=0, y_max=1.0, label="Eff (Efficiency)")
+                                                    None, look='g-', x_min=0, x_max=1, y_min=0, y_max=1.0, label="Eff (Efficiency)")
         ax1.legend()
 
         # CL check
         f7 = self.tab_widget.add_tab_figure("check CL")
         self.tab_widget.add_3d_scatter_plot(f7, np.array(results_3d["Re"]).flatten(),
-                                            np.degrees(np.array(results_3d["alpha"]).flatten()),
-                                            np.array(results_3d["cL"]).flatten(), 111, "Title", "Re", "alpha[deg]",
-                                            "cL")
-        #print(results_3d['U4'])
+                                            np.degrees(
+                                                np.array(results_3d["alpha"]).flatten()),
+                                            np.array(results_3d["cL"]).flatten(
+        ), 111, "Title", "Re", "alpha[deg]",
+            "cL")
+        # print(results_3d['U4'])
         f8 = self.tab_widget.add_tab_figure("hitrosti")
         for _u in results_3d['U4']:
-            ax2 = self.tab_widget.add_2d_plot_to_figure(f8, _u, input_data['r'], 111, '', r'$v_4$ [m/s]','r [m]',look="-",c=numpy.random.rand(3,))
-        leg_hitrosti = ax2.legend(np.round(np.array(results_3d["TSR"]),2))
-        leg_hitrosti.set_title(r"$\lambda$",prop={'size':20})
-        
+            ax2 = self.tab_widget.add_2d_plot_to_figure(
+                f8, _u, input_data['r'], 111, '', r'$v_4$ [m/s]', 'r [m]', look="-", c=numpy.random.rand(3,))
+        leg_hitrosti = ax2.legend(np.round(np.array(results_3d["TSR"]), 2))
+        leg_hitrosti.set_title(r"$\lambda$", prop={'size': 20})
 
         data = dict_to_ar(results_3d)
         t = Table()
@@ -176,18 +182,18 @@ class TabWidget(QtWidgets.QTabWidget):
         return self.figures[-1]
 
     def add_2d_plot_to_figure(self, f, x, y, whi, title=None, x_name=None, y_name=None, x_min=None, x_max=None,
-            y_min=None, y_max=None, look=None, legend=False, **kwargs):
+                              y_min=None, y_max=None, look=None, legend=False, **kwargs):
         ax = f.add_subplot(whi)
         if look:
             ax.plot(x, y, look, **kwargs)
         else:
             ax.plot(x, y, **kwargs)
         if title:
-            plt.title(title,fontsize=25)
+            plt.title(title, fontsize=25)
         if x_name:
-            ax.set_xlabel(x_name,fontsize=20)
+            ax.set_xlabel(x_name, fontsize=20)
         if y_name:
-            ax.set_ylabel(y_name,fontsize=20)
+            ax.set_ylabel(y_name, fontsize=20)
         if x_min != None and x_max != None:
             ax.set_xlim(x_min, x_max)
         if y_min != None and y_max != None:
@@ -198,7 +204,7 @@ class TabWidget(QtWidgets.QTabWidget):
         return ax
 
     def add_surface_plot(self, f, x, y, z, whi, title=None, x_name=None, y_name=None, z_name=None, x_min=None,
-            x_max=None, y_min=None, y_max=None, z_min=None, z_max=None, legend=False, ):
+                         x_max=None, y_min=None, y_max=None, z_min=None, z_max=None, legend=False, ):
         ax = f.add_subplot(whi, projection="3d")
         p0 = ax.plot_trisurf(x, y, z, cmap=plt.cm.CMRmap)
         cbar = plt.colorbar(p0)
@@ -221,7 +227,7 @@ class TabWidget(QtWidgets.QTabWidget):
         self.canvas[-1].draw()
 
     def add_3d_scatter_plot(self, f, x, y, z, whi, title=None, x_name=None, y_name=None, z_name=None, x_min=None,
-            x_max=None, y_min=None, y_max=None, z_min=None, z_max=None, legend=False, ):
+                            x_max=None, y_min=None, y_max=None, z_min=None, z_max=None, legend=False, ):
         ax = f.add_subplot(whi, projection="3d")
         p0 = ax.scatter(x, y, z, cmap=plt.cm.CMRmap)
         # cbar = plt.colorbar(p0)

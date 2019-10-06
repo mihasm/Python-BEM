@@ -13,6 +13,7 @@ import matplotlib.cm as cm
 from scipy.interpolate import griddata
 import numpy
 
+
 def scrape_data(link):
     out = []
     data = get_polars(link)
@@ -24,6 +25,7 @@ def scrape_data(link):
                 out.append([Re, ncrit, alpha, cl, cd])
     out = np.array(out)
     return out
+
 
 def get_extrapolated_data(data, airfoil_x=[], airfoil_y=[]):
     # imp_polar = np.loadtxt(open("foils/NACA_0015_polar.csv", "rb"), delimiter=",", skiprows=1)
@@ -39,13 +41,15 @@ def get_extrapolated_data(data, airfoil_x=[], airfoil_y=[]):
 
     for Re in Re_list:
         rows_with_Re = data[np.in1d(data[:, 0], Re)]
-        rows_with_Re = rows_with_Re[np.in1d(rows_with_Re[:, 1], ncrit_selected)]
+        rows_with_Re = rows_with_Re[np.in1d(
+            rows_with_Re[:, 1], ncrit_selected)]
 
         _alpha = rows_with_Re[:, 2].flatten()
         _cl = rows_with_Re[:, 3].flatten()
         _cd = rows_with_Re[:, 4].flatten()
 
-        M = Montgomerie(x=airfoil_x, y=airfoil_y, alpha=_alpha, Cl=_cl, Cd=_cd, Re=Re)
+        M = Montgomerie(x=airfoil_x, y=airfoil_y,
+                        alpha=_alpha, Cl=_cl, Cd=_cd, Re=Re)
 
         m_Alpha, m_Cl, m_Cd = M.calculate_extrapolation()
         f_cl = interp1d(_alpha, _cl, bounds_error=True)
@@ -63,6 +67,5 @@ def get_extrapolated_data(data, airfoil_x=[], airfoil_y=[]):
                 cd = m_Cd[i]
             z_cl.append(cl)
             z_cd.append(cd)
-            out.append([Re,ncrit_selected,m_Alpha[i],cl,cd])
+            out.append([Re, ncrit_selected, m_Alpha[i], cl, cd])
     return np.array(out)
-

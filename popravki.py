@@ -62,9 +62,9 @@ def newTipLoss(B, r, R, phi, lambda_r):
     f = sin(phi)
     g = (R - r) / r
     Flt = (
-            2
-            / pi
-            * acos(exp(-B / 2 * abs(g / f) * (exp(-0.15 * (B * lambda_r - 21)) + 0.1)))
+        2
+        / pi
+        * acos(exp(-B / 2 * abs(g / f) * (exp(-0.15 * (B * lambda_r - 21)) + 0.1)))
     )
     F = F * Flt
     return F
@@ -84,9 +84,9 @@ def newHubLoss(B, r, Rhub, phi, lambda_r):
     f = sin(phi)
     g = (Rhub - r) / r
     Flt = (
-            2
-            / pi
-            * acos(exp(-B / 2 * abs(g / f) * (exp(-0.15 * (B * lambda_r - 21)) + 0.1)))
+        2
+        / pi
+        * acos(exp(-B / 2 * abs(g / f) * (exp(-0.15 * (B * lambda_r - 21)) + 0.1)))
     )
     F = F * Flt
     return F
@@ -120,7 +120,7 @@ def newLosses(C_norm, C_tang, B, r, R, phi, lambda_r, Rhub=None):
 def fInductionCoefficients0(F, phi, sigma, C_norm, C_tang, *args, **kwargs):
     """
     Calculates induction coefficients using no corrections.
-    
+
     NAME: Original
     SOURCE: http://orbit.dtu.dk/files/86307371/A_Detailed_Study_of_the_Rotational.pdf
 
@@ -199,7 +199,7 @@ def fInductionCoefficients3(lambda_r, phi, sigma, Cl, C_norm, *args, **kwargs):
 
     NAME: Grant Ingram
     SOURCE: Wind Turbine Blade Analysis, Grant Ingram, 2011
-    
+
     Same as original method, without drag or tip/hub loss.
 
     :param C_norm:
@@ -287,11 +287,11 @@ def fInductionCoefficients5(
         CTL_ac = 4 * ac * Fc * (1 - ac)
         cpsi = cos(psi)
         dCTL_da = 4 * Fc * (1 - 2 * ac) + \
-                  4 * ac * B / pi * 1 / tan(pi * Fc / 2) * \
-                  ((R * cpsi - r * cpsi) / (R * cpsi)) * \
-                  (cos(phi) ** 2 / sin(phi)) * \
-                  (1 + (acprime * (1 - 2 * ac)) / ((1 + 2 * acprime) * ac * cos(psi) ** 2)) * \
-                  (1 - ac)
+            4 * ac * B / pi * 1 / tan(pi * Fc / 2) * \
+            ((R * cpsi - r * cpsi) / (R * cpsi)) * \
+            (cos(phi) ** 2 / sin(phi)) * \
+            (1 + (acprime * (1 - 2 * ac)) / ((1 + 2 * acprime) * ac * cos(psi) ** 2)) * \
+            (1 - ac)
         a = ac - (CTL_ac - CTL) / dCTL_da
 
     XL = (r * cos(psi) * omega) / v
@@ -326,9 +326,9 @@ def fInductionCoefficients6(a_last, F, phi, sigma, C_norm, C_tang, Cl, *args, **
     if CT > 0.96 * F:
         # Modified Glauert correction
         a = (
-                    18 * F - 20 - 3 * sqrt(CT * (50 - 36 * F) +
-                                           12 * F * (3 * F - 4))
-            ) / (36 * F - 50)
+            18 * F - 20 - 3 * sqrt(CT * (50 - 36 * F) +
+                                   12 * F * (3 * F - 4))
+        ) / (36 * F - 50)
         CT = 8 / 9 + (4 * F - 40 / 90) * a + (50 / 9 - 4 * F) * a ** 2
     else:
         a = (1 + 4 * F * sin(phi) ** 2 / (sigma * C_norm)) ** -1
@@ -360,9 +360,9 @@ def fInductionCoefficients7(a_last, F, lambda_r, phi, sigma, C_norm, *args, **kw
         a = 1 / (4 * F * sin(phi) ** 2 / (sigma * C_norm) + 1)
     else:
         a = (
-                    18 * F - 20 - 3 * abs(Ct * (50 - 36 * F) +
-                                          12 * F * (3 * F - 4)) ** 0.5
-            ) / (36 * F - 50)
+            18 * F - 20 - 3 * abs(Ct * (50 - 36 * F) +
+                                  12 * F * (3 * F - 4)) ** 0.5
+        ) / (36 * F - 50)
 
     aprime = 0.5 * (abs(1 + 4 / (lambda_r ** 2) * a * (1 - a)) ** 0.5 - 1)
 
@@ -398,11 +398,11 @@ def fInductionCoefficients8(a_last, F, phi, sigma, lambda_r, B, r, R, C_norm, Cl
     a = a_last
     g = exp(-0.125 * (B * lambda_r - 21)) + 0.1
     F1 = (2 / pi) * acos(exp(-g * B * (R - r) / (2 * r * sin(phi))))
-    
+
     a_c = 1 / 3
-    #if a <= a_c:
+    # if a <= a_c:
     #    Ct = 4*a*F*(1-a*F)
-    #else:
+    # else:
     #    Ct = 4*(a_c**2*F**2+(1-2*a_c*F)*a*F)
     Ct = sigma * (1 - a_last) ** 2 * C_norm / (sin(phi) ** 2)
     Y1 = 4 * F * sin(phi) ** 2 / (sigma * F1 * C_norm)
@@ -443,7 +443,8 @@ def fInductionCoefficients9(a_last, F, phi, Cl, C_norm, C_tang, sigma, *args, **
     if Ct <= 0.888 * F:
         a = (1 - sqrt(1 - Ct / F)) / 2
     else:
-        Y = (sqrt(1 / 36 * (Ct / F) ** 2 - 145 / 2187 * Ct / F + 92 / 2187) + Ct / (6 * F) - 145 / 729) ** (1 / 3)
+        Y = (sqrt(1 / 36 * (Ct / F) ** 2 - 145 / 2187 * Ct / F +
+                  92 / 2187) + Ct / (6 * F) - 145 / 729) ** (1 / 3)
         a = Y - 11 / (81 * Y) + 5 / 9
     aprime = (4 * F * sin(phi)**2 / (sigma * Ct) - 1) ** -1
     return a, aprime, Ct
@@ -539,7 +540,8 @@ def fInductionCoefficients12(a_last, F, phi, Cl, C_tang, C_norm, sigma, lambda_r
     #    Ct=8/9+(4*F-40/9)*a+(50/9-4*F)*a**2
     Ct = sigma * (1 - a_last) ** 2 * C_norm / (sin(phi) ** 2)  # Qblade
 
-    a = (18 * F - 20 - 3 * sqrt(abs(Ct * (50 - 36 * F) + 12 * F * (3 * F - 4)))) / (36 * F - 50)
+    a = (18 * F - 20 - 3 *
+         sqrt(abs(Ct * (50 - 36 * F) + 12 * F * (3 * F - 4)))) / (36 * F - 50)
     aprime = (4 * F * sin(phi) * cos(phi) / (sigma * C_tang) - 1) ** -1
     return a, aprime, Ct
 
@@ -644,18 +646,18 @@ def cascadeEffectsCorrection(alpha, v, omega, r, R, c, B, a, aprime, max_thickne
     """
 
     delta_alpha_1 = (
-            1/ 4
-            * (
-                    atan2((1 - a) * v,((1 + 2 * aprime) * r * omega))
-                    - atan2(((1 - a) * v),(r * omega))
-            )
+        1 / 4
+        * (
+            atan2((1 - a) * v, ((1 + 2 * aprime) * r * omega))
+            - atan2(((1 - a) * v), (r * omega))
+        )
     )
     delta_alpha_2 = (
-            0.109
-            * (B * c * max_thickness * R * omega / v)
-            / (R * c * sqrt((1 - a) ** 2 + (r*R*omega/v/R) ** 2))
+        0.109
+        * (B * c * max_thickness * R * omega / v)
+        / (R * c * sqrt((1 - a) ** 2 + (r*R*omega/v/R) ** 2))
     )
-    
+
     out = alpha + delta_alpha_1 + delta_alpha_2
 
     return out
@@ -682,28 +684,28 @@ def calc_rotational_augmentation_correction(
         gama = omega * R / sqrt(abs(v ** 2 - (omega * R) ** 2))
         ad, dd, bd = 1, 1, 1
         fl = (
-                1
-                / (2 * pi)
-                * (
-                        1.6
-                        * (c / r)
-                        / 0.1267
-                        * (ad - (c / r) ** (dd * R / gama / r))
-                        / (bd + (c / r) ** (dd * R / gama / r))
-                        - 1
-                )
+            1
+            / (2 * pi)
+            * (
+                1.6
+                * (c / r)
+                / 0.1267
+                * (ad - (c / r) ** (dd * R / gama / r))
+                / (bd + (c / r) ** (dd * R / gama / r))
+                - 1
+            )
         )
         fd = (
-                -1
-                / (2 * pi)
-                * (
-                        1.6
-                        * (c / r)
-                        / 0.1267
-                        * (ad - (c / r) ** (dd * R / gama / r / 2))
-                        / (bd + (c / r) ** (dd * R / gama / r / 2))
-                        - 1
-                )
+            -1
+            / (2 * pi)
+            * (
+                1.6
+                * (c / r)
+                / 0.1267
+                * (ad - (c / r) ** (dd * R / gama / r / 2))
+                / (bd + (c / r) ** (dd * R / gama / r / 2))
+                - 1
+            )
         )
     if method == 3:
         # Chaviaropoulos and Hansen

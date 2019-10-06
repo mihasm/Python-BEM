@@ -32,21 +32,23 @@ class Calculator:
         self.airfoils = airfoils
         for blade_name in self.airfoils:
             self.airfoils[blade_name]["alpha_zero"] = 0.0  # TODO FIX
-            generate_dat(blade_name, self.airfoils[blade_name]["x"], self.airfoils[blade_name]["y"])
+            generate_dat(
+                blade_name, self.airfoils[blade_name]["x"], self.airfoils[blade_name]["y"])
 
             data = self.airfoils[blade_name]["gathered_curves"]
             data = sort_data(data)
 
-            re = data[:,0].flatten()
-            alpha = data[:,2].flatten()
-            cl = data[:,3].flatten()
-            cd = data[:,4].flatten()
+            re = data[:, 0].flatten()
+            alpha = data[:, 2].flatten()
+            cl = data[:, 3].flatten()
+            cd = data[:, 4].flatten()
 
-            def interpolation_function_cl(x,y,re=re,alpha=alpha,cl=cl):
-                return interp(x,y,re,alpha,cl)
-            def interpolation_function_cd(x,y,re=re,alpha=alpha,cd=cd):
-                return interp(x,y,re,alpha,cd)
-            
+            def interpolation_function_cl(x, y, re=re, alpha=alpha, cl=cl):
+                return interp(x, y, re, alpha, cl)
+
+            def interpolation_function_cd(x, y, re=re, alpha=alpha, cd=cd):
+                return interp(x, y, re, alpha, cd)
+
             self.airfoils[blade_name]["interp_function_cl"] = interpolation_function_cl
             self.airfoils[blade_name]["interp_function_cd"] = interpolation_function_cd
 
@@ -84,10 +86,10 @@ class Calculator:
 
     # noinspection PyUnusedLocal,PyUnusedLocal
     def run_array(self, theta, B, c, r, foils, dr, R, Rhub, rpm, v, pitch, method, propeller_mode, print_out, tip_loss,
-            hub_loss, new_tip_loss, new_hub_loss, cascade_correction, max_iterations, convergence_limit, rho,
-            relaxation_factor, print_all, return_print, return_results, rotational_augmentation_correction,
-            rotational_augmentation_correction_method, mach_number_correction, fix_reynolds, reynolds, *args,
-            **kwargs, ):
+                  hub_loss, new_tip_loss, new_hub_loss, cascade_correction, max_iterations, convergence_limit, rho,
+                  relaxation_factor, print_all, return_print, return_results, rotational_augmentation_correction,
+                  rotational_augmentation_correction_method, mach_number_correction, fix_reynolds, reynolds, *args,
+                  **kwargs, ):
         """
         Calculates induction factors using standard iteration methods.
 
@@ -142,7 +144,8 @@ class Calculator:
 
         # create results array placeholders
         results = {}
-        arrays = ["a", "a'", "cL", "alpha", "phi", "F", "dFt", "M", "TSR", "Ct", "dFn", "foils", "dT", "dQ", "Re", "U1", "U2", "U3", "U4"]
+        arrays = ["a", "a'", "cL", "alpha", "phi", "F", "dFt", "M", "TSR",
+                  "Ct", "dFn", "foils", "dT", "dQ", "Re", "U1", "U2", "U3", "U4"]
         for array in arrays:
             results[array] = numpy.array([])
 
@@ -187,13 +190,15 @@ class Calculator:
             results["a"] = numpy.append(results["a"], out_results["a"])
             results["a'"] = numpy.append(results["a'"], out_results["aprime"])
             results["cL"] = numpy.append(results["cL"], out_results["Cl"])
-            results["alpha"] = numpy.append(results["alpha"], out_results["alpha"])
+            results["alpha"] = numpy.append(
+                results["alpha"], out_results["alpha"])
             results["phi"] = numpy.append(results["phi"], out_results["phi"])
             results["F"] = numpy.append(results["F"], out_results["F"])
             results["dFt"] = numpy.append(results["dFt"], out_results["dFt"])
             results["Ct"] = numpy.append(results["Ct"], out_results["Ct"])
             results["dFn"] = numpy.append(results["dFn"], out_results["dFn"])
-            results["foils"] = numpy.append(results["foils"], out_results["_airfoil"])
+            results["foils"] = numpy.append(
+                results["foils"], out_results["_airfoil"])
             results["dT"] = numpy.append(results["dT"], out_results["dT"])
             results["dQ"] = numpy.append(results["dQ"], out_results["dQ"])
             results["Re"] = numpy.append(results["Re"], out_results["Re"])
@@ -213,7 +218,7 @@ class Calculator:
         power_p = Q * omega
         Msum = numpy.sum(M)
         power = numpy.sum(M) * omega
-        p.print(power_p,power)
+        p.print(power_p, power)
         Pmax = 0.5 * rho * v ** 3 * pi * R ** 2
         cp_w = power / Pmax
         cp_p = power_p / (rho * (rpm / 60) ** 3 * (2 * R) ** 5)
@@ -254,12 +259,11 @@ class Calculator:
         return results
 
     def calculate_section(self, v, omega, _r, _c, _theta, _dr, B, R, _airfoil_dat, _airfoil, max_thickness, Rhub,
-            propeller_mode, pitch=0.0, psi=0.0, fix_reynolds=False, reynolds=1e6, tip_loss=False, new_tip_loss=False,
-            hub_loss=False, new_hub_loss=False, cascade_correction=False, rotational_augmentation_correction=False,
-            rotational_augmentation_correction_method=0, mach_number_correction=False, method=5,
-            kin_viscosity=1.4207E-5, rho=1.225, convergence_limit=0.001, max_iterations=100, relaxation_factor=0.3,
-            printer=None, print_all=False, print_out=False, *args, **kwargs):
-
+                          propeller_mode, pitch=0.0, psi=0.0, fix_reynolds=False, reynolds=1e6, tip_loss=False, new_tip_loss=False,
+                          hub_loss=False, new_hub_loss=False, cascade_correction=False, rotational_augmentation_correction=False,
+                          rotational_augmentation_correction_method=0, mach_number_correction=False, method=5,
+                          kin_viscosity=1.4207E-5, rho=1.225, convergence_limit=0.001, max_iterations=100, relaxation_factor=0.3,
+                          printer=None, print_all=False, print_out=False, *args, **kwargs):
         """
         Function that calculates each section of the blade.
 
@@ -304,7 +308,7 @@ class Calculator:
         # solidity
         sigma = _c * B / (2 * pi * _r)
 
-        ## initial guess
+        # initial guess
         a = 1/3
         aprime = 0.01
 
@@ -314,7 +318,7 @@ class Calculator:
         # tip mach number
         M = omega * _r / 343
 
-        #convert pitch to radians
+        # convert pitch to radians
         _pitch = radians(pitch)
 
         ############ START ITERATION ############
@@ -376,7 +380,6 @@ class Calculator:
                 alpha = cascadeEffectsCorrection(alpha=alpha, v=v, omega=omega, r=_r, R=R, c=_c, B=B, a=a,
                                                  aprime=aprime, max_thickness=max_thickness)
 
-           
             """
             # For xFoil cL,cD
             xfoil_return = xfoil_runner(airfoil=_airfoil_dat, reynolds=Re, alpha=alpha, printer=p, print_all=print_all)
@@ -425,7 +428,8 @@ class Calculator:
                                "method": method, "alpha": alpha, "alpha_deg": degrees(alpha)}
 
             if print_all:
-                args_to_print = sorted([key for key, value in input_arguments.items()])
+                args_to_print = sorted(
+                    [key for key, value in input_arguments.items()])
                 p.print("            i", i)
                 for a in args_to_print:
                     p.print("            ", a, input_arguments[a])
@@ -446,14 +450,18 @@ class Calculator:
 
             # thrust and torque - Wiley, WE 2nd, p.124
             dT_MT = F * 4 * pi * _r * rho * v ** 2 * a * (1 - a) * _dr
-            dT_BET = 0.5 * rho * B * _c * Vrel_norm ** 2 * (Cl * cos(phi) + Cd * sin(phi)) * _dr
-            dQ_MT = F * 4 * aprime * (1 - a) * rho * v * pi * _r ** 3 * omega * _dr
-            dQ_BET = B * 0.5 * rho * Vrel_norm ** 2 * (Cl * sin(phi) - Cd * cos(phi)) * _c * _dr * _r
+            dT_BET = 0.5 * rho * B * _c * Vrel_norm ** 2 * \
+                (Cl * cos(phi) + Cd * sin(phi)) * _dr
+            dQ_MT = F * 4 * aprime * (1 - a) * rho * \
+                v * pi * _r ** 3 * omega * _dr
+            dQ_BET = B * 0.5 * rho * Vrel_norm ** 2 * \
+                (Cl * sin(phi) - Cd * cos(phi)) * _c * _dr * _r
 
             # thrust and torque from https://apps.dtic.mil/dtic/tr/fulltext/u2/1013408.pdf
-            dT_p = B * rho * (omega * _r / cos(phi) * cos(_theta)) ** 2 * _c * _dr * (Cl * cos(phi) - Cd * sin(phi))
+            dT_p = B * rho * (omega * _r / cos(phi) * cos(_theta)
+                              ) ** 2 * _c * _dr * (Cl * cos(phi) - Cd * sin(phi))
             dQ_p = B * rho * (omega * _r / cos(phi) * cos(_theta)) ** 2 * _c * _r * _dr * (
-                    Cl * sin(phi) + Cd * cos(phi))
+                Cl * sin(phi) + Cd * cos(phi))
 
             # thrust and torque from http://www.icas.org/ICAS_ARCHIVE/ICAS2010/PAPERS/434.PDF
             # dT_p = sigma*pi*rho*v**2*(1+a)**2/(sin(phi)**2)*(Cl*cos(phi)-Cd*sin(phi))*_r*_dr
@@ -461,15 +469,18 @@ class Calculator:
 
             # thrust-propeller
             dT_MT_p = 4 * pi * _r * rho * v ** 2 * (1 + a) * a * _dr
-            dQ_MT_p = 4 * pi * _r ** 3 * rho * v * omega * (1 + a) * aprime * _dr
+            dQ_MT_p = 4 * pi * _r ** 3 * rho * \
+                v * omega * (1 + a) * aprime * _dr
             dT_BET_p = 0.5 * rho * v ** 2 * _c * B * (1 + a) ** 2 / (sin(phi) ** 2) * (
-                    Cl * cos(phi) - Cd * sin(phi)) * _dr
+                Cl * cos(phi) - Cd * sin(phi)) * _dr
             dQ_BET_p = 0.5 * rho * v * _c * B * omega * _r ** 2 * (1 + a) * (1 - aprime) / (sin(phi) * cos(phi)) * (
-                    Cl * sin(phi) + Cd * cos(phi)) * _dr
+                Cl * sin(phi) + Cd * cos(phi)) * _dr
 
-            #from http://www.aerodynamics4students.com/propel.m
-            dT_BET_p_2 = 0.5*rho*Vrel_norm**2*B*_c*(Cl * cos(phi) - Cd * sin(phi))*_dr
-            dQ_BET_p_2 = 0.5*rho*Vrel_norm**2*B*_c*_r*(Cl * sin(phi) + Cd * cos(phi)) * _dr
+            # from http://www.aerodynamics4students.com/propel.m
+            dT_BET_p_2 = 0.5*rho*Vrel_norm**2*B*_c * \
+                (Cl * cos(phi) - Cd * sin(phi))*_dr
+            dQ_BET_p_2 = 0.5*rho*Vrel_norm**2*B*_c * \
+                _r*(Cl * sin(phi) + Cd * cos(phi)) * _dr
             dT_MT_p_2 = 4*pi*_r*rho*v**2*(1+a)
             dQ_MT_p_2 = 4*pi*_r**3*rho*v*(1+a)*omega
 
@@ -507,7 +518,8 @@ class Calculator:
                 return None
 
             # relaxation
-            a = a_last + relaxation_factor * (a - a_last)  # aprime=aprime_last+relaxation_factor*(aprime-aprime_last)
+            # aprime=aprime_last+relaxation_factor*(aprime-aprime_last)
+            a = a_last + relaxation_factor * (a - a_last)
 
         ############ END ITERATION ############
 
@@ -525,13 +537,17 @@ class Calculator:
             p.print(prepend, "        U2:", U2)
             p.print(prepend, "        U3:", U3)
             p.print(prepend, "        U4:", U4)
-            p.print(prepend, "        dT_MT %.2f dT_BET %.2f" % (dT_MT, dT_BET))
-            p.print(prepend, "        dQ_MT %.2f dQ_BET %.2f" % (dQ_MT, dQ_BET))
-            p.print(prepend, "        dT_MT_p %.5f dT_BET_p %.5f" % (dT_MT_p, dT_BET_p))
-            p.print(prepend, "        dQ_MT_p %.5f dQ_BET_p %.5f" % (dQ_MT_p, dQ_BET_p))
+            p.print(prepend, "        dT_MT %.2f dT_BET %.2f" %
+                    (dT_MT, dT_BET))
+            p.print(prepend, "        dQ_MT %.2f dQ_BET %.2f" %
+                    (dQ_MT, dQ_BET))
+            p.print(prepend, "        dT_MT_p %.5f dT_BET_p %.5f" %
+                    (dT_MT_p, dT_BET_p))
+            p.print(prepend, "        dQ_MT_p %.5f dQ_BET_p %.5f" %
+                    (dQ_MT_p, dQ_BET_p))
             p.print(prepend, "        dT_p %.2f dQ_p %.2f" % (dT_p, dQ_p))
             p.print(prepend, "    ----------------------------")
 
         out = {"a": a, "aprime": aprime, "Cl": Cl, "alpha": alpha, "phi": phi, "F": F, "dFt": dFt, "Ct": Ct, "dFn": dFn,
-               "_airfoil": _airfoil_dat, "dT": dT, "dQ": dQ, "Re": Re, 'U1': U1, 'U2':U2, 'U3':U3, 'U4':U4}
+               "_airfoil": _airfoil_dat, "dT": dT, "dQ": dQ, "Re": Re, 'U1': U1, 'U2': U2, 'U3': U3, 'U4': U4}
         return out
