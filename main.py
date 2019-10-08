@@ -303,13 +303,13 @@ class WindTurbineProperties(QWidget):
         if "B" in dict_settings:
             t = str(dict_settings["B"])
             self.B.setText(t)
-        if "r" in dict_settings and "c" in dict_settings and "theta" in dict_settings and "foils" in dict_settings:
+        if "r_in" in dict_settings and "c_in" in dict_settings and "theta_in" in dict_settings and "foils_in" in dict_settings:
             _array = []
-            for r in range(len(dict_settings["r"])):
-                _r = dict_settings["r"][r]
-                _c = dict_settings["c"][r]
-                _theta = dict_settings["theta"][r]
-                _f = dict_settings["foils"][r]
+            for r in range(len(dict_settings["r_in"])):
+                _r = dict_settings["r_in"][r]
+                _c = dict_settings["c_in"][r]
+                _theta = dict_settings["theta_in"][r]
+                _f = dict_settings["foils_in"][r]
                 _array.append([_r, _c, _theta, _f])
             self.table_properties.createTable(_array)
         if "turbine_name" in dict_settings:

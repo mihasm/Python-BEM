@@ -1,7 +1,6 @@
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 import mpl_toolkits.mplot3d as mp3d
-from hye_propeller_data import SET_INIT
 import numpy as np
 from matplotlib import cm
 import math
@@ -33,7 +32,6 @@ def rotate_array(x, y, xy, angle):
     angle = math.radians(angle)
     x_out, y_out = [], []
     for _x, _y in zip(x, y):
-        # print(_x,_y)
         _xq, _yq = rotate(xy, (_x, _y), angle)
         x_out.append(_xq)
         y_out.append(_yq)
@@ -42,7 +40,6 @@ def rotate_array(x, y, xy, angle):
 
 def scale_and_normalize(foil_x, foil_y, scale, centroid):
     foil_x, foil_y = np.array(foil_x), np.array(foil_y)
-    # centroid = (0.45484495454545454, 0.022852227272727274) #S826
     foil_x = foil_x-centroid[0]
     foil_x, foil_y = foil_x*scale, foil_y*scale
     return foil_x, foil_y
@@ -105,5 +102,3 @@ def create_3d_blade(SET_INIT, flip_turning_direction=False, propeller_geom=False
 
     data = np.array(data)
     return {"data": data, "X": X, "Y": Y, "Z": Z}
-
-# create_3d_blade(SET_INIT)

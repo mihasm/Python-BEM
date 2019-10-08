@@ -19,11 +19,6 @@ from calculation_runner import max_calculate
 from table import Table
 from utils import sort_xy, dict_to_ar
 
-# TO REMOVE
-from comparison import TSR_exp, CP_exp
-from comparison import error_x, error_y, error_size
-from comparison import exp_lambda_ct, exp_ct
-from comparison import exp_ct_error_size
 
 
 class ResultsWindow(QMainWindow):
@@ -61,63 +56,46 @@ class ResultsWindow(QMainWindow):
         self.tab_widget.add_tab_widget(t_geom, "Geometry check")
 
         # Veter v odvisnosti od moči
-        f2 = self.tab_widget.add_tab_figure("Cp krivulja")
+        f2 = self.tab_widget.add_tab_figure("Cp curve")
         #self.tab_widget.add_2d_plot_to_figure(f2, max_x, max_z, 121, "Moč vs veter", "veter [m/s]", "moč [W]")
 
-        # Cp krivulja
+        # Cp curve
         TSR, CP = sort_xy(results_3d["TSR"], results_3d["cp_w"])
         ax_cp = self.tab_widget.add_2d_plot_to_figure(
-            f2, TSR, CP, 121, "", r"$\lambda$", r"$C_P$", look="-b", label=r"analitična $C_P$ krivulja")
-
-        # Cp krivulja for comparison Karlsen et al., S826, 0.45m, 3B
-        self.tab_widget.add_2d_plot_to_figure(
-            f2, TSR_exp, CP_exp, 121, "", r"$\lambda$", r"$C_P$", look="-r", label=r"eksperimentalna $C_P$ krivulja")
-
-        # Error bar
-        ax_cp.errorbar(error_x, error_y, error_size,
-                       capsize=2, color="red", linestyle="")
-
+            f2, TSR, CP, 121, "", r"$\lambda$", r"$C_P$", look="-b", label=r"$C_P$ curve")
         ax_cp.legend(fontsize=18)
 
         # noinspection PyBroadException
         try:
             if len(X) >= 3 and len(Y) >= 3:
-                f3 = self.tab_widget.add_tab_figure("3D moč")
+                f3 = self.tab_widget.add_tab_figure("3D power")
                 self.tab_widget.add_surface_plot(
-                    f3, X, Y, Z, 111, "Moč (veter,rpm)", "veter[m/s]", "rpm", "moč [W]")
+                    f3, X, Y, Z, 111, "Power (windspeed,RPM)", "windspeed[m/s]", "RPM", "Power [W]")
         except:
             print("Could not create 3D surface plot...")
 
-        # Ct(a) krivulja
-        f4 = self.tab_widget.add_tab_figure("Ct_r(a) krivulja")
+        # Ct(a) curve
+        f4 = self.tab_widget.add_tab_figure("Ct_r(a) curve")
         ax_ct_r = self.tab_widget.add_2d_plot_to_figure(f4, results_3d["a"], results_3d["Ct"], 111, "", "a", r"$C_{T_r}$",
                                                         look="o", x_min=0, x_max=1)
         leg = ax_ct_r.legend(
             np.round(np.array(results_3d["TSR"]), 2), fontsize=20)
         leg.set_title(r"$\lambda$", prop={'size': 20})
 
-        # ct(lambda) krivulja
-        #f4_2 = self.tab_widget.add_tab_figure("ct(lambda) krivulja")
+        # ct(lambda) curve
         self.tab_widget.add_2d_plot_to_figure(f2, results_3d["TSR"], results_3d["ct_w"], 122, "", r"$\lambda$", r"$C_P$",
-                                              look="b-", label=r"analitična $C_T$ krivulja")
-        ax_ct = self.tab_widget.add_2d_plot_to_figure(f2, exp_lambda_ct, exp_ct, 122, "", r"$\lambda$", r"$C_T$",
-                                                      look="r-", label=r"eksperimentalna $C_T$ krivulja")
-        ax_ct.legend(fontsize=18)
-        ax_ct.errorbar(exp_lambda_ct, exp_ct, exp_ct_error_size,
-                       capsize=2, color="red", linestyle="")
+                                              look="b-", label=r"$C_T$ curve")
 
-        # ct_p(J) krivulja
-        f5 = self.tab_widget.add_tab_figure("ct(J) krivulja (propeler)")
-        self.tab_widget.add_2d_plot_to_figure(f5, results_3d["J"], results_3d["ct_p"], 111, "Krivulje propelerja",
+        # ct_p(J) curve
+        f5 = self.tab_widget.add_tab_figure("ct(J) curve (propeller)")
+        self.tab_widget.add_2d_plot_to_figure(f5, results_3d["J"], results_3d["ct_p"], 111, "Propeler curves",
                                               "J = 1/lambda", "ct", look="b-", x_min=0, x_max=1, y_min=0, y_max=0.25, label="Ct (Thrust)")
 
-        # cp_p(J) krivulja
-        #f6 = self.tab_widget.add_tab_figure("cp/J krivulja (propeler)")
+        # cp_p(J) curve
         self.tab_widget.add_2d_plot_to_figure(f5, results_3d['J'], results_3d['cp_p'], 111, None, None,
                                               None, look='r-', x_min=0, x_max=1, y_min=0, y_max=0.1, label="Cp (Power)")
 
-        # cp_p(J) krivulja
-        #f6 = self.tab_widget.add_tab_figure("eff/J krivulja (propeler)")
+        # cp_p(J) curve
         ax1 = self.tab_widget.add_2d_plot_to_figure(f5, results_3d['J'], results_3d['eff_p'], 111, None, None,
                                                     None, look='g-', x_min=0, x_max=1, y_min=0, y_max=1.0, label="Eff (Efficiency)")
         ax1.legend()
@@ -131,7 +109,7 @@ class ResultsWindow(QMainWindow):
         ), 111, "Title", "Re", "alpha[deg]",
             "cL")
         # print(results_3d['U4'])
-        f8 = self.tab_widget.add_tab_figure("hitrosti")
+        f8 = self.tab_widget.add_tab_figure("Windspeed (radius)")
         for _u in results_3d['U4']:
             ax2 = self.tab_widget.add_2d_plot_to_figure(
                 f8, _u, input_data['r'], 111, '', r'$v_4$ [m/s]', 'r [m]', look="-", c=numpy.random.rand(3,))

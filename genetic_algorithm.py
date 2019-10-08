@@ -6,16 +6,15 @@ from numpy import pi, radians
 from calculation import Calculator
 
 
-
-
 # noinspection PyBroadException
 def optimize_angles_genetic(inp_args):
 
-    #brute force method
+    # brute force method
 
     p = Printer(inp_args["return_print"])
     try:
-        p.print("Optimizing angles for target variable:", inp_args["optimization_variable"])
+        p.print("Optimizing angles for target variable:",
+                inp_args["optimization_variable"])
         return_results = inp_args["return_results"]
 
         v = inp_args["target_speed"]
@@ -25,8 +24,8 @@ def optimize_angles_genetic(inp_args):
         # optimization_variable = "dT"
         #optimization_variable = inp_args["optimization_variable"]
         optimization_variable = "dQ"
-        p.print("Optimization variable is",optimization_variable)
-        p.print("Propeller mode:",inp_args["propeller_mode"])
+        p.print("Optimization variable is", optimization_variable)
+        p.print("Propeller mode:", inp_args["propeller_mode"])
 
         output_angles = []
         output_alphas = []
@@ -51,30 +50,30 @@ def optimize_angles_genetic(inp_args):
             max_thickness = inp_args["airfoils"][_airfoil]["max_thickness"] * _c
             _airfoil_dat = _airfoil + ".dat"
 
-            
-            #out = C.calculate_section(v=v, omega=omega, _airfoil=_airfoil, _airfoil_dat=_airfoil_dat,
+            # out = C.calculate_section(v=v, omega=omega, _airfoil=_airfoil, _airfoil_dat=_airfoil_dat,
             #      max_thickness=max_thickness, _r=_r, _c=_c, _dr=_dr, _theta=radians(_theta),
             #      printer=p, **inp_args)
 
-            
             def fobj(x):
                 value = 0
                 for i in range(len(x)):
-                    d =  C.calculate_section(v=v, omega=omega, _airfoil=_airfoil, _airfoil_dat=_airfoil_dat,
-                        max_thickness=max_thickness, _r=_r, _c=_c, _dr=_dr, _theta=radians(x[i]),
-                        printer=p, **inp_args)
+                    d = C.calculate_section(v=v, omega=omega, _airfoil=_airfoil, _airfoil_dat=_airfoil_dat,
+                                            max_thickness=max_thickness, _r=_r, _c=_c, _dr=_dr, _theta=radians(
+                                                x[i]),
+                                            printer=p, **inp_args)
                     var_opt = d[optimization_variable]
                     value += var_opt
                 return value / len(x)
 
             it = list(de(fobj, bounds=[(-45, 45)]))
-            #print(it)
+            # print(it)
 
             d_final = C.calculate_section(v=v, omega=omega, _airfoil=_airfoil, _airfoil_dat=_airfoil_dat,
-                        max_thickness=max_thickness, _r=_r, _c=_c, _dr=_dr, _theta=radians(it[-1][0][0]),
-                        printer=p, **inp_args)
-            #print(it[-1])
-            plt.plot(done_angles,done_thrusts,"b.")
+                                          max_thickness=max_thickness, _r=_r, _c=_c, _dr=_dr, _theta=radians(
+                                              it[-1][0][0]),
+                                          printer=p, **inp_args)
+            # print(it[-1])
+            plt.plot(done_angles, done_thrusts, "b.")
             plt.show()
 
             output_angles.append(it[-1])
@@ -97,89 +96,67 @@ def optimize_angles_genetic(inp_args):
 #https://pablormier.github.io/2017/09/05/a-tutorial-on-differential-evolution-with-python/#
 
 def de(fobj, bounds, mut=0.8, crossp=0.3, num_individuals=100, its=100):
-    #stevilo dimenzij
+    # stevilo dimenzij
     dimensions = len(bounds)
 
-    #populacija
+    # populacija
     pop = np.random.rand(num_individuals, dimensions)
 
-    #normalizacija
+    # normalizacija
     min_bound, max_bound = np.asarray(bounds).T
     diff = np.fabs(min_bound - max_bound)
     pop_denorm = min_bound + pop * diff
 
-    #zacetni fintes
+    # zacetni fintes
     fitness = np.asarray([fobj(ind) for ind in pop_denorm])
 
-    #najmocnejsi posameznik
+    # najmocnejsi posameznik
     best_idx = np.argmax(fitness)
 
-    #vrednost najmocnejsega posameznika
+    # vrednost najmocnejsega posameznika
     best = pop_denorm[best_idx]
 
     for i in range(its):
-        #print("i",i)
+        # print("i",i)
         for j in range(num_individuals):
-            #print("\tj",j)
-            #print("\tj_value",pop[j])
+            # print("\tj",j)
+            # print("\tj_value",pop[j])
 
-            #vsi posamezniki, ki niso trenutni posameznik
+            # vsi posamezniki, ki niso trenutni posameznik
             idxs = [idx for idx in range(num_individuals) if idx != j]
-            #print("\t\tidxs",idxs)
+            # print("\t\tidxs",idxs)
 
-            #tri nakljucni ostali posamezniki
-            a, b, c = pop[np.random.choice(idxs, 3, replace = False)]
-            #print("\t\ta,b,c",a,b,c)
+            # tri nakljucni ostali posamezniki
+            a, b, c = pop[np.random.choice(idxs, 3, replace=False)]
+            # print("\t\ta,b,c",a,b,c)
 
-            #mutacija
+            # mutacija
             mutant = np.clip(a + mut * (b - c), 0, 1)
-            #print("\t\tmutant",mutant)
+            # print("\t\tmutant",mutant)
 
-            #izbira zamenjave
+            # izbira zamenjave
             cross_points = np.random.rand(dimensions) < crossp
             if not np.any(cross_points):
                 cross_points[np.random.randint(0, dimensions)] = True
             cross_points = [False]
-            #print("\t\tcross_points",cross_points)
+            # print("\t\tcross_points",cross_points)
 
-            #poskusni posameznik
+            # poskusni posameznik
             trial = np.where(cross_points, mutant, pop[j])
-            #print("\t\ttrial",trial)
+            # print("\t\ttrial",trial)
 
-            #normalizacija poskusnega posameznika
+            # normalizacija poskusnega posameznika
             trial_denorm = min_bound + trial * diff
 
-            #preverjanje ciljne funkcije
+            # preverjanje ciljne funkcije
             f = fobj(trial_denorm)
             if f > fitness[j]:
-                #ce je novi fitnes boljsi, izberi novega posameznika
+                # ce je novi fitnes boljsi, izberi novega posameznika
                 fitness[j] = f
                 pop[j] = trial
                 if f > fitness[best_idx]:
                     best_idx = j
                     best = trial_denorm
-        #yield best, fitness[best_idx]
+        # yield best, fitness[best_idx]
     return best
 
-
-#SET_INIT["return_print"] = []
-#SET_INIT["return_results"] = []
-#optimize_angles_genetic(SET_INIT)
-
-
-def fobj(x):
-    value = 0
-    for i in range(len(x)):
-        value += -x[i]**2
-    return value / len(x)
-
-#fobj = lambda x: sum(x**2)/len(x)
-
-#it = list(de(fobj, bounds=[(-100, 100)]))
-
-print(it)
-"""
-
-#plt.plot(range(len(it)),np.array(it)[:,0])
-#plt.show()
-"""
