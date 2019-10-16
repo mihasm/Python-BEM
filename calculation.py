@@ -88,7 +88,7 @@ class Calculator:
     def run_array(self, theta, B, c, r, foils, dr, R, Rhub, rpm, v, pitch, method, propeller_mode, print_out, tip_loss,
                   hub_loss, new_tip_loss, new_hub_loss, cascade_correction, max_iterations, convergence_limit, rho,
                   relaxation_factor, print_all, return_print, return_results, rotational_augmentation_correction,
-                  rotational_augmentation_correction_method, mach_number_correction, fix_reynolds, reynolds, *args,
+                  rotational_augmentation_correction_method, mach_number_correction, fix_reynolds, reynolds, yaw_angle, skewed_wake_correction, *args,
                   **kwargs, ):
         """
         Calculates induction factors using standard iteration methods.
@@ -263,7 +263,7 @@ class Calculator:
                           hub_loss=False, new_hub_loss=False, cascade_correction=False, rotational_augmentation_correction=False,
                           rotational_augmentation_correction_method=0, mach_number_correction=False, method=5,
                           kin_viscosity=1.4207E-5, rho=1.225, convergence_limit=0.001, max_iterations=100, relaxation_factor=0.3,
-                          printer=None, print_all=False, print_out=False, *args, **kwargs):
+                          printer=None, print_all=False, print_out=False, yaw_angle=0.0, skewed_wake_correction=False, *args, **kwargs):
         """
         Function that calculates each section of the blade.
 
@@ -320,6 +320,9 @@ class Calculator:
 
         # convert pitch to radians
         _pitch = radians(pitch)
+
+        # convert yaw to radians
+        yaw_angle = radians(yaw_angle)
 
         ############ START ITERATION ############
         while True:
@@ -441,6 +444,9 @@ class Calculator:
                 return None
             else:
                 a, aprime, Ct = coeffs
+
+                if skewed_wake_correction:
+                    a = skewed_wake_correction_calculate(yaw_angle,a,_r,R)
 
             # force calculation
             dFL = Cl * 0.5 * rho * Vrel_norm ** 2 * _c * _dr  # lift force

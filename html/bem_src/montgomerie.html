@@ -1,0 +1,1058 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.7.1" />
+<title>bem_src.montgomerie API documentation</title>
+<meta name="description" content="" />
+<link href='https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.0/normalize.min.css' rel='stylesheet'>
+<link href='https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/8.0.0/sanitize.min.css' rel='stylesheet'>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css" rel="stylesheet">
+<style>.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{font-weight:bold}#index h4 + ul{margin-bottom:.6em}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>bem_src.montgomerie</code></h1>
+</header>
+<section id="section-intro">
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">from numpy import *
+from numpy import pi as PI
+import numpy as np
+from matplotlib import pyplot as plt
+from matplotlib.widgets import Slider, Button, RadioButtons
+import os
+
+
+class POLAR_CLASS:
+    def __init__(self, x, y, alpha, Cl, Cd):
+        self.x = x
+        self.y = y
+        self.m_Alpha = alpha
+        self.m_Cl = Cl
+        self.m_Cd = Cd
+
+
+class Montgomerie:
+    def __init__(self, x, y, alpha, Cl, Cd, Re=100000, A=30, Am=5, B=5, Bm=5, m_CD90=2.0, slope=0.106):
+        # coefficient of lift at AoA  == 0
+        self.CLzero = np.interp(0, alpha, Cl)
+        self.CL180 = 0  # lift coefficient at AoA == 180
+        # angle of attack where lift  == 0
+        self.alphazero = np.interp(0, Cl, alpha)
+
+        self.deltaCD = 0
+        self.deltaalpha = 1
+
+        self.slope = slope  # ocitno od 0 do 1
+        self.m_CD90 = m_CD90  # Drag coefficientat AoA == 90
+
+        self.m_pctrlA = A  # -10, 30
+        self.m_pctrlB = B  # 1-100
+        self.m_pctrlAm = Am  # 1-80
+        self.m_pctrlBm = Bm  # 1-70
+
+        if len(y) &gt; 0:
+            self.m_fThickness = np.max(y)-np.min(y)
+        else:
+            self.m_fThickness = 0.1
+
+        self.m_fCamber = 0.043
+
+        # self.m_pCurPolar = POLAR_CLA
+        self.m_pCurPolar = POLAR_CLASS(x, y, alpha, Cl, Cd)
+        self.posalphamax = np.argmax(self.m_pCurPolar.m_Cl)
+        # self.posalphamax = len(self.m_pCurPolar.m_Alpha)
+
+        self.reynolds = Re
+
+    def CD90(self, alpha):
+        res = self.m_CD90 - 1.46 * self.m_fThickness / 2 + \
+            1.46 * self.m_fCamber * sin(alpha / 360 * 2 * PI)
+        return res
+
+    def PlateFlow(self, alphazero, CLzero, alpha):
+        # tukaj bi CD90  rala biti funkcija
+        # alpha in degrees
+        a = (1 + CLzero / sin(PI / 4) * sin(alpha / 360 * 2 * PI)) * self.CD90(alpha) * sin((alpha - 57.6 * 0.08 * sin(
+            alpha / 360 * 2 * PI) - alphazero * cos(alpha / 360 * 2 * PI)) / 360 * 2 * PI) * cos(
+            (alpha - 57.6 * 0.08 * sin(alpha / 360 * 2 * PI) - alphazero * cos(alpha / 360 * 2 * PI)) / 360 * 2 * PI)
+        return a
+
+    def PotFlow(self, CLzero, slope, alpha):
+        return CLzero + slope * alpha
+
+    def CDPlate(self, alpha):
+        res = self.CD90(alpha) * sin(alpha / 360 * 2 * PI) ** 2
+        return res
+
+    def calculate_extrapolation(self):
+        m_Alpha = []
+        m_Cl = []
+        m_Cd = []
+        # print(&#34;A&#34;,self.m_pctrlA,&#34;B&#34;,self.m_pctrlB)
+        # positive extrapolation
+
+        if len(self.m_pCurPolar.m_Alpha) &gt; self.m_pctrlA + self.posalphamax &gt;= 0:
+            a1plus = self.m_pCurPolar.m_Alpha[int(
+                self.posalphamax + self.m_pctrlA)]
+            CL1plus = self.m_pCurPolar.m_Cl[int(
+                self.posalphamax + self.m_pctrlA)]
+        else:
+            a1plus = (self.posalphamax + self.m_pctrlA) * self.deltaalpha
+            CL1plus = self.PlateFlow(
+                self.alphazero, self.CLzero, a1plus) + 0.03
+
+        if (self.posalphamax + self.m_pctrlB + self.m_pctrlA) &lt; len(
+                self.m_pCurPolar.m_Alpha) and self.posalphamax + self.m_pctrlB + self.m_pctrlA &gt;= 0:
+            a2plus = self.m_pCurPolar.m_Alpha[int(
+                self.posalphamax + self.m_pctrlB + self.m_pctrlA)]
+            CL2plus = self.m_pCurPolar.m_Cl[int(
+                self.posalphamax + self.m_pctrlB + self.m_pctrlA)]
+        else:
+            a2plus = (self.posalphamax + self.m_pctrlB +
+                      self.m_pctrlA) * self.deltaalpha
+            CL2plus = self.PlateFlow(
+                self.alphazero, self.CLzero, a2plus) + 0.03
+
+        A = (self.PotFlow(self.CLzero, self.slope, a1plus) -
+             self.PlateFlow(self.alphazero, self.CLzero, a1plus))
+        if A == 0.:
+            A = 1e-5
+        f1plus = (
+            (CL1plus - self.PlateFlow(self.alphazero, self.CLzero, a1plus)) / A)
+        B = (self.PotFlow(self.CLzero, self.slope, a2plus) -
+             self.PlateFlow(self.alphazero, self.CLzero, a2plus))
+        if B == 0.:
+            B = 1e-5
+        f2plus = (
+            (CL2plus - self.PlateFlow(self.alphazero, self.CLzero, a2plus)) / B)
+
+        if (f1plus == 1):
+            f1plus += 10e-6
+            print(&#34;yes&#34;)
+        if (f2plus == 1):
+            print(&#34;yes2&#34;)
+            f2plus += 10e-6
+
+        G = pow((fabs((1 / f1plus - 1) / (1 / f2plus - 1))), 0.25)
+
+        am = (a1plus - G * a2plus) / (1 - G)
+
+        k_div = pow((a2plus - am), 4)
+        if k_div == 0:
+            k_div = 1e-5
+        k = (1 / f2plus - 1) * 1 / k_div
+
+        # rear end flying
+        self.CL180 = self.PlateFlow(self.alphazero, self.CLzero, 180)
+
+        self.slope2 = 0.8 * self.slope
+        Re = self.reynolds  # Reynolds
+        deltaCL = 1.324 * pow((1 - exp(Re / 1000000 * (-0.2))), 0.7262)
+
+        CL1plus = self.CL180 - deltaCL
+        a1plus = 170 + self.CL180 / self.slope2
+        a2plus = a1plus - 15
+        CL2plus = self.PlateFlow(self.alphazero, self.CLzero, a2plus) - 0.01
+
+        f1plus = (CL1plus - self.PlateFlow(self.alphazero, self.CLzero, a1plus)) / (
+            self.PotFlow(self.CL180, self.slope2, a1plus - 180) - self.PlateFlow(self.alphazero, self.CLzero,
+                                                                                 a1plus))
+        f2plus = (CL2plus - self.PlateFlow(self.alphazero, self.CLzero, a2plus)) / (
+            self.PotFlow(self.CL180, self.slope2, a2plus - 180) - self.PlateFlow(self.alphazero, self.CLzero,
+                                                                                 a2plus))
+
+        G2 = pow(fabs(((1 / f1plus - 1) / (1 / f2plus - 1))), 0.25)
+
+        am2 = (a1plus - G2 * a2plus) / (1 - G2)
+
+        k2 = (1 / f2plus - 1) * 1 / pow((a2plus - am2), 4)
+
+        alpha = int(1)
+
+        while alpha &lt;= 180:
+            if alpha &lt; (am2 - 70):
+                if alpha &lt; am:
+                    delta = 0
+                else:
+                    delta = am - alpha
+                f = 1 / (1 + k * pow(delta, 4))
+                m_Alpha.append(alpha)
+                m_Cl.append(f * self.PotFlow(self.CLzero, self.slope, alpha) + (1 - f) * self.PlateFlow(self.alphazero,
+                                                                                                        self.CLzero,
+                                                                                                        alpha))
+
+            elif alpha &lt; am2:
+                delta = am2 - alpha
+                f = 1 / (1 + k2 * pow(delta, 4))
+                m_Alpha.append(alpha)
+                m_Cl.append(
+                    f * self.PotFlow(self.CL180, self.slope2, alpha - 180) + (1 - f) * self.PlateFlow(self.alphazero,
+                                                                                                      self.CLzero,
+                                                                                                      alpha))
+            else:
+                m_Alpha.append(alpha)
+                m_Cl.append(self.PotFlow(self.CL180, self.slope2, alpha - 180))
+
+            if alpha &lt; am:
+                delta = 0
+            else:
+                delta = am - alpha
+
+            f = 1 / (1 + k * delta ** 4)
+            self.deltaCD = 0.13 * ((f - 1) * self.PotFlow(self.CLzero, self.slope, alpha) - (1 - f) * self.PlateFlow(
+                self.alphazero, self.CLzero, alpha))
+            if (self.deltaCD &lt;= 0):
+                self.deltaCD = 0
+            # tukaj nisem preprican kaj pomeni self.m_fThickness, je to v procentih tetive ali kaj?
+            m_Cd.append(
+                f * (self.deltaCD + 0.006 + 1.25 * self.m_fThickness ** 2 / 180 * abs(alpha)) + (1 - f) * self.CDPlate(
+                    alpha) + 0.006)
+
+            alpha += self.deltaalpha
+
+        # negative extrapolation
+        a1minus = (-float(self.m_pctrlAm) / 20 - self.CLzero) / self.slope - 4
+        CL1minus = -float(self.m_pctrlAm) / 20
+
+        a2minus = a1minus - self.m_pctrlBm * 2
+        CL2minus = self.PlateFlow(self.alphazero, self.CLzero, a2minus) - 0.03
+
+        f1minus = (CL1minus - self.PlateFlow(self.alphazero, self.CLzero, a1minus)) / (
+            self.PotFlow(self.CLzero, self.slope, a1minus) - self.PlateFlow(self.alphazero, self.CLzero, a1minus))
+        f2minus = (CL2minus - self.PlateFlow(self.alphazero, self.CLzero, a2minus)) / (
+            self.PotFlow(self.CLzero, self.slope, a2minus) - self.PlateFlow(self.alphazero, self.CLzero, a2minus))
+
+        G = abs((1 / f1minus - 1) / (1 / f2minus - 1)) ** 0.25
+
+        am = (a1minus - G * a2minus) / (1 - G)
+
+        k = (1 / f2minus - 1) * 1 / (a2minus - am) ** 4
+
+        # rear end flying first
+
+        CL1minus = self.CL180 + deltaCL
+        a1minus = -170 + self.CL180 / self.slope2
+        a2minus = a1minus + 15
+        CL2minus = self.PlateFlow(self.alphazero, self.CLzero, a2minus) - 0.01
+
+        f1minus = (CL1minus - self.PlateFlow(self.alphazero, self.CLzero, a1minus)) / (
+            self.PotFlow(self.CL180, self.slope2, a1minus + 180) - self.PlateFlow(self.alphazero, self.CLzero,
+                                                                                  a1minus))
+        f2minus = (CL2minus - self.PlateFlow(self.alphazero, self.CLzero, a2minus)) / (
+            self.PotFlow(self.CL180, self.slope2, a2minus + 180) - self.PlateFlow(self.alphazero, self.CLzero,
+                                                                                  a2minus))
+
+        G2 = abs(((1 / f1minus - 1) / (1 / f2minus - 1))) ** 0.25
+
+        am2 = (a1minus - G2 * a2minus) / (1 - G2)
+
+        k2 = (1 / f2minus - 1) * 1 / (a2minus - am2) ** 4
+
+        alpha = 0
+
+        while alpha &gt;= -180:
+            if (alpha &gt; am2 + 70):
+                if alpha &gt; am:
+                    delta = 0
+                else:
+                    delta = am - alpha
+                f = 1 / (1 + abs(k * delta ** 4))
+                m_Alpha.append(alpha)
+                m_Cl.append(f * self.PotFlow(self.CLzero, self.slope, alpha) + (1 - f) * self.PlateFlow(self.alphazero,
+                                                                                                        self.CLzero,
+                                                                                                        alpha))
+            elif alpha &gt; am2:
+                delta = am2 - alpha
+                f = 1 / (1 + abs(k2 * delta ** 4))
+                m_Alpha.append(alpha)
+                m_Cl.append(
+                    f * self.PotFlow(self.CL180, self.slope2, alpha + 180) + (1 - f) * self.PlateFlow(self.alphazero,
+                                                                                                      self.CLzero,
+                                                                                                      alpha))
+            else:
+                m_Alpha.append(alpha)
+                m_Cl.append(self.PotFlow(self.CL180, self.slope2, alpha + 180))
+
+            if alpha &gt; am:
+                delta = 0
+            else:
+                delta = am - alpha
+            f = 1 / (1 + k * delta ** 4)
+            self.deltaCD = 0.13 * (
+                self.PotFlow(self.CLzero, self.slope, alpha) - f * self.PotFlow(self.CLzero, self.slope, alpha) - (
+                    1 - f) * self.PlateFlow(self.alphazero, self.CLzero, alpha))
+
+            if (self.deltaCD &lt;= 0):
+                self.deltaCD = 0
+            m_Cd.append(
+                f * (self.deltaCD + 0.006 + 1.25 * self.m_fThickness ** 2 / 180 * abs(alpha)) + (1 - f) * self.CDPlate(
+                    alpha) + 0.006)
+            alpha = alpha - self.deltaalpha
+        return m_Alpha, m_Cl, m_Cd
+
+
+def draw_matplotlib(M, draw=False):
+    # polar = POLAR_CLASS([],[],imp_polar[:,0],imp_polar[:,1],imp_polar[:,2])
+    # M = Montgomerie(polar)
+
+    if draw:
+        m_Alpha, m_Cl, m_Cd = M.calculate_extrapolation()
+
+        fig, ax = plt.subplots()
+        plt.subplots_adjust(bottom=0.35)
+        l, = plt.plot(m_Alpha, m_Cl, &#39;o&#39;, lw=2, color=&#39;red&#39;)
+        plt.axis([-180, 180, -2, 2])
+
+        axcolor = &#39;lightgoldenrodyellow&#39;
+        axA = plt.axes([0.25, 0.1, 0.65, 0.03], facecolor=axcolor)
+        axAm = plt.axes([0.25, 0.15, 0.65, 0.03], facecolor=axcolor)
+        axB = plt.axes([0.25, 0.2, 0.65, 0.03], facecolor=axcolor)
+        axBm = plt.axes([0.25, 0.25, 0.65, 0.03], facecolor=axcolor)
+
+        sA = Slider(axA, &#39;A&#39;, -10, 30, valinit=0, valstep=1)  # ,valstep=1
+        sAm = Slider(axAm, &#39;A-&#39;, 1, 80, valinit=20)
+        sB = Slider(axB, &#39;B&#39;, 1, 100, valinit=5, valstep=1)
+        sBm = Slider(axBm, &#39;B-&#39;, 1, 70, valinit=20)
+
+        def update(val):
+            M.m_pctrlA = sA.val
+            M.m_pctrlAm = sAm.val
+            M.m_pctrlB = sB.val
+            M.m_pctrlBm = sBm.val
+            alpha, cl, cd = M.calculate_extrapolation()
+            l.set_ydata(cl)
+            fig.canvas.draw_idle()
+
+        sA.on_changed(update)
+        sAm.on_changed(update)
+        sB.on_changed(update)
+        sBm.on_changed(update)
+
+        resetax = plt.axes([0.8, 0.025, 0.1, 0.04])
+        button = Button(resetax, &#39;Reset&#39;, color=axcolor, hovercolor=&#39;0.975&#39;)
+
+        def reset(event):
+            sA.reset()
+            sAm.reset()
+            sB.reset()
+            sBm.reset()
+
+        button.on_clicked(reset)
+
+        def colorfunc(label):
+            l.set_color(label)
+            fig.canvas.draw_idle()
+
+        ax.plot(M.m_pCurPolar.m_Alpha, M.m_pCurPolar.m_Cl)
+
+        plt.show()
+
+    return M.calculate_extrapolation()
+
+# draw_matplotlib()</code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-functions">Functions</h2>
+<dl>
+<dt id="bem_src.montgomerie.draw_matplotlib"><code class="name flex">
+<span>def <span class="ident">draw_matplotlib</span></span>(<span>M, draw=False)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def draw_matplotlib(M, draw=False):
+    # polar = POLAR_CLASS([],[],imp_polar[:,0],imp_polar[:,1],imp_polar[:,2])
+    # M = Montgomerie(polar)
+
+    if draw:
+        m_Alpha, m_Cl, m_Cd = M.calculate_extrapolation()
+
+        fig, ax = plt.subplots()
+        plt.subplots_adjust(bottom=0.35)
+        l, = plt.plot(m_Alpha, m_Cl, &#39;o&#39;, lw=2, color=&#39;red&#39;)
+        plt.axis([-180, 180, -2, 2])
+
+        axcolor = &#39;lightgoldenrodyellow&#39;
+        axA = plt.axes([0.25, 0.1, 0.65, 0.03], facecolor=axcolor)
+        axAm = plt.axes([0.25, 0.15, 0.65, 0.03], facecolor=axcolor)
+        axB = plt.axes([0.25, 0.2, 0.65, 0.03], facecolor=axcolor)
+        axBm = plt.axes([0.25, 0.25, 0.65, 0.03], facecolor=axcolor)
+
+        sA = Slider(axA, &#39;A&#39;, -10, 30, valinit=0, valstep=1)  # ,valstep=1
+        sAm = Slider(axAm, &#39;A-&#39;, 1, 80, valinit=20)
+        sB = Slider(axB, &#39;B&#39;, 1, 100, valinit=5, valstep=1)
+        sBm = Slider(axBm, &#39;B-&#39;, 1, 70, valinit=20)
+
+        def update(val):
+            M.m_pctrlA = sA.val
+            M.m_pctrlAm = sAm.val
+            M.m_pctrlB = sB.val
+            M.m_pctrlBm = sBm.val
+            alpha, cl, cd = M.calculate_extrapolation()
+            l.set_ydata(cl)
+            fig.canvas.draw_idle()
+
+        sA.on_changed(update)
+        sAm.on_changed(update)
+        sB.on_changed(update)
+        sBm.on_changed(update)
+
+        resetax = plt.axes([0.8, 0.025, 0.1, 0.04])
+        button = Button(resetax, &#39;Reset&#39;, color=axcolor, hovercolor=&#39;0.975&#39;)
+
+        def reset(event):
+            sA.reset()
+            sAm.reset()
+            sB.reset()
+            sBm.reset()
+
+        button.on_clicked(reset)
+
+        def colorfunc(label):
+            l.set_color(label)
+            fig.canvas.draw_idle()
+
+        ax.plot(M.m_pCurPolar.m_Alpha, M.m_pCurPolar.m_Cl)
+
+        plt.show()
+
+    return M.calculate_extrapolation()</code></pre>
+</details>
+</dd>
+</dl>
+</section>
+<section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="bem_src.montgomerie.Montgomerie"><code class="flex name class">
+<span>class <span class="ident">Montgomerie</span></span>
+<span>(</span><span>x, y, alpha, Cl, Cd, Re=100000, A=30, Am=5, B=5, Bm=5, m_CD90=2.0, slope=0.106)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class Montgomerie:
+    def __init__(self, x, y, alpha, Cl, Cd, Re=100000, A=30, Am=5, B=5, Bm=5, m_CD90=2.0, slope=0.106):
+        # coefficient of lift at AoA  == 0
+        self.CLzero = np.interp(0, alpha, Cl)
+        self.CL180 = 0  # lift coefficient at AoA == 180
+        # angle of attack where lift  == 0
+        self.alphazero = np.interp(0, Cl, alpha)
+
+        self.deltaCD = 0
+        self.deltaalpha = 1
+
+        self.slope = slope  # ocitno od 0 do 1
+        self.m_CD90 = m_CD90  # Drag coefficientat AoA == 90
+
+        self.m_pctrlA = A  # -10, 30
+        self.m_pctrlB = B  # 1-100
+        self.m_pctrlAm = Am  # 1-80
+        self.m_pctrlBm = Bm  # 1-70
+
+        if len(y) &gt; 0:
+            self.m_fThickness = np.max(y)-np.min(y)
+        else:
+            self.m_fThickness = 0.1
+
+        self.m_fCamber = 0.043
+
+        # self.m_pCurPolar = POLAR_CLA
+        self.m_pCurPolar = POLAR_CLASS(x, y, alpha, Cl, Cd)
+        self.posalphamax = np.argmax(self.m_pCurPolar.m_Cl)
+        # self.posalphamax = len(self.m_pCurPolar.m_Alpha)
+
+        self.reynolds = Re
+
+    def CD90(self, alpha):
+        res = self.m_CD90 - 1.46 * self.m_fThickness / 2 + \
+            1.46 * self.m_fCamber * sin(alpha / 360 * 2 * PI)
+        return res
+
+    def PlateFlow(self, alphazero, CLzero, alpha):
+        # tukaj bi CD90  rala biti funkcija
+        # alpha in degrees
+        a = (1 + CLzero / sin(PI / 4) * sin(alpha / 360 * 2 * PI)) * self.CD90(alpha) * sin((alpha - 57.6 * 0.08 * sin(
+            alpha / 360 * 2 * PI) - alphazero * cos(alpha / 360 * 2 * PI)) / 360 * 2 * PI) * cos(
+            (alpha - 57.6 * 0.08 * sin(alpha / 360 * 2 * PI) - alphazero * cos(alpha / 360 * 2 * PI)) / 360 * 2 * PI)
+        return a
+
+    def PotFlow(self, CLzero, slope, alpha):
+        return CLzero + slope * alpha
+
+    def CDPlate(self, alpha):
+        res = self.CD90(alpha) * sin(alpha / 360 * 2 * PI) ** 2
+        return res
+
+    def calculate_extrapolation(self):
+        m_Alpha = []
+        m_Cl = []
+        m_Cd = []
+        # print(&#34;A&#34;,self.m_pctrlA,&#34;B&#34;,self.m_pctrlB)
+        # positive extrapolation
+
+        if len(self.m_pCurPolar.m_Alpha) &gt; self.m_pctrlA + self.posalphamax &gt;= 0:
+            a1plus = self.m_pCurPolar.m_Alpha[int(
+                self.posalphamax + self.m_pctrlA)]
+            CL1plus = self.m_pCurPolar.m_Cl[int(
+                self.posalphamax + self.m_pctrlA)]
+        else:
+            a1plus = (self.posalphamax + self.m_pctrlA) * self.deltaalpha
+            CL1plus = self.PlateFlow(
+                self.alphazero, self.CLzero, a1plus) + 0.03
+
+        if (self.posalphamax + self.m_pctrlB + self.m_pctrlA) &lt; len(
+                self.m_pCurPolar.m_Alpha) and self.posalphamax + self.m_pctrlB + self.m_pctrlA &gt;= 0:
+            a2plus = self.m_pCurPolar.m_Alpha[int(
+                self.posalphamax + self.m_pctrlB + self.m_pctrlA)]
+            CL2plus = self.m_pCurPolar.m_Cl[int(
+                self.posalphamax + self.m_pctrlB + self.m_pctrlA)]
+        else:
+            a2plus = (self.posalphamax + self.m_pctrlB +
+                      self.m_pctrlA) * self.deltaalpha
+            CL2plus = self.PlateFlow(
+                self.alphazero, self.CLzero, a2plus) + 0.03
+
+        A = (self.PotFlow(self.CLzero, self.slope, a1plus) -
+             self.PlateFlow(self.alphazero, self.CLzero, a1plus))
+        if A == 0.:
+            A = 1e-5
+        f1plus = (
+            (CL1plus - self.PlateFlow(self.alphazero, self.CLzero, a1plus)) / A)
+        B = (self.PotFlow(self.CLzero, self.slope, a2plus) -
+             self.PlateFlow(self.alphazero, self.CLzero, a2plus))
+        if B == 0.:
+            B = 1e-5
+        f2plus = (
+            (CL2plus - self.PlateFlow(self.alphazero, self.CLzero, a2plus)) / B)
+
+        if (f1plus == 1):
+            f1plus += 10e-6
+            print(&#34;yes&#34;)
+        if (f2plus == 1):
+            print(&#34;yes2&#34;)
+            f2plus += 10e-6
+
+        G = pow((fabs((1 / f1plus - 1) / (1 / f2plus - 1))), 0.25)
+
+        am = (a1plus - G * a2plus) / (1 - G)
+
+        k_div = pow((a2plus - am), 4)
+        if k_div == 0:
+            k_div = 1e-5
+        k = (1 / f2plus - 1) * 1 / k_div
+
+        # rear end flying
+        self.CL180 = self.PlateFlow(self.alphazero, self.CLzero, 180)
+
+        self.slope2 = 0.8 * self.slope
+        Re = self.reynolds  # Reynolds
+        deltaCL = 1.324 * pow((1 - exp(Re / 1000000 * (-0.2))), 0.7262)
+
+        CL1plus = self.CL180 - deltaCL
+        a1plus = 170 + self.CL180 / self.slope2
+        a2plus = a1plus - 15
+        CL2plus = self.PlateFlow(self.alphazero, self.CLzero, a2plus) - 0.01
+
+        f1plus = (CL1plus - self.PlateFlow(self.alphazero, self.CLzero, a1plus)) / (
+            self.PotFlow(self.CL180, self.slope2, a1plus - 180) - self.PlateFlow(self.alphazero, self.CLzero,
+                                                                                 a1plus))
+        f2plus = (CL2plus - self.PlateFlow(self.alphazero, self.CLzero, a2plus)) / (
+            self.PotFlow(self.CL180, self.slope2, a2plus - 180) - self.PlateFlow(self.alphazero, self.CLzero,
+                                                                                 a2plus))
+
+        G2 = pow(fabs(((1 / f1plus - 1) / (1 / f2plus - 1))), 0.25)
+
+        am2 = (a1plus - G2 * a2plus) / (1 - G2)
+
+        k2 = (1 / f2plus - 1) * 1 / pow((a2plus - am2), 4)
+
+        alpha = int(1)
+
+        while alpha &lt;= 180:
+            if alpha &lt; (am2 - 70):
+                if alpha &lt; am:
+                    delta = 0
+                else:
+                    delta = am - alpha
+                f = 1 / (1 + k * pow(delta, 4))
+                m_Alpha.append(alpha)
+                m_Cl.append(f * self.PotFlow(self.CLzero, self.slope, alpha) + (1 - f) * self.PlateFlow(self.alphazero,
+                                                                                                        self.CLzero,
+                                                                                                        alpha))
+
+            elif alpha &lt; am2:
+                delta = am2 - alpha
+                f = 1 / (1 + k2 * pow(delta, 4))
+                m_Alpha.append(alpha)
+                m_Cl.append(
+                    f * self.PotFlow(self.CL180, self.slope2, alpha - 180) + (1 - f) * self.PlateFlow(self.alphazero,
+                                                                                                      self.CLzero,
+                                                                                                      alpha))
+            else:
+                m_Alpha.append(alpha)
+                m_Cl.append(self.PotFlow(self.CL180, self.slope2, alpha - 180))
+
+            if alpha &lt; am:
+                delta = 0
+            else:
+                delta = am - alpha
+
+            f = 1 / (1 + k * delta ** 4)
+            self.deltaCD = 0.13 * ((f - 1) * self.PotFlow(self.CLzero, self.slope, alpha) - (1 - f) * self.PlateFlow(
+                self.alphazero, self.CLzero, alpha))
+            if (self.deltaCD &lt;= 0):
+                self.deltaCD = 0
+            # tukaj nisem preprican kaj pomeni self.m_fThickness, je to v procentih tetive ali kaj?
+            m_Cd.append(
+                f * (self.deltaCD + 0.006 + 1.25 * self.m_fThickness ** 2 / 180 * abs(alpha)) + (1 - f) * self.CDPlate(
+                    alpha) + 0.006)
+
+            alpha += self.deltaalpha
+
+        # negative extrapolation
+        a1minus = (-float(self.m_pctrlAm) / 20 - self.CLzero) / self.slope - 4
+        CL1minus = -float(self.m_pctrlAm) / 20
+
+        a2minus = a1minus - self.m_pctrlBm * 2
+        CL2minus = self.PlateFlow(self.alphazero, self.CLzero, a2minus) - 0.03
+
+        f1minus = (CL1minus - self.PlateFlow(self.alphazero, self.CLzero, a1minus)) / (
+            self.PotFlow(self.CLzero, self.slope, a1minus) - self.PlateFlow(self.alphazero, self.CLzero, a1minus))
+        f2minus = (CL2minus - self.PlateFlow(self.alphazero, self.CLzero, a2minus)) / (
+            self.PotFlow(self.CLzero, self.slope, a2minus) - self.PlateFlow(self.alphazero, self.CLzero, a2minus))
+
+        G = abs((1 / f1minus - 1) / (1 / f2minus - 1)) ** 0.25
+
+        am = (a1minus - G * a2minus) / (1 - G)
+
+        k = (1 / f2minus - 1) * 1 / (a2minus - am) ** 4
+
+        # rear end flying first
+
+        CL1minus = self.CL180 + deltaCL
+        a1minus = -170 + self.CL180 / self.slope2
+        a2minus = a1minus + 15
+        CL2minus = self.PlateFlow(self.alphazero, self.CLzero, a2minus) - 0.01
+
+        f1minus = (CL1minus - self.PlateFlow(self.alphazero, self.CLzero, a1minus)) / (
+            self.PotFlow(self.CL180, self.slope2, a1minus + 180) - self.PlateFlow(self.alphazero, self.CLzero,
+                                                                                  a1minus))
+        f2minus = (CL2minus - self.PlateFlow(self.alphazero, self.CLzero, a2minus)) / (
+            self.PotFlow(self.CL180, self.slope2, a2minus + 180) - self.PlateFlow(self.alphazero, self.CLzero,
+                                                                                  a2minus))
+
+        G2 = abs(((1 / f1minus - 1) / (1 / f2minus - 1))) ** 0.25
+
+        am2 = (a1minus - G2 * a2minus) / (1 - G2)
+
+        k2 = (1 / f2minus - 1) * 1 / (a2minus - am2) ** 4
+
+        alpha = 0
+
+        while alpha &gt;= -180:
+            if (alpha &gt; am2 + 70):
+                if alpha &gt; am:
+                    delta = 0
+                else:
+                    delta = am - alpha
+                f = 1 / (1 + abs(k * delta ** 4))
+                m_Alpha.append(alpha)
+                m_Cl.append(f * self.PotFlow(self.CLzero, self.slope, alpha) + (1 - f) * self.PlateFlow(self.alphazero,
+                                                                                                        self.CLzero,
+                                                                                                        alpha))
+            elif alpha &gt; am2:
+                delta = am2 - alpha
+                f = 1 / (1 + abs(k2 * delta ** 4))
+                m_Alpha.append(alpha)
+                m_Cl.append(
+                    f * self.PotFlow(self.CL180, self.slope2, alpha + 180) + (1 - f) * self.PlateFlow(self.alphazero,
+                                                                                                      self.CLzero,
+                                                                                                      alpha))
+            else:
+                m_Alpha.append(alpha)
+                m_Cl.append(self.PotFlow(self.CL180, self.slope2, alpha + 180))
+
+            if alpha &gt; am:
+                delta = 0
+            else:
+                delta = am - alpha
+            f = 1 / (1 + k * delta ** 4)
+            self.deltaCD = 0.13 * (
+                self.PotFlow(self.CLzero, self.slope, alpha) - f * self.PotFlow(self.CLzero, self.slope, alpha) - (
+                    1 - f) * self.PlateFlow(self.alphazero, self.CLzero, alpha))
+
+            if (self.deltaCD &lt;= 0):
+                self.deltaCD = 0
+            m_Cd.append(
+                f * (self.deltaCD + 0.006 + 1.25 * self.m_fThickness ** 2 / 180 * abs(alpha)) + (1 - f) * self.CDPlate(
+                    alpha) + 0.006)
+            alpha = alpha - self.deltaalpha
+        return m_Alpha, m_Cl, m_Cd</code></pre>
+</details>
+<h3>Methods</h3>
+<dl>
+<dt id="bem_src.montgomerie.Montgomerie.CD90"><code class="name flex">
+<span>def <span class="ident">CD90</span></span>(<span>self, alpha)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def CD90(self, alpha):
+    res = self.m_CD90 - 1.46 * self.m_fThickness / 2 + \
+        1.46 * self.m_fCamber * sin(alpha / 360 * 2 * PI)
+    return res</code></pre>
+</details>
+</dd>
+<dt id="bem_src.montgomerie.Montgomerie.CDPlate"><code class="name flex">
+<span>def <span class="ident">CDPlate</span></span>(<span>self, alpha)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def CDPlate(self, alpha):
+    res = self.CD90(alpha) * sin(alpha / 360 * 2 * PI) ** 2
+    return res</code></pre>
+</details>
+</dd>
+<dt id="bem_src.montgomerie.Montgomerie.PlateFlow"><code class="name flex">
+<span>def <span class="ident">PlateFlow</span></span>(<span>self, alphazero, CLzero, alpha)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def PlateFlow(self, alphazero, CLzero, alpha):
+    # tukaj bi CD90  rala biti funkcija
+    # alpha in degrees
+    a = (1 + CLzero / sin(PI / 4) * sin(alpha / 360 * 2 * PI)) * self.CD90(alpha) * sin((alpha - 57.6 * 0.08 * sin(
+        alpha / 360 * 2 * PI) - alphazero * cos(alpha / 360 * 2 * PI)) / 360 * 2 * PI) * cos(
+        (alpha - 57.6 * 0.08 * sin(alpha / 360 * 2 * PI) - alphazero * cos(alpha / 360 * 2 * PI)) / 360 * 2 * PI)
+    return a</code></pre>
+</details>
+</dd>
+<dt id="bem_src.montgomerie.Montgomerie.PotFlow"><code class="name flex">
+<span>def <span class="ident">PotFlow</span></span>(<span>self, CLzero, slope, alpha)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def PotFlow(self, CLzero, slope, alpha):
+    return CLzero + slope * alpha</code></pre>
+</details>
+</dd>
+<dt id="bem_src.montgomerie.Montgomerie.calculate_extrapolation"><code class="name flex">
+<span>def <span class="ident">calculate_extrapolation</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def calculate_extrapolation(self):
+    m_Alpha = []
+    m_Cl = []
+    m_Cd = []
+    # print(&#34;A&#34;,self.m_pctrlA,&#34;B&#34;,self.m_pctrlB)
+    # positive extrapolation
+
+    if len(self.m_pCurPolar.m_Alpha) &gt; self.m_pctrlA + self.posalphamax &gt;= 0:
+        a1plus = self.m_pCurPolar.m_Alpha[int(
+            self.posalphamax + self.m_pctrlA)]
+        CL1plus = self.m_pCurPolar.m_Cl[int(
+            self.posalphamax + self.m_pctrlA)]
+    else:
+        a1plus = (self.posalphamax + self.m_pctrlA) * self.deltaalpha
+        CL1plus = self.PlateFlow(
+            self.alphazero, self.CLzero, a1plus) + 0.03
+
+    if (self.posalphamax + self.m_pctrlB + self.m_pctrlA) &lt; len(
+            self.m_pCurPolar.m_Alpha) and self.posalphamax + self.m_pctrlB + self.m_pctrlA &gt;= 0:
+        a2plus = self.m_pCurPolar.m_Alpha[int(
+            self.posalphamax + self.m_pctrlB + self.m_pctrlA)]
+        CL2plus = self.m_pCurPolar.m_Cl[int(
+            self.posalphamax + self.m_pctrlB + self.m_pctrlA)]
+    else:
+        a2plus = (self.posalphamax + self.m_pctrlB +
+                  self.m_pctrlA) * self.deltaalpha
+        CL2plus = self.PlateFlow(
+            self.alphazero, self.CLzero, a2plus) + 0.03
+
+    A = (self.PotFlow(self.CLzero, self.slope, a1plus) -
+         self.PlateFlow(self.alphazero, self.CLzero, a1plus))
+    if A == 0.:
+        A = 1e-5
+    f1plus = (
+        (CL1plus - self.PlateFlow(self.alphazero, self.CLzero, a1plus)) / A)
+    B = (self.PotFlow(self.CLzero, self.slope, a2plus) -
+         self.PlateFlow(self.alphazero, self.CLzero, a2plus))
+    if B == 0.:
+        B = 1e-5
+    f2plus = (
+        (CL2plus - self.PlateFlow(self.alphazero, self.CLzero, a2plus)) / B)
+
+    if (f1plus == 1):
+        f1plus += 10e-6
+        print(&#34;yes&#34;)
+    if (f2plus == 1):
+        print(&#34;yes2&#34;)
+        f2plus += 10e-6
+
+    G = pow((fabs((1 / f1plus - 1) / (1 / f2plus - 1))), 0.25)
+
+    am = (a1plus - G * a2plus) / (1 - G)
+
+    k_div = pow((a2plus - am), 4)
+    if k_div == 0:
+        k_div = 1e-5
+    k = (1 / f2plus - 1) * 1 / k_div
+
+    # rear end flying
+    self.CL180 = self.PlateFlow(self.alphazero, self.CLzero, 180)
+
+    self.slope2 = 0.8 * self.slope
+    Re = self.reynolds  # Reynolds
+    deltaCL = 1.324 * pow((1 - exp(Re / 1000000 * (-0.2))), 0.7262)
+
+    CL1plus = self.CL180 - deltaCL
+    a1plus = 170 + self.CL180 / self.slope2
+    a2plus = a1plus - 15
+    CL2plus = self.PlateFlow(self.alphazero, self.CLzero, a2plus) - 0.01
+
+    f1plus = (CL1plus - self.PlateFlow(self.alphazero, self.CLzero, a1plus)) / (
+        self.PotFlow(self.CL180, self.slope2, a1plus - 180) - self.PlateFlow(self.alphazero, self.CLzero,
+                                                                             a1plus))
+    f2plus = (CL2plus - self.PlateFlow(self.alphazero, self.CLzero, a2plus)) / (
+        self.PotFlow(self.CL180, self.slope2, a2plus - 180) - self.PlateFlow(self.alphazero, self.CLzero,
+                                                                             a2plus))
+
+    G2 = pow(fabs(((1 / f1plus - 1) / (1 / f2plus - 1))), 0.25)
+
+    am2 = (a1plus - G2 * a2plus) / (1 - G2)
+
+    k2 = (1 / f2plus - 1) * 1 / pow((a2plus - am2), 4)
+
+    alpha = int(1)
+
+    while alpha &lt;= 180:
+        if alpha &lt; (am2 - 70):
+            if alpha &lt; am:
+                delta = 0
+            else:
+                delta = am - alpha
+            f = 1 / (1 + k * pow(delta, 4))
+            m_Alpha.append(alpha)
+            m_Cl.append(f * self.PotFlow(self.CLzero, self.slope, alpha) + (1 - f) * self.PlateFlow(self.alphazero,
+                                                                                                    self.CLzero,
+                                                                                                    alpha))
+
+        elif alpha &lt; am2:
+            delta = am2 - alpha
+            f = 1 / (1 + k2 * pow(delta, 4))
+            m_Alpha.append(alpha)
+            m_Cl.append(
+                f * self.PotFlow(self.CL180, self.slope2, alpha - 180) + (1 - f) * self.PlateFlow(self.alphazero,
+                                                                                                  self.CLzero,
+                                                                                                  alpha))
+        else:
+            m_Alpha.append(alpha)
+            m_Cl.append(self.PotFlow(self.CL180, self.slope2, alpha - 180))
+
+        if alpha &lt; am:
+            delta = 0
+        else:
+            delta = am - alpha
+
+        f = 1 / (1 + k * delta ** 4)
+        self.deltaCD = 0.13 * ((f - 1) * self.PotFlow(self.CLzero, self.slope, alpha) - (1 - f) * self.PlateFlow(
+            self.alphazero, self.CLzero, alpha))
+        if (self.deltaCD &lt;= 0):
+            self.deltaCD = 0
+        # tukaj nisem preprican kaj pomeni self.m_fThickness, je to v procentih tetive ali kaj?
+        m_Cd.append(
+            f * (self.deltaCD + 0.006 + 1.25 * self.m_fThickness ** 2 / 180 * abs(alpha)) + (1 - f) * self.CDPlate(
+                alpha) + 0.006)
+
+        alpha += self.deltaalpha
+
+    # negative extrapolation
+    a1minus = (-float(self.m_pctrlAm) / 20 - self.CLzero) / self.slope - 4
+    CL1minus = -float(self.m_pctrlAm) / 20
+
+    a2minus = a1minus - self.m_pctrlBm * 2
+    CL2minus = self.PlateFlow(self.alphazero, self.CLzero, a2minus) - 0.03
+
+    f1minus = (CL1minus - self.PlateFlow(self.alphazero, self.CLzero, a1minus)) / (
+        self.PotFlow(self.CLzero, self.slope, a1minus) - self.PlateFlow(self.alphazero, self.CLzero, a1minus))
+    f2minus = (CL2minus - self.PlateFlow(self.alphazero, self.CLzero, a2minus)) / (
+        self.PotFlow(self.CLzero, self.slope, a2minus) - self.PlateFlow(self.alphazero, self.CLzero, a2minus))
+
+    G = abs((1 / f1minus - 1) / (1 / f2minus - 1)) ** 0.25
+
+    am = (a1minus - G * a2minus) / (1 - G)
+
+    k = (1 / f2minus - 1) * 1 / (a2minus - am) ** 4
+
+    # rear end flying first
+
+    CL1minus = self.CL180 + deltaCL
+    a1minus = -170 + self.CL180 / self.slope2
+    a2minus = a1minus + 15
+    CL2minus = self.PlateFlow(self.alphazero, self.CLzero, a2minus) - 0.01
+
+    f1minus = (CL1minus - self.PlateFlow(self.alphazero, self.CLzero, a1minus)) / (
+        self.PotFlow(self.CL180, self.slope2, a1minus + 180) - self.PlateFlow(self.alphazero, self.CLzero,
+                                                                              a1minus))
+    f2minus = (CL2minus - self.PlateFlow(self.alphazero, self.CLzero, a2minus)) / (
+        self.PotFlow(self.CL180, self.slope2, a2minus + 180) - self.PlateFlow(self.alphazero, self.CLzero,
+                                                                              a2minus))
+
+    G2 = abs(((1 / f1minus - 1) / (1 / f2minus - 1))) ** 0.25
+
+    am2 = (a1minus - G2 * a2minus) / (1 - G2)
+
+    k2 = (1 / f2minus - 1) * 1 / (a2minus - am2) ** 4
+
+    alpha = 0
+
+    while alpha &gt;= -180:
+        if (alpha &gt; am2 + 70):
+            if alpha &gt; am:
+                delta = 0
+            else:
+                delta = am - alpha
+            f = 1 / (1 + abs(k * delta ** 4))
+            m_Alpha.append(alpha)
+            m_Cl.append(f * self.PotFlow(self.CLzero, self.slope, alpha) + (1 - f) * self.PlateFlow(self.alphazero,
+                                                                                                    self.CLzero,
+                                                                                                    alpha))
+        elif alpha &gt; am2:
+            delta = am2 - alpha
+            f = 1 / (1 + abs(k2 * delta ** 4))
+            m_Alpha.append(alpha)
+            m_Cl.append(
+                f * self.PotFlow(self.CL180, self.slope2, alpha + 180) + (1 - f) * self.PlateFlow(self.alphazero,
+                                                                                                  self.CLzero,
+                                                                                                  alpha))
+        else:
+            m_Alpha.append(alpha)
+            m_Cl.append(self.PotFlow(self.CL180, self.slope2, alpha + 180))
+
+        if alpha &gt; am:
+            delta = 0
+        else:
+            delta = am - alpha
+        f = 1 / (1 + k * delta ** 4)
+        self.deltaCD = 0.13 * (
+            self.PotFlow(self.CLzero, self.slope, alpha) - f * self.PotFlow(self.CLzero, self.slope, alpha) - (
+                1 - f) * self.PlateFlow(self.alphazero, self.CLzero, alpha))
+
+        if (self.deltaCD &lt;= 0):
+            self.deltaCD = 0
+        m_Cd.append(
+            f * (self.deltaCD + 0.006 + 1.25 * self.m_fThickness ** 2 / 180 * abs(alpha)) + (1 - f) * self.CDPlate(
+                alpha) + 0.006)
+        alpha = alpha - self.deltaalpha
+    return m_Alpha, m_Cl, m_Cd</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="bem_src.montgomerie.POLAR_CLASS"><code class="flex name class">
+<span>class <span class="ident">POLAR_CLASS</span></span>
+<span>(</span><span>x, y, alpha, Cl, Cd)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class POLAR_CLASS:
+    def __init__(self, x, y, alpha, Cl, Cd):
+        self.x = x
+        self.y = y
+        self.m_Alpha = alpha
+        self.m_Cl = Cl
+        self.m_Cd = Cd</code></pre>
+</details>
+</dd>
+</dl>
+</section>
+</article>
+<nav id="sidebar">
+<h1>Index</h1>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="bem_src" href="index.html">bem_src</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-functions">Functions</a></h3>
+<ul class="">
+<li><code><a title="bem_src.montgomerie.draw_matplotlib" href="#bem_src.montgomerie.draw_matplotlib">draw_matplotlib</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="bem_src.montgomerie.Montgomerie" href="#bem_src.montgomerie.Montgomerie">Montgomerie</a></code></h4>
+<ul class="">
+<li><code><a title="bem_src.montgomerie.Montgomerie.CD90" href="#bem_src.montgomerie.Montgomerie.CD90">CD90</a></code></li>
+<li><code><a title="bem_src.montgomerie.Montgomerie.CDPlate" href="#bem_src.montgomerie.Montgomerie.CDPlate">CDPlate</a></code></li>
+<li><code><a title="bem_src.montgomerie.Montgomerie.PlateFlow" href="#bem_src.montgomerie.Montgomerie.PlateFlow">PlateFlow</a></code></li>
+<li><code><a title="bem_src.montgomerie.Montgomerie.PotFlow" href="#bem_src.montgomerie.Montgomerie.PotFlow">PotFlow</a></code></li>
+<li><code><a title="bem_src.montgomerie.Montgomerie.calculate_extrapolation" href="#bem_src.montgomerie.Montgomerie.calculate_extrapolation">calculate_extrapolation</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="bem_src.montgomerie.POLAR_CLASS" href="#bem_src.montgomerie.POLAR_CLASS">POLAR_CLASS</a></code></h4>
+</li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc"><cite>pdoc</cite> 0.7.1</a>.</p>
+</footer>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+<script>hljs.initHighlightingOnLoad()</script>
+</body>
+</html>

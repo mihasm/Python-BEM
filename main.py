@@ -51,12 +51,8 @@ numpy.set_printoptions(threshold=sys.maxsize)
 
 
 TITLE_STR = "BEM analiza v%s" % __version__
+from popravki import METHODS_STRINGS
 
-METHODS_STRINGS = {"0": "Original", "1": "b) Spera", "2": "Wiley: Strip theory, incl. wake rot.",
-                   "3": "Grant Ingram (without Ct corr.)", "4": "f) Glauert empirical", "5": "Propx",
-                   "6": "e) Aerodyn (Buhl)", "7": "QBlade (Buhl)", "8": "d) Shen", "9": "a) Glauert",
-                   "10": "Wilson and Walker", "11": "Classical brake state model", "12": "Advanced brake state model",
-                   "13": "c) Modified ABS model", "14": "Propeller BEM"}
 
 
 class MainWindow(QMainWindow):
@@ -1062,13 +1058,13 @@ class Analysis(QWidget):
         self.main = self.parent()
 
         self.settings = {"propeller_mode": False, "tip_loss": False, "hub_loss": False, "new_tip_loss": False,
-                         "new_hub_loss": False, "cascade_correction": False,
+                         "new_hub_loss": False, "cascade_correction": False,"skewed_wake_correction":False,
                          "rotational_augmentation_correction": False, "rotational_augmentation_correction_method": 1,
                          "mach_number_correction": False, "max_iterations": 100, "convergence_limit": 0.001,
                          "rho": 1.225, "method": 10, "linspace_interp": False, "num_interp": 25, "v_min": 3,
                          "v_max": 20, "v_num": 10, "rpm_min": 100, "rpm_max": 3000, "rpm_num": 10, "pitch": 0.0,
                          "relaxation_factor": 0.3, "print_all": False, "print_out": False, "reynolds": 50000,
-                         "fix_reynolds": False}
+                         "fix_reynolds": False,"yaw_angle":0}
 
         self.settings_to_name = {"propeller_mode": "Propeller mode", "print_out": "Print final iteration data",
                                  "tip_loss": "Prandtl tip loss", "hub_loss": "Prandtl hub loss",
@@ -1085,7 +1081,8 @@ class Analysis(QWidget):
                                  "rotational_augmentation_correction": "Rot. augmentation cor.",
                                  "rotational_augmentation_correction_method": "Rot. augmentation cor. method",
                                  "fix_reynolds": "Fix Reynolds", "reynolds": "Reynolds",
-                                 "mach_number_correction": "Mach number correction", "pitch": "Pitch"}
+                                 "mach_number_correction": "Mach number correction", "pitch": "Pitch",
+                                 "yaw_angle":"Yaw angle [°]","skewed_wake_correction":"Skewed Wake Correction"}
 
         self.list_settings_for_updating_tsr = [
             "v_min", "v_max", "v_num", "rpm_min", "rpm_max", "rpm_num"]

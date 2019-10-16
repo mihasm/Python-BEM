@@ -729,6 +729,13 @@ def calc_rotational_augmentation_correction(
     Cd_3D = Cd + fd * Cd
     return Cl_3D, Cd_3D
 
+def skewed_wake_correction_calculate(yaw_angle, a, r, R):
+    print("yaw_angle",yaw_angle)
+    chi = (0.6*a+1)*yaw_angle
+    a_skew = a*(1+15*pi/32*r/R*tan(chi/2))
+    return a_skew
+
+
 
 def calculate_coefficients(method, input_arguments):
     if method == 0:
@@ -762,3 +769,11 @@ def calculate_coefficients(method, input_arguments):
     if method == 14:
         return fInductionCoefficients14(**input_arguments)
     raise Exception("Method " + str(method) + " does not exist.")
+
+
+METHODS_STRINGS = {"0": "Original", "1": "b) Spera", "2": "Wiley: Strip theory, incl. wake rot.",
+                   "3": "Grant Ingram (without Ct corr.)", "4": "f) Glauert empirical", "5": "Propx",
+                   "6": "e) Aerodyn (Buhl)", "7": "QBlade (Buhl)", "8": "d) Shen", "9": "a) Glauert",
+                   "10": "Wilson and Walker", "11": "Classical brake state model", "12": "Advanced brake state model",
+                   "13": "c) Modified ABS model", "14": "Propeller BEM"}
+

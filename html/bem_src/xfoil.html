@@ -1,0 +1,594 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.7.1" />
+<title>bem_src.xfoil API documentation</title>
+<meta name="description" content="" />
+<link href='https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.0/normalize.min.css' rel='stylesheet'>
+<link href='https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/8.0.0/sanitize.min.css' rel='stylesheet'>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css" rel="stylesheet">
+<style>.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{font-weight:bold}#index h4 + ul{margin-bottom:.6em}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>bem_src.xfoil</code></h1>
+</header>
+<section id="section-intro">
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">#!/usr/bin/env python3
+import os
+import time
+from subprocess import Popen, PIPE, DEVNULL, STDOUT
+import re as regex
+from threading import Timer
+import sys
+from math import sin, cos, atan, acos, pi, exp, sqrt, radians, atan2, degrees, tan, isinf
+import numpy as np
+import numpy
+from matplotlib import pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D  # noqa: F401 unused import
+import scipy
+import scipy.linalg
+import scipy.interpolate
+import math
+import matplotlib.cm as cm
+
+xfoil_path = os.path.join(&#34;xfoil_executables&#34;, &#34;xfoil.exe&#34;)
+if sys.platform.startswith(&#34;darwin&#34;):
+    xfoil_path = os.path.join(&#34;xfoil_executables&#34;, &#34;xfoil&#34;)
+
+
+def xfoil_runner(airfoil, reynolds, alpha, printer=None, print_all=False):
+    # alpha = round(degrees(alpha))
+    # alpha in degrees
+    if print_all:
+        if printer != None:
+            printer.print(&#34;        xfoil runner, alpha=&#34;,
+                          alpha, &#34;re=&#34;, reynolds)
+    out = run_xfoil_analysis(airfoil, reynolds, alpha)
+    # if out == False:
+    #    return xfoil_runner(airfoil, reynolds * 0.5, radians(alpha), printer, print_all=print_all)
+    return out
+
+
+def get_coefficients_from_output(output_str):
+    lines = output_str.splitlines()
+    last_lines = &#34;\n&#34;.join(lines[-5:])
+    if &#34;VISCAL:  Convergence failed&#34; in output_str:
+        return False
+    if &#34;TRCHEK2: N2 convergence failed.&#34; in last_lines:
+        return False
+    i = -1
+    cur_line = 0
+    _, __, a, CL, Cm, CD, CDf, CDp = [None] * 8
+    for l in lines:
+        a = regex.match(&#34;(.+)a =(.+)CL =(.+)&#34;, l)
+        _, a, CL = a.groups() if a != None else [_, a, CL]
+        b = regex.match(&#34;(.+)Cm =(.+)CD =(.+)=&gt;.+CDf =(.+)CDp =(.+)&#34;, l)
+        __, Cm, CD, CDf, CDp = b.groups() if b != None else [
+            __, Cm, CD, CDf, CDp]
+    # Weird cases
+    if CL == None or CD == None:
+        return False
+    if &#34;*&#34; in CL or &#34;*&#34; in CD:
+        return False
+    if math.isinf(float(CL)) or math.isinf(float(CD)):
+        return False
+
+    out = {&#34;CL&#34;: float(CL), &#34;CD&#34;: float(CD), &#34;Cm&#34;: float(
+        Cm), &#34;CDf&#34;: float(CDf), &#34;CDp&#34;: float(CDp), &#34;out&#34;: output_str}
+    return out
+
+
+def run_xfoil_analysis(airfoil, reynolds, alpha, iterations=70, max_next_angle=2., print_output=False):
+    # print(&#34;running xfoil for %s,Re=%s,alpha=%s&#34; % (airfoil,reynolds,alpha))
+    # alpha in degrees
+    with Popen(os.path.abspath(xfoil_path), stdin=PIPE, stdout=PIPE, universal_newlines=True) as process:
+
+        def call(_str, proc=process):
+            # print(_str,file=process.stdin)
+            proc.stdin.write(_str + &#34;\n&#34;)
+
+        call(&#34;plop&#34;)
+        call(&#34;G F&#34;)
+        call(&#34;&#34;)
+
+        if &#34;naca&#34; in airfoil.lower():
+            # treat as standard naca airfoil
+            airfoil = airfoil.replace(&#34;.dat&#34;, &#34;&#34;).strip()
+            call(airfoil)
+        else:
+            # open .dat file
+            call(&#34;load %s&#34; % os.path.join(&#34;foils&#34;, airfoil))
+        call(&#34;mdes&#34;)
+        call(&#34;filt&#34;)
+        call(&#34;exec&#34;)
+        call(&#34;&#34;)
+        call(&#34;pane&#34;)
+        call(&#34;oper&#34;)
+        call(&#34;re&#34;)
+        # rint(&#34;settings reynolds&#34;)
+        call(&#34;%s&#34; % reynolds)
+        call(&#34;v&#34;)
+        call(&#34;iteration&#34;)
+        call(&#34;%s&#34; % iterations)
+
+        alpha_current = 0
+        to_break = False
+        while True:
+            call(&#34;alfa&#34;)
+            call(&#34;%s&#34; % alpha_current)
+            if to_break == True:
+                break
+            if alpha &gt; 0:
+                if alpha &gt; alpha_current + max_next_angle:
+                    alpha_current += max_next_angle
+                else:
+                    alpha_current = alpha
+                    to_break = True
+            else:
+                if alpha &lt; alpha_current - max_next_angle:
+                    alpha_current -= max_next_angle
+                else:
+                    alpha_current = alpha
+                    to_break = True
+
+        call(&#34;&#34;)
+        call(&#34;quit&#34;)
+        # print(process.stdout.read())
+        timer = Timer(1, process.kill)
+        try:
+            timer.start()
+            output = process.communicate()[0]
+            if print_output:
+                for l in output.splitlines():
+                    print(l)  # print(output)
+        finally:
+            timer.cancel()  # print(&#34;&#34;)  # return False
+
+    return get_coefficients_from_output(output)
+
+
+def draw_to_matplotlib(x, y, z, shrani=False, unit=&#39;CL&#39;):
+    # Ne vem ali je to potrebno. Menda je.
+    x = numpy.array(x)
+    y = numpy.array(y)
+    z = numpy.array(z)
+
+    # x/y tocke za risati ozadje
+    xi, yi = numpy.linspace(x.min(), x.max(), 100), numpy.linspace(
+        y.min(), y.max(), 100)
+    xi, yi = numpy.meshgrid(xi, yi)
+
+    # Linearna interpolacija ozadja, glede na x,y,z
+    # interpolacija je lahko linear, cubic, itd.
+    rbf = scipy.interpolate.Rbf(x, y, z, function=&#39;quintic&#39;)
+    zi = rbf(xi, yi)
+
+    # Barvno ozadje
+    # plt.imshow(zi, vmin=z.min(), vmax=z.max(), origin=&#39;lower&#39;,
+    #           extent=[x.min(), x.max(), y.min(), y.max()], cmap=cm.jet)
+
+    plt.scatter(xi, yi, c=zi)
+    plt.scatter(x, y, c=z, cmap=cm.jet)
+
+    # ODKOMENTIRAJ ZA ABSOLUTNO SKALO
+    # plt.clim(0,10)
+
+    # nastavitev min/max vrednosti na osi
+    # plt.xlim(-1000,0)
+    # plt.ylim(-1000,0)
+
+    # X Label
+    # plt.xlabel(&#39;alfa&#39; % (z.min(),z.max(),numpy.mean(z)))
+
+    # Y Label
+    plt.ylabel(&#39;re&#39;)
+
+    # Title
+    # plt.title(&#39;Hitrost&#39;)
+
+    # Color bar
+    cbar = plt.colorbar()
+    cbar.ax.set_xlabel(unit)
+
+    # Za shranjevanje
+    if shrani:
+        filename = &#34;hitrosti.png&#34;
+        path = os.path.join(os.pwd(), filename)
+        print(filename, &#34;saved to&#34;, path)
+        plt.savefig(path)
+
+    plt.show()
+
+
+def generate_polars(foil):
+    all_re = []
+    all_a = []
+    all_cl = []
+    all_cd = []
+
+    for Re in np.linspace(10e3, 1e6, 10):
+        for a in np.linspace(-45, 45, 21):
+            Re = int(Re)
+            cl = None
+            cd = None
+            print(&#34;re&#34;, Re, &#34;a&#34;, a)
+            o = None
+            o = xfoil_runner(foil, Re, a)
+            if o != False:
+                cl = o[&#34;CL&#34;]
+                cd = o[&#34;CD&#34;]
+            if cl != None and cd != None:
+                print(&#34;    &#34;, o[&#34;CL&#34;], o[&#34;CD&#34;])
+                all_re.append(Re)
+                all_a.append(a)
+                all_cl.append(cl)
+                all_cd.append(cd)
+    return all_a, all_re, all_cl, all_cd
+
+
+def generate_polars_data(foil):
+    all_a, all_re, all_cl, all_cd = generate_polars(foil)
+    out = []
+    ncrit = 0
+    for i in range(len(all_a)):
+        out.append([all_re[i], ncrit, all_a[i], all_cl[i], all_cd[i]])
+    out = np.array(out)
+    return out
+
+
+# all_a,all_re,all_cl,all_cd = generate_polars()
+# data = generate_polars_data(&#34;s826.dat&#34;)
+# print(data)
+# from s826 import all_re,all_a,all_cl,all_cd
+
+
+def draw_scatter(x, y, z):
+    fig = plt.figure()
+    ax = Axes3D(fig)
+    ax.scatter(all_a, all_re, all_cl)
+    ax.set_xlabel(&#39;alpha&#39;)
+    ax.set_ylabel(&#39;reynolds&#39;)
+    ax.set_zlabel(&#39;lift&#39;)
+    plt.show()
+
+# X,Y,Z = create_approximation_plane(all_a,all_re,all_cl)
+# surf = ax.plot_surface(X, Y, Z, rstride=1, cstride=1, alpha=0.2,label=&#34;interp&#34;)
+
+# print(&#34;all_a&#34;,all_a)
+# print(&#34;all_re&#34;,all_re)
+# print(&#34;all_cl&#34;,all_cl)
+# print(&#34;all_cd&#34;,all_cd)
+
+# draw_to_matplotlib(all_a,all_re,all_cl)
+# draw_scatter(all_a,all_re,all_cl)
+#</code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-functions">Functions</h2>
+<dl>
+<dt id="bem_src.xfoil.draw_scatter"><code class="name flex">
+<span>def <span class="ident">draw_scatter</span></span>(<span>x, y, z)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def draw_scatter(x, y, z):
+    fig = plt.figure()
+    ax = Axes3D(fig)
+    ax.scatter(all_a, all_re, all_cl)
+    ax.set_xlabel(&#39;alpha&#39;)
+    ax.set_ylabel(&#39;reynolds&#39;)
+    ax.set_zlabel(&#39;lift&#39;)
+    plt.show()</code></pre>
+</details>
+</dd>
+<dt id="bem_src.xfoil.draw_to_matplotlib"><code class="name flex">
+<span>def <span class="ident">draw_to_matplotlib</span></span>(<span>x, y, z, shrani=False, unit='CL')</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def draw_to_matplotlib(x, y, z, shrani=False, unit=&#39;CL&#39;):
+    # Ne vem ali je to potrebno. Menda je.
+    x = numpy.array(x)
+    y = numpy.array(y)
+    z = numpy.array(z)
+
+    # x/y tocke za risati ozadje
+    xi, yi = numpy.linspace(x.min(), x.max(), 100), numpy.linspace(
+        y.min(), y.max(), 100)
+    xi, yi = numpy.meshgrid(xi, yi)
+
+    # Linearna interpolacija ozadja, glede na x,y,z
+    # interpolacija je lahko linear, cubic, itd.
+    rbf = scipy.interpolate.Rbf(x, y, z, function=&#39;quintic&#39;)
+    zi = rbf(xi, yi)
+
+    # Barvno ozadje
+    # plt.imshow(zi, vmin=z.min(), vmax=z.max(), origin=&#39;lower&#39;,
+    #           extent=[x.min(), x.max(), y.min(), y.max()], cmap=cm.jet)
+
+    plt.scatter(xi, yi, c=zi)
+    plt.scatter(x, y, c=z, cmap=cm.jet)
+
+    # ODKOMENTIRAJ ZA ABSOLUTNO SKALO
+    # plt.clim(0,10)
+
+    # nastavitev min/max vrednosti na osi
+    # plt.xlim(-1000,0)
+    # plt.ylim(-1000,0)
+
+    # X Label
+    # plt.xlabel(&#39;alfa&#39; % (z.min(),z.max(),numpy.mean(z)))
+
+    # Y Label
+    plt.ylabel(&#39;re&#39;)
+
+    # Title
+    # plt.title(&#39;Hitrost&#39;)
+
+    # Color bar
+    cbar = plt.colorbar()
+    cbar.ax.set_xlabel(unit)
+
+    # Za shranjevanje
+    if shrani:
+        filename = &#34;hitrosti.png&#34;
+        path = os.path.join(os.pwd(), filename)
+        print(filename, &#34;saved to&#34;, path)
+        plt.savefig(path)
+
+    plt.show()</code></pre>
+</details>
+</dd>
+<dt id="bem_src.xfoil.generate_polars"><code class="name flex">
+<span>def <span class="ident">generate_polars</span></span>(<span>foil)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def generate_polars(foil):
+    all_re = []
+    all_a = []
+    all_cl = []
+    all_cd = []
+
+    for Re in np.linspace(10e3, 1e6, 10):
+        for a in np.linspace(-45, 45, 21):
+            Re = int(Re)
+            cl = None
+            cd = None
+            print(&#34;re&#34;, Re, &#34;a&#34;, a)
+            o = None
+            o = xfoil_runner(foil, Re, a)
+            if o != False:
+                cl = o[&#34;CL&#34;]
+                cd = o[&#34;CD&#34;]
+            if cl != None and cd != None:
+                print(&#34;    &#34;, o[&#34;CL&#34;], o[&#34;CD&#34;])
+                all_re.append(Re)
+                all_a.append(a)
+                all_cl.append(cl)
+                all_cd.append(cd)
+    return all_a, all_re, all_cl, all_cd</code></pre>
+</details>
+</dd>
+<dt id="bem_src.xfoil.generate_polars_data"><code class="name flex">
+<span>def <span class="ident">generate_polars_data</span></span>(<span>foil)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def generate_polars_data(foil):
+    all_a, all_re, all_cl, all_cd = generate_polars(foil)
+    out = []
+    ncrit = 0
+    for i in range(len(all_a)):
+        out.append([all_re[i], ncrit, all_a[i], all_cl[i], all_cd[i]])
+    out = np.array(out)
+    return out</code></pre>
+</details>
+</dd>
+<dt id="bem_src.xfoil.get_coefficients_from_output"><code class="name flex">
+<span>def <span class="ident">get_coefficients_from_output</span></span>(<span>output_str)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_coefficients_from_output(output_str):
+    lines = output_str.splitlines()
+    last_lines = &#34;\n&#34;.join(lines[-5:])
+    if &#34;VISCAL:  Convergence failed&#34; in output_str:
+        return False
+    if &#34;TRCHEK2: N2 convergence failed.&#34; in last_lines:
+        return False
+    i = -1
+    cur_line = 0
+    _, __, a, CL, Cm, CD, CDf, CDp = [None] * 8
+    for l in lines:
+        a = regex.match(&#34;(.+)a =(.+)CL =(.+)&#34;, l)
+        _, a, CL = a.groups() if a != None else [_, a, CL]
+        b = regex.match(&#34;(.+)Cm =(.+)CD =(.+)=&gt;.+CDf =(.+)CDp =(.+)&#34;, l)
+        __, Cm, CD, CDf, CDp = b.groups() if b != None else [
+            __, Cm, CD, CDf, CDp]
+    # Weird cases
+    if CL == None or CD == None:
+        return False
+    if &#34;*&#34; in CL or &#34;*&#34; in CD:
+        return False
+    if math.isinf(float(CL)) or math.isinf(float(CD)):
+        return False
+
+    out = {&#34;CL&#34;: float(CL), &#34;CD&#34;: float(CD), &#34;Cm&#34;: float(
+        Cm), &#34;CDf&#34;: float(CDf), &#34;CDp&#34;: float(CDp), &#34;out&#34;: output_str}
+    return out</code></pre>
+</details>
+</dd>
+<dt id="bem_src.xfoil.run_xfoil_analysis"><code class="name flex">
+<span>def <span class="ident">run_xfoil_analysis</span></span>(<span>airfoil, reynolds, alpha, iterations=70, max_next_angle=2.0, print_output=False)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def run_xfoil_analysis(airfoil, reynolds, alpha, iterations=70, max_next_angle=2., print_output=False):
+    # print(&#34;running xfoil for %s,Re=%s,alpha=%s&#34; % (airfoil,reynolds,alpha))
+    # alpha in degrees
+    with Popen(os.path.abspath(xfoil_path), stdin=PIPE, stdout=PIPE, universal_newlines=True) as process:
+
+        def call(_str, proc=process):
+            # print(_str,file=process.stdin)
+            proc.stdin.write(_str + &#34;\n&#34;)
+
+        call(&#34;plop&#34;)
+        call(&#34;G F&#34;)
+        call(&#34;&#34;)
+
+        if &#34;naca&#34; in airfoil.lower():
+            # treat as standard naca airfoil
+            airfoil = airfoil.replace(&#34;.dat&#34;, &#34;&#34;).strip()
+            call(airfoil)
+        else:
+            # open .dat file
+            call(&#34;load %s&#34; % os.path.join(&#34;foils&#34;, airfoil))
+        call(&#34;mdes&#34;)
+        call(&#34;filt&#34;)
+        call(&#34;exec&#34;)
+        call(&#34;&#34;)
+        call(&#34;pane&#34;)
+        call(&#34;oper&#34;)
+        call(&#34;re&#34;)
+        # rint(&#34;settings reynolds&#34;)
+        call(&#34;%s&#34; % reynolds)
+        call(&#34;v&#34;)
+        call(&#34;iteration&#34;)
+        call(&#34;%s&#34; % iterations)
+
+        alpha_current = 0
+        to_break = False
+        while True:
+            call(&#34;alfa&#34;)
+            call(&#34;%s&#34; % alpha_current)
+            if to_break == True:
+                break
+            if alpha &gt; 0:
+                if alpha &gt; alpha_current + max_next_angle:
+                    alpha_current += max_next_angle
+                else:
+                    alpha_current = alpha
+                    to_break = True
+            else:
+                if alpha &lt; alpha_current - max_next_angle:
+                    alpha_current -= max_next_angle
+                else:
+                    alpha_current = alpha
+                    to_break = True
+
+        call(&#34;&#34;)
+        call(&#34;quit&#34;)
+        # print(process.stdout.read())
+        timer = Timer(1, process.kill)
+        try:
+            timer.start()
+            output = process.communicate()[0]
+            if print_output:
+                for l in output.splitlines():
+                    print(l)  # print(output)
+        finally:
+            timer.cancel()  # print(&#34;&#34;)  # return False
+
+    return get_coefficients_from_output(output)</code></pre>
+</details>
+</dd>
+<dt id="bem_src.xfoil.xfoil_runner"><code class="name flex">
+<span>def <span class="ident">xfoil_runner</span></span>(<span>airfoil, reynolds, alpha, printer=None, print_all=False)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def xfoil_runner(airfoil, reynolds, alpha, printer=None, print_all=False):
+    # alpha = round(degrees(alpha))
+    # alpha in degrees
+    if print_all:
+        if printer != None:
+            printer.print(&#34;        xfoil runner, alpha=&#34;,
+                          alpha, &#34;re=&#34;, reynolds)
+    out = run_xfoil_analysis(airfoil, reynolds, alpha)
+    # if out == False:
+    #    return xfoil_runner(airfoil, reynolds * 0.5, radians(alpha), printer, print_all=print_all)
+    return out</code></pre>
+</details>
+</dd>
+</dl>
+</section>
+<section>
+</section>
+</article>
+<nav id="sidebar">
+<h1>Index</h1>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="bem_src" href="index.html">bem_src</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-functions">Functions</a></h3>
+<ul class="">
+<li><code><a title="bem_src.xfoil.draw_scatter" href="#bem_src.xfoil.draw_scatter">draw_scatter</a></code></li>
+<li><code><a title="bem_src.xfoil.draw_to_matplotlib" href="#bem_src.xfoil.draw_to_matplotlib">draw_to_matplotlib</a></code></li>
+<li><code><a title="bem_src.xfoil.generate_polars" href="#bem_src.xfoil.generate_polars">generate_polars</a></code></li>
+<li><code><a title="bem_src.xfoil.generate_polars_data" href="#bem_src.xfoil.generate_polars_data">generate_polars_data</a></code></li>
+<li><code><a title="bem_src.xfoil.get_coefficients_from_output" href="#bem_src.xfoil.get_coefficients_from_output">get_coefficients_from_output</a></code></li>
+<li><code><a title="bem_src.xfoil.run_xfoil_analysis" href="#bem_src.xfoil.run_xfoil_analysis">run_xfoil_analysis</a></code></li>
+<li><code><a title="bem_src.xfoil.xfoil_runner" href="#bem_src.xfoil.xfoil_runner">xfoil_runner</a></code></li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc"><cite>pdoc</cite> 0.7.1</a>.</p>
+</footer>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+<script>hljs.initHighlightingOnLoad()</script>
+</body>
+</html>
