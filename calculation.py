@@ -328,14 +328,15 @@ class Calculator:
 
             # for pretty-printing only
             prepend = ""
-
+            Vx = v
+            Vy = omega*_r
             # wind components
             if propeller_mode:
-                Un = v * (1 + a)
-                Ut = omega * _r * (1 - aprime)
+                Un = Vx * (1 + a)
+                Ut = Vy * (1 - aprime)
             else:
-                Un = v * (1 - a)
-                Ut = omega * _r * (1 + aprime)
+                Un = Vx * (1 - a)
+                Ut = Vy * (1 + aprime)
 
             Vrel_norm = sqrt(Un ** 2 + Ut ** 2)
 
