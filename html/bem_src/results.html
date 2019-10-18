@@ -1,0 +1,760 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.7.1" />
+<title>bem_src.results API documentation</title>
+<meta name="description" content="" />
+<link href='https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.0/normalize.min.css' rel='stylesheet'>
+<link href='https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/8.0.0/sanitize.min.css' rel='stylesheet'>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css" rel="stylesheet">
+<style>.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{font-weight:bold}#index h4 + ul{margin-bottom:.6em}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>bem_src.results</code></h1>
+</header>
+<section id="section-intro">
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">__author__ = &#34;Miha Smrekar&#34;
+__credits__ = [&#34;Miha Smrekar&#34;]
+__license__ = &#34;GPL&#34;
+__version__ = &#34;0.3.0&#34;
+__maintainer__ = &#34;Miha Smrekar&#34;
+__email__ = &#34;miha.smrekar9@gmail.com&#34;
+__status__ = &#34;Development&#34;
+
+import numpy
+from PyQt5 import QtWidgets
+from PyQt5.QtGui import QIcon
+from PyQt5.QtWidgets import QMainWindow, QAction
+from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
+from matplotlib.backends.backend_qt4agg import NavigationToolbar2QT as NavigationToolbar
+import matplotlib.pyplot as plt
+import numpy as np
+
+from calculation_runner import max_calculate
+from table import Table
+from utils import sort_xy, dict_to_ar
+
+
+
+class ResultsWindow(QMainWindow):
+    def __init__(self, parent, width, height, results_3d, input_data):
+        super(ResultsWindow, self).__init__(parent)
+        self.title = &#34;Rezultati&#34;
+        # self.left = 0
+        # self.top = 0
+        self.screen_width = width
+        self.screen_height = height
+        self.setWindowTitle(self.title)
+        self.setGeometry(self.screen_width * 0.125, self.screen_height * 0.125, self.screen_width * 0.75,
+                         self.screen_height * 0.75, )
+
+        self.tab_widget = TabWidget(self)
+        self.setCentralWidget(self.tab_widget)
+
+        # get data from results
+        X, Y, Z = results_3d[&#34;v&#34;], results_3d[&#34;rpm&#34;], results_3d[&#34;power&#34;]
+        max_x, max_y, max_z = max_calculate(X, Y, Z)
+
+        # geometry check
+        array_geom = []
+        for r in range(len(input_data[&#34;r&#34;])):
+            _r = input_data[&#34;r&#34;][r]
+            _c = input_data[&#34;c&#34;][r]
+            _theta = input_data[&#34;theta&#34;][r]
+            _dr = input_data[&#34;dr&#34;][r]
+            array_geom.append([input_data[&#34;r&#34;][r], input_data[&#34;c&#34;]
+                               [r], input_data[&#34;theta&#34;][r], input_data[&#34;dr&#34;][r], ])
+
+        t_geom = Table()
+        t_geom.createTable(array_geom)
+        t_geom.set_labels([&#34;r&#34;, &#34;c&#34;, &#34;theta&#34;, &#34;dr&#34;])
+        self.tab_widget.add_tab_widget(t_geom, &#34;Geometry check&#34;)
+
+        # Veter v odvisnosti od moči
+        f2 = self.tab_widget.add_tab_figure(&#34;Cp curve&#34;)
+        #self.tab_widget.add_2d_plot_to_figure(f2, max_x, max_z, 121, &#34;Moč vs veter&#34;, &#34;veter [m/s]&#34;, &#34;moč [W]&#34;)
+
+        # Cp curve
+        TSR, CP = sort_xy(results_3d[&#34;TSR&#34;], results_3d[&#34;cp_w&#34;])
+        ax_cp = self.tab_widget.add_2d_plot_to_figure(
+            f2, TSR, CP, 121, &#34;&#34;, r&#34;$\lambda$&#34;, r&#34;$C_P$&#34;, look=&#34;-b&#34;, label=r&#34;$C_P$ curve&#34;)
+        ax_cp.legend(fontsize=18)
+
+        # noinspection PyBroadException
+        try:
+            if len(X) &gt;= 3 and len(Y) &gt;= 3:
+                f3 = self.tab_widget.add_tab_figure(&#34;3D power&#34;)
+                self.tab_widget.add_surface_plot(
+                    f3, X, Y, Z, 111, &#34;Power (windspeed,RPM)&#34;, &#34;windspeed[m/s]&#34;, &#34;RPM&#34;, &#34;Power [W]&#34;)
+        except:
+            print(&#34;Could not create 3D surface plot...&#34;)
+
+        # Ct(a) curve
+        f4 = self.tab_widget.add_tab_figure(&#34;Ct_r(a) curve&#34;)
+        ax_ct_r = self.tab_widget.add_2d_plot_to_figure(f4, results_3d[&#34;a&#34;], results_3d[&#34;Ct&#34;], 111, &#34;&#34;, &#34;a&#34;, r&#34;$C_{T_r}$&#34;,
+                                                        look=&#34;o&#34;, x_min=0, x_max=1)
+        leg = ax_ct_r.legend(
+            np.round(np.array(results_3d[&#34;TSR&#34;]), 2), fontsize=20)
+        leg.set_title(r&#34;$\lambda$&#34;, prop={&#39;size&#39;: 20})
+
+        # ct(lambda) curve
+        self.tab_widget.add_2d_plot_to_figure(f2, results_3d[&#34;TSR&#34;], results_3d[&#34;ct_w&#34;], 122, &#34;&#34;, r&#34;$\lambda$&#34;, r&#34;$C_P$&#34;,
+                                              look=&#34;b-&#34;, label=r&#34;$C_T$ curve&#34;)
+
+        # ct_p(J) curve
+        f5 = self.tab_widget.add_tab_figure(&#34;ct(J) curve (propeller)&#34;)
+        self.tab_widget.add_2d_plot_to_figure(f5, results_3d[&#34;J&#34;], results_3d[&#34;ct_p&#34;], 111, &#34;Propeler curves&#34;,
+                                              &#34;J = 1/lambda&#34;, &#34;ct&#34;, look=&#34;b-&#34;, x_min=0, x_max=1, y_min=0, y_max=0.25, label=&#34;Ct (Thrust)&#34;)
+
+        # cp_p(J) curve
+        self.tab_widget.add_2d_plot_to_figure(f5, results_3d[&#39;J&#39;], results_3d[&#39;cp_p&#39;], 111, None, None,
+                                              None, look=&#39;r-&#39;, x_min=0, x_max=1, y_min=0, y_max=0.1, label=&#34;Cp (Power)&#34;)
+
+        # cp_p(J) curve
+        ax1 = self.tab_widget.add_2d_plot_to_figure(f5, results_3d[&#39;J&#39;], results_3d[&#39;eff_p&#39;], 111, None, None,
+                                                    None, look=&#39;g-&#39;, x_min=0, x_max=1, y_min=0, y_max=1.0, label=&#34;Eff (Efficiency)&#34;)
+        ax1.legend()
+
+        # CL check
+        f7 = self.tab_widget.add_tab_figure(&#34;check CL&#34;)
+        self.tab_widget.add_3d_scatter_plot(f7, np.array(results_3d[&#34;Re&#34;]).flatten(),
+                                            np.degrees(
+                                                np.array(results_3d[&#34;alpha&#34;]).flatten()),
+                                            np.array(results_3d[&#34;cL&#34;]).flatten(
+        ), 111, &#34;Title&#34;, &#34;Re&#34;, &#34;alpha[deg]&#34;,
+            &#34;cL&#34;)
+        # print(results_3d[&#39;U4&#39;])
+        f8 = self.tab_widget.add_tab_figure(&#34;Windspeed (radius)&#34;)
+        for _u in results_3d[&#39;U4&#39;]:
+            ax2 = self.tab_widget.add_2d_plot_to_figure(
+                f8, _u, input_data[&#39;r&#39;], 111, &#39;&#39;, r&#39;$v_4$ [m/s]&#39;, &#39;r [m]&#39;, look=&#34;-&#34;, c=numpy.random.rand(3,))
+        leg_hitrosti = ax2.legend(np.round(np.array(results_3d[&#34;TSR&#34;]), 2))
+        leg_hitrosti.set_title(r&#34;$\lambda$&#34;, prop={&#39;size&#39;: 20})
+
+        data = dict_to_ar(results_3d)
+        t = Table()
+        t.createTable(data)
+
+        self.tab_widget.add_tab_widget(t, &#34;Data&#34;)
+
+        self.show()
+
+    def closeEvent(self, event):
+        for f in self.tab_widget.figures:
+            f.clear()
+        event.accept()  # let the window close
+
+    def set_menubar(self):
+        mainMenu = self.menuBar()
+        fileMenu = mainMenu.addMenu(&#34;File&#34;)
+        exitButton = QAction(QIcon(&#34;exit24.png&#34;), &#34;Exit&#34;, self)
+        exitButton.setShortcut(&#34;Ctrl+Q&#34;)
+        exitButton.setStatusTip(&#34;Exit application&#34;)
+        exitButton.triggered.connect(exit)
+        fileMenu.addAction(exitButton)
+
+
+class TabWidget(QtWidgets.QTabWidget):
+    def __init__(self, parent=None):
+        super(TabWidget, self).__init__(parent)
+        self.tabs = []
+        self.figures = []
+        self.canvas = []
+        self.toolbars = []
+
+    def add_tab_figure(self, tab_name):
+        self.tabs.append(QtWidgets.QWidget())
+        self.addTab(self.tabs[-1], tab_name)
+        self.figures.append(plt.figure(figsize=(10, 5)))
+        self.canvas.append(FigureCanvas(self.figures[-1]))
+        toolbar = NavigationToolbar(self.canvas[-1], self)
+        layout = QtWidgets.QVBoxLayout()
+        layout.addWidget(self.canvas[-1])
+        layout.addWidget(toolbar)
+        self.tabs[-1].setLayout(layout)
+        return self.figures[-1]
+
+    def add_2d_plot_to_figure(self, f, x, y, whi, title=None, x_name=None, y_name=None, x_min=None, x_max=None,
+                              y_min=None, y_max=None, look=None, legend=False, **kwargs):
+        ax = f.add_subplot(whi)
+        if look:
+            ax.plot(x, y, look, **kwargs)
+        else:
+            ax.plot(x, y, **kwargs)
+        if title:
+            plt.title(title, fontsize=25)
+        if x_name:
+            ax.set_xlabel(x_name, fontsize=20)
+        if y_name:
+            ax.set_ylabel(y_name, fontsize=20)
+        if x_min != None and x_max != None:
+            ax.set_xlim(x_min, x_max)
+        if y_min != None and y_max != None:
+            ax.set_ylim(y_min, y_max)
+        ax.xaxis.set_tick_params(labelsize=15)
+        ax.yaxis.set_tick_params(labelsize=15)
+        self.canvas[-1].draw()
+        return ax
+
+    def add_surface_plot(self, f, x, y, z, whi, title=None, x_name=None, y_name=None, z_name=None, x_min=None,
+                         x_max=None, y_min=None, y_max=None, z_min=None, z_max=None, legend=False, ):
+        ax = f.add_subplot(whi, projection=&#34;3d&#34;)
+        p0 = ax.plot_trisurf(x, y, z, cmap=plt.cm.CMRmap)
+        cbar = plt.colorbar(p0)
+
+        if title:
+            plt.title(title)
+        if x_name:
+            ax.set_xlabel(x_name)
+        if y_name:
+            ax.set_ylabel(y_name)
+        if z_name:
+            ax.set_zlabel(z_name)
+            cbar.set_label(z_name)
+        if x_min != None and x_max != None:
+            ax.set_xlim(x_min, x_max)
+        if y_min != None and y_max != None:
+            ax.set_ylim(y_min, y_max)
+        if z_min != None and z_max != None:
+            ax.set_zlim(z_min, z_max)
+        self.canvas[-1].draw()
+
+    def add_3d_scatter_plot(self, f, x, y, z, whi, title=None, x_name=None, y_name=None, z_name=None, x_min=None,
+                            x_max=None, y_min=None, y_max=None, z_min=None, z_max=None, legend=False, ):
+        ax = f.add_subplot(whi, projection=&#34;3d&#34;)
+        p0 = ax.scatter(x, y, z, cmap=plt.cm.CMRmap)
+        # cbar = plt.colorbar(p0)
+
+        if title:
+            plt.title(title)
+        if x_name:
+            ax.set_xlabel(x_name)
+        if y_name:
+            ax.set_ylabel(y_name)
+        if z_name:
+            ax.set_zlabel(z_name)  # cbar.set_label(z_name)
+        if x_min != None and x_max != None:
+            ax.set_xlim(x_min, x_max)
+        if y_min != None and y_max != None:
+            ax.set_ylim(y_min, y_max)
+        if z_min != None and z_max != None:
+            ax.set_zlim(z_min, z_max)
+        self.canvas[-1].draw()
+
+    def add_tab_widget(self, widget, tab_name):
+        self.tabs.append(widget)
+        self.addTab(self.tabs[-1], tab_name)
+
+    def add_runner_widget(self, input_data, tab_name=&#34;Runner&#34;):
+        r = RunnerWidget(input_data=input_data)
+        self.tabs.append(r)
+        self.addTab(self.tabs[-1], tab_name)</code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="bem_src.results.ResultsWindow"><code class="flex name class">
+<span>class <span class="ident">ResultsWindow</span></span>
+<span>(</span><span>parent, width, height, results_3d, input_data)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>QMainWindow(parent: QWidget = None, flags: Union[Qt.WindowFlags, Qt.WindowType] = Qt.WindowFlags())</p></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class ResultsWindow(QMainWindow):
+    def __init__(self, parent, width, height, results_3d, input_data):
+        super(ResultsWindow, self).__init__(parent)
+        self.title = &#34;Rezultati&#34;
+        # self.left = 0
+        # self.top = 0
+        self.screen_width = width
+        self.screen_height = height
+        self.setWindowTitle(self.title)
+        self.setGeometry(self.screen_width * 0.125, self.screen_height * 0.125, self.screen_width * 0.75,
+                         self.screen_height * 0.75, )
+
+        self.tab_widget = TabWidget(self)
+        self.setCentralWidget(self.tab_widget)
+
+        # get data from results
+        X, Y, Z = results_3d[&#34;v&#34;], results_3d[&#34;rpm&#34;], results_3d[&#34;power&#34;]
+        max_x, max_y, max_z = max_calculate(X, Y, Z)
+
+        # geometry check
+        array_geom = []
+        for r in range(len(input_data[&#34;r&#34;])):
+            _r = input_data[&#34;r&#34;][r]
+            _c = input_data[&#34;c&#34;][r]
+            _theta = input_data[&#34;theta&#34;][r]
+            _dr = input_data[&#34;dr&#34;][r]
+            array_geom.append([input_data[&#34;r&#34;][r], input_data[&#34;c&#34;]
+                               [r], input_data[&#34;theta&#34;][r], input_data[&#34;dr&#34;][r], ])
+
+        t_geom = Table()
+        t_geom.createTable(array_geom)
+        t_geom.set_labels([&#34;r&#34;, &#34;c&#34;, &#34;theta&#34;, &#34;dr&#34;])
+        self.tab_widget.add_tab_widget(t_geom, &#34;Geometry check&#34;)
+
+        # Veter v odvisnosti od moči
+        f2 = self.tab_widget.add_tab_figure(&#34;Cp curve&#34;)
+        #self.tab_widget.add_2d_plot_to_figure(f2, max_x, max_z, 121, &#34;Moč vs veter&#34;, &#34;veter [m/s]&#34;, &#34;moč [W]&#34;)
+
+        # Cp curve
+        TSR, CP = sort_xy(results_3d[&#34;TSR&#34;], results_3d[&#34;cp_w&#34;])
+        ax_cp = self.tab_widget.add_2d_plot_to_figure(
+            f2, TSR, CP, 121, &#34;&#34;, r&#34;$\lambda$&#34;, r&#34;$C_P$&#34;, look=&#34;-b&#34;, label=r&#34;$C_P$ curve&#34;)
+        ax_cp.legend(fontsize=18)
+
+        # noinspection PyBroadException
+        try:
+            if len(X) &gt;= 3 and len(Y) &gt;= 3:
+                f3 = self.tab_widget.add_tab_figure(&#34;3D power&#34;)
+                self.tab_widget.add_surface_plot(
+                    f3, X, Y, Z, 111, &#34;Power (windspeed,RPM)&#34;, &#34;windspeed[m/s]&#34;, &#34;RPM&#34;, &#34;Power [W]&#34;)
+        except:
+            print(&#34;Could not create 3D surface plot...&#34;)
+
+        # Ct(a) curve
+        f4 = self.tab_widget.add_tab_figure(&#34;Ct_r(a) curve&#34;)
+        ax_ct_r = self.tab_widget.add_2d_plot_to_figure(f4, results_3d[&#34;a&#34;], results_3d[&#34;Ct&#34;], 111, &#34;&#34;, &#34;a&#34;, r&#34;$C_{T_r}$&#34;,
+                                                        look=&#34;o&#34;, x_min=0, x_max=1)
+        leg = ax_ct_r.legend(
+            np.round(np.array(results_3d[&#34;TSR&#34;]), 2), fontsize=20)
+        leg.set_title(r&#34;$\lambda$&#34;, prop={&#39;size&#39;: 20})
+
+        # ct(lambda) curve
+        self.tab_widget.add_2d_plot_to_figure(f2, results_3d[&#34;TSR&#34;], results_3d[&#34;ct_w&#34;], 122, &#34;&#34;, r&#34;$\lambda$&#34;, r&#34;$C_P$&#34;,
+                                              look=&#34;b-&#34;, label=r&#34;$C_T$ curve&#34;)
+
+        # ct_p(J) curve
+        f5 = self.tab_widget.add_tab_figure(&#34;ct(J) curve (propeller)&#34;)
+        self.tab_widget.add_2d_plot_to_figure(f5, results_3d[&#34;J&#34;], results_3d[&#34;ct_p&#34;], 111, &#34;Propeler curves&#34;,
+                                              &#34;J = 1/lambda&#34;, &#34;ct&#34;, look=&#34;b-&#34;, x_min=0, x_max=1, y_min=0, y_max=0.25, label=&#34;Ct (Thrust)&#34;)
+
+        # cp_p(J) curve
+        self.tab_widget.add_2d_plot_to_figure(f5, results_3d[&#39;J&#39;], results_3d[&#39;cp_p&#39;], 111, None, None,
+                                              None, look=&#39;r-&#39;, x_min=0, x_max=1, y_min=0, y_max=0.1, label=&#34;Cp (Power)&#34;)
+
+        # cp_p(J) curve
+        ax1 = self.tab_widget.add_2d_plot_to_figure(f5, results_3d[&#39;J&#39;], results_3d[&#39;eff_p&#39;], 111, None, None,
+                                                    None, look=&#39;g-&#39;, x_min=0, x_max=1, y_min=0, y_max=1.0, label=&#34;Eff (Efficiency)&#34;)
+        ax1.legend()
+
+        # CL check
+        f7 = self.tab_widget.add_tab_figure(&#34;check CL&#34;)
+        self.tab_widget.add_3d_scatter_plot(f7, np.array(results_3d[&#34;Re&#34;]).flatten(),
+                                            np.degrees(
+                                                np.array(results_3d[&#34;alpha&#34;]).flatten()),
+                                            np.array(results_3d[&#34;cL&#34;]).flatten(
+        ), 111, &#34;Title&#34;, &#34;Re&#34;, &#34;alpha[deg]&#34;,
+            &#34;cL&#34;)
+        # print(results_3d[&#39;U4&#39;])
+        f8 = self.tab_widget.add_tab_figure(&#34;Windspeed (radius)&#34;)
+        for _u in results_3d[&#39;U4&#39;]:
+            ax2 = self.tab_widget.add_2d_plot_to_figure(
+                f8, _u, input_data[&#39;r&#39;], 111, &#39;&#39;, r&#39;$v_4$ [m/s]&#39;, &#39;r [m]&#39;, look=&#34;-&#34;, c=numpy.random.rand(3,))
+        leg_hitrosti = ax2.legend(np.round(np.array(results_3d[&#34;TSR&#34;]), 2))
+        leg_hitrosti.set_title(r&#34;$\lambda$&#34;, prop={&#39;size&#39;: 20})
+
+        data = dict_to_ar(results_3d)
+        t = Table()
+        t.createTable(data)
+
+        self.tab_widget.add_tab_widget(t, &#34;Data&#34;)
+
+        self.show()
+
+    def closeEvent(self, event):
+        for f in self.tab_widget.figures:
+            f.clear()
+        event.accept()  # let the window close
+
+    def set_menubar(self):
+        mainMenu = self.menuBar()
+        fileMenu = mainMenu.addMenu(&#34;File&#34;)
+        exitButton = QAction(QIcon(&#34;exit24.png&#34;), &#34;Exit&#34;, self)
+        exitButton.setShortcut(&#34;Ctrl+Q&#34;)
+        exitButton.setStatusTip(&#34;Exit application&#34;)
+        exitButton.triggered.connect(exit)
+        fileMenu.addAction(exitButton)</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>PyQt5.QtWidgets.QMainWindow</li>
+<li>PyQt5.QtWidgets.QWidget</li>
+<li>PyQt5.QtCore.QObject</li>
+<li>sip.wrapper</li>
+<li>PyQt5.QtGui.QPaintDevice</li>
+<li>sip.simplewrapper</li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="bem_src.results.ResultsWindow.closeEvent"><code class="name flex">
+<span>def <span class="ident">closeEvent</span></span>(<span>self, event)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>closeEvent(self, QCloseEvent)</p></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def closeEvent(self, event):
+    for f in self.tab_widget.figures:
+        f.clear()
+    event.accept()  # let the window close</code></pre>
+</details>
+</dd>
+<dt id="bem_src.results.ResultsWindow.set_menubar"><code class="name flex">
+<span>def <span class="ident">set_menubar</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def set_menubar(self):
+    mainMenu = self.menuBar()
+    fileMenu = mainMenu.addMenu(&#34;File&#34;)
+    exitButton = QAction(QIcon(&#34;exit24.png&#34;), &#34;Exit&#34;, self)
+    exitButton.setShortcut(&#34;Ctrl+Q&#34;)
+    exitButton.setStatusTip(&#34;Exit application&#34;)
+    exitButton.triggered.connect(exit)
+    fileMenu.addAction(exitButton)</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="bem_src.results.TabWidget"><code class="flex name class">
+<span>class <span class="ident">TabWidget</span></span>
+<span>(</span><span>parent=None)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>QTabWidget(parent: QWidget = None)</p></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class TabWidget(QtWidgets.QTabWidget):
+    def __init__(self, parent=None):
+        super(TabWidget, self).__init__(parent)
+        self.tabs = []
+        self.figures = []
+        self.canvas = []
+        self.toolbars = []
+
+    def add_tab_figure(self, tab_name):
+        self.tabs.append(QtWidgets.QWidget())
+        self.addTab(self.tabs[-1], tab_name)
+        self.figures.append(plt.figure(figsize=(10, 5)))
+        self.canvas.append(FigureCanvas(self.figures[-1]))
+        toolbar = NavigationToolbar(self.canvas[-1], self)
+        layout = QtWidgets.QVBoxLayout()
+        layout.addWidget(self.canvas[-1])
+        layout.addWidget(toolbar)
+        self.tabs[-1].setLayout(layout)
+        return self.figures[-1]
+
+    def add_2d_plot_to_figure(self, f, x, y, whi, title=None, x_name=None, y_name=None, x_min=None, x_max=None,
+                              y_min=None, y_max=None, look=None, legend=False, **kwargs):
+        ax = f.add_subplot(whi)
+        if look:
+            ax.plot(x, y, look, **kwargs)
+        else:
+            ax.plot(x, y, **kwargs)
+        if title:
+            plt.title(title, fontsize=25)
+        if x_name:
+            ax.set_xlabel(x_name, fontsize=20)
+        if y_name:
+            ax.set_ylabel(y_name, fontsize=20)
+        if x_min != None and x_max != None:
+            ax.set_xlim(x_min, x_max)
+        if y_min != None and y_max != None:
+            ax.set_ylim(y_min, y_max)
+        ax.xaxis.set_tick_params(labelsize=15)
+        ax.yaxis.set_tick_params(labelsize=15)
+        self.canvas[-1].draw()
+        return ax
+
+    def add_surface_plot(self, f, x, y, z, whi, title=None, x_name=None, y_name=None, z_name=None, x_min=None,
+                         x_max=None, y_min=None, y_max=None, z_min=None, z_max=None, legend=False, ):
+        ax = f.add_subplot(whi, projection=&#34;3d&#34;)
+        p0 = ax.plot_trisurf(x, y, z, cmap=plt.cm.CMRmap)
+        cbar = plt.colorbar(p0)
+
+        if title:
+            plt.title(title)
+        if x_name:
+            ax.set_xlabel(x_name)
+        if y_name:
+            ax.set_ylabel(y_name)
+        if z_name:
+            ax.set_zlabel(z_name)
+            cbar.set_label(z_name)
+        if x_min != None and x_max != None:
+            ax.set_xlim(x_min, x_max)
+        if y_min != None and y_max != None:
+            ax.set_ylim(y_min, y_max)
+        if z_min != None and z_max != None:
+            ax.set_zlim(z_min, z_max)
+        self.canvas[-1].draw()
+
+    def add_3d_scatter_plot(self, f, x, y, z, whi, title=None, x_name=None, y_name=None, z_name=None, x_min=None,
+                            x_max=None, y_min=None, y_max=None, z_min=None, z_max=None, legend=False, ):
+        ax = f.add_subplot(whi, projection=&#34;3d&#34;)
+        p0 = ax.scatter(x, y, z, cmap=plt.cm.CMRmap)
+        # cbar = plt.colorbar(p0)
+
+        if title:
+            plt.title(title)
+        if x_name:
+            ax.set_xlabel(x_name)
+        if y_name:
+            ax.set_ylabel(y_name)
+        if z_name:
+            ax.set_zlabel(z_name)  # cbar.set_label(z_name)
+        if x_min != None and x_max != None:
+            ax.set_xlim(x_min, x_max)
+        if y_min != None and y_max != None:
+            ax.set_ylim(y_min, y_max)
+        if z_min != None and z_max != None:
+            ax.set_zlim(z_min, z_max)
+        self.canvas[-1].draw()
+
+    def add_tab_widget(self, widget, tab_name):
+        self.tabs.append(widget)
+        self.addTab(self.tabs[-1], tab_name)
+
+    def add_runner_widget(self, input_data, tab_name=&#34;Runner&#34;):
+        r = RunnerWidget(input_data=input_data)
+        self.tabs.append(r)
+        self.addTab(self.tabs[-1], tab_name)</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>PyQt5.QtWidgets.QTabWidget</li>
+<li>PyQt5.QtWidgets.QWidget</li>
+<li>PyQt5.QtCore.QObject</li>
+<li>sip.wrapper</li>
+<li>PyQt5.QtGui.QPaintDevice</li>
+<li>sip.simplewrapper</li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="bem_src.results.TabWidget.add_2d_plot_to_figure"><code class="name flex">
+<span>def <span class="ident">add_2d_plot_to_figure</span></span>(<span>self, f, x, y, whi, title=None, x_name=None, y_name=None, x_min=None, x_max=None, y_min=None, y_max=None, look=None, legend=False, **kwargs)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def add_2d_plot_to_figure(self, f, x, y, whi, title=None, x_name=None, y_name=None, x_min=None, x_max=None,
+                          y_min=None, y_max=None, look=None, legend=False, **kwargs):
+    ax = f.add_subplot(whi)
+    if look:
+        ax.plot(x, y, look, **kwargs)
+    else:
+        ax.plot(x, y, **kwargs)
+    if title:
+        plt.title(title, fontsize=25)
+    if x_name:
+        ax.set_xlabel(x_name, fontsize=20)
+    if y_name:
+        ax.set_ylabel(y_name, fontsize=20)
+    if x_min != None and x_max != None:
+        ax.set_xlim(x_min, x_max)
+    if y_min != None and y_max != None:
+        ax.set_ylim(y_min, y_max)
+    ax.xaxis.set_tick_params(labelsize=15)
+    ax.yaxis.set_tick_params(labelsize=15)
+    self.canvas[-1].draw()
+    return ax</code></pre>
+</details>
+</dd>
+<dt id="bem_src.results.TabWidget.add_3d_scatter_plot"><code class="name flex">
+<span>def <span class="ident">add_3d_scatter_plot</span></span>(<span>self, f, x, y, z, whi, title=None, x_name=None, y_name=None, z_name=None, x_min=None, x_max=None, y_min=None, y_max=None, z_min=None, z_max=None, legend=False)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def add_3d_scatter_plot(self, f, x, y, z, whi, title=None, x_name=None, y_name=None, z_name=None, x_min=None,
+                        x_max=None, y_min=None, y_max=None, z_min=None, z_max=None, legend=False, ):
+    ax = f.add_subplot(whi, projection=&#34;3d&#34;)
+    p0 = ax.scatter(x, y, z, cmap=plt.cm.CMRmap)
+    # cbar = plt.colorbar(p0)
+
+    if title:
+        plt.title(title)
+    if x_name:
+        ax.set_xlabel(x_name)
+    if y_name:
+        ax.set_ylabel(y_name)
+    if z_name:
+        ax.set_zlabel(z_name)  # cbar.set_label(z_name)
+    if x_min != None and x_max != None:
+        ax.set_xlim(x_min, x_max)
+    if y_min != None and y_max != None:
+        ax.set_ylim(y_min, y_max)
+    if z_min != None and z_max != None:
+        ax.set_zlim(z_min, z_max)
+    self.canvas[-1].draw()</code></pre>
+</details>
+</dd>
+<dt id="bem_src.results.TabWidget.add_runner_widget"><code class="name flex">
+<span>def <span class="ident">add_runner_widget</span></span>(<span>self, input_data, tab_name='Runner')</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def add_runner_widget(self, input_data, tab_name=&#34;Runner&#34;):
+    r = RunnerWidget(input_data=input_data)
+    self.tabs.append(r)
+    self.addTab(self.tabs[-1], tab_name)</code></pre>
+</details>
+</dd>
+<dt id="bem_src.results.TabWidget.add_surface_plot"><code class="name flex">
+<span>def <span class="ident">add_surface_plot</span></span>(<span>self, f, x, y, z, whi, title=None, x_name=None, y_name=None, z_name=None, x_min=None, x_max=None, y_min=None, y_max=None, z_min=None, z_max=None, legend=False)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def add_surface_plot(self, f, x, y, z, whi, title=None, x_name=None, y_name=None, z_name=None, x_min=None,
+                     x_max=None, y_min=None, y_max=None, z_min=None, z_max=None, legend=False, ):
+    ax = f.add_subplot(whi, projection=&#34;3d&#34;)
+    p0 = ax.plot_trisurf(x, y, z, cmap=plt.cm.CMRmap)
+    cbar = plt.colorbar(p0)
+
+    if title:
+        plt.title(title)
+    if x_name:
+        ax.set_xlabel(x_name)
+    if y_name:
+        ax.set_ylabel(y_name)
+    if z_name:
+        ax.set_zlabel(z_name)
+        cbar.set_label(z_name)
+    if x_min != None and x_max != None:
+        ax.set_xlim(x_min, x_max)
+    if y_min != None and y_max != None:
+        ax.set_ylim(y_min, y_max)
+    if z_min != None and z_max != None:
+        ax.set_zlim(z_min, z_max)
+    self.canvas[-1].draw()</code></pre>
+</details>
+</dd>
+<dt id="bem_src.results.TabWidget.add_tab_figure"><code class="name flex">
+<span>def <span class="ident">add_tab_figure</span></span>(<span>self, tab_name)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def add_tab_figure(self, tab_name):
+    self.tabs.append(QtWidgets.QWidget())
+    self.addTab(self.tabs[-1], tab_name)
+    self.figures.append(plt.figure(figsize=(10, 5)))
+    self.canvas.append(FigureCanvas(self.figures[-1]))
+    toolbar = NavigationToolbar(self.canvas[-1], self)
+    layout = QtWidgets.QVBoxLayout()
+    layout.addWidget(self.canvas[-1])
+    layout.addWidget(toolbar)
+    self.tabs[-1].setLayout(layout)
+    return self.figures[-1]</code></pre>
+</details>
+</dd>
+<dt id="bem_src.results.TabWidget.add_tab_widget"><code class="name flex">
+<span>def <span class="ident">add_tab_widget</span></span>(<span>self, widget, tab_name)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def add_tab_widget(self, widget, tab_name):
+    self.tabs.append(widget)
+    self.addTab(self.tabs[-1], tab_name)</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+</dl>
+</section>
+</article>
+<nav id="sidebar">
+<h1>Index</h1>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="bem_src" href="index.html">bem_src</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="bem_src.results.ResultsWindow" href="#bem_src.results.ResultsWindow">ResultsWindow</a></code></h4>
+<ul class="">
+<li><code><a title="bem_src.results.ResultsWindow.closeEvent" href="#bem_src.results.ResultsWindow.closeEvent">closeEvent</a></code></li>
+<li><code><a title="bem_src.results.ResultsWindow.set_menubar" href="#bem_src.results.ResultsWindow.set_menubar">set_menubar</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="bem_src.results.TabWidget" href="#bem_src.results.TabWidget">TabWidget</a></code></h4>
+<ul class="">
+<li><code><a title="bem_src.results.TabWidget.add_2d_plot_to_figure" href="#bem_src.results.TabWidget.add_2d_plot_to_figure">add_2d_plot_to_figure</a></code></li>
+<li><code><a title="bem_src.results.TabWidget.add_3d_scatter_plot" href="#bem_src.results.TabWidget.add_3d_scatter_plot">add_3d_scatter_plot</a></code></li>
+<li><code><a title="bem_src.results.TabWidget.add_runner_widget" href="#bem_src.results.TabWidget.add_runner_widget">add_runner_widget</a></code></li>
+<li><code><a title="bem_src.results.TabWidget.add_surface_plot" href="#bem_src.results.TabWidget.add_surface_plot">add_surface_plot</a></code></li>
+<li><code><a title="bem_src.results.TabWidget.add_tab_figure" href="#bem_src.results.TabWidget.add_tab_figure">add_tab_figure</a></code></li>
+<li><code><a title="bem_src.results.TabWidget.add_tab_widget" href="#bem_src.results.TabWidget.add_tab_widget">add_tab_widget</a></code></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc"><cite>pdoc</cite> 0.7.1</a>.</p>
+</footer>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+<script>hljs.initHighlightingOnLoad()</script>
+</body>
+</html>
