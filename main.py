@@ -1285,8 +1285,8 @@ class Analysis(QWidget):
                 if "v" in results:
                     if len(results["v"]) > 0:
                         inp_params = self.runner_input
-                        r = ResultsWindow(
-                            self, self.main.screen_width, self.main.screen_width, results, inp_params, )
+                        self.r = ResultsWindow(
+                            None, self.main.screen_width, self.main.screen_width, results, inp_params, )
                     else:
                         print("Not enough points to print results...")
                 else:
@@ -1646,8 +1646,7 @@ class TabWidget(QtWidgets.QTabWidget):
     def current_tab_name(self):
         return self.tabText(self.currentIndex())
 
-
-if __name__ == "__main__":
+def main(quick_results=True):
     if sys.platform.startswith("win"):
         # On Windows calling this function is necessary for multiprocessing.
         multiprocessing.freeze_support()
@@ -1667,4 +1666,9 @@ if __name__ == "__main__":
     screen = app.primaryScreen()
     size = screen.size()
     main = MainWindow(size.width(), size.height())
+    if quick_results:
+        main.analysis.run()
     sys.exit(app.exec_())
+
+if __name__ == "__main__":
+    main()

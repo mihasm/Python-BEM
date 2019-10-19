@@ -60,7 +60,7 @@ def calculate_power(inp_args):
         raise
 
 
-def calculate_power_3d(inp_args, print_eof=True, prepend="", print_out=True):
+def calculate_power_3d(inp_args, print_eof=True, prepend="", print_progress=True):
     """
     Calculates power for given geometry and data for every windspeed and rpm.
 
@@ -69,7 +69,7 @@ def calculate_power_3d(inp_args, print_eof=True, prepend="", print_out=True):
     """
 
     p = Printer(inp_args["return_print"])
-    inp_args["print_progress"] = True
+    inp_args["print_progress"] = print_progress
     return_results = inp_args["return_results"]
     results_3d = {}
     speeds = list(numpy.linspace(
@@ -83,7 +83,7 @@ def calculate_power_3d(inp_args, print_eof=True, prepend="", print_out=True):
     for v in speeds:
         for rpm in rpms:
 
-            if print_out:
+            if print_progress:
                 p.print(prepend + "Calculating power for v:", v, "[m/s], rpm:", rpm, "[RPM], lambda:",
                         rpm / 60 * 2 * pi * inp_args["R"] / v, "J:", v / (rpm / 60 * inp_args["R"] * 2))
             _inp_args = {**inp_args}
@@ -98,7 +98,7 @@ def calculate_power_3d(inp_args, print_eof=True, prepend="", print_out=True):
             if _results == "!!!!EOF!!!!":
                 return None
             if _results != None and _results["power"]:
-                if print_out:
+                if print_progress:
                     p.print(prepend + "    TSR:", _results["TSR"], "J:", _results["J"], "cp:", _results["cp_w"],
                             "ct_p:", _results["ct_p"])
                 for key, value in _results.items():
@@ -115,7 +115,8 @@ def calculate_power_3d(inp_args, print_eof=True, prepend="", print_out=True):
             eta_seconds = datetime.datetime.now() + datetime.timedelta(seconds=t_left)
             eta = str(eta_seconds).split(".")[0]
             #p.print("    ### Time left:", t_left_str, "ETA:", eta, "###")
-            p.print("")
+            if print_progress:
+                p.print("")
 
     return_results.append(results_3d)
     if print_eof:

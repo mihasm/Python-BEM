@@ -22,6 +22,53 @@ from interpolator import interp
 numpy.seterr(all="raise")
 numpy.seterr(invalid="raise")
 
+OUTPUT_VARIABLES_LIST = {
+    "a":{"type":"array","name":"Axial induction factor","symbol":"a","unit":""},
+    "a'":{"type":"array","name":"Tangential induction factor","symbol":"a'","unit":""},
+    "cL":{"type":"array","name":"Lift coefficient","symbol":r"$C_L$","unit":""},
+    "alpha":{"type":"array","name":"Angle of attack","symbol":r"$\alpha$","unit":"°"},
+    "phi":{"type":"array","name":"Relative wind angle","symbol":r"$\phi$","unit":"°"},
+    "F":{"type":"array","name":"Tip loss correction factor","symbol":"F","unit":""},
+    "dFt":{"type":"array","name":"Incremental tangential force","symbol":r"$dF_t$","unit":"N"},
+    "M":{"type":"array","name":"Torque","symbol":"M","unit":"Nm"},
+    "lambda_r":{"type":"array","name":"Local tip speed ratio","symbol":r"$\lambda_r$","unit":""},
+    "Ct":{"type":"array","name":"Tangential coefficient","symbol":r"$C_t$","unit":""},
+    "dFn":{"type":"array","name":"Incremental normal force","symbol":r"$dF_n$","unit":"N"},
+    "foils":{"type":"string_array","name":"Airfoil name","symbol":"airfoil_name","unit":""},
+    "dT":{"type":"array","name":"Incremental thrust","symbol":"dT","unit":"N"},
+    "dQ":{"type":"array","name":"Incremental torque","symbol":"dM","unit":"N"},
+    "Re":{"type":"array","name":"Reynolds number","symbol":"Re","unit":""},
+    "U1":{"type":"array","name":"Far-upwind speed","symbol":"U1","unit":"m/s"},
+    "U2":{"type":"array","name":"Near-upwind speed","symbol":"U2","unit":"m/s"},
+    "U3":{"type":"array","name":"Near-downwind speed","symbol":"U3","unit":"m/s"},
+    "U4":{"type":"array","name":"Far-downwind speed","symbol":"U4","unit":"m/s"},
+
+
+    "r":{"type":"array","name":"Section radius","symbol":"r","unit":"m"},
+    "M":{"type":"array","name":"Section torque","symbol":"M","unit":"Nm"},
+    "dr":{"type":"array","name":"Section height","symbol":"dr","unit":"m"},
+    "c":{"type":"array","name":"Section chord length","symbol":"c","unit":"m"},
+    "theta":{"type":"array","name":"Section twist angle","symbol":r"$\Theta$","unit":"°"},
+
+    "R":{"type":"float","name":"Turbine radius","symbol":"R","unit":"m"},
+    "rpm":{"type":"float","name":"Turbine rotational velocity","symbol":r"$\Omega$","unit":"RPM"},
+    "v":{"type":"float","name":"Wind speed","symbol":"v","unit":"m/s"},
+    "cp_w":{"type":"float","name":"Efficiency (Wind turbine)","symbol":r"$C_P$","unit":""},
+    "cp_p":{"type":"float","name":"Efficiency (Propeller)","symbol":r"$C_P$","unit":""},
+    "ct_w":{"type":"float","name":"Thrust coefficient (Wind turbine)","symbol":r"$C_T$","unit":""},
+    "ct_p":{"type":"float","name":"Thrust coefficient (Propeller)","symbol":r"$C_T$","unit":""},
+    "TSR":{"type":"float","name":"Tip speed ratio","symbol":r"$\lambda$","unit":""},
+    "Ft":{"type":"float","name":"Tangential force","symbol":r"$F_t$","unit":"N"},
+    "omega":{"type":"float","name":"Rotational velocity","symbol":r"$\Omega$","unit":r"$rad^{-1}$"},
+    "Msum":{"type":"float","name":"Torque sum","symbol":r"$M_Sum$","unit":"Nm"},
+    "power":{"type":"float","name":"Power","symbol":"P","unit":"W"},
+    "thrust":{"type":"float","name":"Thrust","symbol":"T","unit":"N"},
+    "Rhub":{"type":"float","name":"Hub radius","symbol":r"$R_hub$","unit":"m"},
+    "B":{"type":"float","name":"Number of blades","symbol":"B","unit":""},
+    "J":{"type":"float","name":"Advance ratio","symbol":"J","unit":""},
+    "eff_p":{"type":"float","name":"Propeller efficiency","symbol":r"$\eta_p$","unit":""},
+}
+
 
 class Calculator:
     """
@@ -66,7 +113,7 @@ class Calculator:
             else:
                 _p = k + ":" + str(v)
                 p.print(_p)
-        p.print("-------------------------------------------------------------")
+        p.print("--------------------------------------------------------------")
         return
 
     def convert_to_array(self, theta, c, r):
@@ -144,7 +191,7 @@ class Calculator:
 
         # create results array placeholders
         results = {}
-        arrays = ["a", "a'", "cL", "alpha", "phi", "F", "dFt", "M", "TSR",
+        arrays = ["a", "a'", "cL", "alpha", "phi", "F", "dFt", "M", "lambda_r",
                   "Ct", "dFn", "foils", "dT", "dQ", "Re", "U1", "U2", "U3", "U4"]
         for array in arrays:
             results[array] = numpy.array([])
@@ -206,6 +253,7 @@ class Calculator:
             results["U2"] = numpy.append(results["U2"], out_results["U2"])
             results["U3"] = numpy.append(results["U3"], out_results["U3"])
             results["U4"] = numpy.append(results["U4"], out_results["U4"])
+            results["lambda_r"] = numpy.append(results["lambda_r"], out_results["lambda_r"])
 
         dFt = results["dFt"]
         Ft = numpy.sum(dFt)
@@ -229,6 +277,7 @@ class Calculator:
         cq_p = Q / (rho * (2*R)**5 * (rpm/60)**2)
         eff_p = J/2/pi*ct_p/cq_p
 
+        #floats
         results["R"] = R
         results["rpm"] = rpm
         results["v"] = v
@@ -238,20 +287,21 @@ class Calculator:
         results["ct_p"] = ct_p
         results["TSR"] = TSR
         results["Ft"] = Ft
-        results["r"] = r
         results["omega"] = omega
-        results["M"] = M
         results["Msum"] = Msum
         results["power"] = power
         results["thrust"] = T
-        results["dFt"] = dFt
         results["Rhub"] = Rhub
-        results["B"] = B
+        results["B"] = B        
+        results["J"] = J
+        results["eff_p"] = eff_p
+
+        #arrays
+        results["r"] = r
+        results["M"] = M
         results["dr"] = dr
         results["c"] = c
         results["theta"] = theta
-        results["J"] = J
-        results["eff_p"] = eff_p
         return results
 
     def calculate_section(self, v, omega, _r, _c, _theta, _dr, B, R, _airfoil_dat, _airfoil, max_thickness, Rhub,
@@ -469,16 +519,6 @@ class Calculator:
             dQ_BET = B * 0.5 * rho * Vrel_norm ** 2 * \
                 (Cl * sin(phi) - Cd * cos(phi)) * _c * _dr * _r
 
-            # thrust and torque from https://apps.dtic.mil/dtic/tr/fulltext/u2/1013408.pdf
-            dT_p = B * rho * (omega * _r / cos(phi) * cos(_theta)
-                              ) ** 2 * _c * _dr * (Cl * cos(phi) - Cd * sin(phi))
-            dQ_p = B * rho * (omega * _r / cos(phi) * cos(_theta)) ** 2 * _c * _r * _dr * (
-                Cl * sin(phi) + Cd * cos(phi))
-
-            # thrust and torque from http://www.icas.org/ICAS_ARCHIVE/ICAS2010/PAPERS/434.PDF
-            # dT_p = sigma*pi*rho*v**2*(1+a)**2/(sin(phi)**2)*(Cl*cos(phi)-Cd*sin(phi))*_r*_dr
-            # dQ_p = sigma*pi*rho*v**2*(1+a)**2/(sin(phi)*+2)*(Cl*sin(phi)+Cd*cos(phi))*_r**2*_dr
-
             # thrust-propeller
             dT_MT_p = 4 * pi * _r * rho * v ** 2 * (1 + a) * a * _dr
             dQ_MT_p = 4 * pi * _r ** 3 * rho * \
@@ -523,8 +563,6 @@ class Calculator:
             if abs(a - a_last) < convergence_limit:
                 break
 
-            # p.print("dT_MT %.2f dT_BET %.2f" % (dT_MT,dT_BET))
-
             # check iterations limit
             if i >= max_iterations:
                 if print_out:
@@ -565,5 +603,5 @@ class Calculator:
             p.print(prepend, "    ----------------------------")
 
         out = {"a": a, "aprime": aprime, "Cl": Cl, "alpha": alpha, "phi": phi, "F": F, "dFt": dFt, "Ct": Ct, "dFn": dFn,
-               "_airfoil": _airfoil_dat, "dT": dT, "dQ": dQ, "Re": Re, 'U1': U1, 'U2': U2, 'U3': U3, 'U4': U4}
+               "_airfoil": _airfoil_dat, "dT": dT, "dQ": dQ, "Re": Re, 'U1': U1, 'U2': U2, 'U3': U3, 'U4': U4, "lambda_r":lambda_r}
         return out

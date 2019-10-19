@@ -9,30 +9,31 @@ __status__ = "Development"
 import numpy
 from PyQt5 import QtWidgets
 from PyQt5.QtGui import QIcon
-from PyQt5.QtWidgets import QMainWindow, QAction
+from PyQt5.QtWidgets import (QComboBox, QMainWindow, QPushButton, QTextEdit, QWidget, QFormLayout,
+                             QLabel, QLineEdit, QGridLayout, QCheckBox, QStyleFactory, QMessageBox, QAction, QFileDialog, QSlider)
 from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.backends.backend_qt4agg import NavigationToolbar2QT as NavigationToolbar
 import matplotlib.pyplot as plt
 import numpy as np
+from matplotlib.figure import Figure
+
 
 from calculation_runner import max_calculate
 from table import Table
 from utils import sort_xy, dict_to_ar
 
+from calculation import OUTPUT_VARIABLES_LIST
 
 
 class ResultsWindow(QMainWindow):
     def __init__(self, parent, width, height, results_3d, input_data):
         super(ResultsWindow, self).__init__(parent)
         self.title = "Rezultati"
-        # self.left = 0
-        # self.top = 0
         self.screen_width = width
         self.screen_height = height
         self.setWindowTitle(self.title)
         self.setGeometry(self.screen_width * 0.125, self.screen_height * 0.125, self.screen_width * 0.75,
-                         self.screen_height * 0.75, )
-
+                         self.screen_width * 0.75 * 0.4, )
         self.tab_widget = TabWidget(self)
         self.setCentralWidget(self.tab_widget)
 
@@ -40,51 +41,37 @@ class ResultsWindow(QMainWindow):
         X, Y, Z = results_3d["v"], results_3d["rpm"], results_3d["power"]
         max_x, max_y, max_z = max_calculate(X, Y, Z)
 
-        # geometry check
-        array_geom = []
-        for r in range(len(input_data["r"])):
-            _r = input_data["r"][r]
-            _c = input_data["c"][r]
-            _theta = input_data["theta"][r]
-            _dr = input_data["dr"][r]
-            array_geom.append([input_data["r"][r], input_data["c"]
-                               [r], input_data["theta"][r], input_data["dr"][r], ])
-
-        t_geom = Table()
-        t_geom.createTable(array_geom)
-        t_geom.set_labels(["r", "c", "theta", "dr"])
-        self.tab_widget.add_tab_widget(t_geom, "Geometry check")
-
-        # Veter v odvisnosti od moči
+        ########### CP(lambda) CURVE ###############
         f2 = self.tab_widget.add_tab_figure("Cp curve")
-        #self.tab_widget.add_2d_plot_to_figure(f2, max_x, max_z, 121, "Moč vs veter", "veter [m/s]", "moč [W]")
-
-        # Cp curve
         TSR, CP = sort_xy(results_3d["TSR"], results_3d["cp_w"])
         ax_cp = self.tab_widget.add_2d_plot_to_figure(
             f2, TSR, CP, 121, "", r"$\lambda$", r"$C_P$", look="-b", label=r"$C_P$ curve")
         ax_cp.legend(fontsize=18)
+        ############################################
 
-        # noinspection PyBroadException
-        try:
-            if len(X) >= 3 and len(Y) >= 3:
-                f3 = self.tab_widget.add_tab_figure("3D power")
-                self.tab_widget.add_surface_plot(
-                    f3, X, Y, Z, 111, "Power (windspeed,RPM)", "windspeed[m/s]", "RPM", "Power [W]")
-        except:
-            print("Could not create 3D surface plot...")
+        ########### CT(lambda) CURVE ###############
+        self.tab_widget.add_2d_plot_to_figure(f2, results_3d["TSR"], results_3d["ct_w"], 122, "", r"$\lambda$", r"$C_P$",
+                                              look="b-", label=r"$C_T$ curve")
+        ############################################
 
-        # Ct(a) curve
-        f4 = self.tab_widget.add_tab_figure("Ct_r(a) curve")
-        ax_ct_r = self.tab_widget.add_2d_plot_to_figure(f4, results_3d["a"], results_3d["Ct"], 111, "", "a", r"$C_{T_r}$",
+        ########### Ct(a) curve ####################
+        f3 = self.tab_widget.add_tab_figure("Ct_r(a) curve")
+        ax_ct_r = self.tab_widget.add_2d_plot_to_figure(f3, results_3d["a"], results_3d["Ct"], 111, "", "a", r"$C_{T_r}$",
                                                         look="o", x_min=0, x_max=1)
         leg = ax_ct_r.legend(
             np.round(np.array(results_3d["TSR"]), 2), fontsize=20)
         leg.set_title(r"$\lambda$", prop={'size': 20})
+        ############################################
 
-        # ct(lambda) curve
-        self.tab_widget.add_2d_plot_to_figure(f2, results_3d["TSR"], results_3d["ct_w"], 122, "", r"$\lambda$", r"$C_P$",
-                                              look="b-", label=r"$C_T$ curve")
+        ########## 3D Power surface plot ###########
+        # noinspection PyBroadException
+        if len(set(X)) >= 3 and len(set(Y)) >= 3:
+            f4 = self.tab_widget.add_tab_figure("3D power")
+            self.tab_widget.add_surface_plot(
+                f4, X, Y, Z, 111, "Power (windspeed,RPM)", "windspeed[m/s]", "RPM", "Power [W]")
+        ############################################
+
+        ########## PROPELLER PLOTS #################
 
         # ct_p(J) curve
         f5 = self.tab_widget.add_tab_figure("ct(J) curve (propeller)")
@@ -95,32 +82,59 @@ class ResultsWindow(QMainWindow):
         self.tab_widget.add_2d_plot_to_figure(f5, results_3d['J'], results_3d['cp_p'], 111, None, None,
                                               None, look='r-', x_min=0, x_max=1, y_min=0, y_max=0.1, label="Cp (Power)")
 
-        # cp_p(J) curve
+        # eff_p(J) curve
         ax1 = self.tab_widget.add_2d_plot_to_figure(f5, results_3d['J'], results_3d['eff_p'], 111, None, None,
                                                     None, look='g-', x_min=0, x_max=1, y_min=0, y_max=1.0, label="Eff (Efficiency)")
         ax1.legend()
 
-        # CL check
+        ############################################
+
+        ########## CL plot #########################
         f7 = self.tab_widget.add_tab_figure("check CL")
         self.tab_widget.add_3d_scatter_plot(f7, np.array(results_3d["Re"]).flatten(),
                                             np.degrees(
                                                 np.array(results_3d["alpha"]).flatten()),
-                                            np.array(results_3d["cL"]).flatten(
-        ), 111, "Title", "Re", "alpha[deg]",
+                                            np.array(results_3d["cL"]).flatten(), 111, "Title", "Re", "alpha[deg]",
             "cL")
-        # print(results_3d['U4'])
+        ############################################
+
+        ########## U4 (r) ##########################
         f8 = self.tab_widget.add_tab_figure("Windspeed (radius)")
         for _u in results_3d['U4']:
             ax2 = self.tab_widget.add_2d_plot_to_figure(
                 f8, _u, input_data['r'], 111, '', r'$v_4$ [m/s]', 'r [m]', look="-", c=numpy.random.rand(3,))
         leg_hitrosti = ax2.legend(np.round(np.array(results_3d["TSR"]), 2))
         leg_hitrosti.set_title(r"$\lambda$", prop={'size': 20})
+        ############################################
 
+        ############ geometry check ################
+        array_geom = []
+        for r in range(len(input_data["r"])):
+            _r = input_data["r"][r]
+            _c = input_data["c"][r]
+            _theta = input_data["theta"][r]
+            _dr = input_data["dr"][r]
+            array_geom.append([input_data["r"][r], input_data["c"]
+                               [r], input_data["theta"][r], input_data["dr"][r], ])
+        t_geom = Table()
+        t_geom.createTable(array_geom)
+        t_geom.set_labels(["r", "c", "theta", "dr"])
+        self.tab_widget.add_tab_widget(t_geom, "Geometry check")
+        ############################################
+
+        ########### data ###########################
         data = dict_to_ar(results_3d)
         t = Table()
         t.createTable(data)
 
         self.tab_widget.add_tab_widget(t, "Data")
+        ############################################
+
+        ########## CUSTOM GRAPH ####################
+        self.custom_graph = CustomGraphWidget(self)
+        self.tab_widget.add_tab_widget(self.custom_graph,"Custom graph")
+        self.custom_graph.set_data(results_3d)
+        ############################################
 
         self.show()
 
@@ -234,3 +248,68 @@ class TabWidget(QtWidgets.QTabWidget):
         r = RunnerWidget(input_data=input_data)
         self.tabs.append(r)
         self.addTab(self.tabs[-1], tab_name)
+
+class CustomGraphWidget(QWidget):
+    def __init__(self, parent=None):
+        super(CustomGraphWidget, self).__init__(parent)
+
+        self.figure = Figure()
+        self.canvas = FigureCanvas(self.figure)
+        self.toolbar = NavigationToolbar(self.canvas, self)
+        self.ax = self.figure.add_subplot(111)
+
+        self.layout = QtWidgets.QVBoxLayout()
+        self.layout.addWidget(self.toolbar)
+        self.layout.addWidget(self.canvas)
+
+        self.comboBox_x = QComboBox(self)
+        self.comboBox_y = QComboBox(self)
+        self.layout.addWidget(self.comboBox_x)
+        self.layout.addWidget(self.comboBox_y)
+        self.inverse_list = {}
+        for k,v in OUTPUT_VARIABLES_LIST.items():
+            self.comboBox_x.addItem(v["name"])
+            self.comboBox_y.addItem(v["name"])
+            self.inverse_list[v["name"]]=k
+
+        self.button_draw = QPushButton("Draw")
+        self.layout.addWidget(self.button_draw)
+        self.button_draw.clicked.connect(self.draw_graph)
+
+        self.setLayout(self.layout)
+
+    def draw_graph(self):
+        print("draw_graph")
+        self.ax.clear()
+
+        x_data = self.inverse_list[str(self.comboBox_x.currentText())]
+        y_data = self.inverse_list[str(self.comboBox_y.currentText())]
+        x_ar = self.results[x_data]
+        y_ar = self.results[y_data]
+
+        flip = False
+
+        if OUTPUT_VARIABLES_LIST[x_data]["type"] == "array" and OUTPUT_VARIABLES_LIST[y_data]["type"] == "array":
+            flip = True
+
+        if flip:
+            x_ar = numpy.array(x_ar)
+            x_ar = numpy.transpose(x_ar)
+            y_ar = numpy.array(y_ar)
+            y_ar = numpy.transpose(y_ar)
+            
+
+        self.ax.plot(x_ar,y_ar)
+        if flip:
+            self.ax.legend(numpy.round(self.results["TSR"],2),title=r"$\lambda$")
+        else:
+            if OUTPUT_VARIABLES_LIST[x_data]["type"] == "array" or OUTPUT_VARIABLES_LIST[y_data]["type"] == "array":
+                self.ax.legend(numpy.round(self.results["r"][0],2),title="r")
+        self.ax.set_title(OUTPUT_VARIABLES_LIST[y_data]["name"]+" vs. "+OUTPUT_VARIABLES_LIST[x_data]["name"])
+        self.ax.set_xlabel(OUTPUT_VARIABLES_LIST[x_data]["symbol"]+" ["+OUTPUT_VARIABLES_LIST[x_data]["unit"]+"]")
+        self.ax.set_ylabel(OUTPUT_VARIABLES_LIST[y_data]["symbol"]+" ["+OUTPUT_VARIABLES_LIST[y_data]["unit"]+"]")
+        self.canvas.draw()
+
+    def set_data(self,results):
+        self.results = results
+        self.draw_graph()

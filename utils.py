@@ -377,9 +377,7 @@ def normalize_angle(angle):
 
 def create_folder(name_path):
     if not os.path.exists(name_path):
-        print("Creating folder", name_path)
         os.makedirs(name_path)
-    print("Folder", name_path, "already exists!")
 
 
 def get_centroid_coordinates(foil_x, foil_y):
