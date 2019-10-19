@@ -69,6 +69,7 @@ def calculate_power_3d(inp_args, print_eof=True, prepend="", print_out=True):
     """
 
     p = Printer(inp_args["return_print"])
+    inp_args["print_progress"] = True
     return_results = inp_args["return_results"]
     results_3d = {}
     speeds = list(numpy.linspace(
@@ -113,7 +114,8 @@ def calculate_power_3d(inp_args, print_eof=True, prepend="", print_out=True):
             t_left_str = str(datetime.timedelta(seconds=t_left))
             eta_seconds = datetime.datetime.now() + datetime.timedelta(seconds=t_left)
             eta = str(eta_seconds).split(".")[0]
-            p.print("    ### Time left:", t_left_str, "ETA:", eta, "###")
+            #p.print("    ### Time left:", t_left_str, "ETA:", eta, "###")
+            p.print("")
 
     return_results.append(results_3d)
     if print_eof:

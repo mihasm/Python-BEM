@@ -85,11 +85,11 @@ class Calculator:
             return None
 
     # noinspection PyUnusedLocal,PyUnusedLocal
-    def run_array(self, theta, B, c, r, foils, dr, R, Rhub, rpm, v, pitch, method, propeller_mode, print_out, tip_loss,
+    def run_array(self, theta, B, c, r, foils, dr, R, Rhub, rpm, v, pitch, method, propeller_mode, print_out, tip_loss,mach_number_correction, 
                   hub_loss, new_tip_loss, new_hub_loss, cascade_correction, max_iterations, convergence_limit, rho,
-                  relaxation_factor, print_all, return_print, return_results, rotational_augmentation_correction,
-                  rotational_augmentation_correction_method, mach_number_correction, fix_reynolds, reynolds, yaw_angle, skewed_wake_correction, *args,
-                  **kwargs, ):
+                  relaxation_factor, print_all, rotational_augmentation_correction,rotational_augmentation_correction_method,
+                   fix_reynolds, reynolds, yaw_angle, skewed_wake_correction, print_progress=False, return_print=[], return_results=[], 
+                   *args,**kwargs):
         """
         Calculates induction factors using standard iteration methods.
 
@@ -181,7 +181,7 @@ class Calculator:
 
             out_results = self.calculate_section(**_locals, printer=p)
 
-            if not print_all and not print_out:
+            if print_progress:
                 p.print("*", add_newline=False)
 
             if out_results == None:
@@ -207,9 +207,6 @@ class Calculator:
             results["U3"] = numpy.append(results["U3"], out_results["U3"])
             results["U4"] = numpy.append(results["U4"], out_results["U4"])
 
-        if not print_all and not print_out:
-            p.print("")
-
         dFt = results["dFt"]
         Ft = numpy.sum(dFt)
         M = B * dFt * r  # momenti po prerezih
@@ -218,7 +215,6 @@ class Calculator:
         power_p = Q * omega
         Msum = numpy.sum(M)
         power = numpy.sum(M) * omega
-        p.print(power_p, power)
         Pmax = 0.5 * rho * v ** 3 * pi * R ** 2
         cp_w = power / Pmax
         cp_p = power_p / (rho * (rpm / 60) ** 3 * (2 * R) ** 5)
@@ -263,7 +259,7 @@ class Calculator:
                           hub_loss=False, new_hub_loss=False, cascade_correction=False, rotational_augmentation_correction=False,
                           rotational_augmentation_correction_method=0, mach_number_correction=False, method=5,
                           kin_viscosity=1.4207E-5, rho=1.225, convergence_limit=0.001, max_iterations=100, relaxation_factor=0.3,
-                          printer=None, print_all=False, print_out=False, yaw_angle=0.0, skewed_wake_correction=False, *args, **kwargs):
+                          printer=None, print_all=False, print_out=False, yaw_angle=0.0, tilt_angle=0.0, skewed_wake_correction=False, *args, **kwargs):
         """
         Function that calculates each section of the blade.
 
@@ -298,6 +294,8 @@ class Calculator:
         convergence_limit:float: Convergence limit.
         max_iterations:int: Maximum iterations.
         relaxation_factor: Relaxation factor.
+        yaw_angle:float: Yaw angle in degrees.
+        tilt_angle:float: Tilting angle in degrees.
         """
 
         p = printer
@@ -322,7 +320,9 @@ class Calculator:
         _pitch = radians(pitch)
 
         # convert yaw to radians
-        yaw_angle = radians(yaw_angle)
+        yaw_angle = radians(yaw_angle) # [Radians]
+        psi = radians(psi) #Coning angle [Radians]
+        tilt_angle = radians(tilt_angle) # [Radians]
 
         ############ START ITERATION ############
         while True:
@@ -331,8 +331,10 @@ class Calculator:
 
             # for pretty-printing only
             prepend = ""
-            Vx = v
-            Vy = omega*_r
+            #Equations for Vx and Vy from https://pdfs.semanticscholar.org/5e7d/9c6408b7dd8841692d950d08bce90c676dc1.pdf
+            Vx = v*((cos(yaw_angle)*sin(tilt_angle)+sin(yaw_angle))*sin(psi)+cos(yaw_angle)*cos(psi)*cos(tilt_angle))
+            Vy = omega*_r*cos(psi)+v*(cos(yaw_angle)*sin(tilt_angle)-sin(yaw_angle))
+
             # wind components
             if propeller_mode:
                 Un = Vx * (1 + a)
@@ -421,13 +423,9 @@ class Calculator:
             C_norm = Cl * cos(phi) + Cd * sin(phi)
             C_tang = Cl * sin(phi) - Cd * cos(phi)
 
-            # save old values, calculate new values of induction factors
-            a_last = a
-            aprime_last = aprime
-
             input_arguments = {"F": F, "lambda_r": lambda_r, "phi": phi, "sigma": sigma, "C_norm": C_norm,
                                "C_tang": C_tang, "Cl": Cl, "Cd": Cd, "B": B, "c": _c, "r": _r, "R": R, "psi": 0.0,
-                               "aprime_last": aprime, "omega": omega, "v": v, "a_last": a_last,
+                               "aprime_last": aprime, "omega": omega, "v": v, "a_last": a,
                                # "alpha_zero": airfoils[_airfoil]["alpha_zero"],
                                "method": method, "alpha": alpha, "alpha_deg": degrees(alpha)}
 
@@ -435,19 +433,26 @@ class Calculator:
                 args_to_print = sorted(
                     [key for key, value in input_arguments.items()])
                 p.print("            i", i)
-                for a in args_to_print:
-                    p.print("            ", a, input_arguments[a])
+                for argument in args_to_print:
+                    p.print("            ", argument, input_arguments[argument])
                 p.print("             --------")
 
-            # calculate induction coefficients
+            # calculate new induction coefficients
             coeffs = calculate_coefficients(method, input_arguments)
             if coeffs == None:
                 return None
-            else:
-                a, aprime, Ct = coeffs
 
-                if skewed_wake_correction:
-                    a = skewed_wake_correction_calculate(yaw_angle,a,_r,R)
+            # save old values
+            a_last = a
+            aprime_last = aprime
+
+            #set new values
+            a, aprime, Ct = coeffs
+
+            if skewed_wake_correction:
+                a_skewed = skewed_wake_correction_calculate(yaw_angle,a,_r,R)
+                a_no_skew = a
+                a = a_skewed
 
             # force calculation
             dFL = Cl * 0.5 * rho * Vrel_norm ** 2 * _c * _dr  # lift force
@@ -510,8 +515,12 @@ class Calculator:
                 U3 = None
                 U4 = U1 * (1 - 2 * a)
 
+            if skewed_wake_correction:
+                # replace a with no skew
+                a = a_no_skew
+
             # check convergence
-            if abs(a - a_last) < convergence_limit and abs(aprime-aprime_last) < convergence_limit:
+            if abs(a - a_last) < convergence_limit:
                 break
 
             # p.print("dT_MT %.2f dT_BET %.2f" % (dT_MT,dT_BET))

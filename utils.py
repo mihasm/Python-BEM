@@ -282,7 +282,6 @@ def fltr(node, vals):
 
 
 def generate_dat(name, x, y):
-    print("generating dat")
     out = ""
     out += name + "\n"
     for i in range(len(x)):

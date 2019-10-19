@@ -730,9 +730,8 @@ def calc_rotational_augmentation_correction(
     return Cl_3D, Cd_3D
 
 def skewed_wake_correction_calculate(yaw_angle, a, r, R):
-    print("yaw_angle",yaw_angle)
     chi = (0.6*a+1)*yaw_angle
-    a_skew = a*(1+15*pi/32*r/R*tan(chi/2))
+    a_skew = a*(1+15*pi/64*r/R*tan(chi/2))
     return a_skew
 
 

@@ -592,7 +592,7 @@ class Airfoils(QWidget):
         bar2.ax.set_xlabel('Cd', fontsize=15, labelpad=20)
 
     def open_viewer(self):
-        print("opening viewwer")
+        print("opening viewer")
         self.viewer.show()
         self.viewer.generate_views()
 
