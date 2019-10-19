@@ -43,14 +43,14 @@ class ResultsWindow(QMainWindow):
 
         ########### CP(lambda) CURVE ###############
         f2 = self.tab_widget.add_tab_figure("Cp curve")
-        TSR, CP = sort_xy(results_3d["TSR"], results_3d["cp_w"])
+        TSR, CP = sort_xy(results_3d["TSR"], results_3d["cp"])
         ax_cp = self.tab_widget.add_2d_plot_to_figure(
             f2, TSR, CP, 121, "", r"$\lambda$", r"$C_P$", look="-b", label=r"$C_P$ curve")
         ax_cp.legend(fontsize=18)
         ############################################
 
         ########### CT(lambda) CURVE ###############
-        self.tab_widget.add_2d_plot_to_figure(f2, results_3d["TSR"], results_3d["ct_w"], 122, "", r"$\lambda$", r"$C_P$",
+        self.tab_widget.add_2d_plot_to_figure(f2, results_3d["TSR"], results_3d["ct"], 122, "", r"$\lambda$", r"$C_P$",
                                               look="b-", label=r"$C_T$ curve")
         ############################################
 
@@ -72,20 +72,20 @@ class ResultsWindow(QMainWindow):
         ############################################
 
         ########## PROPELLER PLOTS #################
+        if input_data["propeller_mode"] == True:
+            # ct_p(J) curve
+            f5 = self.tab_widget.add_tab_figure("ct(J) curve (propeller)")
+            self.tab_widget.add_2d_plot_to_figure(f5, results_3d["J"], results_3d["ct"], 111, "Propeler curves",
+                                                  "J = 1/lambda", "ct", look="b-", x_min=0, x_max=1, y_min=0, y_max=0.25, label="Ct (Thrust)")
 
-        # ct_p(J) curve
-        f5 = self.tab_widget.add_tab_figure("ct(J) curve (propeller)")
-        self.tab_widget.add_2d_plot_to_figure(f5, results_3d["J"], results_3d["ct_p"], 111, "Propeler curves",
-                                              "J = 1/lambda", "ct", look="b-", x_min=0, x_max=1, y_min=0, y_max=0.25, label="Ct (Thrust)")
+            # cp_p(J) curve
+            self.tab_widget.add_2d_plot_to_figure(f5, results_3d['J'], results_3d['cp'], 111, None, None,
+                                                  None, look='r-', x_min=0, x_max=1, y_min=0, y_max=0.1, label="Cp (Power)")
 
-        # cp_p(J) curve
-        self.tab_widget.add_2d_plot_to_figure(f5, results_3d['J'], results_3d['cp_p'], 111, None, None,
-                                              None, look='r-', x_min=0, x_max=1, y_min=0, y_max=0.1, label="Cp (Power)")
-
-        # eff_p(J) curve
-        ax1 = self.tab_widget.add_2d_plot_to_figure(f5, results_3d['J'], results_3d['eff_p'], 111, None, None,
-                                                    None, look='g-', x_min=0, x_max=1, y_min=0, y_max=1.0, label="Eff (Efficiency)")
-        ax1.legend()
+            # eff_p(J) curve
+            ax1 = self.tab_widget.add_2d_plot_to_figure(f5, results_3d['J'], results_3d['eff'], 111, None, None,
+                                                        None, look='g-', x_min=0, x_max=1, y_min=0, y_max=1.0, label="Eff (Efficiency)")
+            ax1.legend()
 
         ############################################
 
@@ -267,10 +267,14 @@ class CustomGraphWidget(QWidget):
         self.layout.addWidget(self.comboBox_x)
         self.layout.addWidget(self.comboBox_y)
         self.inverse_list = {}
+        list_of_options = []
         for k,v in OUTPUT_VARIABLES_LIST.items():
-            self.comboBox_x.addItem(v["name"])
-            self.comboBox_y.addItem(v["name"])
+            list_of_options.append(v["name"])
             self.inverse_list[v["name"]]=k
+        list_of_options.sort()
+        for l in list_of_options:
+            self.comboBox_x.addItem(l)
+            self.comboBox_y.addItem(l)
 
         self.button_draw = QPushButton("Draw")
         self.layout.addWidget(self.button_draw)
@@ -288,26 +292,35 @@ class CustomGraphWidget(QWidget):
         y_ar = self.results[y_data]
 
         flip = False
+        legend_r = False
 
         if OUTPUT_VARIABLES_LIST[x_data]["type"] == "array" and OUTPUT_VARIABLES_LIST[y_data]["type"] == "array":
-            flip = True
-
-        if flip:
             x_ar = numpy.array(x_ar)
             x_ar = numpy.transpose(x_ar)
             y_ar = numpy.array(y_ar)
             y_ar = numpy.transpose(y_ar)
-            
+            flip = True
+        elif OUTPUT_VARIABLES_LIST[x_data]["type"] == "array" or OUTPUT_VARIABLES_LIST[y_data]["type"] == "array":
+            legend_r = True
 
         self.ax.plot(x_ar,y_ar)
         if flip:
             self.ax.legend(numpy.round(self.results["TSR"],2),title=r"$\lambda$")
-        else:
-            if OUTPUT_VARIABLES_LIST[x_data]["type"] == "array" or OUTPUT_VARIABLES_LIST[y_data]["type"] == "array":
-                self.ax.legend(numpy.round(self.results["r"][0],2),title="r")
+        elif legend_r:
+            self.ax.legend(numpy.round(self.results["TSR"],2),title=r"$\lambda$")
+
         self.ax.set_title(OUTPUT_VARIABLES_LIST[y_data]["name"]+" vs. "+OUTPUT_VARIABLES_LIST[x_data]["name"])
-        self.ax.set_xlabel(OUTPUT_VARIABLES_LIST[x_data]["symbol"]+" ["+OUTPUT_VARIABLES_LIST[x_data]["unit"]+"]")
-        self.ax.set_ylabel(OUTPUT_VARIABLES_LIST[y_data]["symbol"]+" ["+OUTPUT_VARIABLES_LIST[y_data]["unit"]+"]")
+
+        xlabel = OUTPUT_VARIABLES_LIST[x_data]["symbol"]
+        if OUTPUT_VARIABLES_LIST[x_data]["unit"] != "":
+            xlabel = xlabel+" ["+OUTPUT_VARIABLES_LIST[x_data]["unit"]+"]"
+
+        ylabel = OUTPUT_VARIABLES_LIST[y_data]["symbol"]
+        if OUTPUT_VARIABLES_LIST[x_data]["unit"] != "":
+            ylabel = ylabel+" ["+OUTPUT_VARIABLES_LIST[y_data]["unit"]+"]"
+        
+        self.ax.set_xlabel(xlabel)
+        self.ax.set_ylabel(ylabel)
         self.canvas.draw()
 
     def set_data(self,results):

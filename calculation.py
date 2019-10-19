@@ -26,6 +26,7 @@ OUTPUT_VARIABLES_LIST = {
     "a":{"type":"array","name":"Axial induction factor","symbol":"a","unit":""},
     "a'":{"type":"array","name":"Tangential induction factor","symbol":"a'","unit":""},
     "cL":{"type":"array","name":"Lift coefficient","symbol":r"$C_L$","unit":""},
+    "cD":{"type":"array","name":"Drag coefficient","symbol":r"$C_L$","unit":""},
     "alpha":{"type":"array","name":"Angle of attack","symbol":r"$\alpha$","unit":"°"},
     "phi":{"type":"array","name":"Relative wind angle","symbol":r"$\phi$","unit":"°"},
     "F":{"type":"array","name":"Tip loss correction factor","symbol":"F","unit":""},
@@ -53,10 +54,8 @@ OUTPUT_VARIABLES_LIST = {
     "R":{"type":"float","name":"Turbine radius","symbol":"R","unit":"m"},
     "rpm":{"type":"float","name":"Turbine rotational velocity","symbol":r"$\Omega$","unit":"RPM"},
     "v":{"type":"float","name":"Wind speed","symbol":"v","unit":"m/s"},
-    "cp_w":{"type":"float","name":"Efficiency (Wind turbine)","symbol":r"$C_P$","unit":""},
-    "cp_p":{"type":"float","name":"Efficiency (Propeller)","symbol":r"$C_P$","unit":""},
-    "ct_w":{"type":"float","name":"Thrust coefficient (Wind turbine)","symbol":r"$C_T$","unit":""},
-    "ct_p":{"type":"float","name":"Thrust coefficient (Propeller)","symbol":r"$C_T$","unit":""},
+    "cp":{"type":"float","name":"Efficiency","symbol":r"$C_P$","unit":""},
+    "ct":{"type":"float","name":"Thrust coefficient","symbol":r"$C_T$","unit":""},
     "TSR":{"type":"float","name":"Tip speed ratio","symbol":r"$\lambda$","unit":""},
     "Ft":{"type":"float","name":"Tangential force","symbol":r"$F_t$","unit":"N"},
     "omega":{"type":"float","name":"Rotational velocity","symbol":r"$\Omega$","unit":r"$rad^{-1}$"},
@@ -192,7 +191,7 @@ class Calculator:
         # create results array placeholders
         results = {}
         arrays = ["a", "a'", "cL", "alpha", "phi", "F", "dFt", "M", "lambda_r",
-                  "Ct", "dFn", "foils", "dT", "dQ", "Re", "U1", "U2", "U3", "U4"]
+                  "Ct", "dFn", "foils", "dT", "dQ", "Re", "U1", "U2", "U3", "U4","cD"]
         for array in arrays:
             results[array] = numpy.array([])
 
@@ -237,6 +236,7 @@ class Calculator:
             results["a"] = numpy.append(results["a"], out_results["a"])
             results["a'"] = numpy.append(results["a'"], out_results["aprime"])
             results["cL"] = numpy.append(results["cL"], out_results["Cl"])
+            results["cD"] = numpy.append(results["cD"], out_results["Cd"])
             results["alpha"] = numpy.append(
                 results["alpha"], out_results["alpha"])
             results["phi"] = numpy.append(results["phi"], out_results["phi"])
@@ -281,10 +281,13 @@ class Calculator:
         results["R"] = R
         results["rpm"] = rpm
         results["v"] = v
-        results["cp_w"] = cp_w
-        results["cp_p"] = cp_p
-        results["ct_w"] = ct_w
-        results["ct_p"] = ct_p
+        if propeller_mode:
+            results["cp"] = cp_p
+            results["ct"] = ct_p
+        else:
+            results["cp"] = cp_w
+            results["ct"] = ct_w
+        
         results["TSR"] = TSR
         results["Ft"] = Ft
         results["omega"] = omega
@@ -602,6 +605,6 @@ class Calculator:
             p.print(prepend, "        dT_p %.2f dQ_p %.2f" % (dT_p, dQ_p))
             p.print(prepend, "    ----------------------------")
 
-        out = {"a": a, "aprime": aprime, "Cl": Cl, "alpha": alpha, "phi": phi, "F": F, "dFt": dFt, "Ct": Ct, "dFn": dFn,
+        out = {"a": a, "aprime": aprime, "Cl": Cl, "Cd":Cd, "alpha": alpha, "phi": phi, "F": F, "dFt": dFt, "Ct": Ct, "dFn": dFn,
                "_airfoil": _airfoil_dat, "dT": dT, "dQ": dQ, "Re": Re, 'U1': U1, 'U2': U2, 'U3': U3, 'U4': U4, "lambda_r":lambda_r}
         return out

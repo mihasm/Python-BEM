@@ -99,8 +99,8 @@ def calculate_power_3d(inp_args, print_eof=True, prepend="", print_progress=True
                 return None
             if _results != None and _results["power"]:
                 if print_progress:
-                    p.print(prepend + "    TSR:", _results["TSR"], "J:", _results["J"], "cp:", _results["cp_w"],
-                            "ct_p:", _results["ct_p"])
+                    p.print(prepend + "    TSR:", _results["TSR"], "J:", _results["J"], "cp:", _results["cp"],
+                            "ct:", _results["ct"])
                 for key, value in _results.items():
                     if key not in results_3d:
                         results_3d[key] = []

@@ -1,7 +1,7 @@
 __author__ = "Miha Smrekar"
 __credits__ = ["Miha Smrekar"]
 __license__ = "GPL"
-__version__ = "0.3.0"
+__version__ = "0.4.0"
 __maintainer__ = "Miha Smrekar"
 __email__ = "miha.smrekar9@gmail.com"
 __status__ = "Development"
@@ -1646,12 +1646,12 @@ class TabWidget(QtWidgets.QTabWidget):
     def current_tab_name(self):
         return self.tabText(self.currentIndex())
 
-def main(quick_results=True):
+def main(quick_results=False):
     if sys.platform.startswith("win"):
         # On Windows calling this function is necessary for multiprocessing.
         multiprocessing.freeze_support()
         # To show icon in taskbar
-        myappid = 'FEUM.BEM_Analiza.v0.3.0'  # arbitrary string
+        myappid = 'FEUM.BEM_Analiza.%s' % __version__  # arbitrary string
         ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
 
     app = QtWidgets.QApplication([])
