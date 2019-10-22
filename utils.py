@@ -1,11 +1,3 @@
-__author__ = "Miha Smrekar"
-__credits__ = ["Miha Smrekar"]
-__license__ = "GPL"
-__version__ = "0.3.0"
-__maintainer__ = "Miha Smrekar"
-__email__ = "miha.smrekar9@gmail.com"
-__status__ = "Development"
-
 import copy
 import numpy
 from scipy import interpolate

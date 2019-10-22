@@ -1,19 +1,3 @@
-__author__ = "Miha Smrekar"
-__credits__ = ["Miha Smrekar"]
-__license__ = "GPL"
-__version__ = "0.3.0"
-__maintainer__ = "Miha Smrekar"
-__email__ = "miha.smrekar9@gmail.com"
-__status__ = "Development"
-
-"""
-To build into exe, use pyinstaller, be sure to include scipy paths and hidden import:
-
-$pyinstaller preracun_vetrnica.py
->>--onefile
->>--paths C:\\Users\\miha\\AppData\\Local\\Programs\\Python\\Python36-32\\lib\\site-packages\\scipy\\extra-dll
->>--hidden-import='scipy._lib.messagestream'
-"""
 import datetime
 import sys
 import time

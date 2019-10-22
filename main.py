@@ -15,7 +15,7 @@ from montgomerie import Montgomerie
 from polars import scrape_data
 from interpolator import interp_at
 from utils import interpolate_geom, to_float, fltr
-from optimization import optimize_angles_genetic, maximize_for_both, optimal_pitch
+from optimization import optimize_angles_genetic, optimal_pitch
 from utils import interpolate_geom, to_float, fltr, QDarkPalette, create_folder
 from turbine_data import SET_INIT
 from table import Table
@@ -46,13 +46,12 @@ import sys
 import ctypes
 import os
 
-import numpy
-numpy.set_printoptions(threshold=sys.maxsize)
+
+np.set_printoptions(threshold=sys.maxsize)
 
 
 TITLE_STR = "BEM analiza v%s" % __version__
 from popravki import METHODS_STRINGS
-
 
 
 class MainWindow(QMainWindow):
@@ -121,7 +120,7 @@ class MainWindow(QMainWindow):
         if name != "":
             file = open(name, 'w')
             d = self.get_all_settings()
-            d_to_save = fltr(d, (float, int, list, str, bool, numpy.ndarray))
+            d_to_save = fltr(d, (float, int, list, str, bool, np.ndarray))
             json_d = json.dumps(d_to_save)
             file.write(json_d)
             file.close()
@@ -207,7 +206,6 @@ class MainWindow(QMainWindow):
     def set_buttons_running(self):
         self.analysis.buttonRun.setEnabled(False)
         self.optimization.buttonAngles.setEnabled(False)
-        self.optimization.buttonBoth.setEnabled(False)
         self.optimization.buttonOptimalPitch.setEnabled(False)
         self.analysis.buttonStop.setEnabled(True)
         self.optimization.buttonStop.setEnabled(True)
@@ -215,7 +213,6 @@ class MainWindow(QMainWindow):
     def set_buttons_await(self):
         self.analysis.buttonRun.setEnabled(True)
         self.optimization.buttonAngles.setEnabled(True)
-        self.optimization.buttonBoth.setEnabled(True)
         self.optimization.buttonOptimalPitch.setEnabled(True)
         self.analysis.buttonStop.setEnabled(False)
         self.optimization.buttonStop.setEnabled(False)
@@ -283,9 +280,9 @@ class WindTurbineProperties(QWidget):
                 c.append(to_float(row[1]))
                 theta.append(to_float(row[2]))
                 foils.append(row[3])
-        out_properties["r"] = numpy.array(r)
-        out_properties["c"] = numpy.array(c)
-        out_properties["theta"] = numpy.array(theta)
+        out_properties["r"] = array(r)
+        out_properties["c"] = array(c)
+        out_properties["theta"] = array(theta)
         out_properties["foils"] = foils
         return out_properties
 
@@ -324,8 +321,8 @@ class WindTurbineProperties(QWidget):
         w = MatplotlibWindow(self)
         w.ax = w.figure.add_subplot(111, projection="3d")
         w.ax.scatter(data["X"], data["Y"], data["Z"])
-        X, Y, Z = np.array(data["X"]), np.array(data["Y"]), np.array(data["Z"])
-        max_range = np.array(
+        X, Y, Z = array(data["X"]), array(data["Y"]), array(data["Z"])
+        max_range = array(
             [X.max()-X.min(), Y.max()-Y.min(), Z.max()-Z.min()]).max() / 2.0
         mid_x = (X.max()+X.min()) * 0.5
         mid_y = (Y.max()+Y.min()) * 0.5
@@ -676,8 +673,8 @@ class Airfoils(QWidget):
                 x.append(_x)
                 y.append(_y)
         if len(y) > 0:
-            y_max = numpy.max(y)
-            y_min = numpy.min(y)
+            y_max = np.max(y)
+            y_min = np.min(y)
             thickness = (abs(y_max) + abs(y_min)) / 1
             return thickness
         return None
@@ -779,7 +776,7 @@ class Curves:
                 _cd = cd[i]
 
                 out.append([Re, ncrit, _alpha, _cl, _cd])
-        out = np.array(out)
+        out = array(out)
         return out
 
 
@@ -1340,17 +1337,6 @@ class Optimization(QWidget):
         self.buttonAngles = QPushButton("Run angle optimization")
         self.buttonAngles.clicked.connect(self.run)
 
-        self.target_rpm_propeller = QLineEdit()
-        self.target_rpm_propeller.setValidator(self.validator)
-        self.target_rpm_propeller.textChanged.connect(self.check_state)
-        self.target_rpm.textChanged.emit(self.target_rpm_propeller.text())
-        self._target_rpm_propeller = QLabel('Target rpm (prop.) [RPM]')
-        self.form_list.append(
-            [self._target_rpm_propeller, self.target_rpm_propeller])
-
-        self.buttonBoth = QPushButton('Run optimization for turbine/propeller')
-        self.buttonBoth.clicked.connect(self.run_both)
-
         self.buttonOptimalPitch = QPushButton("Find optimal pitch")
         self.buttonOptimalPitch.clicked.connect(self.run_optimal_pitch)
 
@@ -1379,8 +1365,6 @@ class Optimization(QWidget):
         self.fbox.addRow(self.buttonAngles)
         self.fbox.addRow(self.buttonOptimalPitch)
         self.fbox.addRow("", QLabel())
-        self.fbox.addRow(self._target_rpm_propeller, self.target_rpm_propeller)
-        self.fbox.addRow(self.buttonBoth)
 
         self.fbox.addRow(self.buttonClear, self.buttonStop)
         self.fbox.addRow(self.buttonEOFdescription, self.buttonEOF)
@@ -1444,44 +1428,6 @@ class Optimization(QWidget):
                 self.runner_input["propeller_mode"] = False
             self.main.getter.start()
             self.p = Process(target=optimize_angles_genetic,
-                             args=[self.runner_input])
-            self.p.start()
-        else:
-            msg = QMessageBox()
-            msg.setIcon(QMessageBox.Warning)
-            msg.setText("Cannot run while existing operation is running")
-            msg.setInformativeText(
-                "The program detected that an existing operation is running.")
-            msg.setWindowTitle("Runtime error")
-            msg.setDetailedText("Currently tha value MainWindow.running is %s, \
-                it should be False." % str(self.main.running))
-
-    def run_both(self):
-        self.clear()
-        check = self.check_forms_angles()
-        check_analysis = self.main.analysis.check_forms()
-        if check != True or check_analysis != True:
-            if check == True:
-                check = ""
-            if check_analysis == True:
-                check_analysis = ""
-            check = check + check_analysis
-            msg = QMessageBox()
-            msg.setIcon(QMessageBox.Warning)
-            msg.setText("Input validation error")
-            msg.setDetailedText(check)
-            msg.exec_()
-            return
-
-        self.main.emitter_add.connect(self.add_text)
-        self.main.emitter_done.connect(self.done)
-
-        if not self.main.running:
-            self.main.set_buttons_running()
-            self.main.running = True
-            self.runner_input = self.main.get_input_params()
-            self.main.getter.start()
-            self.p = Process(target=maximize_for_both,
                              args=[self.runner_input])
             self.p.start()
         else:
@@ -1563,7 +1509,6 @@ class Optimization(QWidget):
         out = {}
         out["target_rpm"] = self.target_rpm.text()
         out["target_speed"] = self.target_speed.text()
-        out['target_rpm_propeller'] = self.target_rpm_propeller.text()
         if int(self.form.currentIndex()) == 0:
             out["optimization_variable"] = "dT"
         elif int(self.form.currentIndex()) == 1:
@@ -1584,8 +1529,6 @@ class Optimization(QWidget):
     def set_settings(self, inp_dict):
         self.target_rpm.setText(str(inp_dict["target_rpm"]))
         self.target_speed.setText(str(inp_dict["target_speed"]))
-        self.target_rpm_propeller.setText(
-            str(inp_dict['target_rpm_propeller']))
 
 
 class ThreadGetter(QThread):
@@ -1646,6 +1589,7 @@ class TabWidget(QtWidgets.QTabWidget):
     def current_tab_name(self):
         return self.tabText(self.currentIndex())
 
+
 def main(quick_results=False):
     if sys.platform.startswith("win"):
         # On Windows calling this function is necessary for multiprocessing.
@@ -1669,6 +1613,7 @@ def main(quick_results=False):
     if quick_results:
         main.analysis.run()
     sys.exit(app.exec_())
+
 
 if __name__ == "__main__":
     main()

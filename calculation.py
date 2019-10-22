@@ -1,11 +1,3 @@
-__author__ = "Miha Smrekar"
-__credits__ = ["Miha Smrekar"]
-__license__ = "GPL"
-__version__ = "0.3.0"
-__maintainer__ = "Miha Smrekar"
-__email__ = "miha.smrekar9@gmail.com"
-__status__ = "Development"
-
 import numbers
 from math import sin, cos, atan, acos, pi, exp, sqrt, radians, atan2, degrees, tan
 import os
@@ -35,7 +27,7 @@ OUTPUT_VARIABLES_LIST = {
     "lambda_r":{"type":"array","name":"Local tip speed ratio","symbol":r"$\lambda_r$","unit":""},
     "Ct":{"type":"array","name":"Tangential coefficient","symbol":r"$C_t$","unit":""},
     "dFn":{"type":"array","name":"Incremental normal force","symbol":r"$dF_n$","unit":"N"},
-    "foils":{"type":"string_array","name":"Airfoil name","symbol":"airfoil_name","unit":""},
+    #"foils":{"type":"string_array","name":"Airfoil name","symbol":"airfoil_name","unit":""},
     "dT":{"type":"array","name":"Incremental thrust","symbol":"dT","unit":"N"},
     "dQ":{"type":"array","name":"Incremental torque","symbol":"dM","unit":"N"},
     "Re":{"type":"array","name":"Reynolds number","symbol":"Re","unit":""},
@@ -54,7 +46,7 @@ OUTPUT_VARIABLES_LIST = {
     "R":{"type":"float","name":"Turbine radius","symbol":"R","unit":"m"},
     "rpm":{"type":"float","name":"Turbine rotational velocity","symbol":r"$\Omega$","unit":"RPM"},
     "v":{"type":"float","name":"Wind speed","symbol":"v","unit":"m/s"},
-    "cp":{"type":"float","name":"Efficiency","symbol":r"$C_P$","unit":""},
+    "cp":{"type":"float","name":"Power coefficient","symbol":r"$C_P$","unit":""},
     "ct":{"type":"float","name":"Thrust coefficient","symbol":r"$C_T$","unit":""},
     "TSR":{"type":"float","name":"Tip speed ratio","symbol":r"$\lambda$","unit":""},
     "Ft":{"type":"float","name":"Tangential force","symbol":r"$F_t$","unit":"N"},
@@ -65,7 +57,7 @@ OUTPUT_VARIABLES_LIST = {
     "Rhub":{"type":"float","name":"Hub radius","symbol":r"$R_hub$","unit":"m"},
     "B":{"type":"float","name":"Number of blades","symbol":"B","unit":""},
     "J":{"type":"float","name":"Advance ratio","symbol":"J","unit":""},
-    "eff_p":{"type":"float","name":"Propeller efficiency","symbol":r"$\eta_p$","unit":""},
+    "eff":{"type":"float","name":"Efficiency","symbol":r"$\eta_p$","unit":""},
 }
 
 
@@ -275,7 +267,7 @@ class Calculator:
         ct_p = T / (rho * (2 * R) ** 4 * (rpm / 60) ** 2)
 
         cq_p = Q / (rho * (2*R)**5 * (rpm/60)**2)
-        eff_p = J/2/pi*ct_p/cq_p
+        eff = J/2/pi*ct_p/cq_p
 
         #floats
         results["R"] = R
@@ -297,7 +289,7 @@ class Calculator:
         results["Rhub"] = Rhub
         results["B"] = B        
         results["J"] = J
-        results["eff_p"] = eff_p
+        results["eff"] = eff
 
         #arrays
         results["r"] = r

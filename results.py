@@ -1,11 +1,3 @@
-__author__ = "Miha Smrekar"
-__credits__ = ["Miha Smrekar"]
-__license__ = "GPL"
-__version__ = "0.3.0"
-__maintainer__ = "Miha Smrekar"
-__email__ = "miha.smrekar9@gmail.com"
-__status__ = "Development"
-
 import numpy
 from PyQt5 import QtWidgets
 from PyQt5.QtGui import QIcon
@@ -50,8 +42,9 @@ class ResultsWindow(QMainWindow):
         ############################################
 
         ########### CT(lambda) CURVE ###############
-        self.tab_widget.add_2d_plot_to_figure(f2, results_3d["TSR"], results_3d["ct"], 122, "", r"$\lambda$", r"$C_P$",
+        ax_ct = self.tab_widget.add_2d_plot_to_figure(f2, results_3d["TSR"], results_3d["ct"], 122, "", r"$\lambda$", r"$C_T$",
                                               look="b-", label=r"$C_T$ curve")
+        ax_ct.legend(fontsize=18)
         ############################################
 
         ########### Ct(a) curve ####################
