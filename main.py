@@ -15,7 +15,7 @@ from montgomerie import Montgomerie
 from polars import scrape_data
 from interpolator import interp_at
 from utils import interpolate_geom, to_float, fltr
-from optimization import optimize_angles_genetic, optimal_pitch
+from optimization import optimize_angles_genetic
 from utils import interpolate_geom, to_float, fltr, QDarkPalette, create_folder
 from turbine_data import SET_INIT
 from table import Table
@@ -37,7 +37,7 @@ from PyQt5.QtWidgets import (QComboBox, QMainWindow, QPushButton, QTextEdit, QWi
 from PyQt5 import QtCore, QtGui
 from PyQt5.QtCore import QThread, QTextStream, pyqtSignal, QProcess, QRect, Qt
 from PyQt5 import QtWidgets
-from multiprocessing import Process, Manager
+from multiprocessing import Process, Manager, Queue
 import multiprocessing
 import json
 from pprint import pprint
@@ -45,6 +45,7 @@ import time
 import sys
 import ctypes
 import os
+import pyqtgraph as pg
 
 
 np.set_printoptions(threshold=sys.maxsize)
@@ -206,14 +207,12 @@ class MainWindow(QMainWindow):
     def set_buttons_running(self):
         self.analysis.buttonRun.setEnabled(False)
         self.optimization.buttonAngles.setEnabled(False)
-        self.optimization.buttonOptimalPitch.setEnabled(False)
         self.analysis.buttonStop.setEnabled(True)
         self.optimization.buttonStop.setEnabled(True)
 
     def set_buttons_await(self):
         self.analysis.buttonRun.setEnabled(True)
         self.optimization.buttonAngles.setEnabled(True)
-        self.optimization.buttonOptimalPitch.setEnabled(True)
         self.analysis.buttonStop.setEnabled(False)
         self.optimization.buttonStop.setEnabled(False)
 
@@ -1332,13 +1331,10 @@ class Optimization(QWidget):
         self._form = QLabel("Optimization variable")
         self.form = QComboBox()
         self.form.addItems(
-            ["Thrust (propeller)", "Torque (Turbine)", "max dQ min dT"])
+            ["Thrust (propeller)", "Torque (Turbine)", "max dQ min dT", "Best pitch"])
 
         self.buttonAngles = QPushButton("Run angle optimization")
         self.buttonAngles.clicked.connect(self.run)
-
-        self.buttonOptimalPitch = QPushButton("Find optimal pitch")
-        self.buttonOptimalPitch.clicked.connect(self.run_optimal_pitch)
 
         self.buttonStop = QPushButton("Stop")
         self.buttonStop.clicked.connect(self.terminate)
@@ -1363,7 +1359,6 @@ class Optimization(QWidget):
 
         # self.fbox.addRow(QLabel("--------"))
         self.fbox.addRow(self.buttonAngles)
-        self.fbox.addRow(self.buttonOptimalPitch)
         self.fbox.addRow("", QLabel())
 
         self.fbox.addRow(self.buttonClear, self.buttonStop)
@@ -1422,51 +1417,16 @@ class Optimization(QWidget):
             self.main.set_buttons_running()
             self.main.running = True
             self.runner_input = self.main.get_input_params()
-            if self.runner_input["optimization_variable"] == "dT":
-                self.runner_input["propeller_mode"] = True
-            else:
-                self.runner_input["propeller_mode"] = False
             self.main.getter.start()
+            self.manager_pyqtgraph = Manager()
+            self.queue_pyqtgraph = self.manager_pyqtgraph.list()
             self.p = Process(target=optimize_angles_genetic,
-                             args=[self.runner_input])
+                             args=[self.runner_input,self.queue_pyqtgraph])
             self.p.start()
-        else:
-            msg = QMessageBox()
-            msg.setIcon(QMessageBox.Warning)
-            msg.setText("Cannot run while existing operation is running")
-            msg.setInformativeText(
-                "The program detected that an existing operation is running.")
-            msg.setWindowTitle("Runtime error")
-            msg.setDetailedText("Currently tha value MainWindow.running is %s, \
-                it should be False." % str(self.main.running))
-
-    def run_optimal_pitch(self):
-        self.clear()
-        check = self.check_forms_angles()
-        check_analysis = self.main.analysis.check_forms()
-        if check != True or check_analysis != True:
-            if check == True:
-                check = ""
-            if check_analysis == True:
-                check_analysis = ""
-            check = check + check_analysis
-            msg = QMessageBox()
-            msg.setIcon(QMessageBox.Warning)
-            msg.setText("Input validation error")
-            msg.setDetailedText(check)
-            msg.exec_()
-            return
-
-        self.main.emitter_add.connect(self.add_text)
-        self.main.emitter_done.connect(self.done)
-
-        if not self.main.running:
-            self.main.set_buttons_running()
-            self.main.running = True
-            self.runner_input = self.main.get_input_params()
-            self.main.getter.start()
-            self.p = Process(target=optimal_pitch, args=[self.runner_input])
-            self.p.start()
+            win = PyQtGraphWindow(self)
+            win.show()
+            print("Starting update")
+            win.start_update()
         else:
             msg = QMessageBox()
             msg.setIcon(QMessageBox.Warning)
@@ -1515,6 +1475,8 @@ class Optimization(QWidget):
             out["optimization_variable"] = "dQ"
         elif int(self.form.currentIndex()) == 2:
             out["optimization_variable"] = "max dT min dQ"
+        elif int(self.form.currentIndex()) == 3:
+            out["optimization_variable"] = "best_pitch"
         for k, v in out.items():
             if v == "":
                 v = None
@@ -1588,6 +1550,48 @@ class TabWidget(QtWidgets.QTabWidget):
 
     def current_tab_name(self):
         return self.tabText(self.currentIndex())
+
+class DataCaptureThread(QThread):
+
+    def __init__(self,parent):
+        #QThread.__init__(self, *args, **kwargs)
+        super(DataCaptureThread,self).__init__(parent)
+        self.parent = parent
+        self.dataCollectionTimer = QtCore.QTimer()
+        self.dataCollectionTimer.moveToThread(self)
+        self.dataCollectionTimer.timeout.connect(self.updateInProc)
+
+    def run(self):
+        self.dataCollectionTimer.start(1) #0 causes freeze
+        self.loop = QtCore.QEventLoop()
+        self.loop.exec_()
+
+    def updateInProc(self):
+        if len(self.parent.parent.queue_pyqtgraph)>0:
+            item = self.parent.parent.queue_pyqtgraph.pop()
+            x = item[0]
+            y = item[1]
+            best_x = [item[2]]
+            best_y = [item[3]]
+            self.parent.curve.setData(x,y)
+        #curve_red.setData(best_x,best_y)
+
+
+class PyQtGraphWindow(QMainWindow):
+    def __init__(self, parent):
+        super(PyQtGraphWindow, self).__init__(parent)
+        self.obj = pg.PlotWidget()
+        self.setCentralWidget(self.obj)
+        self.curve = self.obj.plot(pen=None, symbol='o', symbolPen=None, symbolSize=4, symbolBrush=('b'))
+        self.parent = parent
+        print(self.parent.queue_pyqtgraph)
+
+    def start_update(self):
+        self.thread = DataCaptureThread(self)
+        self.thread.start()
+        self.thread.run()
+
+
 
 
 def main(quick_results=False):
