@@ -5566,4 +5566,10 @@ SET_INIT = {'B': 3,
  'turbine_name': 'norvezan_karlsen_ntnu_njegove_krivulje',
  'v_max': 25.0,
  'v_min': 25.0,
- 'v_num': 1.0}
+ 'v_num': 1.0,
+ 'pitch_optimization':False,
+ 'min_bound':-45,
+ 'max_bound':45,
+ 'mut_coeff':0.8,
+ 'population':30,
+ 'num_iter':50}

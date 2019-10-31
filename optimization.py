@@ -24,16 +24,22 @@ def optimize_angles_genetic(inp_args,queue_pyqtgraph):
 
     p = Printer(inp_args["return_print"])
     try:
-        p.print("Optimizing angles for target variable:",
-                inp_args["optimization_variable"])
-        p.print("Using genetic algorithm")
         return_results = inp_args["return_results"]
 
         v = inp_args["target_speed"]
         rpm = inp_args["target_rpm"]
         omega = 2 * pi * rpm / 60
+
         optimization_variable = inp_args["optimization_variable"]
+        pitch_optimization = inp_args["pitch_optimization"]
+        min_bound = inp_args["min_bound"]
+        max_bound = inp_args["max_bound"]
+        mut_coeff = inp_args["mut_coeff"]
+        population_size = int(inp_args["population"])
+        num_iter = int(inp_args["num_iter"])
+
         p.print("Optimization variable is", optimization_variable)
+        p.print("Pitch optimization:",pitch_optimization)
         p.print("Propeller mode:", inp_args["propeller_mode"])
 
         output_angles = []
@@ -47,14 +53,14 @@ def optimize_angles_genetic(inp_args,queue_pyqtgraph):
         for _r in inp_args["r_in"]:
             p.print(_r)
 
-        if optimization_variable == "best_pitch":
+        if pitch_optimization:
             del inp_args["pitch"]
             def fobj(x):
                 out = C.run_array(**inp_args, rpm=rpm, v=v, pitch=x)
                 if out == None or out == False:
                     return 0.0
                 return out["cp"]
-            results = de2(fobj, bounds=[(-90, 90)], printer=p, queue=queue_pyqtgraph)
+            results = de2(fobj, bounds=[(min_bound, max_bound)], M=mut_coeff, num_individuals=population_size,iterations=num_iter,printer=p, queue=queue_pyqtgraph)
             it = list(results)
             best = it[-1]
         else:
@@ -79,7 +85,6 @@ def optimize_angles_genetic(inp_args,queue_pyqtgraph):
                                                 x),
                                             printer=p, **inp_args)
                     if d == None or d == False:
-                        p.print("none")
                         return 0.0
 
                     if optimization_variable == "max dT min dQ":
@@ -87,7 +92,7 @@ def optimize_angles_genetic(inp_args,queue_pyqtgraph):
 
                     return d[optimization_variable]
 
-                it = list(de2(fobj, bounds=[(-45, 45)], printer=p, queue=queue_pyqtgraph))
+                it = list(de2(fobj, bounds=[(min_bound, max_bound)], M=mut_coeff, num_individuals=population_size,iterations=num_iter,printer=p, queue=queue_pyqtgraph))
 
                 d_final = C.calculate_section(v=v, omega=omega, _airfoil=_airfoil, _airfoil_dat=_airfoil_dat,
                                               max_thickness=max_thickness, _r=_r, _c=_c, _dr=_dr, _theta=radians(
@@ -128,7 +133,7 @@ def de2(function, bounds, M=0.8, num_individuals=30, iterations=50, printer=None
     return:float:Individual with the highest fitness.
     """
     p = printer
-    p.print("queue2",queue)
+    #p.print("queue2",queue)
     dimensions = len(bounds)
     min_bound, max_bound = np.asarray(bounds).T
     population = np.random.uniform(
@@ -159,8 +164,8 @@ def de2(function, bounds, M=0.8, num_individuals=30, iterations=50, printer=None
                     best = trial
                     #print(population[j][0],fitness[j])
             queue.insert(0,[population.flatten(),fitness,population[best_i][0],fitness[best_i]])
-        p.print("There are",len(set(population.flatten())),"unique members in population.")
-        p.print("population",population.flatten())
+        #p.print("There are",len(set(population.flatten())),"unique members in population.")
+        #p.print("population",population.flatten())
         if len(set(population.flatten())) == 1:
             break
         p.print(best)

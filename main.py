@@ -46,6 +46,9 @@ import sys
 import ctypes
 import os
 import pyqtgraph as pg
+from functools import partial
+import traceback
+
 
 
 np.set_printoptions(threshold=sys.maxsize)
@@ -53,7 +56,6 @@ np.set_printoptions(threshold=sys.maxsize)
 
 TITLE_STR = "BEM analiza v%s" % __version__
 from popravki import METHODS_STRINGS
-
 
 class MainWindow(QMainWindow):
     emitter_add = pyqtSignal(str)
@@ -158,7 +160,7 @@ class MainWindow(QMainWindow):
 
             return out
         except Exception as e:
-            msg = QMessageBox()
+            msg = MyMessageBox()
             msg.setIcon(QMessageBox.Warning)
             msg.setText("Error while getting settings")
             msg.setDetailedText(str(e))
@@ -167,31 +169,23 @@ class MainWindow(QMainWindow):
             return None
 
     # noinspection PyBroadException
-    def set_all_settings(self, inp_dict, suppress=True):
+    def set_all_settings(self, inp_dict, suppress=False):
         try:
             self.analysis.set_settings(inp_dict)
-        except:
-            print("Error setting analysis settings!")
-            if not suppress:
-                raise
-        try:
+
             self.optimization.set_settings(inp_dict)
-        except:
-            print("Error setting optimization settings!")
-            if not suppress:
-                raise
-        try:
+
             self.wind_turbine_properties.set_settings(inp_dict)
-        except:
-            print("Error setting wind turbine properties settings!")
-            if not suppress:
-                raise
-        try:
+
             self.curve_manager.set_settings(inp_dict)
         except Exception as e:
-            print("Error setting curve manager settings!")
-            if not suppress:
-                raise
+            msg = MyMessageBox()
+            msg.setIcon(QMessageBox.Warning)
+            msg.setText("Error while getting settings")
+            var = traceback.format_exc()
+            msg.setDetailedText(str(e)+"\n"+str(var))
+            msg.exec_()
+            return None
 
     def get_input_params(self):
         settings = self.get_all_settings()
@@ -652,7 +646,7 @@ class Airfoils(QWidget):
             centroid_y = float(self.centroid_y_edit.text())
             self.ax.plot(centroid_x, centroid_y, "r+")
         except Exception as e:
-            msg = QMessageBox()
+            msg = MyMessageBox()
             msg.setIcon(QMessageBox.Warning)
             msg.setText("Error while getting settings")
             msg.setDetailedText(str(e))
@@ -1230,7 +1224,7 @@ class Analysis(QWidget):
         self.clear()
         check = self.check_forms()
         if check != True:
-            msg = QMessageBox()
+            msg = MyMessageBox()
             msg.setIcon(QMessageBox.Warning)
             msg.setText("Input validation error.")
             msg.setDetailedText(check)
@@ -1253,7 +1247,7 @@ class Analysis(QWidget):
                              args=[self.runner_input])
             self.p.start()
         else:
-            msg = QMessageBox()
+            msg = MyMessageBox()
             msg.setIcon(QMessageBox.Warning)
             msg.setText("Cannot run while existing operation is running")
             msg.setInformativeText(
@@ -1328,12 +1322,53 @@ class Optimization(QWidget):
         self._target_rpm = QLabel("Target rpm [RPM]")
         self.form_list.append([self._target_rpm, self.target_rpm])
 
-        self._form = QLabel("Optimization variable")
-        self.form = QComboBox()
-        self.form.addItems(
-            ["Thrust (propeller)", "Torque (Turbine)", "max dQ min dT", "Best pitch"])
+        self.min_bound = QLineEdit()
+        self.min_bound.setValidator(self.validator)
+        self.min_bound.textChanged.connect(self.check_state)
+        self.min_bound.textChanged.emit(self.min_bound.text())
+        self._min_bound = QLabel("Minimum boundary")
+        self.form_list.append([self._min_bound, self.min_bound])
 
-        self.buttonAngles = QPushButton("Run angle optimization")
+        self.max_bound = QLineEdit()
+        self.max_bound.setValidator(self.validator)
+        self.max_bound.textChanged.connect(self.check_state)
+        self.max_bound.textChanged.emit(self.max_bound.text())
+        self._max_bound = QLabel("Maximum boundary")
+        self.form_list.append([self._max_bound, self.max_bound])
+
+        self.mut_coeff = QLineEdit()
+        self.mut_coeff.setValidator(self.validator)
+        self.mut_coeff.textChanged.connect(self.check_state)
+        self.mut_coeff.textChanged.emit(self.mut_coeff.text())
+        self._mut_coeff = QLabel("Mutation coefficient")
+        self.form_list.append([self._mut_coeff, self.mut_coeff])
+
+        self.population = QLineEdit()
+        self.population.setValidator(self.validator)
+        self.population.textChanged.connect(self.check_state)
+        self.population.textChanged.emit(self.population.text())
+        self._population = QLabel("Population")
+        self.form_list.append([self._population, self.population])
+
+        self.num_iter = QLineEdit()
+        self.num_iter.setValidator(self.validator)
+        self.num_iter.textChanged.connect(self.check_state)
+        self.num_iter.textChanged.emit(self.num_iter.text())
+        self._num_iter = QLabel("Number of iterations")
+        self.form_list.append([self._num_iter, self.num_iter])
+
+        self._opt_variable = QLabel("Optimization variable")
+        self.opt_variable = QComboBox()
+        self.opt_variable.addItems(
+            ["Thrust (propeller)", "Torque (Turbine)", "max dQ min dT", "Best pitch"])
+        self.form_list.append([self._opt_variable,self.opt_variable])
+
+        self.pitch_optimization = QCheckBox()
+        self.pitch_optimization.setChecked(False)
+        self._pitch_optimization = QLabel("Pitch optimization")
+        self.form_list.append([self._pitch_optimization,self.pitch_optimization])
+
+        self.buttonAngles = QPushButton("Run optimization")
         self.buttonAngles.clicked.connect(self.run)
 
         self.buttonStop = QPushButton("Stop")
@@ -1353,16 +1388,17 @@ class Optimization(QWidget):
 
         self.fbox = QFormLayout()
         self.left.setLayout(self.fbox)
-        self.fbox.addRow(self._target_speed, self.target_speed)
-        self.fbox.addRow(self._target_rpm, self.target_rpm)
-        self.fbox.addRow(self._form, self.form)
 
-        # self.fbox.addRow(QLabel("--------"))
+        for a,b in self.form_list:
+            self.fbox.addRow(a,b)
+
         self.fbox.addRow(self.buttonAngles)
         self.fbox.addRow("", QLabel())
 
         self.fbox.addRow(self.buttonClear, self.buttonStop)
         self.fbox.addRow(self.buttonEOFdescription, self.buttonEOF)
+
+        self.win = PyQtGraphWindow(self)
 
     def check_forms_angles(self):
         out = ""
@@ -1393,7 +1429,7 @@ class Optimization(QWidget):
             color = "#f6989d"  # red
         sender.setStyleSheet("QLineEdit { background-color: %s }" % color)
 
-    def run(self):
+    def run(self,optimization_type):
         self.clear()
         check = self.check_forms_angles()
         check_analysis = self.main.analysis.check_forms()
@@ -1403,7 +1439,7 @@ class Optimization(QWidget):
             if check_analysis == True:
                 check_analysis = ""
             check = check + check_analysis
-            msg = QMessageBox()
+            msg = MyMessageBox()
             msg.setIcon(QMessageBox.Warning)
             msg.setText("Input validation error")
             msg.setDetailedText(check)
@@ -1423,12 +1459,10 @@ class Optimization(QWidget):
             self.p = Process(target=optimize_angles_genetic,
                              args=[self.runner_input,self.queue_pyqtgraph])
             self.p.start()
-            win = PyQtGraphWindow(self)
-            win.show()
-            print("Starting update")
-            win.start_update()
+            self.win.show()
+            self.win.start_update()
         else:
-            msg = QMessageBox()
+            msg = MyMessageBox()
             msg.setIcon(QMessageBox.Warning)
             msg.setText("Cannot run while existing operation is running")
             msg.setInformativeText(
@@ -1462,6 +1496,7 @@ class Optimization(QWidget):
         self.main.set_buttons_await()
         self.main.running = False
         self.main.getter.__del__()
+        self.win.stop_update()
         if not terminated:
             self.p.join()
 
@@ -1469,13 +1504,20 @@ class Optimization(QWidget):
         out = {}
         out["target_rpm"] = self.target_rpm.text()
         out["target_speed"] = self.target_speed.text()
-        if int(self.form.currentIndex()) == 0:
+        out["pitch_optimization"] = bool(self.pitch_optimization.checkState())
+        out["min_bound"] = self.min_bound.text()
+        out["max_bound"] = self.max_bound.text()
+        out["mut_coeff"] = self.mut_coeff.text()
+        out["population"] = self.population.text()
+        out["num_iter"] = self.num_iter.text()
+
+        if int(self.opt_variable.currentIndex()) == 0:
             out["optimization_variable"] = "dT"
-        elif int(self.form.currentIndex()) == 1:
+        elif int(self.opt_variable.currentIndex()) == 1:
             out["optimization_variable"] = "dQ"
-        elif int(self.form.currentIndex()) == 2:
+        elif int(self.opt_variable.currentIndex()) == 2:
             out["optimization_variable"] = "max dT min dQ"
-        elif int(self.form.currentIndex()) == 3:
+        elif int(self.opt_variable.currentIndex()) == 3:
             out["optimization_variable"] = "best_pitch"
         for k, v in out.items():
             if v == "":
@@ -1491,6 +1533,12 @@ class Optimization(QWidget):
     def set_settings(self, inp_dict):
         self.target_rpm.setText(str(inp_dict["target_rpm"]))
         self.target_speed.setText(str(inp_dict["target_speed"]))
+        self.pitch_optimization.setChecked(inp_dict["pitch_optimization"])
+        self.min_bound.setText(str(inp_dict["min_bound"]))
+        self.max_bound.setText(str(inp_dict["max_bound"]))
+        self.mut_coeff.setText(str(inp_dict["mut_coeff"]))
+        self.population.setText(str(inp_dict["population"]))
+        self.num_iter.setText(str(inp_dict["num_iter"]))
 
 
 class ThreadGetter(QThread):
@@ -1521,14 +1569,6 @@ class TabWidget(QtWidgets.QTabWidget):
         self.tabs = []
 
     def add_tab(self, widget, tab_name):
-        for t, n in self.tabs:
-            if n == tab_name:
-                print("n", n, "tab_name", tab_name)
-                msg = QMessageBox()
-                msg.setIcon(QMessageBox.Warning)
-                msg.setText("Tab with same name already exists!")
-                msg.exec_()
-                return
         self.tabs.append([widget, tab_name])
         self.addTab(widget, tab_name)
         return
@@ -1574,7 +1614,7 @@ class DataCaptureThread(QThread):
             best_x = [item[2]]
             best_y = [item[3]]
             self.parent.curve.setData(x,y)
-        #curve_red.setData(best_x,best_y)
+            self.parent.curve_red.setData(best_x,best_y)
 
 
 class PyQtGraphWindow(QMainWindow):
@@ -1583,15 +1623,42 @@ class PyQtGraphWindow(QMainWindow):
         self.obj = pg.PlotWidget()
         self.setCentralWidget(self.obj)
         self.curve = self.obj.plot(pen=None, symbol='o', symbolPen=None, symbolSize=4, symbolBrush=('b'))
+        self.curve_red = self.obj.plot(pen=None, symbol='o', symbolPen=None, symbolSize=5, symbolBrush=('r'))
         self.parent = parent
-        print(self.parent.queue_pyqtgraph)
+        self.thread = DataCaptureThread(self)
 
     def start_update(self):
-        self.thread = DataCaptureThread(self)
         self.thread.start()
         self.thread.run()
 
+    def stop_update(self):
+        self.thread.quit()
 
+
+
+class MyMessageBox(QtGui.QMessageBox):
+    def __init__(self):
+        QtGui.QMessageBox.__init__(self)
+        self.setSizeGripEnabled(True)
+
+    def event(self, e):
+        result = QtGui.QMessageBox.event(self, e)
+
+        self.setMinimumHeight(0)
+        self.setMaximumHeight(16777215)
+        self.setMinimumWidth(0)
+        self.setMaximumWidth(16777215)
+        self.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
+
+        textEdit = self.findChild(QtGui.QTextEdit)
+        if textEdit != None :
+            textEdit.setMinimumHeight(0)
+            textEdit.setMaximumHeight(16777215)
+            textEdit.setMinimumWidth(0)
+            textEdit.setMaximumWidth(16777215)
+            textEdit.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
+
+        return result
 
 
 def main(quick_results=False):
