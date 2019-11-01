@@ -325,16 +325,10 @@ class CustomGraphWidget(QWidget):
 
                 z_ar = np.tile(np.array(self.results["TSR"]),(num_columns,1))
                 z_ar = np.transpose(z_ar)
-                print("x array")
-                print(x_ar)
-                print("y array")
-                print(y_ar)
-                print("z array")
-                print(z_ar)
                 try:
                     #p0 = self.ax.plot_trisurf(z_ar.flatten(),x_ar.flatten(),y_ar.flatten(), cmap=plt.cm.CMRmap)
                     p0 = self.ax.scatter(z_ar.flatten(),x_ar.flatten(),y_ar.flatten(),c=y_ar.flatten(),cmap=plt.cm.CMRmap)
-                    cbar = plt.colorbar(p0)
+                    #cbar = plt.colorbar(p0,cax=self.ax)
                 except:
                     print("Cannot plot")
                 xlabel = r"$\lambda$"
