@@ -1290,7 +1290,7 @@ class Analysis(QWidget):
         if not self.main.running:
             self.main.set_process_running()
             self.main.getter.start()
-            self.p = Process(target=calculate_power_3d, args=[self.runner_input])
+            self.p = Process(target=calculate_power_3d, args=[self.runner_input,True])
             self.p.start()
 
     def add_text(self, string):
@@ -1676,7 +1676,7 @@ class TabWidget(QTabWidget):
         return self.tabText(self.currentIndex())
 
 
-def main(quick_results=False):
+def main(quick_results=True):
     if sys.platform.startswith("win"):
         # On Windows calling this function is necessary for multiprocessing.
         multiprocessing.freeze_support()

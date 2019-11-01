@@ -285,10 +285,9 @@ class CustomGraphWidget(QWidget):
 
         x_data = self.inverse_list[str(self.comboBox_x.currentText())]
         y_data = self.inverse_list[str(self.comboBox_y.currentText())]
-        x_ar = self.results[x_data]
-        y_ar = self.results[y_data]
+        x_ar = np.array(self.results[x_data])
+        y_ar = np.array(self.results[y_data])
 
-        flip = False
         legend_r = False
 
         if OUTPUT_VARIABLES_LIST[x_data]["type"] == "array" and OUTPUT_VARIABLES_LIST[y_data]["type"] == "array":
@@ -296,28 +295,82 @@ class CustomGraphWidget(QWidget):
             x_ar = numpy.transpose(x_ar)
             y_ar = numpy.array(y_ar)
             y_ar = numpy.transpose(y_ar)
-            flip = True
+            legend_r = True
+
         elif OUTPUT_VARIABLES_LIST[x_data]["type"] == "array" or OUTPUT_VARIABLES_LIST[y_data]["type"] == "array":
             legend_r = True
 
-        self.ax.plot(x_ar,y_ar)
-        if flip:
-            self.ax.legend(numpy.round(self.results["TSR"],2),title=r"$\lambda$")
-        elif legend_r:
-            self.ax.legend(numpy.round(self.results["TSR"],2),title=r"$\lambda$")
+        draw_3d = True
 
-        self.ax.set_title(OUTPUT_VARIABLES_LIST[y_data]["name"]+" vs. "+OUTPUT_VARIABLES_LIST[x_data]["name"])
-
-        xlabel = OUTPUT_VARIABLES_LIST[x_data]["symbol"]
-        if OUTPUT_VARIABLES_LIST[x_data]["unit"] != "":
-            xlabel = xlabel+" ["+OUTPUT_VARIABLES_LIST[x_data]["unit"]+"]"
-
-        ylabel = OUTPUT_VARIABLES_LIST[y_data]["symbol"]
-        if OUTPUT_VARIABLES_LIST[x_data]["unit"] != "":
-            ylabel = ylabel+" ["+OUTPUT_VARIABLES_LIST[y_data]["unit"]+"]"
+        self.figure.delaxes(self.ax)
         
-        self.ax.set_xlabel(xlabel)
-        self.ax.set_ylabel(ylabel)
+        if legend_r:
+            if draw_3d:
+                self.ax = self.figure.add_subplot(111, projection="3d")
+                #ax = f.add_subplot(whi, projection="3d")
+                num_columns = None
+                if len(x_ar.shape) == 1:
+                    num_columns = y_ar.shape[1]
+                    x_ar = np.array(x_ar)
+                    x_ar = np.tile(x_ar,(num_columns,1))
+                    x_ar = np.transpose(x_ar)
+                if len(y_ar.shape) == 1:
+                    num_columns = x_ar.shape[1]
+                    y_ar = np.array(y_ar)
+                    y_ar = np.tile(y_ar,(num_columns,1))
+                    y_ar = np.transpose(y_ar)
+
+                if num_columns == None:
+                    num_columns = x_ar.shape[1]
+
+                z_ar = np.tile(np.array(self.results["TSR"]),(num_columns,1))
+                z_ar = np.transpose(z_ar)
+                print("x array")
+                print(x_ar)
+                print("y array")
+                print(y_ar)
+                print("z array")
+                print(z_ar)
+                try:
+                    #p0 = self.ax.plot_trisurf(z_ar.flatten(),x_ar.flatten(),y_ar.flatten(), cmap=plt.cm.CMRmap)
+                    p0 = self.ax.scatter(z_ar.flatten(),x_ar.flatten(),y_ar.flatten(),c=y_ar.flatten(),cmap=plt.cm.CMRmap)
+                    cbar = plt.colorbar(p0)
+                except:
+                    print("Cannot plot")
+                xlabel = r"$\lambda$"
+                ylabel = OUTPUT_VARIABLES_LIST[x_data]["symbol"]
+                if OUTPUT_VARIABLES_LIST[x_data]["unit"] != "":
+                    ylabel = ylabel+" ["+OUTPUT_VARIABLES_LIST[x_data]["unit"]+"]"
+
+                zlabel = OUTPUT_VARIABLES_LIST[y_data]["symbol"]
+                if OUTPUT_VARIABLES_LIST[x_data]["unit"] != "":
+                    zlabel = zlabel+" ["+OUTPUT_VARIABLES_LIST[y_data]["unit"]+"]"
+                
+                self.ax.set_xlabel(xlabel)
+                self.ax.set_ylabel(ylabel)
+                self.ax.set_zlabel(zlabel)
+                
+            else:
+                self.ax = self.figure.add_subplot(111)
+                self.ax.plot(x_ar,y_ar)
+                self.ax.legend(numpy.round(self.results["TSR"],2),title=r"$\lambda$")
+        else:
+            self.ax = self.figure.add_subplot(111)
+            self.ax.plot(x_ar,y_ar)
+
+            self.ax.set_title(OUTPUT_VARIABLES_LIST[y_data]["name"]+" vs. "+OUTPUT_VARIABLES_LIST[x_data]["name"])
+
+            xlabel = OUTPUT_VARIABLES_LIST[x_data]["symbol"]
+            if OUTPUT_VARIABLES_LIST[x_data]["unit"] != "":
+                xlabel = xlabel+" ["+OUTPUT_VARIABLES_LIST[x_data]["unit"]+"]"
+
+            ylabel = OUTPUT_VARIABLES_LIST[y_data]["symbol"]
+            if OUTPUT_VARIABLES_LIST[x_data]["unit"] != "":
+                ylabel = ylabel+" ["+OUTPUT_VARIABLES_LIST[y_data]["unit"]+"]"
+            
+            self.ax.set_xlabel(xlabel)
+            self.ax.set_ylabel(ylabel)
+
         self.canvas.draw()
 
     def set_data(self,results):

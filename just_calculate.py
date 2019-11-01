@@ -17,7 +17,7 @@ def simple_calculate():
 	SET_INIT["skewed_wake_correction"] = False
 	SET_INIT["return_print"] = []
 	SET_INIT["return_results"] = []
-	results = calculate_power_3d(SET_INIT,print_progress=False,print_eof=False)
+	results = calculate_power_3d(SET_INIT,print_progress=False)
 	return results
 
 simple_calculate()

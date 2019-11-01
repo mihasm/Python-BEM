@@ -33,7 +33,7 @@ OUTPUT_VARIABLES_LIST = {
     "Re":{"type":"array","name":"Reynolds number","symbol":"Re","unit":""},
     "U1":{"type":"array","name":"Far-upwind speed","symbol":"U1","unit":"m/s"},
     "U2":{"type":"array","name":"Near-upwind speed","symbol":"U2","unit":"m/s"},
-    "U3":{"type":"array","name":"Near-downwind speed","symbol":"U3","unit":"m/s"},
+    #"U3":{"type":"array","name":"Near-downwind speed","symbol":"U3","unit":"m/s"},
     "U4":{"type":"array","name":"Far-downwind speed","symbol":"U4","unit":"m/s"},
 
 
@@ -78,7 +78,6 @@ class Calculator:
             data = self.airfoils[blade_name]["gathered_curves"]
             data = data[np.in1d(data[:,1],ncrit_selected)]
             data = sort_data(data)
-            print(data)
 
             re = data[:, 0].flatten()
             alpha = data[:, 2].flatten()
