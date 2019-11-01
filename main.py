@@ -7,6 +7,7 @@ __email__ = "miha.smrekar9@gmail.com"
 __status__ = "Development"
 
 
+from popravki import METHODS_STRINGS
 from utils import get_centroid_coordinates
 from sw_macro_builder import create_macro_text
 from visualize import create_3d_blade
@@ -51,12 +52,11 @@ import traceback
 import signal
 
 
-
 np.set_printoptions(threshold=sys.maxsize)
 
 
 TITLE_STR = "BEM analiza v%s" % __version__
-from popravki import METHODS_STRINGS
+
 
 class MainWindow(QMainWindow):
     emitter_add = pyqtSignal(str)
@@ -195,11 +195,11 @@ class MainWindow(QMainWindow):
         self.return_print = self.manager.list([])
         self.return_results = self.manager.list([])
         self.queue_pyqtgraph = self.manager.list([])
-        self.end_of_file = self.manager.Value("EOF",False)
+        self.end_of_file = self.manager.Value("EOF", False)
         inp_params = {**settings,
-                    "return_print": self.return_print,
-                    "return_results": self.return_results,
-                    "EOF": self.end_of_file}
+                      "return_print": self.return_print,
+                      "return_results": self.return_results,
+                      "EOF": self.end_of_file}
         return inp_params
 
     def set_process_running(self):
@@ -1053,13 +1053,13 @@ class Analysis(QWidget):
         self.main = self.parent()
 
         self.settings = {"propeller_mode": False, "tip_loss": False, "hub_loss": False, "new_tip_loss": False,
-                         "new_hub_loss": False, "cascade_correction": False,"skewed_wake_correction":False,
+                         "new_hub_loss": False, "cascade_correction": False, "skewed_wake_correction": False,
                          "rotational_augmentation_correction": False, "rotational_augmentation_correction_method": 1,
                          "mach_number_correction": False, "max_iterations": 100, "convergence_limit": 0.001,
                          "rho": 1.225, "method": 10, "linspace_interp": False, "num_interp": 25, "v_min": 3,
                          "v_max": 20, "v_num": 10, "rpm_min": 100, "rpm_max": 3000, "rpm_num": 10, "pitch": 0.0,
                          "relaxation_factor": 0.3, "print_all": False, "print_out": False, "reynolds": 50000,
-                         "fix_reynolds": False,"yaw_angle":0}
+                         "fix_reynolds": False, "yaw_angle": 0}
 
         self.settings_to_name = {"propeller_mode": "Propeller mode", "print_out": "Print final iteration data",
                                  "tip_loss": "Prandtl tip loss", "hub_loss": "Prandtl hub loss",
@@ -1077,7 +1077,7 @@ class Analysis(QWidget):
                                  "rotational_augmentation_correction_method": "Rot. augmentation cor. method",
                                  "fix_reynolds": "Fix Reynolds", "reynolds": "Reynolds",
                                  "mach_number_correction": "Mach number correction", "pitch": "Pitch",
-                                 "yaw_angle":"Yaw angle [°]","skewed_wake_correction":"Skewed Wake Correction"}
+                                 "yaw_angle": "Yaw angle [°]", "skewed_wake_correction": "Skewed Wake Correction"}
 
         self.list_settings_for_updating_tsr = [
             "v_min", "v_max", "v_num", "rpm_min", "rpm_max", "rpm_num"]
@@ -1253,15 +1253,14 @@ class Analysis(QWidget):
         if not self.main.running:
             self.main.set_process_running()
             self.main.getter.start()
-            self.p = Process(target=calculate_power_3d,args=[self.runner_input])
+            self.p = Process(target=calculate_power_3d,
+                             args=[self.runner_input])
             self.p.start()
-
 
     def add_text(self, string):
         if self.buttonEOF.checkState() == 2:
             self.textEdit.moveCursor(QtGui.QTextCursor.End)
         self.textEdit.insertPlainText(string)
-
 
     def clear(self):
         self.textEdit.clear()
@@ -1356,12 +1355,13 @@ class Optimization(QWidget):
         self.opt_variable = QComboBox()
         self.opt_variable.addItems(
             ["Thrust (propeller)", "Torque (Turbine)", "max dQ min dT", "Best pitch"])
-        self.form_list.append([self._opt_variable,self.opt_variable])
+        self.form_list.append([self._opt_variable, self.opt_variable])
 
         self.pitch_optimization = QCheckBox()
         self.pitch_optimization.setChecked(False)
         self._pitch_optimization = QLabel("Pitch optimization")
-        self.form_list.append([self._pitch_optimization,self.pitch_optimization])
+        self.form_list.append(
+            [self._pitch_optimization, self.pitch_optimization])
 
         self.buttonOptimization = QPushButton("Run optimization")
         self.buttonOptimization.clicked.connect(self.run)
@@ -1384,8 +1384,8 @@ class Optimization(QWidget):
         self.fbox = QFormLayout()
         self.left.setLayout(self.fbox)
 
-        for a,b in self.form_list:
-            self.fbox.addRow(a,b)
+        for a, b in self.form_list:
+            self.fbox.addRow(a, b)
 
         self.fbox.addRow(self.buttonOptimization)
         self.fbox.addRow("", QLabel())
@@ -1453,7 +1453,7 @@ class Optimization(QWidget):
 
     def run(self):
         self.clear()
-        
+
         if not self.validate_inputs():
             return
 
@@ -1464,7 +1464,8 @@ class Optimization(QWidget):
             self.main.set_process_running()
             self.runner_input = self.main.get_input_params()
             self.main.getter.start()
-            self.p = Process(target=optimize_angles_genetic,args=[self.runner_input,self.queue_pyqtgraph])
+            self.p = Process(target=optimize_angles_genetic, args=[
+                             self.runner_input, self.queue_pyqtgraph])
             self.p.start()
             self.win.show()
             self.win.start_update()
@@ -1472,7 +1473,7 @@ class Optimization(QWidget):
     def terminate(self):
         self.main.set_process_stopped()
         self.p.terminate()
-        self.main.getter.__del__()
+        self.main.getter.quit()
 
         self.main.emitter_add.disconnect()
         self.main.emitter_done.disconnect()
@@ -1520,7 +1521,6 @@ class Optimization(QWidget):
         self.num_iter.setText(str(inp_dict["num_iter"]))
 
 
-
 class ThreadGetter(QThread):
     def __init__(self, parent):
         super(ThreadGetter, self).__init__(parent)
@@ -1529,24 +1529,9 @@ class ThreadGetter(QThread):
         self.dataCollectionTimer.timeout.connect(self.updateInProc)
 
     def run(self):
-        self.dataCollectionTimer.start(1) #0 causes freeze
+        self.dataCollectionTimer.start(1)  # 0 causes freeze
         self.loop = QtCore.QEventLoop()
         self.loop.exec_()
-
-    def __del__(self):
-        self.wait()
-
-    def run2(self):
-        print("Running Getter.")
-        while True:
-            if len(self.parent().return_print) > 0:
-                t = self.parent().return_print.pop(0)
-                self.parent().emitter_add.emit(str(t))
-            if self.parent().end_of_file.value == True:
-                break
-        print("Getter finished.")
-        self.parent().emitter_done.emit()
-        return
 
     def updateInProc(self):
         if len(self.parent().return_print) > 0:
@@ -1554,6 +1539,77 @@ class ThreadGetter(QThread):
             self.parent().emitter_add.emit(str(t))
         if self.parent().end_of_file.value == True:
             self.parent().emitter_done.emit()
+
+
+class DataCaptureThread(QThread):
+
+    def __init__(self, parent, *args, **kwargs):
+        QThread.__init__(self, parent, *args, **kwargs)
+        self.parent = parent
+        self.dataCollectionTimer = QtCore.QTimer()
+        self.dataCollectionTimer.moveToThread(self)
+        self.dataCollectionTimer.timeout.connect(self.updateInProc)
+
+    def run(self):
+        self.dataCollectionTimer.start(1)  # 0 causes freeze
+        self.loop = QtCore.QEventLoop()
+        self.loop.exec_()
+
+    def updateInProc(self):
+        if len(self.parent.parent.queue_pyqtgraph) > 0:
+            item = self.parent.parent.queue_pyqtgraph.pop()
+            x = item[0]
+            y = item[1]
+            best_x = [item[2]]
+            best_y = [item[3]]
+            self.parent.curve.setData(x, y)
+            self.parent.curve_red.setData(best_x, best_y)
+
+
+class PyQtGraphWindow(QMainWindow):
+    def __init__(self, parent):
+        super(PyQtGraphWindow, self).__init__(parent)
+        self.obj = pg.PlotWidget()
+        self.setCentralWidget(self.obj)
+        self.curve = self.obj.plot(
+            pen=None, symbol='o', symbolPen=None, symbolSize=4, symbolBrush=('b'))
+        self.curve_red = self.obj.plot(
+            pen=None, symbol='o', symbolPen=None, symbolSize=5, symbolBrush=('r'))
+        self.parent = parent
+        self.thread = DataCaptureThread(self)
+
+    def start_update(self):
+        self.thread.start()
+
+    def stop_update(self):
+        self.thread.quit()
+
+
+class MyMessageBox(QtGui.QMessageBox):
+    def __init__(self):
+        QtGui.QMessageBox.__init__(self)
+        self.setSizeGripEnabled(True)
+
+    def event(self, e):
+        result = QtGui.QMessageBox.event(self, e)
+
+        self.setMinimumHeight(0)
+        self.setMaximumHeight(16777215)
+        self.setMinimumWidth(0)
+        self.setMaximumWidth(16777215)
+        self.setSizePolicy(QtGui.QSizePolicy.Expanding,
+                           QtGui.QSizePolicy.Expanding)
+
+        textEdit = self.findChild(QtGui.QTextEdit)
+        if textEdit != None:
+            textEdit.setMinimumHeight(0)
+            textEdit.setMaximumHeight(16777215)
+            textEdit.setMinimumWidth(0)
+            textEdit.setMaximumWidth(16777215)
+            textEdit.setSizePolicy(
+                QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
+
+        return result
 
 
 class TabWidget(QtWidgets.QTabWidget):
@@ -1583,73 +1639,6 @@ class TabWidget(QtWidgets.QTabWidget):
 
     def current_tab_name(self):
         return self.tabText(self.currentIndex())
-
-class DataCaptureThread(QThread):
-
-    def __init__(self,parent, *args, **kwargs):
-        QThread.__init__(self, parent, *args, **kwargs)
-        self.parent = parent
-        self.dataCollectionTimer = QtCore.QTimer()
-        self.dataCollectionTimer.moveToThread(self)
-        self.dataCollectionTimer.timeout.connect(self.updateInProc)
-
-    def run(self):
-        self.dataCollectionTimer.start(1) #0 causes freeze
-        self.loop = QtCore.QEventLoop()
-        self.loop.exec_()
-
-    def updateInProc(self):
-        if len(self.parent.parent.queue_pyqtgraph)>0:
-            item = self.parent.parent.queue_pyqtgraph.pop()
-            x = item[0]
-            y = item[1]
-            best_x = [item[2]]
-            best_y = [item[3]]
-            self.parent.curve.setData(x,y)
-            self.parent.curve_red.setData(best_x,best_y)
-
-
-class PyQtGraphWindow(QMainWindow):
-    def __init__(self, parent):
-        super(PyQtGraphWindow, self).__init__(parent)
-        self.obj = pg.PlotWidget()
-        self.setCentralWidget(self.obj)
-        self.curve = self.obj.plot(pen=None, symbol='o', symbolPen=None, symbolSize=4, symbolBrush=('b'))
-        self.curve_red = self.obj.plot(pen=None, symbol='o', symbolPen=None, symbolSize=5, symbolBrush=('r'))
-        self.parent = parent
-        self.thread = DataCaptureThread(self)
-
-    def start_update(self):
-        self.thread.start()
-
-    def stop_update(self):
-        self.thread.quit()
-
-
-
-class MyMessageBox(QtGui.QMessageBox):
-    def __init__(self):
-        QtGui.QMessageBox.__init__(self)
-        self.setSizeGripEnabled(True)
-
-    def event(self, e):
-        result = QtGui.QMessageBox.event(self, e)
-
-        self.setMinimumHeight(0)
-        self.setMaximumHeight(16777215)
-        self.setMinimumWidth(0)
-        self.setMaximumWidth(16777215)
-        self.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
-
-        textEdit = self.findChild(QtGui.QTextEdit)
-        if textEdit != None :
-            textEdit.setMinimumHeight(0)
-            textEdit.setMaximumHeight(16777215)
-            textEdit.setMinimumWidth(0)
-            textEdit.setMaximumWidth(16777215)
-            textEdit.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
-
-        return result
 
 
 def main(quick_results=False):
