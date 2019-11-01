@@ -48,6 +48,7 @@ import os
 import pyqtgraph as pg
 from functools import partial
 import traceback
+import signal
 
 
 
@@ -193,22 +194,27 @@ class MainWindow(QMainWindow):
             return None
         self.return_print = self.manager.list([])
         self.return_results = self.manager.list([])
-        self.end_of_file = False
-        inp_params = {**settings, "return_print": self.return_print, "return_results": self.return_results,
-                      "EOF": self.end_of_file}
+        self.queue_pyqtgraph = self.manager.list([])
+        self.end_of_file = self.manager.Value("EOF",False)
+        inp_params = {**settings,
+                    "return_print": self.return_print,
+                    "return_results": self.return_results,
+                    "EOF": self.end_of_file}
         return inp_params
 
-    def set_buttons_running(self):
+    def set_process_running(self):
         self.analysis.buttonRun.setEnabled(False)
-        self.optimization.buttonAngles.setEnabled(False)
+        self.optimization.buttonOptimization.setEnabled(False)
         self.analysis.buttonStop.setEnabled(True)
         self.optimization.buttonStop.setEnabled(True)
+        self.running = True
 
-    def set_buttons_await(self):
+    def set_process_stopped(self):
         self.analysis.buttonRun.setEnabled(True)
-        self.optimization.buttonAngles.setEnabled(True)
+        self.optimization.buttonOptimization.setEnabled(True)
         self.analysis.buttonStop.setEnabled(False)
         self.optimization.buttonStop.setEnabled(False)
+        self.running = False
 
 
 class WindTurbineProperties(QWidget):
@@ -731,7 +737,6 @@ class MatplotlibWindow(QWidget):
         self.toolbar = NavigationToolbar(self.canvas, self)
         self.layout.addWidget(self.canvas)
         self.layout.addWidget(self.toolbar)
-        # self.ax = self.figure.add_subplot(111)
         self.show()
 
 
@@ -1220,8 +1225,7 @@ class Analysis(QWidget):
                 elif isinstance(item, QCheckBox):
                     item.setChecked(inp_dict[name])
 
-    def run(self):
-        self.clear()
+    def validate_inputs(self):
         check = self.check_forms()
         if check != True:
             msg = MyMessageBox()
@@ -1229,71 +1233,62 @@ class Analysis(QWidget):
             msg.setText("Input validation error.")
             msg.setDetailedText(check)
             msg.exec_()
+        return check
+
+    def run(self):
+        self.clear()
+
+        if not self.validate_inputs():
+            return
+
+        self.runner_input = self.main.get_input_params()
+
+        if self.runner_input == None:
+            print("No settings fetched... Exiting.")
             return
 
         self.main.emitter_add.connect(self.add_text)
-        self.main.emitter_done.connect(self.done)
+        self.main.emitter_done.connect(self.terminate)
 
         if not self.main.running:
-            self.main.set_buttons_running()
-            self.main.running = True
-            self.runner_input = self.main.get_input_params()
-            if self.runner_input == None:
-                print("No settings fetched... Terminating.")
-                self.terminate()
-                return self.done(True)
+            self.main.set_process_running()
             self.main.getter.start()
-            self.p = Process(target=calculate_power_3d,
-                             args=[self.runner_input])
+            self.p = Process(target=calculate_power_3d,args=[self.runner_input])
             self.p.start()
-        else:
-            msg = MyMessageBox()
-            msg.setIcon(QMessageBox.Warning)
-            msg.setText("Cannot run while existing operation is running")
-            msg.setInformativeText(
-                "The program detected that an existing operation is running.")
-            msg.setWindowTitle("Runtime error")
-            msg.setDetailedText("Currently tha value MainWindow.running is %s, \
-                it should be False." % str(self.main.running))
-            msg.exec_()
+
 
     def add_text(self, string):
-        self.textEdit.insertPlainText(string)
         if self.buttonEOF.checkState() == 2:
             self.textEdit.moveCursor(QtGui.QTextCursor.End)
+        self.textEdit.insertPlainText(string)
 
-    def done(self, terminated=False):
-        self.main.emitter_add.disconnect()
-        self.main.emitter_done.disconnect()
-        self.main.set_buttons_await()
-        self.main.running = False
-        self.main.getter.__del__()
-        if not terminated:
-            self.p.join()
-            if len(self.main.return_results) > 0:
-                results = self.main.return_results[-1]
-                if "v" in results:
-                    if len(results["v"]) > 0:
-                        inp_params = self.runner_input
-                        self.r = ResultsWindow(
-                            None, self.main.screen_width, self.main.screen_width, results, inp_params, )
-                    else:
-                        print("Not enough points to print results...")
-                else:
-                    print("No results to print...")
 
     def clear(self):
         self.textEdit.clear()
 
     def terminate(self):
-        if hasattr(self, "p"):
-            if self.p.is_alive():
-                self.p.terminate()
-                self.main.running = False
-                self.main.getter.__del__()
+        self.p.terminate()
 
-                # change to self.done(True), if you dont want to see already calculated points
-                self.done(False)
+        self.main.set_process_stopped()
+        self.main.getter.quit()
+
+        self.main.emitter_add.disconnect()
+        self.main.emitter_done.disconnect()
+
+        self.show_results()
+
+    def show_results(self):
+        if len(self.main.return_results) > 0:
+            results = self.main.return_results[-1]
+            if "v" in results:
+                if len(results["v"]) > 0:
+                    inp_params = self.runner_input
+                    self.r = ResultsWindow(
+                        None, self.main.screen_width, self.main.screen_width, results, inp_params, )
+                else:
+                    print("Not enough points to print results...")
+            else:
+                print("No results to print...")
 
 
 class Optimization(QWidget):
@@ -1368,8 +1363,8 @@ class Optimization(QWidget):
         self._pitch_optimization = QLabel("Pitch optimization")
         self.form_list.append([self._pitch_optimization,self.pitch_optimization])
 
-        self.buttonAngles = QPushButton("Run optimization")
-        self.buttonAngles.clicked.connect(self.run)
+        self.buttonOptimization = QPushButton("Run optimization")
+        self.buttonOptimization.clicked.connect(self.run)
 
         self.buttonStop = QPushButton("Stop")
         self.buttonStop.clicked.connect(self.terminate)
@@ -1392,13 +1387,15 @@ class Optimization(QWidget):
         for a,b in self.form_list:
             self.fbox.addRow(a,b)
 
-        self.fbox.addRow(self.buttonAngles)
+        self.fbox.addRow(self.buttonOptimization)
         self.fbox.addRow("", QLabel())
 
         self.fbox.addRow(self.buttonClear, self.buttonStop)
         self.fbox.addRow(self.buttonEOFdescription, self.buttonEOF)
 
         self.win = PyQtGraphWindow(self)
+        self.manager_pyqtgraph = Manager()
+        self.queue_pyqtgraph = self.manager_pyqtgraph.list()
 
     def check_forms_angles(self):
         out = ""
@@ -1429,8 +1426,7 @@ class Optimization(QWidget):
             color = "#f6989d"  # red
         sender.setStyleSheet("QLineEdit { background-color: %s }" % color)
 
-    def run(self,optimization_type):
-        self.clear()
+    def validate_inputs(self):
         check = self.check_forms_angles()
         check_analysis = self.main.analysis.check_forms()
         if check != True or check_analysis != True:
@@ -1444,32 +1440,8 @@ class Optimization(QWidget):
             msg.setText("Input validation error")
             msg.setDetailedText(check)
             msg.exec_()
-            return
-
-        self.main.emitter_add.connect(self.add_text)
-        self.main.emitter_done.connect(self.done)
-
-        if not self.main.running:
-            self.main.set_buttons_running()
-            self.main.running = True
-            self.runner_input = self.main.get_input_params()
-            self.main.getter.start()
-            self.manager_pyqtgraph = Manager()
-            self.queue_pyqtgraph = self.manager_pyqtgraph.list()
-            self.p = Process(target=optimize_angles_genetic,
-                             args=[self.runner_input,self.queue_pyqtgraph])
-            self.p.start()
-            self.win.show()
-            self.win.start_update()
-        else:
-            msg = MyMessageBox()
-            msg.setIcon(QMessageBox.Warning)
-            msg.setText("Cannot run while existing operation is running")
-            msg.setInformativeText(
-                "The program detected that an existing operation is running.")
-            msg.setWindowTitle("Runtime error")
-            msg.setDetailedText("Currently tha value MainWindow.running is %s, \
-                it should be False." % str(self.main.running))
+            return False
+        return True
 
     def clear(self):
         self.textEdit.clear()
@@ -1479,26 +1451,33 @@ class Optimization(QWidget):
         if self.buttonEOF.checkState() == 2:
             self.textEdit.moveCursor(QtGui.QTextCursor.End)
 
-    def run_pitch(self):
-        self.run(True)
+    def run(self):
+        self.clear()
+        
+        if not self.validate_inputs():
+            return
+
+        self.main.emitter_add.connect(self.add_text)
+        self.main.emitter_done.connect(self.terminate)
+
+        if not self.main.running:
+            self.main.set_process_running()
+            self.runner_input = self.main.get_input_params()
+            self.main.getter.start()
+            self.p = Process(target=optimize_angles_genetic,args=[self.runner_input,self.queue_pyqtgraph])
+            self.p.start()
+            self.win.show()
+            self.win.start_update()
 
     def terminate(self):
-        if hasattr(self, "p"):
-            if self.p.is_alive():
-                self.p.terminate()
-                self.main.running = False
-                self.main.getter.__del__()
-                self.done(True)
+        self.main.set_process_stopped()
+        self.p.terminate()
+        self.main.getter.__del__()
 
-    def done(self, terminated=False):
         self.main.emitter_add.disconnect()
         self.main.emitter_done.disconnect()
-        self.main.set_buttons_await()
-        self.main.running = False
-        self.main.getter.__del__()
+
         self.win.stop_update()
-        if not terminated:
-            self.p.join()
 
     def get_settings(self):
         out = {}
@@ -1541,26 +1520,40 @@ class Optimization(QWidget):
         self.num_iter.setText(str(inp_dict["num_iter"]))
 
 
+
 class ThreadGetter(QThread):
     def __init__(self, parent):
         super(ThreadGetter, self).__init__(parent)
+        self.dataCollectionTimer = QtCore.QTimer()
+        self.dataCollectionTimer.moveToThread(self)
+        self.dataCollectionTimer.timeout.connect(self.updateInProc)
+
+    def run(self):
+        self.dataCollectionTimer.start(1) #0 causes freeze
+        self.loop = QtCore.QEventLoop()
+        self.loop.exec_()
 
     def __del__(self):
         self.wait()
 
-    def run(self):
+    def run2(self):
         print("Running Getter.")
         while True:
             if len(self.parent().return_print) > 0:
                 t = self.parent().return_print.pop(0)
                 self.parent().emitter_add.emit(str(t))
-                if "!!!!EOF!!!!" in t:
-                    self.parent().emitter_done.emit()
-                    break
-            if self.parent().running == False:
+            if self.parent().end_of_file.value == True:
                 break
         print("Getter finished.")
+        self.parent().emitter_done.emit()
         return
+
+    def updateInProc(self):
+        if len(self.parent().return_print) > 0:
+            t = self.parent().return_print.pop(0)
+            self.parent().emitter_add.emit(str(t))
+        if self.parent().end_of_file.value == True:
+            self.parent().emitter_done.emit()
 
 
 class TabWidget(QtWidgets.QTabWidget):
@@ -1593,9 +1586,8 @@ class TabWidget(QtWidgets.QTabWidget):
 
 class DataCaptureThread(QThread):
 
-    def __init__(self,parent):
-        #QThread.__init__(self, *args, **kwargs)
-        super(DataCaptureThread,self).__init__(parent)
+    def __init__(self,parent, *args, **kwargs):
+        QThread.__init__(self, parent, *args, **kwargs)
         self.parent = parent
         self.dataCollectionTimer = QtCore.QTimer()
         self.dataCollectionTimer.moveToThread(self)
@@ -1629,7 +1621,6 @@ class PyQtGraphWindow(QMainWindow):
 
     def start_update(self):
         self.thread.start()
-        self.thread.run()
 
     def stop_update(self):
         self.thread.quit()

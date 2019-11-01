@@ -257,8 +257,10 @@ class CustomGraphWidget(QWidget):
 
         self.comboBox_x = QComboBox(self)
         self.comboBox_y = QComboBox(self)
+
         self.layout.addWidget(self.comboBox_x)
         self.layout.addWidget(self.comboBox_y)
+
         self.inverse_list = {}
         list_of_options = []
         for k,v in OUTPUT_VARIABLES_LIST.items():
@@ -269,9 +271,12 @@ class CustomGraphWidget(QWidget):
             self.comboBox_x.addItem(l)
             self.comboBox_y.addItem(l)
 
-        self.button_draw = QPushButton("Draw")
-        self.layout.addWidget(self.button_draw)
-        self.button_draw.clicked.connect(self.draw_graph)
+        #self.button_draw = QPushButton("Draw")
+        #self.layout.addWidget(self.button_draw)
+        #self.button_draw.clicked.connect(self.draw_graph)
+
+        self.comboBox_x.currentTextChanged.connect(self.draw_graph)
+        self.comboBox_y.currentTextChanged.connect(self.draw_graph)
 
         self.setLayout(self.layout)
 

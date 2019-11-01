@@ -103,8 +103,9 @@ def calculate_power_3d(inp_args, print_eof=True, prepend="", print_progress=True
                 p.print("")
 
     return_results.append(results_3d)
-    if print_eof:
-        p.print("!!!!EOF!!!!")
+    #if print_eof:
+    #    p.print("!!!!EOF!!!!")
+    inp_args["EOF"].value = True
     return results_3d
 
 
