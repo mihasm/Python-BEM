@@ -73,8 +73,12 @@ class Calculator:
             generate_dat(
                 blade_name, self.airfoils[blade_name]["x"], self.airfoils[blade_name]["y"])
 
+            ncrit_selected = self.airfoils[blade_name]["ncrit_selected"]
+
             data = self.airfoils[blade_name]["gathered_curves"]
+            data = data[np.in1d(data[:,1],ncrit_selected)]
             data = sort_data(data)
+            print(data)
 
             re = data[:, 0].flatten()
             alpha = data[:, 2].flatten()

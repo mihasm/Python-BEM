@@ -14,7 +14,7 @@ desktop.ini
 
 /export/*
 
-.idea/
+/.idea/
 
 # User-specific stuff
 .idea/**/workspace.xml

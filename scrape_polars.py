@@ -50,7 +50,7 @@ def get_polars(link):
                            for i in lines if "Reynolds number," in i][0]
         ncrit = [float(i.split(",")[1]) for i in lines if "Ncrit," in i][0]
         mach = [float(i.split(",")[1]) for i in lines if "Mach," in i][0]
-        # print(ncrit)
+
         for line_num in range(start + 1, len(lines)):
             alpha, cl, cd = None, None, None
             alpha, cl, cd = lines[line_num].split(",")[:3]
@@ -62,5 +62,3 @@ def get_polars(link):
             results[reynolds_number][ncrit][alpha] = {"cl": cl, "cd": cd}
 
     return results
-
-# get_polars("http://airfoiltools.com/airfoil/details?airfoil=s826-nr")

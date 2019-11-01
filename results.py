@@ -281,7 +281,6 @@ class CustomGraphWidget(QWidget):
         self.setLayout(self.layout)
 
     def draw_graph(self):
-        print("draw_graph")
         self.ax.clear()
 
         x_data = self.inverse_list[str(self.comboBox_x.currentText())]

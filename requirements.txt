@@ -1,3 +1,4 @@
+pyqtgraph
 beautifulsoup4
 cycler
 requests

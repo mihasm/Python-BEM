@@ -132,8 +132,8 @@ def de2(function, bounds, M=0.8, num_individuals=30, iterations=50, printer=None
     Output:
     return:float:Individual with the highest fitness.
     """
+
     p = printer
-    #p.print("queue2",queue)
     dimensions = len(bounds)
     min_bound, max_bound = np.asarray(bounds).T
     population = np.random.uniform(
@@ -162,10 +162,7 @@ def de2(function, bounds, M=0.8, num_individuals=30, iterations=50, printer=None
                 if f > fitness[best_i]:
                     best_i = j
                     best = trial
-                    #print(population[j][0],fitness[j])
             queue.insert(0,[population.flatten(),fitness,population[best_i][0],fitness[best_i]])
-        #p.print("There are",len(set(population.flatten())),"unique members in population.")
-        #p.print("population",population.flatten())
         if len(set(population.flatten())) == 1:
             break
         p.print(best)
