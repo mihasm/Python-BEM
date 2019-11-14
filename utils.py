@@ -5,6 +5,12 @@ from numpy import array
 import os
 
 from PyQt5.QtGui import QPalette, QColor
+from PyQt5.QtWidgets import (QComboBox, QMainWindow, QPushButton, QTextEdit, QWidget, QFormLayout, QLabel, QLineEdit,
+                             QGridLayout, QCheckBox, QStyleFactory, QMessageBox, QAction, QFileDialog, QSlider,
+                             QTabWidget, QApplication, QScrollArea, QVBoxLayout)
+from PyQt5 import QtCore, QtGui
+from PyQt5.QtCore import QThread, QTextStream, pyqtSignal, QProcess, QRect, Qt
+import traceback
 
 
 def transpose(a):
@@ -376,3 +382,35 @@ def get_centroid_coordinates(foil_x, foil_y):
     centroid = (numpy.sum(foil_x) / len(foil_x),
                 numpy.sum(foil_y) / len(foil_y))
     return centroid
+
+class MyMessageBox(QMessageBox):
+    def __init__(self):
+        QtGui.QMessageBox.__init__(self)
+        self.setSizeGripEnabled(True)
+
+    def event(self, e):
+        result = QtGui.QMessageBox.event(self, e)
+
+        self.setMinimumHeight(0)
+        self.setMaximumHeight(16777215)
+        self.setMinimumWidth(0)
+        self.setMaximumWidth(16777215)
+        self.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
+
+        textEdit = self.findChild(QtGui.QTextEdit)
+        if textEdit != None:
+            textEdit.setMinimumHeight(0)
+            textEdit.setMaximumHeight(16777215)
+            textEdit.setMinimumWidth(0)
+            textEdit.setMaximumWidth(16777215)
+            textEdit.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
+
+        return result
+
+def ErrorMessageBox():
+    msg = MyMessageBox()
+    msg.setIcon(QMessageBox.Warning)
+    msg.setText("Error while getting settings")
+    var = traceback.format_exc()
+    msg.setDetailedText(str(var))
+    msg.exec_()

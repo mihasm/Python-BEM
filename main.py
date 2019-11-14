@@ -17,7 +17,7 @@ from polars import scrape_data
 from interpolator import interp_at
 from utils import interpolate_geom, to_float, fltr
 from optimization import optimize_angles_genetic
-from utils import interpolate_geom, to_float, fltr, QDarkPalette, create_folder
+from utils import interpolate_geom, to_float, fltr, QDarkPalette, create_folder, ErrorMessageBox, MyMessageBox
 from turbine_data import SET_INIT
 from table import Table
 from results import ResultsWindow
@@ -474,34 +474,6 @@ class AirfoilManager(QWidget):
                     self.tab_widget.add_tab(curve_widget, c_name)
 
 
-class PopupText(QWidget):
-    def __init__(self, message="message", default_str="", emitter=None):
-        QWidget.__init__(self)
-
-        self.emitter = emitter
-
-        self.layout = QGridLayout()
-        self.setLayout(self.layout)
-
-        self.message = QLabel(message)
-
-        self.layout.addWidget(self.message, 0, 0)
-
-        self.inp = QLineEdit()
-        self.inp.setText(default_str)
-        self.layout.addWidget(self.inp, 1, 0)
-
-        self.button = QPushButton("OK")
-        self.button.clicked.connect(self.send_signal)
-        self.layout.addWidget(self.button, 2, 0)
-
-    def send_signal(self):
-        if self.emitter != None:
-            self.emitter.emit(self.inp.text())
-            self.emitter.disconnect()
-        self.close()
-
-
 class Airfoils(QWidget):
     def __init__(self, airfoil_name, parent=None):
         super(Airfoils, self).__init__(parent)
@@ -594,6 +566,7 @@ class Airfoils(QWidget):
     def visualize(self):
         print("Visualizing")
         data = self.curves.gather_curves()
+        data = data[np.in1d(data[:,1],float(self.ncrit_selection.currentText()))] #current Ncrit
 
         re = data[:, 0]
         alpha = data[:, 2]
@@ -781,20 +754,6 @@ class Airfoils(QWidget):
         self.refresh()
 
 
-class MatplotlibWindow(QWidget):
-    def __init__(self):
-        super(MatplotlibWindow, self).__init__(None)
-        self.layout = QGridLayout()
-        self.setLayout(self.layout)
-        self.figure = plt.figure(figsize=(10, 5))
-        self.canvas = FigureCanvas(self.figure)
-        self.canvas.setMinimumSize(500, 500)
-        self.toolbar = NavigationToolbar(self.canvas, self)
-        self.layout.addWidget(self.canvas)
-        self.layout.addWidget(self.toolbar)
-        self.show()
-
-
 class Curves:
     def __init__(self):
         self.curve_list = []
@@ -886,12 +845,10 @@ class Curve:
                 cl = f_cl(a)
             except ValueError:
                 cl = _cl[i]
-            # try:
-            #     cd = f_cd(a)
-            # except ValueError:
-            #     cd = _cd[i]
-            # tukaj vzamem  samo Montgomerie interpolacijo cd, za lazjo interpolacijo
-            cd = _cd[i]
+            try:
+                cd = f_cd(a)
+            except ValueError:
+                cd = _cd[i]
             cl_out.append(cl)
             cd_out.append(cd)
         return _alpha, cl_out, cd_out
@@ -1614,37 +1571,46 @@ class PyQtGraphWindow(QMainWindow):
         self.thread.quit()
 
 
-class MyMessageBox(QtGui.QMessageBox):
+class PopupText(QWidget):
+    def __init__(self, message="message", default_str="", emitter=None):
+        QWidget.__init__(self)
+
+        self.emitter = emitter
+
+        self.layout = QGridLayout()
+        self.setLayout(self.layout)
+
+        self.message = QLabel(message)
+
+        self.layout.addWidget(self.message, 0, 0)
+
+        self.inp = QLineEdit()
+        self.inp.setText(default_str)
+        self.layout.addWidget(self.inp, 1, 0)
+
+        self.button = QPushButton("OK")
+        self.button.clicked.connect(self.send_signal)
+        self.layout.addWidget(self.button, 2, 0)
+
+    def send_signal(self):
+        if self.emitter != None:
+            self.emitter.emit(self.inp.text())
+            self.emitter.disconnect()
+        self.close()
+
+
+class MatplotlibWindow(QWidget):
     def __init__(self):
-        QtGui.QMessageBox.__init__(self)
-        self.setSizeGripEnabled(True)
-
-    def event(self, e):
-        result = QtGui.QMessageBox.event(self, e)
-
-        self.setMinimumHeight(0)
-        self.setMaximumHeight(16777215)
-        self.setMinimumWidth(0)
-        self.setMaximumWidth(16777215)
-        self.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
-
-        textEdit = self.findChild(QtGui.QTextEdit)
-        if textEdit != None:
-            textEdit.setMinimumHeight(0)
-            textEdit.setMaximumHeight(16777215)
-            textEdit.setMinimumWidth(0)
-            textEdit.setMaximumWidth(16777215)
-            textEdit.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
-
-        return result
-
-def ErrorMessageBox():
-    msg = MyMessageBox()
-    msg.setIcon(QMessageBox.Warning)
-    msg.setText("Error while getting settings")
-    var = traceback.format_exc()
-    msg.setDetailedText(str(var))
-    msg.exec_()
+        super(MatplotlibWindow, self).__init__(None)
+        self.layout = QGridLayout()
+        self.setLayout(self.layout)
+        self.figure = plt.figure(figsize=(10, 5))
+        self.canvas = FigureCanvas(self.figure)
+        self.canvas.setMinimumSize(500, 500)
+        self.toolbar = NavigationToolbar(self.canvas, self)
+        self.layout.addWidget(self.canvas)
+        self.layout.addWidget(self.toolbar)
+        self.show()
 
 
 class TabWidget(QTabWidget):

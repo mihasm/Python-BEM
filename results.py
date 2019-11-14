@@ -12,7 +12,7 @@ from matplotlib.figure import Figure
 
 from calculation_runner import max_calculate
 from table import Table
-from utils import sort_xy, dict_to_ar
+from utils import sort_xy, dict_to_ar, ErrorMessageBox, MyMessageBox
 
 from calculation import OUTPUT_VARIABLES_LIST
 
@@ -330,7 +330,8 @@ class CustomGraphWidget(QWidget):
                     p0 = self.ax.scatter(z_ar.flatten(),x_ar.flatten(),y_ar.flatten(),c=y_ar.flatten(),cmap=plt.cm.CMRmap)
                     #cbar = plt.colorbar(p0,cax=self.ax)
                 except:
-                    print("Cannot plot")
+                    msg = MyMessageBox()
+                
                 xlabel = r"$\lambda$"
                 ylabel = OUTPUT_VARIABLES_LIST[x_data]["symbol"]
                 if OUTPUT_VARIABLES_LIST[x_data]["unit"] != "":
