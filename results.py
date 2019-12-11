@@ -1,4 +1,5 @@
 import numpy
+import warnings
 from PyQt5 import QtWidgets
 from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import (QComboBox, QMainWindow, QPushButton, QTextEdit, QWidget, QFormLayout,
@@ -16,11 +17,15 @@ from utils import sort_xy, dict_to_ar, ErrorMessageBox, MyMessageBox
 
 from calculation import OUTPUT_VARIABLES_LIST
 
+import matplotlib.cbook
+warnings.filterwarnings("ignore",category=matplotlib.cbook.MatplotlibDeprecationWarning)
+
+
 
 class ResultsWindow(QMainWindow):
     def __init__(self, parent, width, height, results_3d, input_data):
         super(ResultsWindow, self).__init__(parent)
-        self.title = "Rezultati"
+        self.title = "Results"
         self.screen_width = width
         self.screen_height = height
         self.setWindowTitle(self.title)
@@ -50,7 +55,7 @@ class ResultsWindow(QMainWindow):
         ########### Ct(a) curve ####################
         f3 = self.tab_widget.add_tab_figure("Ct_r(a) curve")
         ax_ct_r = self.tab_widget.add_2d_plot_to_figure(f3, results_3d["a"], results_3d["Ct"], 111, "", "a", r"$C_{T_r}$",
-                                                        look="o", x_min=0, x_max=1)
+                                                        look="o", x_min=0, x_max=1, label="Ct curve")
         leg = ax_ct_r.legend(
             np.round(np.array(results_3d["TSR"]), 2), fontsize=20)
         leg.set_title(r"$\lambda$", prop={'size': 20})
@@ -61,7 +66,7 @@ class ResultsWindow(QMainWindow):
         if len(set(X)) >= 3 and len(set(Y)) >= 3:
             f4 = self.tab_widget.add_tab_figure("3D power")
             self.tab_widget.add_surface_plot(
-                f4, X, Y, Z, 111, "Power (windspeed,RPM)", "windspeed[m/s]", "RPM", "Power [W]")
+                f4, X, Y, Z, 111, "Power (windspeed,RPM)", "windspeed[m/s]", "RPM", "Power [W]", label="Power")
         ############################################
 
         ########## PROPELLER PLOTS #################
@@ -88,14 +93,14 @@ class ResultsWindow(QMainWindow):
                                             np.degrees(
                                                 np.array(results_3d["alpha"]).flatten()),
                                             np.array(results_3d["cL"]).flatten(), 111, "Title", "Re", "alpha[deg]",
-            "cL")
+            "cL", label="Used lift coefficient")
         ############################################
 
         ########## U4 (r) ##########################
         f8 = self.tab_widget.add_tab_figure("Windspeed (radius)")
         for _u in results_3d['U4']:
             ax2 = self.tab_widget.add_2d_plot_to_figure(
-                f8, _u, input_data['r'], 111, '', r'$v_4$ [m/s]', 'r [m]', look="-", c=numpy.random.rand(3,))
+                f8, _u, input_data['r'], 111, '', r'$v_4$ [m/s]', 'r [m]', look="-", c=numpy.random.rand(3,), label="Windspeed far away behind"+str(_u))
         leg_hitrosti = ax2.legend(np.round(np.array(results_3d["TSR"]), 2))
         leg_hitrosti.set_title(r"$\lambda$", prop={'size': 20})
         ############################################
@@ -189,9 +194,9 @@ class TabWidget(QtWidgets.QTabWidget):
         return ax
 
     def add_surface_plot(self, f, x, y, z, whi, title=None, x_name=None, y_name=None, z_name=None, x_min=None,
-                         x_max=None, y_min=None, y_max=None, z_min=None, z_max=None, legend=False, ):
+                         x_max=None, y_min=None, y_max=None, z_min=None, z_max=None, legend=False, **kwargs):
         ax = f.add_subplot(whi, projection="3d")
-        p0 = ax.plot_trisurf(x, y, z, cmap=plt.cm.CMRmap)
+        p0 = ax.plot_trisurf(x, y, z, cmap=plt.cm.CMRmap, **kwargs)
         cbar = plt.colorbar(p0)
 
         if title:
@@ -212,9 +217,9 @@ class TabWidget(QtWidgets.QTabWidget):
         self.canvas[-1].draw()
 
     def add_3d_scatter_plot(self, f, x, y, z, whi, title=None, x_name=None, y_name=None, z_name=None, x_min=None,
-                            x_max=None, y_min=None, y_max=None, z_min=None, z_max=None, legend=False, ):
+                            x_max=None, y_min=None, y_max=None, z_min=None, z_max=None, legend=False, label=None):
         ax = f.add_subplot(whi, projection="3d")
-        p0 = ax.scatter(x, y, z, cmap=plt.cm.CMRmap)
+        p0 = ax.scatter(x, y, z, cmap=plt.cm.CMRmap, label=label)
         # cbar = plt.colorbar(p0)
 
         if title:
@@ -306,7 +311,7 @@ class CustomGraphWidget(QWidget):
         
         if legend_r:
             if draw_3d:
-                self.ax = self.figure.add_subplot(111, projection="3d")
+                self.ax = self.figure.add_subplot(111, projection="3d", label="3d plot")
                 #ax = f.add_subplot(whi, projection="3d")
                 num_columns = None
                 if len(x_ar.shape) == 1:
@@ -327,7 +332,7 @@ class CustomGraphWidget(QWidget):
                 z_ar = np.transpose(z_ar)
                 try:
                     #p0 = self.ax.plot_trisurf(z_ar.flatten(),x_ar.flatten(),y_ar.flatten(), cmap=plt.cm.CMRmap)
-                    p0 = self.ax.scatter(z_ar.flatten(),x_ar.flatten(),y_ar.flatten(),c=y_ar.flatten(),cmap=plt.cm.CMRmap)
+                    p0 = self.ax.scatter(z_ar.flatten(),x_ar.flatten(),y_ar.flatten(),c=y_ar.flatten(),cmap=plt.cm.CMRmap, label="3d plot")
                     #cbar = plt.colorbar(p0,cax=self.ax)
                 except:
                     msg = MyMessageBox()
@@ -347,11 +352,11 @@ class CustomGraphWidget(QWidget):
                 
             else:
                 self.ax = self.figure.add_subplot(111)
-                self.ax.plot(x_ar,y_ar)
+                self.ax.plot(x_ar,y_ar,label="2d plot")
                 self.ax.legend(numpy.round(self.results["TSR"],2),title=r"$\lambda$")
         else:
             self.ax = self.figure.add_subplot(111)
-            self.ax.plot(x_ar,y_ar)
+            self.ax.plot(x_ar,y_ar,label="2d plot")
 
             self.ax.set_title(OUTPUT_VARIABLES_LIST[y_data]["name"]+" vs. "+OUTPUT_VARIABLES_LIST[x_data]["name"])
 
