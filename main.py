@@ -558,6 +558,10 @@ class Airfoils(QWidget):
         self.centroid_grid.addWidget(self.centroid_x_edit, 1, 2)
         self.centroid_grid.addWidget(self.centroid_y_edit, 1, 3)
 
+        self.grid.setColumnStretch(1, 1)
+        self.grid.setColumnStretch(2, 1)
+        self.grid.setColumnStretch(3, 2)
+
         self.ncrit_selection = QComboBox()
         self._ncrit_selection = QLabel("Ncrit")
         self.fbox.addRow(self._ncrit_selection,self.ncrit_selection)
