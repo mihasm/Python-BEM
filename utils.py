@@ -196,7 +196,7 @@ def interpolate_geom(r, c, theta, foils, num=None, linspace_interp=False):
     foils_orig = foils.copy()
     foils_orig = transitions_to_nearest_profiles(r_orig, foils_orig)
     if linspace_interp:
-        r = numpy.linspace(start=r[0], stop=r[-1], num=num + 1)
+        r = numpy.linspace(start=r[0], stop=r[-1], num=int(num) + 1)
         c = c_interpolator(r)
         theta = theta_interpolator(r)
         foils = []

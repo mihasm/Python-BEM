@@ -57,9 +57,9 @@ def calculate_power_3d(inp_args, print_eof=False, prepend="", print_progress=Tru
     return_results = inp_args["return_results"]
     results_3d = {}
     speeds = list(numpy.linspace(
-        start=inp_args["v_min"], stop=inp_args["v_max"], num=inp_args["v_num"]))
+        start=inp_args["v_min"], stop=inp_args["v_max"], num=int(inp_args["v_num"])))
     rpms = list(numpy.linspace(
-        start=inp_args["rpm_min"], stop=inp_args["rpm_max"], num=inp_args["rpm_num"], ))
+        start=inp_args["rpm_min"], stop=inp_args["rpm_max"], num=int(inp_args["rpm_num"])))
     total_iterations = int(len(speeds) * len(rpms))
     i = 0
 

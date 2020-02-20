@@ -1263,7 +1263,10 @@ class Analysis(QWidget):
         self.textEdit.clear()
 
     def terminate(self):
-        self.p.terminate()
+        try:
+            self.p.terminate()
+        except:
+            pass
 
         self.main.set_process_stopped()
         self.main.getter.quit()
@@ -1459,12 +1462,15 @@ class Optimization(QWidget):
             self.main.getter.start()
             self.p = Process(target=optimize_angles_genetic, args=[self.runner_input, self.queue_pyqtgraph])
             self.p.start()
-            self.win.show()
-            self.win.start_update()
+            #self.win.show()
+            #self.win.start_update()
 
     def terminate(self):
         self.main.set_process_stopped()
-        self.p.terminate()
+        try:
+            self.p.terminate()
+        except:
+            pass
         self.main.getter.quit()
 
         self.main.emitter_add.disconnect()
@@ -1550,7 +1556,7 @@ class DataCaptureThread(QThread):
     def updateInProc(self):
         if len(self.parent.parent.queue_pyqtgraph) > 0:
             item = self.parent.parent.queue_pyqtgraph.pop()
-            x = item[0]
+            x = item[0][0]
             y = item[1]
             best_x = [item[2]]
             best_y = [item[3]]

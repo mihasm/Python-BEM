@@ -15,6 +15,7 @@ import numpy as np
 import pyqtgraph as pg
 from multiprocessing import Process, Manager, Queue
 import sched, time, threading
+import time
 
 
 
@@ -42,8 +43,8 @@ def optimize_angles_genetic(inp_args,queue_pyqtgraph):
         p.print("Pitch optimization:",pitch_optimization)
         p.print("Propeller mode:", inp_args["propeller_mode"])
 
-        output_angles = []
-        output_alphas = []
+        output_theta = []
+        output_chord = []
 
         inp_args["theta_in"] = np.array([120]*len(inp_args["theta_in"]))
 
@@ -64,7 +65,6 @@ def optimize_angles_genetic(inp_args,queue_pyqtgraph):
             it = list(results)
             best = it[-1]
         else:
-
             p.print("Starting calculation...")
             for section_number in range(len(inp_args["r_in"])):
                 p.print("  Section_number is", section_number)
@@ -93,23 +93,28 @@ def optimize_angles_genetic(inp_args,queue_pyqtgraph):
                     return d[optimization_variable]
 
                 it = list(de2(fobj, bounds=[(min_bound, max_bound)], M=mut_coeff, num_individuals=population_size,iterations=num_iter,printer=p, queue=queue_pyqtgraph))
-
+                
                 d_final = C.calculate_section(v=v, omega=omega, _airfoil=_airfoil, _airfoil_dat=_airfoil_dat,
                                               max_thickness=max_thickness, _r=_r, _c=_c, _dr=_dr, _theta=radians(
-                                                  it[-1]),
+                                                  it[0]),
                                               printer=p, **inp_args)
 
-                output_angles.append(it[-1])
-                output_alphas.append(d_final["alpha"])
-
-                p.print("    final theta is", it[-1])
+                output_theta.append(it[0])
+                #output_chord.append(it[1])
+            
+            p.print("Number of final angles:",len(output_theta))
             p.print("Final angles:")
-            for a in output_angles:
+            for a in output_theta:
                 p.print(a)
-        p.print("!!!!EOF!!!!")
+
+            p.print("Final chords:")
+            for c in output_chord:
+                p.print(c)
+        time.sleep(0.5)
+        inp_args["EOF"].value = True
     except Exception as e:
         p.print("Error in running optimizer: %s" % str(e))
-        p.print("!!!!EOF!!!!")
+        inp_args["EOF"].value = True
         raise
 
 
@@ -165,7 +170,7 @@ def de2(function, bounds, M=0.8, num_individuals=30, iterations=50, printer=None
             queue.insert(0,[population.flatten(),fitness,population[best_i][0],fitness[best_i]])
         if len(set(population.flatten())) == 1:
             break
-        p.print(best)
+        p.print(best,fitness[best_i])
 
 
     return best
