@@ -731,7 +731,7 @@ class Airfoils(QWidget):
             y_min = np.min(y)
             thickness = (abs(y_max) + abs(y_min)) / 1
             return thickness
-        return None
+        return 0.1 #default value
 
     def get_x_y(self):
         x = []
@@ -1469,6 +1469,7 @@ class Optimization(QWidget):
         self.win = PyQtGraphWindow(self)
         self.manager_pyqtgraph = Manager()
         self.queue_pyqtgraph = self.manager_pyqtgraph.list()
+        self.queue_pyqtgraph.append([[0],[0],0,0])
 
     def check_forms_angles(self):
         out = ""
@@ -1626,7 +1627,7 @@ class DataCaptureThread(QThread):
         self.dataCollectionTimer.timeout.connect(self.updateInProc)
 
     def run(self):
-        self.dataCollectionTimer.start(5)  # 0 causes freeze
+        self.dataCollectionTimer.start(50)  # 0 causes freeze
         self.loop = QtCore.QEventLoop()
         self.loop.exec_()
 

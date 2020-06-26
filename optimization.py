@@ -185,7 +185,7 @@ def de2(function, bounds, M=0.8, num_individuals=30, iterations=50, printer=None
                 if f > fitness[best_i]:
                     best_i = j
                     best = trial
-            queue.insert(0,[population.flatten(),fitness,population[best_i][0],fitness[best_i]])
+            queue[0]=[population.flatten(),fitness,population[best_i][0],fitness[best_i]]
         if len(set(population.flatten())) == 1:
             break
         p.print(best,fitness[best_i])
