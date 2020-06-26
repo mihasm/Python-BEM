@@ -8,6 +8,7 @@ from math import pi, exp
 import traceback
 from matplotlib import pyplot as plt
 from scipy.signal import argrelextrema
+import traceback
 
 #for display
 from pyqtgraph.Qt import QtGui, QtCore
@@ -55,12 +56,26 @@ def optimize_angles_genetic(inp_args,queue_pyqtgraph):
             p.print(_r)
 
         if pitch_optimization:
+            if optimization_variable == "dQ":
+                optimization_variable = "Msum"
+            elif optimization_variable == "dT":
+                optimization_variable = "thrust"
+            else:
+                p.print("This is not implemented yet....")
+                inp_args["EOF"].value = True
+                return
+
+            p.print("Optimization variable is (pitch mode)", optimization_variable)
+
             del inp_args["pitch"]
+
+
             def fobj(x):
                 out = C.run_array(**inp_args, rpm=rpm, v=v, pitch=x)
                 if out == None or out == False:
                     return 0.0
-                return out["cp"]
+                return out[optimization_variable]
+
             results = de2(fobj, bounds=[(min_bound, max_bound)], M=mut_coeff, num_individuals=population_size,iterations=num_iter,printer=p, queue=queue_pyqtgraph)
             it = list(results)
             best = it[-1]
@@ -87,8 +102,10 @@ def optimize_angles_genetic(inp_args,queue_pyqtgraph):
                     if d == None or d == False:
                         return 0.0
 
-                    if optimization_variable == "max dT min dQ":
+                    if optimization_variable == "dQ/dT":
                         return d["dQ"]/d["dT"]
+                    if optimization_variable == "dT/dQ":
+                        return d["dT"]/d["dQ"]
 
                     return d[optimization_variable]
 
@@ -100,20 +117,21 @@ def optimize_angles_genetic(inp_args,queue_pyqtgraph):
                                               printer=p, **inp_args)
 
                 output_theta.append(it[0])
-                #output_chord.append(it[1])
             
             p.print("Number of final angles:",len(output_theta))
             p.print("Final angles:")
             for a in output_theta:
                 p.print(a)
 
-            p.print("Final chords:")
-            for c in output_chord:
-                p.print(c)
+            #p.print("Final chords:")
+            #for c in output_chord:
+            #    p.print(c)
+        p.print("Done!")
         time.sleep(0.5)
         inp_args["EOF"].value = True
     except Exception as e:
-        p.print("Error in running optimizer: %s" % str(e))
+        var = traceback.format_exc()
+        p.print("Error in running optimizer: %s \n %s" % (str(e),var))
         inp_args["EOF"].value = True
         raise
 

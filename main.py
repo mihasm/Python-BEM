@@ -38,6 +38,7 @@ from PyQt5.QtWidgets import (QComboBox, QMainWindow, QPushButton, QTextEdit, QWi
                              QTabWidget, QApplication, QScrollArea, QVBoxLayout)
 from PyQt5 import QtCore, QtGui
 from PyQt5.QtCore import QThread, QTextStream, pyqtSignal, QProcess, QRect, Qt
+from PyQt5.QtCore import QLocale
 
 from multiprocessing import Process, Manager, Queue
 import multiprocessing
@@ -97,18 +98,18 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(self.tab_widget)
 
         self.curve_manager = AirfoilManager(self)
-        self.tab_widget.add_tab(self.curve_manager, "Airfoil management")
+        self.tab_widget.add_tab(self.curve_manager, "Airfoil management", "Izbira profilov, cL/cD krivulje")
 
         self.wind_turbine_properties = WindTurbineProperties(self)
-        self.tab_widget.add_tab(self.wind_turbine_properties, "Turbine info")
+        self.tab_widget.add_tab(self.wind_turbine_properties, "Turbine info", "Nastavitev geometrije turbine/lopatic")
 
         self.analysis = Analysis(self)
-        self.tab_widget.add_tab(self.analysis, "Analysis")
+        self.tab_widget.add_tab(self.analysis, "Analysis", "Nastavitev parametrov in BEM analiza")
 
         self.getter = ThreadGetter(self)
 
         self.optimization = Optimization(self)
-        self.tab_widget.add_tab(self.optimization, "Optimization")
+        self.tab_widget.add_tab(self.optimization, "Optimization", "Optimizacija lopatice s pomočjo algoritma diferencialne evolucije")
 
         self.running = False
         self.manager = Manager()
@@ -132,7 +133,7 @@ class MainWindow(QMainWindow):
         """
         Saves the wind turbine data to a file.
         """
-        name = QFileDialog.getSaveFileName(self, 'Save File')[0]
+        name = QFileDialog.getSaveFileName(self, 'Save File',"", "BEM (*.bem)")[0]
         if name != "":
             file = open(name, 'w')
             d = self.get_all_settings()
@@ -145,7 +146,7 @@ class MainWindow(QMainWindow):
         """
         Loads the wind turbine data from a file. Also clears the calculation text areas and sets the appropriate title.
         """
-        file_path = QFileDialog.getOpenFileName(self, "Load File")[0]
+        file_path = QFileDialog.getOpenFileName(self, "Load File","", "BEM (*.bem)")[0]
         if file_path != "":
             with open(file_path, "r") as fp:
                 data = json.load(fp)
@@ -279,20 +280,29 @@ class WindTurbineProperties(QWidget):
         self.Rhub = QLineEdit()
         self.Rhub.setText("0.1")
         fbox.addRow(_Rhub, self.Rhub)
+        self.Rhub.setToolTip("Radij pesta. Vpliv ima le pri Hub-Loss popravku.")
 
         _R = QLabel("Tip radius [m]")
         self.R = QLineEdit()
         self.R.setText("0.776")
         fbox.addRow(_R, self.R)
+        self.R.setToolTip("Radij turbine. Vpliv ima na izračun moči ter pri Tip-Loss popravku.")
 
         _B = QLabel("Number of blades")
         self.B = QLineEdit()
         self.B.setText("5")
         fbox.addRow(_B, self.B)
+        self.B.setToolTip("Število lopatic.")
+
+        opomba = QLabel("===Spremenljivke spodaj nimajo vpliva na analizo===")
+        fbox.addRow(opomba)
+        opomba2 = QLabel("===vpliv imajo samo na 3D export (Solidworks makro)===")
+        fbox.addRow(opomba2)
 
         self.export_button = QPushButton("Export curve data")
         self.export_button.clicked.connect(self.export)
         fbox.addRow("Export:", self.export_button)
+        self.export_button.setToolTip("Krivulje na vseh radijih lopatice se shranijo v posamezne datoteke. Solidworks makro se nato zgenerira v Python konzoli.")
 
         self.flip_turning_direction = QCheckBox()
         fbox.addRow("Flip turning direction", self.flip_turning_direction)
@@ -519,37 +529,45 @@ class Airfoils(QWidget):
         self.grid.addWidget(toolbar, 2, 3)
         
         self.buttonRefresh = QPushButton("Refresh curve")
-        self.fbox.addRow(self.buttonRefresh)
-
+        self.grid.addWidget(self.buttonRefresh, 3, 3)
+        self.buttonRefresh.setToolTip("Osvežitev grafa krivulje profila (na podlagi tabele na levi strani)")
         self.buttonRefresh.clicked.connect(self.refresh)
+        
         self.link = QLineEdit("link (airfoiltools.com)")
         self.fbox.addRow(self.link)
+        self.link.setToolTip("Tu lahko downloadamo krivulje cL/cD iz airfoiltools.com. Obliko profila moramo vnesti sami v tabelo (copy-paste iz excela).")
 
-        self.button_open_viewer = QPushButton("Open Curve Viewer")
-        self.button_open_viewer.clicked.connect(self.open_viewer)
-        self.fbox.addRow(self.button_open_viewer)
-
-        self.button_generate_curves_xfoil = QPushButton("Generate xfoil curves [debug]")
-        self.button_generate_curves_xfoil.clicked.connect(self.generate_curves_xfoil)
-        self.fbox.addRow(self.button_generate_curves_xfoil)
-
-        self.button_generate_curves_link = QPushButton("Generate curves from link")
+        self.button_generate_curves_link = QPushButton("Scrape curves from link")
         self.button_generate_curves_link.clicked.connect(self.generate_curves_link)
         self.fbox.addRow(self.button_generate_curves_link)
+        self.button_generate_curves_link.setToolTip("S pomočjo linka do profila, dostopnega na strani airfoiltools.com, lahko program zdownloada vrednosti, zgenerirane z XFOIL, direktno iz spletne strani")
+
+
+        self.button_open_viewer = QPushButton("Open Curve Extrapolator (Montgomerie)")
+        self.button_open_viewer.clicked.connect(self.open_viewer)
+        self.fbox.addRow(self.button_open_viewer)
+        self.button_open_viewer.setToolTip("S pomočjo tega okna prilagajamo parametre ekstrapolacije z Montgomerie metodo za vsak dani Reynolds za cL in cD (alpha) krivulji")
+
+        #self.button_generate_curves_xfoil = QPushButton("Generate xfoil curves [debug]")
+        #self.button_generate_curves_xfoil.clicked.connect(self.generate_curves_xfoil)
+        #self.fbox.addRow(self.button_generate_curves_xfoil)
 
         self.button_visualize = QPushButton("Create curve visualization")
         self.button_visualize.clicked.connect(self.visualize)
         self.fbox.addRow(self.button_visualize)
+        self.button_visualize.setToolTip("Prikaz 3D grafa ekstrapoliranih krivulj, za dodatno verifikacijo vhodnih podatkov v analizo")
 
         self.get_centroid_button = QPushButton("Calculate centroid")
         self.get_centroid_button.clicked.connect(self.calculate_centroid)
         self.fbox.addRow(self.get_centroid_button)
+        self.get_centroid_button.setToolTip("S pomočjo tega gumba izračunamo sredino podanih točk v tabeli (težišče ploskve).")
 
         self.centroid_widget = QWidget()
         self.centroid_grid = QGridLayout()
         self.centroid_widget.setLayout(self.centroid_grid)
         self.centroid_label = QLabel("Centroid coordinates:")
         self.fbox.addRow(self.centroid_widget)
+        self.centroid_label.setToolTip("Okoli te točke se zavrtijo točke pri 3D generaciji geometrije (Solidworks Makro). Na samo analizo nima vpliva.")
 
         self.centroid_x_edit = QLineEdit()
         self.centroid_y_edit = QLineEdit()
@@ -565,6 +583,7 @@ class Airfoils(QWidget):
         self.ncrit_selection = QComboBox()
         self._ncrit_selection = QLabel("Ncrit")
         self.fbox.addRow(self._ncrit_selection,self.ncrit_selection)
+        self.ncrit_selection.setToolTip("Tu nastavimo N vrednost krivulj, ki jih želimo uporabiti. (oblika mejne plasti (e^N) -> XFOIL)")
 
 
     def visualize(self):
@@ -629,6 +648,7 @@ class Airfoils(QWidget):
         print("Scraping from link...")
         data = scrape_data(self.link.text())
         self.populate_curve_list(data)
+        self.table_dat.clear_table()
         print("Done.")
         self.refresh()
 
@@ -1080,6 +1100,36 @@ class Analysis(QWidget):
                                  "mach_number_correction": "Mach number correction", "pitch": "Pitch",
                                  "yaw_angle": "Yaw angle [°]", "skewed_wake_correction": "Skewed Wake Correction"}
 
+        self.settings_to_tooltip = {"propeller_mode": "Ta vrednost mora biti izbrana le v primeru, če preračunavamo propeler.",
+                                 "print_out": "Izpis končnih vrednosti po konvergenci za vsak odsek",
+                                 "tip_loss": "Popravek izgub pri vrhu lopatice (po Prandtlu)",
+                                 "hub_loss": "Popravek izgub pri pestu (po Prandtlu)",
+                                 "new_tip_loss": "Popravek izgub pri vrhu lopatice (po Speri)",
+                                 "new_hub_loss": "Popravek izgub pri pestu (po Speri)",
+                                 "cascade_correction": "Kaskadni popravki",
+                                 "max_iterations": "Maksimalno število iteracij.",
+                                 "convergence_limit": "Konvergenčni kriterij.",
+                                 "rho": "Gostota zraka [kg/m^3]",
+                                 "method": "Metoda za preračun. Privzeta je e) Aerodyn (Buhl).",
+                                 "v_min": "Minimalna hitrost vetra [m/s]",
+                                 "v_max": "Maksimalna hitrost vetra [m/s]",
+                                 "v_num": "Število računskih točk (linearno razporejenih) od min hitrosti vetra do max hitrosti vetra",
+                                 "rpm_min": "Minimalni vrtljaji/min [RPM]",
+                                 "rpm_max": "Maksimalni vrtljaji/min [RPM]",
+                                 "rpm_num": "Število računskih točk (linearno razporejenih) od min RPM do max RPM",
+                                 "relaxation_factor": "Relaksacijski faktor. Privzeta vrednost: 0.3",
+                                 "print_all": "Podroben izpis vrednosti po vsaki iteraciji (upočasni izračun)",
+                                 "num_interp": "Se uporabi samo v primeru, če izberemo 'Custom number of sections' opcijo",
+                                 "linspace_interp": "V primeru, da želimo preračunati več/manj odsekov lopatice po radiju (interpolacija geometrije)",
+                                 "rotational_augmentation_correction": "Popravek rotacijske augmentacije",
+                                 "rotational_augmentation_correction_method": "Izbira metode za popravek rotacijske augmentacije",
+                                 "fix_reynolds": "Izračunaj vse odseke pri enem samem Re",
+                                 "reynolds": "Se uporabi samo v primeru, če izberemo 'Fix Reynolds' opcijo",
+                                 "mach_number_correction": "Popravek Mach števila (uporabno pri propelerjih)",
+                                 "pitch": "Nastavni kot lopatice",
+                                 "yaw_angle": "Kot vetra glede na smer osi rotorja [°]. Če je turbina obrnjena proti vetru, je 0°.",
+                                 "skewed_wake_correction": "Popravek nagnjenega zračnega toka za turbino (Skewed wake)"}
+
         self.list_settings_for_updating_tsr = ["v_min", "v_max", "v_num", "rpm_min", "rpm_max", "rpm_num"]
 
         self.methods_to_names = METHODS_STRINGS
@@ -1132,6 +1182,7 @@ class Analysis(QWidget):
                 form.insert(str(value))
                 if key in self.list_settings_for_updating_tsr:
                     form.textChanged.connect(self.update_tsr_and_j)
+            form.setToolTip(self.settings_to_tooltip[key])
             key_orig = key
             key = self.settings_to_name[key]
             self.fbox.addRow(key, form)
@@ -1193,7 +1244,7 @@ class Analysis(QWidget):
             color = "#fff79a"  # yellow
         else:
             color = "#f6989d"  # red
-        sender.setStyleSheet("QLineEdit { background-color: %s; color: #000000 }" % color)
+        #sender.setStyleSheet("QLineEdit { background-color: %s; color: #000000 }" % color)
 
     def get_settings(self):
         out_settings = {}
@@ -1307,6 +1358,7 @@ class Optimization(QWidget):
         self.target_speed.textChanged.emit(self.target_speed.text())
         self._target_speed = QLabel("Target speed [m/s]")
         self.form_list.append([self._target_speed, self.target_speed])
+        self.target_speed.setToolTip("Ciljna hitrost vetra. Pri tej hitrosti se bo izvajala BEM analiza.")
 
         self.target_rpm = QLineEdit()
         self.target_rpm.setValidator(self.validator)
@@ -1314,6 +1366,7 @@ class Optimization(QWidget):
         self.target_rpm.textChanged.emit(self.target_rpm.text())
         self._target_rpm = QLabel("Target rpm [RPM]")
         self.form_list.append([self._target_rpm, self.target_rpm])
+        self.target_rpm.setToolTip("Ciljni vrtljaji rotorja turbine. Pri teh vrtljajih se bo izvajala BEM analiza.")
 
         self.min_bound = QLineEdit()
         self.min_bound.setValidator(self.validator)
@@ -1321,6 +1374,7 @@ class Optimization(QWidget):
         self.min_bound.textChanged.emit(self.min_bound.text())
         self._min_bound = QLabel("Minimum boundary")
         self.form_list.append([self._min_bound, self.min_bound])
+        self.min_bound.setToolTip("Minimalni kot (theta) lopatice.")
 
         self.max_bound = QLineEdit()
         self.max_bound.setValidator(self.validator)
@@ -1328,6 +1382,7 @@ class Optimization(QWidget):
         self.max_bound.textChanged.emit(self.max_bound.text())
         self._max_bound = QLabel("Maximum boundary")
         self.form_list.append([self._max_bound, self.max_bound])
+        self.max_bound.setToolTip("Maksimalni kot (theta) lopatice.")
 
         self.mut_coeff = QLineEdit()
         self.mut_coeff.setValidator(self.validator)
@@ -1335,6 +1390,7 @@ class Optimization(QWidget):
         self.mut_coeff.textChanged.emit(self.mut_coeff.text())
         self._mut_coeff = QLabel("Mutation coefficient")
         self.form_list.append([self._mut_coeff, self.mut_coeff])
+        self.mut_coeff.setToolTip("Mutacijski koeficient nastavlja jakost naključnih mutacij, ki se zgodijo pri vsaki novi generaciji (iteraciji).")
 
         self.population = QLineEdit()
         self.population.setValidator(self.validator)
@@ -1342,6 +1398,7 @@ class Optimization(QWidget):
         self.population.textChanged.emit(self.population.text())
         self._population = QLabel("Population")
         self.form_list.append([self._population, self.population])
+        self.population.setToolTip("Število posameznikov v algoritmu diferencialne evolucije.")
 
         self.num_iter = QLineEdit()
         self.num_iter.setValidator(self.validator)
@@ -1349,16 +1406,20 @@ class Optimization(QWidget):
         self.num_iter.textChanged.emit(self.num_iter.text())
         self._num_iter = QLabel("Number of iterations")
         self.form_list.append([self._num_iter, self.num_iter])
+        self.num_iter.setToolTip("Število generacij (iteracij). Konvergenčni kriterij je pri tovrstnih algoritmih težko določljiv, zato izberemo fiksno vrednost.")
 
         self._opt_variable = QLabel("Optimization variable")
         self.opt_variable = QComboBox()
-        self.opt_variable.addItems(["Thrust (propeller)", "Torque (Turbine)", "max dQ min dT", "Best pitch"])
+        self.opt_variable.addItems(["max(dT) (thrust->propeller)", "max(dQ) (torque->wind turbine)", "max(dQ/dT)", "max(dT/dQ)",])
+        self.opt_variable.setCurrentIndex(1)
         self.form_list.append([self._opt_variable, self.opt_variable])
+        self.opt_variable.setToolTip("Optimizacija naj poteka za to izbrano spremenljivko. V primeru vetrne turbine max(dQ).")
 
         self.pitch_optimization = QCheckBox()
         self.pitch_optimization.setChecked(False)
         self._pitch_optimization = QLabel("Pitch optimization")
         self.form_list.append([self._pitch_optimization, self.pitch_optimization])
+        self.pitch_optimization.setToolTip("To možnost izberemo samo, kadar nas zanima optimalni nastavni kot lopatice.")
 
         self.buttonOptimization = QPushButton("Run optimization")
         self.buttonOptimization.clicked.connect(self.run)
@@ -1420,7 +1481,7 @@ class Optimization(QWidget):
             color = "#fff79a"  # yellow
         else:
             color = "#f6989d"  # red
-        sender.setStyleSheet("QLineEdit { background-color: %s; color: #000000 }" % color)
+        #sender.setStyleSheet("QLineEdit { background-color: %s; color: #000000 }" % color)
 
     def validate_inputs(self):
         check = self.check_forms_angles()
@@ -1494,9 +1555,10 @@ class Optimization(QWidget):
         elif int(self.opt_variable.currentIndex()) == 1:
             out["optimization_variable"] = "dQ"
         elif int(self.opt_variable.currentIndex()) == 2:
-            out["optimization_variable"] = "max dT min dQ"
+            out["optimization_variable"] = "dQ/dT"
         elif int(self.opt_variable.currentIndex()) == 3:
-            out["optimization_variable"] = "best_pitch"
+            out["optimization_variable"] = "dT/dQ"
+
         for k, v in out.items():
             if v == "":
                 v = None
@@ -1628,10 +1690,12 @@ class TabWidget(QTabWidget):
         super(TabWidget, self).__init__(parent)
         self.tabs = []
 
-    def add_tab(self, widget, tab_name):
+    def add_tab(self, widget, tab_name, tooltip=None):
         self.tabs.append([widget, tab_name])
         self.addTab(widget, tab_name)
-        return
+        if tooltip != None:
+            self.setTabToolTip(len(self.tabs)-1,tooltip)
+
 
     def remove_tab(self, index):
         self.removeTab(index)
@@ -1661,6 +1725,7 @@ def main(quick_results=False):
         ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
 
     app = QApplication([])
+    QLocale.setDefault(QLocale(QLocale.English)) # da je pika decimalno mesto
     app_icon = QtGui.QIcon("icon_bem.ico")
     app.setWindowIcon(app_icon)
     app.setStyle("Fusion")

@@ -149,13 +149,21 @@ class Table(QWidget):
         return
 
     def delete_data(self):
-        rows = sorted(set(index.row()
-                          for index in self.tableWidget.selectedIndexes()))
-        columns = sorted(set(index.column()
-                             for index in self.tableWidget.selectedIndexes()))
+        rows = sorted(set(index.row() for index in self.tableWidget.selectedIndexes()))
+        columns = sorted(set(index.column() for index in self.tableWidget.selectedIndexes()))
         for r in rows:
             for c in columns:
                 self.tableWidget.setItem(r, c, QTableWidgetItem(""))
+
+    def clear_table(self):
+        num_rows = self.tableWidget.rowCount()
+        num_columns = self.tableWidget.columnCount()
+        row_indexes = range(num_rows)
+        column_indexes = range(num_columns)
+        for r in row_indexes:
+            for c in column_indexes:
+                self.tableWidget.setItem(r, c, QTableWidgetItem(""))
+
 
     def select_next_row(self):
         rows = sorted(set(index.row()
