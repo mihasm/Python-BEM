@@ -585,6 +585,21 @@ class Airfoils(QWidget):
         self.fbox.addRow(self._ncrit_selection,self.ncrit_selection)
         self.ncrit_selection.setToolTip("Tu nastavimo N vrednost krivulj, ki jih želimo uporabiti. (oblika mejne plasti (e^N) -> XFOIL)")
 
+        navodila = QLabel("Navodila za uporabo:\n"+
+            "1. Na strani http://airfoiltools.com/\n"+
+            "izberite poljubni aerodinamični profil.\n"+
+            "2. Link vnesite zgoraj in pritisnite 'Scrape'.\n"+
+            "Sedaj so cL/cD krivulje naložene v program.\n"+
+            "Opomba: Obliko profila v obliki x-y koordinat\n"+
+            "je potrebno vnesti ročno, in ob Scrape izginejo!\n"+
+            "3. Sedaj je treba nastaviti koef. ekstrapolacije\n"+
+            "z orodjem Curve Extrapolator (Montgomerie)\n"+
+            "4. Končane krivulje lahko preverite\n"+
+            "z uporabo orodja Create curve visualization,\n"+
+            "kjer so prikazane v odvisnosti od Re")
+        self.fbox.addRow(navodila)
+
+
 
     def visualize(self):
         print("Visualizing")
@@ -1523,8 +1538,8 @@ class Optimization(QWidget):
             self.main.getter.start()
             self.p = Process(target=optimize_angles_genetic, args=[self.runner_input, self.queue_pyqtgraph])
             self.p.start()
-            #self.win.show()
-            #self.win.start_update()
+            self.win.show()
+            self.win.start_update()
 
     def terminate(self):
         self.main.set_process_stopped()
@@ -1611,14 +1626,14 @@ class DataCaptureThread(QThread):
         self.dataCollectionTimer.timeout.connect(self.updateInProc)
 
     def run(self):
-        self.dataCollectionTimer.start(1)  # 0 causes freeze
+        self.dataCollectionTimer.start(5)  # 0 causes freeze
         self.loop = QtCore.QEventLoop()
         self.loop.exec_()
 
     def updateInProc(self):
         if len(self.parent.parent.queue_pyqtgraph) > 0:
             item = self.parent.parent.queue_pyqtgraph.pop()
-            x = item[0][0]
+            x = item[0]
             y = item[1]
             best_x = [item[2]]
             best_y = [item[3]]
@@ -1631,8 +1646,10 @@ class PyQtGraphWindow(QMainWindow):
         super(PyQtGraphWindow, self).__init__(parent)
         self.obj = pg.PlotWidget()
         self.setCentralWidget(self.obj)
-        self.curve = self.obj.plot(pen=None, symbol='o', symbolPen=None, symbolSize=4, symbolBrush=('b'))
+        self.curve = self.obj.plot(pen=None, symbol='o', symbolPen=None, symbolSize=4, symbolBrush=('g'))
         self.curve_red = self.obj.plot(pen=None, symbol='o', symbolPen=None, symbolSize=5, symbolBrush=('r'))
+        self.obj.setLabel("left", "Optimization variable")
+        self.obj.setLabel("bottom", "Theta [°]")
         self.parent = parent
         self.thread = DataCaptureThread(self)
 
