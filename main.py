@@ -1632,7 +1632,7 @@ class DataCaptureThread(QThread):
 
     def updateInProc(self):
         if len(self.parent.parent.queue_pyqtgraph) > 0:
-            item = self.parent.parent.queue_pyqtgraph.pop()
+            item = self.parent.parent.queue_pyqtgraph[0]
             x = item[0]
             y = item[1]
             best_x = [item[2]]
