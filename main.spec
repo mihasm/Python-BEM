@@ -4,10 +4,10 @@ block_cipher = None
 
 
 a = Analysis(['main.py'],
-             pathex=['C:\\\\Users\\\\miha\\\\AppData\\\\Local\\\\Programs\\\\Python\\\\Python37\\\\lib\\\\site-packages\\\\scipy\\\\extra-dll', 'C:\\Users\\miha\\Documents\\Python\\BEM Python Development'],
+             pathex=['C:\\Users\\miha\\Documents\\Python\\bem'],
              binaries=[],
              datas=[],
-             hiddenimports=['scipy._lib.messagestream'],
+             hiddenimports=['scipy._lib.messagestream','scipy.special.cython_special'],
              hookspath=[],
              runtime_hooks=[],
              excludes=[],
