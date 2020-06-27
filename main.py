@@ -57,6 +57,12 @@ np.set_printoptions(threshold=sys.maxsize)
 
 TITLE_STR = "BEM analiza v%s" % __version__
 
+# determine if application is a script file or frozen exe
+if getattr(sys, 'frozen', False):
+    application_path = os.path.dirname(sys.executable)
+elif __file__:
+    application_path = os.path.dirname(__file__)
+
 
 class MainWindow(QMainWindow):
     """
@@ -115,7 +121,7 @@ class MainWindow(QMainWindow):
         self.manager = Manager()
         self.set_all_settings(SET_INIT)
 
-        create_folder("foils")  # Used by XFoil
+        create_folder(os.path.join(application_path,"foils"))  # Used by XFoil
 
         self.show()
 
@@ -389,8 +395,8 @@ class WindTurbineProperties(QWidget):
         w.ax.set_zlim(mid_z - max_range, mid_z + max_range)
         # w.ax.set_aspect("equal")
 
-        create_folder("export")
-        folder_path = os.path.join("export", SET_INIT["turbine_name"])
+        create_folder(os.path.join(application_path,"export"))
+        folder_path = os.path.join(application_path,"export", SET_INIT["turbine_name"])
         create_folder(folder_path)
 
         filenames = []
@@ -1755,6 +1761,7 @@ def main(quick_results=False):
     screen = app.primaryScreen()
     size = screen.size()
     main = MainWindow(size.width(), size.height())
+    main.setWindowIcon(app_icon)
     if quick_results:
         main.analysis.run()
     sys.exit(app.exec_())
