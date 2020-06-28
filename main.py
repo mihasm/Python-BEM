@@ -317,6 +317,8 @@ class WindTurbineProperties(QWidget):
         self.propeller_geom = QCheckBox()
         fbox.addRow("Propeller", self.propeller_geom)
 
+        self.window = None
+
     def get_settings(self):
         """
         Used to get the basic wind turbine settings in a dictionary format, namely the:
@@ -378,12 +380,20 @@ class WindTurbineProperties(QWidget):
         you can use to import the geometry into the Solidworks 3D modeller.
         :return:
         """
+
+        if self.window != None:
+            self.window.close()
+        self.window = PrintoutWindow(self)
+        self.window.setWindowTitle("Solidworks Export Macro")
+
+
         print("Getting settings...")
         settings_fetched = self.parent().parent().parent().get_all_settings()
         if settings_fetched == None:
             return
         data = create_3d_blade(settings_fetched, self.flip_turning_direction.isChecked(), self.propeller_geom.isChecked())
         w = MatplotlibWindow()
+        w.setWindowTitle("Export 3D preview")
         w.ax = w.figure.add_subplot(111, projection="3d")
         w.ax.scatter(data["X"], data["Y"], data["Z"])
         X, Y, Z = array(data["X"]), array(data["Y"]), array(data["Z"])
@@ -627,6 +637,7 @@ class Airfoils(QWidget):
         z_1 = interp_at(re, alpha, cl, xi, yi)
         z_2 = interp_at(re, alpha, cd, xi, yi)
         w = MatplotlibWindow()
+        w.setWindowTitle("Cl(alpha,Re)")
         w.ax = w.figure.add_subplot(111, projection="3d")
         p = w.ax.plot_trisurf(xi, yi, z_1, cmap=cm.coolwarm)
         w.ax.set_xlabel("Reynolds", fontsize=15, labelpad=20)
@@ -639,6 +650,7 @@ class Airfoils(QWidget):
         bar.ax.set_xlabel('Cl', fontsize=15, labelpad=20)
 
         w2 = MatplotlibWindow()
+        w2.setWindowTitle("Cd(alpha,Re)")
         w2.ax = w2.figure.add_subplot(111, projection="3d")
         p = w2.ax.plot_trisurf(xi, yi, z_2, cmap=cm.coolwarm)
         w2.ax.set_xlabel("Reynolds", fontsize=15, labelpad=20)
