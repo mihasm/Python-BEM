@@ -106,7 +106,11 @@ def optimize_angles_genetic(inp_args,queue_pyqtgraph):
                         return d["dQ"]/d["dT"]
                     if optimization_variable == "dT/dQ":
                         return d["dT"]/d["dQ"]
-
+                    if optimization_variable == "dQ-dT":
+                        return d["dQ"]-d["dT"]
+                    if optimization_variable == "dT-dQ":
+                        return d["dT"]-d["dQ"]
+                    
                     return d[optimization_variable]
 
                 it = list(de2(fobj, bounds=[(min_bound, max_bound)], M=mut_coeff, num_individuals=population_size,iterations=num_iter,printer=p, queue=queue_pyqtgraph))

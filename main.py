@@ -2,7 +2,7 @@
 __author__ = "Miha Smrekar"
 __credits__ = ["Miha Smrekar"]
 __license__ = "GPL"
-__version__ = "0.4.0"
+__version__ = "0.4.1"
 __maintainer__ = "Miha Smrekar"
 __email__ = "miha.smrekar9@gmail.com"
 __status__ = "Development"
@@ -21,6 +21,7 @@ from utils import interpolate_geom, to_float, fltr, QDarkPalette, create_folder,
 from turbine_data import SET_INIT
 from table import Table
 from results import ResultsWindow
+from scrape_polars import get_x_y_from_link
 from calculation_runner import calculate_power_3d
 from matplotlib import cm
 import mpl_toolkits.mplot3d as mp3d
@@ -596,14 +597,14 @@ class Airfoils(QWidget):
             "izberite poljubni aerodinamični profil.\n"+
             "2. Link vnesite zgoraj in pritisnite 'Scrape'.\n"+
             "Sedaj so cL/cD krivulje naložene v program.\n"+
-            "Opomba: Obliko profila v obliki x-y koordinat\n"+
-            "je potrebno vnesti ročno, in ob Scrape izginejo!\n"+
             "3. Sedaj je treba nastaviti koef. ekstrapolacije\n"+
             "z orodjem Curve Extrapolator (Montgomerie)\n"+
             "4. Končane krivulje lahko preverite\n"+
             "z uporabo orodja Create curve visualization,\n"+
             "kjer so prikazane v odvisnosti od Re")
         self.fbox.addRow(navodila)
+
+        self.window = None
 
 
 
@@ -667,11 +668,17 @@ class Airfoils(QWidget):
 
     def generate_curves_link(self):
         print("Scraping from link...")
+        if self.window != None:
+            self.window.close()
+        self.window = PrintoutWindow(self)
         data = scrape_data(self.link.text())
-        self.populate_curve_list(data)
+        x,y=get_x_y_from_link(self.link.text())
         self.table_dat.clear_table()
-        print("Done.")
+        self.populate_curve_list(data)
+        self.set_x_y(x,y)
         self.refresh()
+        print("Done.")
+        #self.window.close()
 
     def populate_curve_list(self, data):
         self.curves.curve_list = []
@@ -740,6 +747,9 @@ class Airfoils(QWidget):
         return 0.1 #default value
 
     def get_x_y(self):
+        """
+        Gets x and y values from table.
+        """
         x = []
         y = []
 
@@ -752,11 +762,22 @@ class Airfoils(QWidget):
                 y.append(_y)
         return x, y
 
+    def set_x_y(self,x,y):
+        """
+        Sets x and y values from input to table.
+        """
+        array_dat = []
+        if len(x) > 0 and len(y) > 0:
+            for r in range(len(x)):
+                array_dat.append([str(x[r]), str(y[r])])
+            self.table_dat.createTable(array_dat)
+            self.calculate_centroid()
+
     def calculate_centroid(self):
         foil_x, foil_y = self.get_x_y()
         x, y = get_centroid_coordinates(foil_x, foil_y)
-        self.centroid_x_edit.setText(str(round(x,10)))
-        self.centroid_y_edit.setText(str(round(y,10)))
+        self.centroid_x_edit.setText(str(round(x,6)))
+        self.centroid_y_edit.setText(str(round(y,6)))
         return x, y
 
     def get_ncrits(self):
@@ -786,14 +807,10 @@ class Airfoils(QWidget):
         return out
 
     def set_settings(self, dict_settings):
-        array_dat = []
-        if len(dict_settings["x"]) > 0 and len(dict_settings["y"]) > 0:
-            for r in range(len(dict_settings["x"])):
-                array_dat.append([str(dict_settings["x"][r]), str(dict_settings["y"][r])])
-            self.table_dat.createTable(array_dat)
-            self.calculate_centroid()
-            
+        
+        x,y = dict_settings["x"], dict_settings["y"]
 
+        self.set_x_y(x,y)
         self.link.setText(dict_settings["link"])
         self.curves.load_curves(dict_settings["curves"])
         self.refresh()
@@ -1431,7 +1448,7 @@ class Optimization(QWidget):
 
         self._opt_variable = QLabel("Optimization variable")
         self.opt_variable = QComboBox()
-        self.opt_variable.addItems(["max(dT) (thrust->propeller)", "max(dQ) (torque->wind turbine)", "max(dQ/dT)", "max(dT/dQ)",])
+        self.opt_variable.addItems(["max(dT) (thrust->propeller)", "max(dQ) (torque->wind turbine)", "max(dQ/dT)", "max(dT/dQ)", "max(dQ-dT)", "max(dT-dQ)"])
         self.opt_variable.setCurrentIndex(1)
         self.form_list.append([self._opt_variable, self.opt_variable])
         self.opt_variable.setToolTip("Optimizacija naj poteka za to izbrano spremenljivko. V primeru vetrne turbine max(dQ).")
@@ -1473,6 +1490,7 @@ class Optimization(QWidget):
         self.fbox.addRow(self.buttonEOFdescription, self.buttonEOF)
 
         self.win = PyQtGraphWindow(self)
+        self.win.setWindowTitle("Live Optimization Visualizer")
         self.manager_pyqtgraph = Manager()
         self.queue_pyqtgraph = self.manager_pyqtgraph.list()
         self.queue_pyqtgraph.append([[0],[0],0,0])
@@ -1580,6 +1598,10 @@ class Optimization(QWidget):
             out["optimization_variable"] = "dQ/dT"
         elif int(self.opt_variable.currentIndex()) == 3:
             out["optimization_variable"] = "dT/dQ"
+        elif int(self.opt_variable.currentIndex()) == 4:
+            out["optimization_variable"] = "dQ-dT"
+        elif int(self.opt_variable.currentIndex()) == 5:
+            out["optimization_variable"] = "dT-dQ"
 
         for k, v in out.items():
             if v == "":
@@ -1708,6 +1730,37 @@ class MatplotlibWindow(QWidget):
         self.layout.addWidget(self.toolbar)
         self.show()
 
+
+class PrintoutWindow(QMainWindow):
+    def __init__(self, parent):
+        super(PrintoutWindow, self).__init__(parent)
+        self.setWindowTitle("Progress")
+        self.setGeometry(50, 50, 500, 300)
+        self.parent = parent
+
+        sys.stdout = Stream(newText=self.onUpdateText)
+        sys.stderr = Stream(newText=self.onUpdateText)
+        self.process  = QtGui.QTextEdit()
+        self.setCentralWidget(self.process)
+        self.show()
+ 
+    def onUpdateText(self, text):
+        cursor = self.process.textCursor()
+        cursor.movePosition(QtGui.QTextCursor.End)
+        cursor.insertText(text)
+        self.process.setTextCursor(cursor)
+        self.process.ensureCursorVisible()
+
+    def __del__(self):
+        sys.stdout = sys.__stdout__
+        sys.stderr = sys.__stdout__
+
+
+class Stream(QtCore.QObject):
+    newText = QtCore.pyqtSignal(str)
+
+    def write(self, text):
+        self.newText.emit(str(text))
 
 class TabWidget(QTabWidget):
     def __init__(self, parent=None):

@@ -1,14 +1,15 @@
 import requests
 from bs4 import BeautifulSoup as bs
+from urllib.parse import parse_qsl, urlparse
+from urllib import parse
 
 
 def get_polars(link):
     results = {}
-
+    print("Getting data from",link)
     r = requests.get(link)
     txt = r.text
     soup = bs(txt, features='html.parser')
-    # print(txt)
     table_of_polars = soup.find_all("table", {"class": "polar"})[0]
     rows = table_of_polars.find_all("tr")[1:-1]
     links = []
@@ -18,36 +19,35 @@ def get_polars(link):
             d for d in data]
         details_link = "http://airfoiltools.com" + \
             details.find_all("a")[0].get('href')
-        # print(details_link)  # print(name,reynolds,details)
         links.append(details_link)
+
+    print("List of links:",links)
 
     csv_links = []
 
     for l in links:
+        print("getting csv links from",l)
         r = requests.get(l)
         txt = r.text
         soup = bs(txt, features='html.parser')
         details_table = soup.find_all("table", {"class": "details"})[0]
         td1 = details_table.find_all("td", {"class": "cell1"})
-        # print(len(details_table))
         _links = details_table.find_all("a")
-        # print(links)
         for _l in _links:
-            # print(_l)
             if "csv?polar" in _l.get("href"):
                 csv_links.append("http://airfoiltools.com" + _l.get("href"))
                 break
-    # print(csv_links)
+    
+    print("CSV links:",csv_links)
 
     for l in csv_links:
-        # print(l)
+        print("getting data from csv link",l)
         lines = None
         r = requests.get(l)
         text = r.text
         lines = text.splitlines()
         start = lines.index("Alpha,Cl,Cd,Cdp,Cm,Top_Xtr,Bot_Xtr")
-        reynolds_number = [float(i.split(",")[1])
-                           for i in lines if "Reynolds number," in i][0]
+        reynolds_number = [float(i.split(",")[1]) for i in lines if "Reynolds number," in i][0]
         ncrit = [float(i.split(",")[1]) for i in lines if "Ncrit," in i][0]
         mach = [float(i.split(",")[1]) for i in lines if "Mach," in i][0]
 
@@ -62,3 +62,29 @@ def get_polars(link):
             results[reynolds_number][ncrit][alpha] = {"cl": cl, "cd": cd}
 
     return results
+
+
+def get_x_y_from_link(link):
+    print("Getting x-y airfoil data from",link)
+
+    params = parse_qsl(urlparse(link.strip()).query, keep_blank_values=True)
+    selig_link = "http://airfoiltools.com/airfoil/seligdatfile?airfoil="+params[0][1]
+    print("Presumed Selig dat link:")
+    print(selig_link)
+
+    r = requests.get(selig_link)
+    text = r.text
+    print("Got text:")
+    print(text)
+    print("Parsing...")
+    lines = text.splitlines()
+
+    x,y=[],[]
+
+    for l in lines[1:]:
+        stripped_line = l.strip().replace("  "," ")
+        x_l,y_l = stripped_line.split(" ")
+        x.append(float(x_l))
+        y.append(float(y_l))
+
+    return x,y

@@ -3,6 +3,7 @@ import numpy
 from scipy import interpolate
 from numpy import array
 import os
+import sys
 
 from PyQt5.QtGui import QPalette, QColor
 from PyQt5.QtWidgets import (QComboBox, QMainWindow, QPushButton, QTextEdit, QWidget, QFormLayout, QLabel, QLineEdit,
@@ -12,6 +13,11 @@ from PyQt5 import QtCore, QtGui
 from PyQt5.QtCore import QThread, QTextStream, pyqtSignal, QProcess, QRect, Qt
 import traceback
 
+# determine if application is a script file or frozen exe
+if getattr(sys, 'frozen', False):
+    application_path = os.path.dirname(sys.executable)
+elif __file__:
+    application_path = os.path.dirname(__file__)
 
 def transpose(a):
     """
@@ -290,7 +296,7 @@ def generate_dat(name, x, y):
         else:
             out += "%.6f  %.6f\n" % (_x, _y)
 
-    f = open(os.path.join("foils", name + ".dat"), "w")
+    f = open(os.path.join(application_path,"foils", name + ".dat"), "w")
     f.write(out)
     f.close()
     return out

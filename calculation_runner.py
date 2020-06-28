@@ -66,7 +66,6 @@ def calculate_power_3d(inp_args, print_eof=False, prepend="", print_progress=Tru
     time_start = time.time()
     for v in speeds:
         for rpm in rpms:
-
             if print_progress:
                 p.print(prepend + "Calculating power for v:", v, "[m/s], rpm:", rpm, "[RPM], lambda:",
                         rpm / 60 * 2 * pi * inp_args["R"] / v, "J:", v / (rpm / 60 * inp_args["R"] * 2))
@@ -75,12 +74,12 @@ def calculate_power_3d(inp_args, print_eof=False, prepend="", print_progress=Tru
             _inp_args["rpm"] = rpm
             try:
                 _results = calculate_power(_inp_args)
-            except:
-                p.print("Error in running calculate_power")
-                p.print("!!!!EOF!!!!")
+            except Exception as e:
+                var = traceback.format_exc()
+                p.print("Error in running optimizer: %s \n %s" % (str(e),var))
+                inp_args["EOF"].value = True
                 raise
-            if _results == "!!!!EOF!!!!":
-                return None
+
             if _results != None and _results["power"]:
                 if print_progress:
                     p.print(prepend + "    TSR:", _results["TSR"], "J:", _results["J"], "cp:", _results["cp"],
