@@ -46,23 +46,24 @@ class Table(QWidget):
         self.show()
 
     def createTable(self, array):
-        # Create table
-        self.tableWidget.setRowCount(len(array))
-        self.tableWidget.setColumnCount(len(array[0]))
-        i = 0
-        for r in array:
-            j = 0
-            for c in r:
-                if not isinstance(c, str):
-                    c = str(c)
-                self.tableWidget.setItem(i, j, QTableWidgetItem(c))
-                j += 1
-            i += 1
+        if len(array) > 0:
+            # Create table
+            self.tableWidget.setRowCount(len(array))
+            self.tableWidget.setColumnCount(len(array[0]))
+            i = 0
+            for r in array:
+                j = 0
+                for c in r:
+                    if not isinstance(c, str):
+                        c = str(c)
+                    self.tableWidget.setItem(i, j, QTableWidgetItem(c))
+                    j += 1
+                i += 1
 
-        self.tableWidget.move(0, 0)
+            self.tableWidget.move(0, 0)
 
-        # table selection change
-        self.tableWidget.clicked.connect(self.on_click)
+            # table selection change
+            self.tableWidget.clicked.connect(self.on_click)
 
     def createEmpty(self, x, y):
         # Create table

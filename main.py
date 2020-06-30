@@ -15,9 +15,9 @@ from xfoil import generate_polars_data
 from montgomerie import Montgomerie
 from polars import scrape_data
 from interpolator import interp_at
-from utils import interpolate_geom, to_float, fltr
+from utils import interpolate_geom, to_float, fltr, transpose
 from optimization import optimize_angles_genetic
-from utils import interpolate_geom, to_float, fltr, QDarkPalette, create_folder, ErrorMessageBox, MyMessageBox
+from utils import interpolate_geom, to_float, fltr, QDarkPalette, create_folder, ErrorMessageBox, MyMessageBox, sort_data
 from turbine_data import SET_INIT
 from table import Table
 from results import ResultsWindow
@@ -505,6 +505,8 @@ class Airfoils(QWidget):
     def __init__(self, airfoil_name, parent=None):
         super(Airfoils, self).__init__(parent)
 
+        self.parent = parent
+
         self.curves = Curves()
 
         self.viewer = CurveViewer(self)
@@ -558,6 +560,12 @@ class Airfoils(QWidget):
         self.button_generate_curves_link.clicked.connect(self.generate_curves_link)
         self.fbox.addRow(self.button_generate_curves_link)
         self.button_generate_curves_link.setToolTip("S pomočjo linka do profila, dostopnega na strani airfoiltools.com, lahko program zdownloada vrednosti, zgenerirane z XFOIL, direktno iz spletne strani")
+
+
+        self.button_curve_editor = QPushButton("Curve Editor")
+        self.button_curve_editor.clicked.connect(self.open_curve_editor)
+        self.fbox.addRow(self.button_curve_editor)
+        self.button_curve_editor.setToolTip("Ročno spreminjanje/uvažanje/izvažanje cL/cD krivulj")
 
 
         self.button_open_viewer = QPushButton("Open Curve Extrapolator (Montgomerie)")
@@ -615,6 +623,7 @@ class Airfoils(QWidget):
         self.fbox.addRow(navodila)
 
         self.window = None
+        self.curve_editor = CurveEditor(self)
 
 
 
@@ -667,6 +676,11 @@ class Airfoils(QWidget):
         self.viewer.show()
         self.viewer.generate_views()
 
+    def open_curve_editor(self):
+        print("opening curve editor")
+        self.curve_editor.show()
+        self.curve_editor.load_curves()
+
     def generate_interp_functions(self):
         data = self.gather_curves()
         x, y = self.get_x_y()
@@ -674,6 +688,9 @@ class Airfoils(QWidget):
 
     def generate_curves_xfoil(self):
         print("Generating xfoil curves")
+        if self.window != None:
+            self.window.close()
+        self.window = PrintoutWindow(self)
         data = generate_polars_data(self.airfoil_name + ".dat")
         self.populate_curve_list(data)
         print("Done")
@@ -835,6 +852,9 @@ class Curves:
     def add(self, curve):
         self.curve_list.append(curve)
 
+    def get_curves_sorted(self):
+        return sorted(self.curve_list, key=lambda c: (c.ncrit, c.Re))
+
     def save_curves(self):
         out_list = []
         for c in self.curve_list:
@@ -851,7 +871,7 @@ class Curves:
 
     def gather_curves(self):
         out = []
-        for curve in self.curve_list:
+        for curve in self.get_curves_sorted():
             alpha, cl, cd = curve.get_combined_curve()
             for i in range(len(alpha)):
                 Re = curve.Re
@@ -862,6 +882,45 @@ class Curves:
                 out.append([Re, ncrit, _alpha, _cl, _cd])
         out = array(out)
         return out
+
+    def get_curve(self,re_in,ncrit_in):
+        out = []
+        for curve in self.curve_list:
+            re = curve.Re
+            ncrit = curve.ncrit
+            if ncrit == ncrit_in and re==re_in:
+                out.append(curve)
+
+        if len(out) == 0:
+            return None
+        if len(out) == 1:
+            return out[0]
+        if len(out) > 1:
+            for c in out:
+                print(c.Re,c.ncrit)
+            raise Exception ("DataError: Multiple curves have same Reynolds and Ncrit...")
+
+    def remove_curve(self,re_in,ncrit_in):
+        out = []
+        i = 0
+        for curve in self.curve_list:
+            re = curve.Re
+            ncrit = curve.ncrit
+            if ncrit == ncrit_in and re==re_in:
+                j=i
+                out.append(curve)
+            i+=1
+
+        if len(out) == 0:
+            return None
+        if len(out) > 1:
+            for c in out:
+                print(c.Re,c.ncrit)
+            raise Exception ("DataError: Multiple curves have same Reynolds and Ncrit...")
+        
+        del self.curve_list[j]
+        
+
 
 
 class Curve:
@@ -888,11 +947,11 @@ class Curve:
         self.alpha = alpha
         self.cl = cl
         self.cd = cd
-        self.A = 5
+        self.A = 8
         self.B = 5
-        self.Am = 5
+        self.Am = 8
         self.Bm = 5
-        self.m_CD90 = 2.0
+        self.m_CD90 = 1.5
         self.slope = 0.106
 
     def get_cl_curve(self):
@@ -912,8 +971,6 @@ class Curve:
         f_cl = interp1d(self.alpha, self.cl, bounds_error=True)
         f_cd = interp1d(self.alpha, self.cd, bounds_error=True)
         for i in range(len(_alpha)):
-            # x.append(self.Re)
-            # y.append(m_Alpha[i])
             a = _alpha[i]
             try:
                 cl = f_cl(a)
@@ -947,6 +1004,249 @@ class Curve:
         self.Bm = out["Bm"]
         self.m_CD90 = out["m_CD90"]
         self.slope = out["slope"]
+
+
+class CurveEditor(QWidget):
+    def __init__(self, parent=None):
+        super(CurveEditor, self).__init__(None)
+        self.resize(1600, 768)
+        self.parent = parent
+
+        self.grid = QGridLayout()
+        self.setLayout(self.grid)
+
+        #self.tab_widget = TabWidget(self)
+        #self.grid.addWidget(self.tab_widget, 2, 0)
+
+        self.validator = QtGui.QDoubleValidator()
+
+        self.table = Table()
+        self.table.set_labels(["alpha [°]", "cL (lift coeff.)", "cD (drag coeff.)"])
+        self.grid.addWidget(self.table,2,0)
+
+        self.upper_widget = QWidget()
+        self.upper_layout = QGridLayout()
+        self.upper_widget.setLayout(self.upper_layout)
+        self.grid.addWidget(self.upper_widget, 1, 0)
+
+        self.button_remove_curve = QPushButton("Remove curve")
+        self.button_remove_curve.clicked.connect(self.remove_curve)
+        self.upper_layout.addWidget(self.button_remove_curve,1,1)
+        self.button_save_curve = QPushButton("Update curve")
+        self.button_save_curve.clicked.connect(self.save_curve)
+        self.upper_layout.addWidget(self.button_save_curve,1,2)
+        self.button_add_curve = QPushButton("Add curve")
+        self.button_add_curve.clicked.connect(self.add_curve)
+        self.upper_layout.addWidget(self.button_add_curve,4,3)
+
+        self.ncrit_edit = QLineEdit("Insert ncrit")
+        self.upper_layout.addWidget(self.ncrit_edit,4,1)
+        self.ncrit_edit.setValidator(self.validator)
+        self.ncrit_edit.textChanged.connect(self.check_state)
+        self.re_edit = QLineEdit("Insert reynolds")
+        self.upper_layout.addWidget(self.re_edit,4,2)
+        self.re_edit.setValidator(self.validator)
+        self.re_edit.textChanged.connect(self.check_state)
+
+        #self.picker_mach_label = QLabel("Mach number:")
+        #self.picker_mach = QComboBox()
+        #self.picker_mach.setEditable(True)
+        #self.upper_layout.addWidget(self.picker_mach_label,2,1)
+        #self.upper_layout.addWidget(self.picker_mach,3,1)
+
+        self.picker_ncrit_label = QLabel("NCrit:")
+        self.picker_ncrit = QComboBox()
+        self.picker_ncrit.setEditable(False)
+        #
+        self.upper_layout.addWidget(self.picker_ncrit_label,2,1)
+        self.upper_layout.addWidget(self.picker_ncrit,3,1)
+
+        self.picker_reynolds_label = QLabel("Reynolds:")
+        self.picker_reynolds = QComboBox()
+        self.picker_reynolds.setEditable(False)
+        #
+        self.upper_layout.addWidget(self.picker_reynolds_label,2,2)
+        self.upper_layout.addWidget(self.picker_reynolds,3,2)
+
+
+        #self.picker_mach.lineEdit().returnPressed.connect(self.refresh_dropdowns)
+        #self.sig1 = self.picker_reynolds.lineEdit().returnPressed.connect(self.save_curve)
+        #self.sig2 = self.picker_ncrit.lineEdit().returnPressed.connect(self.save_curve)
+
+        self.sig3 = self.picker_reynolds.currentIndexChanged.connect(self.load_curves)
+        self.sig4 = self.picker_ncrit.currentIndexChanged.connect(self.load_curves)
+
+        #self.load_curves()
+
+    def save_curve(self):
+
+        out_chosen_values = self.get_chosen_values_from_dropdowns()
+        re_chosen,ncrit_chosen = out_chosen_values
+
+        data_from_table = self.table.get_values()
+        alpha_table,cl_table,cd_table = transpose(data_from_table)
+        alpha,cl,cd = [],[],[]
+
+        for i in range(len(alpha_table)):
+            if alpha_table[i] != "" and cl_table[i] != "" and cd_table[i] != "":
+                alpha.append(float(alpha_table[i]))
+                cl.append(float(cl_table[i]))
+                cd.append(float(cd_table[i]))
+
+        print(alpha,cl,cd)
+
+        if self.parent.curves.get_curve(re_in=re_chosen,ncrit_in=ncrit_chosen) == None:
+            msg = MyMessageBox()
+            msg.setIcon(QMessageBox.Warning)
+            msg.setText("Curve with these Re - ncrit values does not exist yet. Did you mean to add a new curve?")
+            msg.setDetailedText("Curve with these Re - ncrit values does not exist yet. Did you mean to add a new curve?")
+            msg.exec_()
+        else:
+            print("Item already exists,updating values")
+            self.current_curve = self.parent.curves.get_curve(re_in=re_chosen,ncrit_in=ncrit_chosen)
+            self.current_curve.alpha = alpha
+            self.current_curve.cl = cl
+            self.current_curve.cd = cd
+            self.load_curves()
+
+    def add_curve(self):
+        print("saving value")
+        re_chosen,ncrit_chosen = self.re_edit.text(), self.ncrit_edit.text()
+        re_chosen,ncrit_chosen = float(re_chosen),float(ncrit_chosen) 
+
+        data_from_table = self.table.get_values()
+        alpha_table,cl_table,cd_table = transpose(data_from_table)
+        alpha,cl,cd = [],[],[]
+
+        for i in range(len(alpha_table)):
+            if alpha_table[i] != "" and cl_table[i] != "" and cd_table[i] != "":
+                alpha.append(float(alpha_table[i]))
+                cl.append(float(cl_table[i]))
+                cd.append(float(cd_table[i]))
+
+        if self.parent.curves.get_curve(re_in=re_chosen,ncrit_in=ncrit_chosen) == None:
+            print("item does not exist,creating new...")
+            x,y = self.parent.get_x_y()
+            self.current_curve = Curve()
+            self.current_curve.create(x,y,re_chosen,ncrit_chosen,alpha,cl,cd)
+            self.parent.curves.add(self.current_curve)
+            self.load_curves()
+        else:
+            msg = MyMessageBox()
+            msg.setIcon(QMessageBox.Warning)
+            msg.setText("Curve with this Re and ncrit already exists!")
+            msg.setDetailedText("Curve with this Re and ncrit already exists!")
+            msg.exec_()
+
+
+
+    def remove_curve(self):
+        out_chosen_values = self.get_chosen_values_from_dropdowns()
+        re_chosen,ncrit_chosen = out_chosen_values
+        self.parent.curves.remove_curve(re_chosen,ncrit_chosen)
+        self.load_curves()
+
+
+    def get_chosen_values_from_dropdowns(self):
+        re_chosen = self.picker_reynolds.itemText(self.picker_reynolds.currentIndex())
+        ncrit_chosen = self.picker_ncrit.itemText(self.picker_ncrit.currentIndex())
+        return float(re_chosen),float(ncrit_chosen)
+
+    def load_curves(self):
+        try:
+            re_last,ncrit_last = self.get_chosen_values_from_dropdowns()
+        except ValueError:
+            re_last,ncrit_last = None, None
+
+        self.picker_reynolds.currentIndexChanged.disconnect()
+        self.picker_ncrit.currentIndexChanged.disconnect()
+
+        self.picker_reynolds.clear()
+        self.picker_ncrit.clear()
+        
+        ncrit_list = []
+        for curve in self.parent.curves.curve_list:      
+            ncrit = curve.ncrit
+            if not ncrit in ncrit_list:
+                ncrit_list.append(ncrit)
+
+        ncrit_list.sort()
+        ncrit_list_str = [str(n) for n in ncrit_list]
+        self.picker_ncrit.addItems(ncrit_list_str)
+
+        if ncrit_last in ncrit_list:
+            ncrit_index = ncrit_list.index(ncrit_last)
+        else:
+            ncrit_index = 0
+            ncrit_last = ncrit_list[ncrit_index]
+
+        self.picker_ncrit.setCurrentIndex(ncrit_index)
+
+        re_list = []
+        for curve in self.parent.curves.curve_list:
+            re = curve.Re
+            ncrit = curve.ncrit
+            if not re in re_list:
+                if ncrit == ncrit_last:
+                    re_list.append(re)
+
+        re_list.sort()
+        re_list_str = [str(r) for r in re_list]
+        self.picker_reynolds.addItems(re_list_str)
+
+        if re_last in re_list:
+            re_index = re_list.index(re_last)
+        else:
+            re_index = 0
+            re_last = re_list[re_index]
+
+        self.picker_reynolds.setCurrentIndex(re_index)
+
+        self.sig3 = self.picker_reynolds.currentIndexChanged.connect(self.load_curves)
+        self.sig4 = self.picker_ncrit.currentIndexChanged.connect(self.load_curves)
+
+        self.load_values_into_table()
+
+
+    def load_values_into_table(self):
+        out_chosen_values = self.get_chosen_values_from_dropdowns()
+        if out_chosen_values == None:
+            return
+        re_chosen,ncrit_chosen = out_chosen_values
+        chosen_curve = self.parent.curves.get_curve(re_in=re_chosen,ncrit_in=ncrit_chosen)
+        if chosen_curve != None:
+            self.current_curve = chosen_curve
+            array = [self.current_curve.alpha,self.current_curve.cl,self.current_curve.cd]
+            array = transpose(array)
+            self.table.clear_table()
+            self.table.createTable(array)
+
+    def check_forms_angles(self):
+        out = ""
+        _needed_vars = [[self._target_speed, self.target_speed], [self._target_rpm, self.target_rpm], ]
+        for n, f in _needed_vars:
+            if isinstance(f, QLineEdit):
+                state = self.validator.validate(f.text(), 0)[0]
+                if state == QtGui.QValidator.Acceptable:
+                    pass
+                elif state == QtGui.QValidator.Intermediate:
+                    out += "Form %s appears not to be valid.\n" % n.text()
+                else:
+                    out += "Form %s is not of the valid type.\n" % n.text()
+        if out == "":
+            return True
+        return out
+
+    def check_state(self, *args, **kwargs):
+        sender = self.sender()
+        validator = sender.validator()
+        state = validator.validate(sender.text(), 0)[0]
+        if state == QtGui.QValidator.Acceptable:
+            color = "#edf5e1"  # green
+        elif state == QtGui.QValidator.Intermediate:
+            color = "#fff79a"  # yellow
+        else:
+            color = "#f6989d"  # red
 
 
 class CurveViewer(QWidget):
@@ -988,7 +1288,7 @@ class CurveViewer(QWidget):
         #    control = CurveControl(self,None)
         #    self.grid_curves.addWidget(control)
 
-        for curve in self.parent.curves.curve_list:
+        for curve in self.parent.curves.get_curves_sorted():
             label = QLabel("Re = " + str(round(curve.Re,2)) + ", Ncrit = " + str(round(curve.ncrit,2)) )
             control = CurveControl(self, curve)
             control.update()
@@ -1773,6 +2073,7 @@ class Stream(QtCore.QObject):
 
     def write(self, text):
         self.newText.emit(str(text))
+
 
 class TabWidget(QTabWidget):
     def __init__(self, parent=None):
