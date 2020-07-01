@@ -2,7 +2,7 @@
 __author__ = "Miha Smrekar"
 __credits__ = ["Miha Smrekar"]
 __license__ = "GPL"
-__version__ = "0.4.1"
+__version__ = "0.4.2"
 __maintainer__ = "Miha Smrekar"
 __email__ = "miha.smrekar9@gmail.com"
 __status__ = "Development"
@@ -91,11 +91,11 @@ class MainWindow(QMainWindow):
         loadFile.setShortcut("Ctrl+L")
         loadFile.setStatusTip('Load File')
         loadFile.triggered.connect(self.file_load)
-        getSettings = QAction("Get settings", self)
-        getSettings.triggered.connect(self.get_all_settings)
+        #getSettings = QAction("Get settings", self)
+        #getSettings.triggered.connect(self.get_all_settings)
         fileMenu.addAction(saveFile)
         fileMenu.addAction(loadFile)
-        fileMenu.addAction(getSettings)
+        #fileMenu.addAction(getSettings)
 
         self.screen_width = width
         self.screen_height = height
