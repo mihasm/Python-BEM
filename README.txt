@@ -1,5 +1,10 @@
 README
 
-How to create executable, you may ask? Without further ado, copy and paste this line into your command console:
+## Install
+pip install -r requirements.txt
 
+## Usage
+python main.py
+
+## Create Executable
 pyinstaller main.spec

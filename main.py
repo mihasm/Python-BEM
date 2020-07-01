@@ -1069,15 +1069,15 @@ class CurveEditor(QWidget):
         self.picker_ncrit = QComboBox()
         self.picker_ncrit.setEditable(False)
         #
-        self.upper_layout.addWidget(self.picker_ncrit_label,2,1)
-        self.upper_layout.addWidget(self.picker_ncrit,3,1)
+        self.upper_layout.addWidget(self.picker_ncrit_label,1,1)
+        self.upper_layout.addWidget(self.picker_ncrit,2,1)
 
         self.picker_reynolds_label = QLabel("Reynolds:")
         self.picker_reynolds = QComboBox()
         self.picker_reynolds.setEditable(False)
         #
-        self.upper_layout.addWidget(self.picker_reynolds_label,2,2)
-        self.upper_layout.addWidget(self.picker_reynolds,3,2)
+        self.upper_layout.addWidget(self.picker_reynolds_label,1,2)
+        self.upper_layout.addWidget(self.picker_reynolds,2,2)
 
 
         #self.picker_mach.lineEdit().returnPressed.connect(self.refresh_dropdowns)
@@ -1160,6 +1160,8 @@ class CurveEditor(QWidget):
 
 
     def remove_curve(self):
+        if len(self.parent.curves.curve_list) == 0:
+            return
         out_chosen_values = self.get_chosen_values_from_dropdowns()
         re_chosen,ncrit_chosen = out_chosen_values
         self.parent.curves.remove_curve(re_chosen,ncrit_chosen)
@@ -1178,6 +1180,12 @@ class CurveEditor(QWidget):
             re_last,ncrit_last = None, None
 
         if len(self.parent.curves.curve_list) == 0:
+            self.disconnect()
+
+            self.picker_reynolds.clear()
+            self.picker_ncrit.clear()
+
+            self.connect()
             return
 
         self.disconnect()
