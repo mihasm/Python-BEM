@@ -7,7 +7,11 @@ import scipy.interpolate
 
 def interp(re_in, alpha_in, re, alpha, cl):
     """
-    data has to be sorted, first by 0th column, then by 2nd column
+    Interpolation function uses input arrays re, alpha and cl, and input re_in and alpha_in,
+
+    to get the interpolated value of a curve (cl or cd, or any 3D function for that matter).
+
+    In cases that re_in is too large, or too small, the function returns the closest available valid Reynolds data.
     """
 
     re_list, alpha_list, cl_list = np.unique(

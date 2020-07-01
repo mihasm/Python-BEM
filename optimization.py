@@ -39,6 +39,8 @@ def optimize_angles_genetic(inp_args,queue_pyqtgraph):
         mut_coeff = inp_args["mut_coeff"]
         population_size = int(inp_args["population"])
         num_iter = int(inp_args["num_iter"])
+        weight_dt = inp_args["weight_dt"]
+        weight_dq = inp_args["weight_dq"]
 
         p.print("Optimization variable is", optimization_variable)
         p.print("Pitch optimization:",pitch_optimization)
@@ -92,6 +94,8 @@ def optimize_angles_genetic(inp_args,queue_pyqtgraph):
                 max_thickness = inp_args["airfoils"][_airfoil]["max_thickness"] * _c
                 _airfoil_dat = _airfoil + ".dat"
 
+                #worst_value = 0.0
+
                 def fobj(x):
                     global dT_max
                     global dQ_max
@@ -100,16 +104,12 @@ def optimize_angles_genetic(inp_args,queue_pyqtgraph):
                                                 x),
                                             printer=p, **inp_args)
                     if d == None or d == False:
-                        return 0.0
+                        return -1e50
 
-                    if optimization_variable == "dQ/dT":
-                        return d["dQ"]/d["dT"]
-                    if optimization_variable == "dT/dQ":
-                        return d["dT"]/d["dQ"]
                     if optimization_variable == "dQ-dT":
-                        return d["dQ"]-d["dT"]
+                        return d["dQ"]*weight_dq-d["dT"]*weight_dt
                     if optimization_variable == "dT-dQ":
-                        return d["dT"]-d["dQ"]
+                        return d["dT"]*weight_dt-d["dQ"]*weight_dq
                     
                     return d[optimization_variable]
 

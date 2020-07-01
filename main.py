@@ -203,11 +203,20 @@ class MainWindow(QMainWindow):
         """
         try:
             self.analysis.set_settings(inp_dict)
+        except:
+            msg = ErrorMessageBox()
 
-            self.optimization.set_settings(inp_dict)
-
+        try:
             self.wind_turbine_properties.set_settings(inp_dict)
+        except:
+            msg = ErrorMessageBox()
 
+        try:
+            self.optimization.set_settings(inp_dict)
+        except:
+            msg = ErrorMessageBox()
+
+        try:
             self.curve_manager.set_settings(inp_dict)
         except:
             msg = ErrorMessageBox()
@@ -615,6 +624,7 @@ class Airfoils(QWidget):
             "izberite poljubni aerodinamični profil.\n"+
             "2. Link vnesite zgoraj in pritisnite 'Scrape'.\n"+
             "Sedaj so cL/cD krivulje naložene v program.\n"+
+            "(Ročno jih lahko spremenite s Curve Editor)\n"+
             "3. Sedaj je treba nastaviti koef. ekstrapolacije\n"+
             "z orodjem Curve Extrapolator (Montgomerie)\n"+
             "4. Končane krivulje lahko preverite\n"+
@@ -1021,6 +1031,7 @@ class CurveEditor(QWidget):
         self.validator = QtGui.QDoubleValidator()
 
         self.table = Table()
+        self.table.createTable([[0,0,0]])
         self.table.set_labels(["alpha [°]", "cL (lift coeff.)", "cD (drag coeff.)"])
         self.grid.addWidget(self.table,2,0)
 
@@ -1031,10 +1042,10 @@ class CurveEditor(QWidget):
 
         self.button_remove_curve = QPushButton("Remove curve")
         self.button_remove_curve.clicked.connect(self.remove_curve)
-        self.upper_layout.addWidget(self.button_remove_curve,1,1)
+        self.upper_layout.addWidget(self.button_remove_curve,2,3)
         self.button_save_curve = QPushButton("Update curve")
         self.button_save_curve.clicked.connect(self.save_curve)
-        self.upper_layout.addWidget(self.button_save_curve,1,2)
+        self.upper_layout.addWidget(self.button_save_curve,1,3)
         self.button_add_curve = QPushButton("Add curve")
         self.button_add_curve.clicked.connect(self.add_curve)
         self.upper_layout.addWidget(self.button_add_curve,4,3)
@@ -1073,8 +1084,7 @@ class CurveEditor(QWidget):
         #self.sig1 = self.picker_reynolds.lineEdit().returnPressed.connect(self.save_curve)
         #self.sig2 = self.picker_ncrit.lineEdit().returnPressed.connect(self.save_curve)
 
-        self.sig3 = self.picker_reynolds.currentIndexChanged.connect(self.load_curves)
-        self.sig4 = self.picker_ncrit.currentIndexChanged.connect(self.load_curves)
+        self.connect()
 
         #self.load_curves()
 
@@ -1093,16 +1103,13 @@ class CurveEditor(QWidget):
                 cl.append(float(cl_table[i]))
                 cd.append(float(cd_table[i]))
 
-        print(alpha,cl,cd)
-
         if self.parent.curves.get_curve(re_in=re_chosen,ncrit_in=ncrit_chosen) == None:
             msg = MyMessageBox()
             msg.setIcon(QMessageBox.Warning)
             msg.setText("Curve with these Re - ncrit values does not exist yet. Did you mean to add a new curve?")
-            msg.setDetailedText("Curve with these Re - ncrit values does not exist yet. Did you mean to add a new curve?")
+            msg.setDetailedText("Curve with Re %s and ncrit %s values does not exist yet. Did you mean to add a new curve?" % (re_chosen,ncrit_chosen))
             msg.exec_()
         else:
-            print("Item already exists,updating values")
             self.current_curve = self.parent.curves.get_curve(re_in=re_chosen,ncrit_in=ncrit_chosen)
             self.current_curve.alpha = alpha
             self.current_curve.cl = cl
@@ -1110,9 +1117,18 @@ class CurveEditor(QWidget):
             self.load_curves()
 
     def add_curve(self):
-        print("saving value")
+        self.disconnect()
+
         re_chosen,ncrit_chosen = self.re_edit.text(), self.ncrit_edit.text()
-        re_chosen,ncrit_chosen = float(re_chosen),float(ncrit_chosen) 
+        try:
+            re_chosen,ncrit_chosen = float(re_chosen),float(ncrit_chosen)
+        except:
+            msg = MyMessageBox()
+            msg.setIcon(QMessageBox.Warning)
+            msg.setText("Values of Re and ncrit for new curve do not seem to be valid.")
+            msg.setDetailedText("Values of Re '%s' and ncrit '%s' could not be converted to float. Please double check the numbers." % (re_chosen,ncrit_chosen))
+            msg.exec_()
+            return
 
         data_from_table = self.table.get_values()
         alpha_table,cl_table,cd_table = transpose(data_from_table)
@@ -1130,13 +1146,16 @@ class CurveEditor(QWidget):
             self.current_curve = Curve()
             self.current_curve.create(x,y,re_chosen,ncrit_chosen,alpha,cl,cd)
             self.parent.curves.add(self.current_curve)
+            print("self.parent.curves.curve_list",self.parent.curves.curve_list)
             self.load_curves()
         else:
             msg = MyMessageBox()
             msg.setIcon(QMessageBox.Warning)
             msg.setText("Curve with this Re and ncrit already exists!")
-            msg.setDetailedText("Curve with this Re and ncrit already exists!")
+            msg.setDetailedText("Curve with Re %s and ncrit %s values already exists. Did you mean to update the existing curve?" % (re_chosen,ncrit_chosen))
             msg.exec_()
+
+        self.connect()
 
 
 
@@ -1158,8 +1177,10 @@ class CurveEditor(QWidget):
         except ValueError:
             re_last,ncrit_last = None, None
 
-        self.picker_reynolds.currentIndexChanged.disconnect()
-        self.picker_ncrit.currentIndexChanged.disconnect()
+        if len(self.parent.curves.curve_list) == 0:
+            return
+
+        self.disconnect()
 
         self.picker_reynolds.clear()
         self.picker_ncrit.clear()
@@ -1202,11 +1223,21 @@ class CurveEditor(QWidget):
 
         self.picker_reynolds.setCurrentIndex(re_index)
 
-        self.sig3 = self.picker_reynolds.currentIndexChanged.connect(self.load_curves)
-        self.sig4 = self.picker_ncrit.currentIndexChanged.connect(self.load_curves)
+        self.connect()
 
         self.load_values_into_table()
 
+    def disconnect(self):
+        try:
+            self.picker_reynolds.currentIndexChanged.disconnect()
+            self.picker_ncrit.currentIndexChanged.disconnect()
+        except TypeError:
+            pass
+
+
+    def connect(self):
+        self.sig3 = self.picker_reynolds.currentIndexChanged.connect(self.load_curves)
+        self.sig4 = self.picker_ncrit.currentIndexChanged.connect(self.load_curves)
 
     def load_values_into_table(self):
         out_chosen_values = self.get_chosen_values_from_dropdowns()
@@ -1760,10 +1791,26 @@ class Optimization(QWidget):
 
         self._opt_variable = QLabel("Optimization variable")
         self.opt_variable = QComboBox()
-        self.opt_variable.addItems(["max(dT) (thrust->propeller)", "max(dQ) (torque->wind turbine)", "max(dQ/dT)", "max(dT/dQ)", "max(dQ-dT)", "max(dT-dQ)"])
-        self.opt_variable.setCurrentIndex(1)
+        self.opt_variable.addItems(["max(dQ) (torque->wind turbine)", "max(dT) (thrust->propeller)", "max(dQ-dT)", "max(dT-dQ)"])
+        self.opt_variable.setCurrentIndex(0)
         self.form_list.append([self._opt_variable, self.opt_variable])
         self.opt_variable.setToolTip("Optimizacija naj poteka za to izbrano spremenljivko. V primeru vetrne turbine max(dQ).")
+
+        self.weight_dq = QLineEdit()
+        self.weight_dq.setValidator(self.validator)
+        self.weight_dq.textChanged.connect(self.check_state)
+        self.weight_dq.textChanged.emit(self.weight_dq.text())
+        self._weight_dq = QLabel("weight_dq")
+        self.form_list.append([self._weight_dq, self.weight_dq])
+        self.weight_dq.setToolTip("Utež dq v primeru dvojne optimizacije.")
+
+        self.weight_dt = QLineEdit()
+        self.weight_dt.setValidator(self.validator)
+        self.weight_dt.textChanged.connect(self.check_state)
+        self.weight_dt.textChanged.emit(self.weight_dt.text())
+        self._weight_dt = QLabel("weight_dt")
+        self.form_list.append([self._weight_dt, self.weight_dt])
+        self.weight_dt.setToolTip("Utež dt v primeru dvojne optimizacije.")
 
         self.pitch_optimization = QCheckBox()
         self.pitch_optimization.setChecked(False)
@@ -1901,18 +1948,16 @@ class Optimization(QWidget):
         out["mut_coeff"] = self.mut_coeff.text()
         out["population"] = self.population.text()
         out["num_iter"] = self.num_iter.text()
+        out["weight_dt"] = self.weight_dt.text()
+        out["weight_dq"] = self.weight_dq.text()
 
         if int(self.opt_variable.currentIndex()) == 0:
-            out["optimization_variable"] = "dT"
-        elif int(self.opt_variable.currentIndex()) == 1:
             out["optimization_variable"] = "dQ"
+        elif int(self.opt_variable.currentIndex()) == 1:
+            out["optimization_variable"] = "dT"
         elif int(self.opt_variable.currentIndex()) == 2:
-            out["optimization_variable"] = "dQ/dT"
-        elif int(self.opt_variable.currentIndex()) == 3:
-            out["optimization_variable"] = "dT/dQ"
-        elif int(self.opt_variable.currentIndex()) == 4:
             out["optimization_variable"] = "dQ-dT"
-        elif int(self.opt_variable.currentIndex()) == 5:
+        elif int(self.opt_variable.currentIndex()) == 3:
             out["optimization_variable"] = "dT-dQ"
 
         for k, v in out.items():
@@ -1935,6 +1980,8 @@ class Optimization(QWidget):
         self.mut_coeff.setText(str(inp_dict["mut_coeff"]))
         self.population.setText(str(inp_dict["population"]))
         self.num_iter.setText(str(inp_dict["num_iter"]))
+        self.weight_dt.setText(str(inp_dict["weight_dt"]))
+        self.weight_dq.setText(str(inp_dict["weight_dq"]))
 
 
 class ThreadGetter(QThread):
