@@ -83,14 +83,14 @@ def optimize_angles_genetic(inp_args,queue_pyqtgraph):
             best = it[-1]
         else:
             p.print("Starting calculation...")
-            for section_number in range(len(inp_args["r_in"])):
+            for section_number in range(len(inp_args["r"])):
                 p.print("  Section_number is", section_number)
 
-                _r = inp_args["r_in"][section_number]
-                _c = inp_args["c_in"][section_number]
-                _theta = inp_args["theta_in"][section_number]
+                _r = inp_args["r"][section_number]
+                _c = inp_args["c"][section_number]
+                _theta = inp_args["theta"][section_number]
                 _dr = inp_args["dr"][section_number]
-                _airfoil = inp_args["foils_in"][section_number]
+                _airfoil = inp_args["foils"][section_number]
                 max_thickness = inp_args["airfoils"][_airfoil]["max_thickness"] * _c
                 _airfoil_dat = _airfoil + ".dat"
 

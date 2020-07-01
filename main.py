@@ -1577,8 +1577,6 @@ class Analysis(QWidget):
             self.fbox.addRow(key, form)
             self.form_list.append([key, form, key_orig])
 
-        self.tsr_string = QLabel("0")
-        self.J_string = QLabel("0")
         self.emptyLabel = QLabel(" ")
         self.buttonRun.clicked.connect(self.run)
         self.buttonClear = QPushButton("Clear screen")
@@ -1592,6 +1590,9 @@ class Analysis(QWidget):
         self.fbox.addRow(self.emptyLabel, self.buttonRun)
         self.fbox.addRow(self.buttonClear, self.buttonStop)
         self.fbox.addRow(self.buttonEOFdescription, self.buttonEOF)
+
+        self.tsr_string = QLabel("0")
+        self.J_string = QLabel("0")
         self.fbox.addRow("TSR:", self.tsr_string)
         self.fbox.addRow("J:", self.J_string)
 
@@ -1862,6 +1863,22 @@ class Optimization(QWidget):
         self.queue_pyqtgraph = self.manager_pyqtgraph.list()
         self.queue_pyqtgraph.append([[0],[0],0,0])
 
+        self.tsr_string = QLabel("0")
+        self.J_string = QLabel("0")
+        self.fbox.addRow("TSR:", self.tsr_string)
+        self.fbox.addRow("J:", self.J_string)
+
+    def update_tsr_and_j(self):
+        try:
+            s = self.get_settings()
+            R = float(self.main.wind_turbine_properties.R.text())
+            tsr = 2 * np.pi * float(s["target_rpm"]) * R / 60 / float(s["target_speed"])
+            self.tsr_string.setText("%.2f" % (tsr))
+            J = float(s["target_speed"]) / (float(s["target_rpm"]) / 60 * 2 * R)
+            self.J_string.setText("%.2f" % (J))
+        except:
+            pass
+    
     def check_forms_angles(self):
         out = ""
         _needed_vars = [[self._target_speed, self.target_speed], [self._target_rpm, self.target_rpm], ]
@@ -1879,6 +1896,8 @@ class Optimization(QWidget):
         return out
 
     def check_state(self, *args, **kwargs):
+        self.update_tsr_and_j()
+
         sender = self.sender()
         validator = sender.validator()
         state = validator.validate(sender.text(), 0)[0]

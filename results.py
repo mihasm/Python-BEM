@@ -74,15 +74,15 @@ class ResultsWindow(QMainWindow):
             # ct_p(J) curve
             f5 = self.tab_widget.add_tab_figure("ct(J) curve (propeller)")
             self.tab_widget.add_2d_plot_to_figure(f5, results_3d["J"], results_3d["ct"], 111, "Propeler curves",
-                                                  "J = 1/lambda", "ct", look="b-", x_min=0, x_max=1, y_min=0, y_max=0.25, label="Ct (Thrust)")
+                                                  "J = 1/lambda", "ct", look="b-", label="Ct (Thrust)")
 
             # cp_p(J) curve
             self.tab_widget.add_2d_plot_to_figure(f5, results_3d['J'], results_3d['cp'], 111, None, None,
-                                                  None, look='r-', x_min=0, x_max=1, y_min=0, y_max=0.1, label="Cp (Power)")
+                                                  None, look='r-', label="Cp (Power)")
 
             # eff_p(J) curve
             ax1 = self.tab_widget.add_2d_plot_to_figure(f5, results_3d['J'], results_3d['eff'], 111, None, None,
-                                                        None, look='g-', x_min=0, x_max=1, y_min=0, y_max=1.0, label="Eff (Efficiency)")
+                                                        None, look='g-', label="Eff (Efficiency)")
             ax1.legend()
 
         ############################################

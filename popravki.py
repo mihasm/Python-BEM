@@ -581,7 +581,7 @@ def fInductionCoefficients13(a_last, F, phi, Cl, C_norm, sigma, lambda_r, *args,
     return a, aprime, Ct
 
 
-def fInductionCoefficients14(a_last, phi, sigma, Cl, Cd, F, C_norm, *args, **kwargs):
+def fInductionCoefficients14(a_last, phi, sigma, Cl, Cd, F, C_norm, C_tang, *args, **kwargs):
     """
     NAME: Propeller
     Method from http://acoustics.ae.illinois.edu/pdfs/AIAA-Paper-2015-3296.pdf
@@ -599,10 +599,10 @@ def fInductionCoefficients14(a_last, phi, sigma, Cl, Cd, F, C_norm, *args, **kwa
     """
 
     a = a_last
-    CT = cos(phi) * Cl - sin(phi) * Cd
-    CQ = sin(phi) * Cl + cos(phi) * Cd
-    a = 1 / (F * 4 * sin(phi) ** 2 / (sigma * CT) - 1)
-    aprime = 1 / (F * 4 * sin(phi) * cos(phi) / (sigma * CQ) + 1)
+    #CT = cos(phi) * Cl - sin(phi) * Cd
+    #CQ = sin(phi) * Cl + cos(phi) * Cd
+    a = 1 / (F * 4 * sin(phi) ** 2 / (sigma * C_norm) - 1)
+    aprime = 1 / (F * 4 * sin(phi) * cos(phi) / (sigma * C_tang) + 1)
 
     Ct = sigma * (1 - a) ** 2 * C_norm / (sin(phi) ** 2)  # QBlade
     return a, aprime, Ct

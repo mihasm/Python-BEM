@@ -272,6 +272,9 @@ class Calculator:
         cq_p = Q / (rho * (2*R)**5 * (rpm/60)**2)
         eff = J/2/pi*ct_p/cq_p
 
+        if propeller_mode and eff > 1.0:
+            return None
+
         #floats
         results["R"] = R
         results["rpm"] = rpm
@@ -391,6 +394,9 @@ class Calculator:
                 Un = Vx * (1 - a)
                 Ut = Vy * (1 + aprime)
 
+            # relative wind
+            phi = atan2(Un, Ut)
+
             Vrel_norm = sqrt(Un ** 2 + Ut ** 2)
 
             if fix_reynolds:
@@ -400,9 +406,6 @@ class Calculator:
                 if Re_next > 1e7:
                     Re_next = 2e5
                 Re = int(Re_next)
-
-            # relative wind
-            phi = atan2(Un, Ut)
 
             F = 1
             # Prandtl tip loss
@@ -468,8 +471,12 @@ class Calculator:
                 Cl = machNumberCorrection(Cl, M)
 
             # normal and tangential coefficients
-            C_norm = Cl * cos(phi) + Cd * sin(phi)
-            C_tang = Cl * sin(phi) - Cd * cos(phi)
+            if propeller_mode:
+                C_norm = Cl * cos(phi) - Cd * sin(phi)
+                C_tang = Cl * sin(phi) + Cd * cos(phi)
+            else:
+                C_norm = Cl * cos(phi) + Cd * sin(phi)
+                C_tang = Cl * sin(phi) - Cd * cos(phi)
 
             input_arguments = {"F": F, "lambda_r": lambda_r, "phi": phi, "sigma": sigma, "C_norm": C_norm,
                                "C_tang": C_tang, "Cl": Cl, "Cd": Cd, "B": B, "c": _c, "r": _r, "R": R, "psi": 0.0,
@@ -511,32 +518,31 @@ class Calculator:
             # thrust and torque - Wiley, WE 2nd, p.124
             dT_MT = F * 4 * pi * _r * rho * v ** 2 * a * (1 - a) * _dr
             dT_BET = 0.5 * rho * B * _c * Vrel_norm ** 2 * \
-                (Cl * cos(phi) + Cd * sin(phi)) * _dr
+                C_norm * _dr
             dQ_MT = F * 4 * aprime * (1 - a) * rho * \
                 v * pi * _r ** 3 * omega * _dr
             dQ_BET = B * 0.5 * rho * Vrel_norm ** 2 * \
-                (Cl * sin(phi) - Cd * cos(phi)) * _c * _dr * _r
+                C_tang * _c * _dr * _r
 
             # thrust-propeller
             dT_MT_p = 4 * pi * _r * rho * v ** 2 * (1 + a) * a * _dr
-            dQ_MT_p = 4 * pi * _r ** 3 * rho * \
-                v * omega * (1 + a) * aprime * _dr
-            dT_BET_p = 0.5 * rho * v ** 2 * _c * B * (1 + a) ** 2 / (sin(phi) ** 2) * (
-                Cl * cos(phi) - Cd * sin(phi)) * _dr
-            dQ_BET_p = 0.5 * rho * v * _c * B * omega * _r ** 2 * (1 + a) * (1 - aprime) / (sin(phi) * cos(phi)) * (
-                Cl * sin(phi) + Cd * cos(phi)) * _dr
+            dQ_MT_p = 4 * pi * _r ** 3 * rho * v * omega * (1 + a) * aprime * _dr
+            dT_BET_p = 0.5 * rho * v ** 2 * _c * B * (1 + a) ** 2 / (sin(phi) ** 2) * C_norm * _dr
+            dQ_BET_p = 0.5 * rho * v * _c * B * omega * _r ** 2 * (1 + a) * (1 - aprime) / (sin(phi) * cos(phi)) * C_tang * _dr
 
             # from http://www.aerodynamics4students.com/propel.m
-            dT_BET_p_2 = 0.5*rho*Vrel_norm**2*B*_c * \
-                (Cl * cos(phi) - Cd * sin(phi))*_dr
-            dQ_BET_p_2 = 0.5*rho*Vrel_norm**2*B*_c * \
-                _r*(Cl * sin(phi) + Cd * cos(phi)) * _dr
+            dT_BET_p_2 = 0.5*rho*Vrel_norm**2*B*_c * C_norm * _dr
+            dQ_BET_p_2 = 0.5*rho*Vrel_norm**2*B*_c * _r * C_tang * _dr
             dT_MT_p_2 = 4*pi*_r*rho*v**2*(1+a)
             dQ_MT_p_2 = 4*pi*_r**3*rho*v*(1+a)*omega
 
+            # https://apps.dtic.mil/dtic/tr/fulltext/u2/1013408.pdf
+            dT_prop = 0.5 * B * rho * Vrel_norm**2 * _c * _dr * C_norm
+            dQ_prop = 0.5 * B * rho * Vrel_norm**2 *_c * _r * _dr * C_tang
+
             if propeller_mode:
-                dT = dT_BET_p
-                dQ = dQ_BET_p
+                dT = dT_prop
+                dQ = dQ_prop
             else:
                 dT = dT_BET
                 dQ = dQ_BET
@@ -597,7 +603,7 @@ class Calculator:
                     (dT_MT_p, dT_BET_p))
             p.print(prepend, "        dQ_MT_p %.5f dQ_BET_p %.5f" %
                     (dQ_MT_p, dQ_BET_p))
-            p.print(prepend, "        dT_p %.2f dQ_p %.2f" % (dT_p, dQ_p))
+            #p.print(prepend, "        dT_p %.2f dQ_p %.2f" % (dT_p, dQ_p))
             p.print(prepend, "    ----------------------------")
 
         out = {"a": a, "aprime": aprime, "Cl": Cl, "Cd":Cd, "alpha": alpha, "phi": phi, "F": F, "dFt": dFt, "Ct": Ct, "dFn": dFn,
