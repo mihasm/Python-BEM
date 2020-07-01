@@ -1799,7 +1799,7 @@ class Optimization(QWidget):
 
         self._opt_variable = QLabel("Optimization variable")
         self.opt_variable = QComboBox()
-        self.opt_variable.addItems(["max(dQ) (torque->wind turbine)", "max(dT) (thrust->propeller)", "max(dQ-dT)", "max(dT-dQ)"])
+        self.opt_variable.addItems(["max(dQ) (torque->wind turbine)", "max(dT) (thrust->propeller)", "max(weight_dq*dQ-weight_dt*dT)", "max(weight_dt*dT-weight_dq*dQ)"])
         self.opt_variable.setCurrentIndex(0)
         self.form_list.append([self._opt_variable, self.opt_variable])
         self.opt_variable.setToolTip("Optimizacija naj poteka za to izbrano spremenljivko. V primeru vetrne turbine max(dQ).")
