@@ -1878,7 +1878,7 @@ class Optimization(QWidget):
             self.J_string.setText("%.2f" % (J))
         except:
             pass
-    
+
     def check_forms_angles(self):
         out = ""
         _needed_vars = [[self._target_speed, self.target_speed], [self._target_rpm, self.target_rpm], ]
@@ -2019,7 +2019,7 @@ class ThreadGetter(QThread):
         self.dataCollectionTimer.timeout.connect(self.updateInProc)
 
     def run(self):
-        self.dataCollectionTimer.start(1)  # 0 causes freeze
+        self.dataCollectionTimer.start(2)  # 0 causes freeze
         self.loop = QtCore.QEventLoop()
         self.loop.exec_()
 
@@ -2027,7 +2027,7 @@ class ThreadGetter(QThread):
         if len(self.parent().return_print) > 0:
             t = self.parent().return_print.pop(0)
             self.parent().emitter_add.emit(str(t))
-        if self.parent().end_of_file.value == True:
+        if self.parent().end_of_file.value == True and len(self.parent().return_print) == 0:
             self.parent().emitter_done.emit()
 
 
