@@ -65,12 +65,16 @@ def create_3d_blade(SET_INIT, flip_turning_direction=False, propeller_geom=False
             _theta = -_theta
 
         _foil_x, _foil_y = airfoils[_foil]["x"], airfoils[_foil]["y"]
+
+        _centroid_x, _centroid_y = airfoils[_foil]["centroid_x"], airfoils[_foil]["centroid_y"]
+
         if flip_turning_direction:
             _foil_x = -np.array(_foil_x)
             _theta = -_theta
+            _centroid_x = -_centroid_x
 
-        _centroid_x, _centroid_y = airfoils[_foil]["centroid_x"], airfoils[_foil]["centroid_y"]
         _centroid = (_centroid_x, _centroid_y)
+        
         _foil_x, _foil_y = scale_and_normalize(_foil_x, _foil_y, _c, _centroid)
         _foil_x, _foil_y = rotate_array(_foil_x, _foil_y, (0, 0), _theta)
 
