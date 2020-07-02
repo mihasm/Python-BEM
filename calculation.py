@@ -33,7 +33,7 @@ OUTPUT_VARIABLES_LIST = {
     "Re":{"type":"array","name":"Reynolds number","symbol":"Re","unit":""},
     "U1":{"type":"array","name":"Far-upwind speed","symbol":"U1","unit":"m/s"},
     "U2":{"type":"array","name":"Near-upwind speed","symbol":"U2","unit":"m/s"},
-    #"U3":{"type":"array","name":"Near-downwind speed","symbol":"U3","unit":"m/s"},
+    "U3":{"type":"array","name":"Near-downwind speed","symbol":"U3","unit":"m/s"},
     "U4":{"type":"array","name":"Far-downwind speed","symbol":"U4","unit":"m/s"},
 
 
@@ -58,6 +58,7 @@ OUTPUT_VARIABLES_LIST = {
     "B":{"type":"float","name":"Number of blades","symbol":"B","unit":""},
     "J":{"type":"float","name":"Advance ratio","symbol":"J","unit":""},
     "eff":{"type":"float","name":"Efficiency","symbol":r"$\eta_p$","unit":""},
+    "pitch":{"type":"float","name":"Pitch","symbol":"p","unit":"°"}
 }
 
 
@@ -296,6 +297,7 @@ class Calculator:
         results["B"] = B        
         results["J"] = J
         results["eff"] = eff
+        results["pitch"] = pitch
 
         #arrays
         results["r"] = r

@@ -25,6 +25,8 @@ warnings.filterwarnings("ignore",category=matplotlib.cbook.MatplotlibDeprecation
 class ResultsWindow(QMainWindow):
     def __init__(self, parent, width, height, results_3d, input_data):
         super(ResultsWindow, self).__init__(parent)
+        self.input_data = input_data
+
         self.title = "Results"
         self.screen_width = width
         self.screen_height = height
@@ -33,6 +35,20 @@ class ResultsWindow(QMainWindow):
                          self.screen_width * 0.75 * 0.4, )
         self.tab_widget = TabWidget(self)
         self.setCentralWidget(self.tab_widget)
+
+        #list_of_variable_parameter = []
+        if input_data["variable_selection"] == 0:
+            list_of_variable_parameter = np.array(results_3d["TSR"])
+            variable_parameter_title = r"$\lambda$"
+        elif input_data["variable_selection"] == 1:
+            list_of_variable_parameter = np.array(results_3d["TSR"])
+            variable_parameter_title = r"$\lambda$"
+        elif input_data["variable_selection"] == 2:
+            list_of_variable_parameter = np.array(results_3d["J"])
+            variable_parameter_title = "J"
+        elif input_data["variable_selection"] == 3:
+            list_of_variable_parameter = np.array(results_3d["pitch"])
+            variable_parameter_title = "pitch"
 
         # get data from results
         X, Y, Z = results_3d["v"], results_3d["rpm"], results_3d["power"]
@@ -97,12 +113,22 @@ class ResultsWindow(QMainWindow):
         ############################################
 
         ########## U4 (r) ##########################
-        f8 = self.tab_widget.add_tab_figure("Windspeed (radius)")
+        f8 = self.tab_widget.add_tab_figure("Windspeed U3 (radius)")
+        for _u in results_3d['U3']:
+            ax2 = self.tab_widget.add_2d_plot_to_figure(
+                f8, _u, input_data['r'], 111, '', r'$v_4$ [m/s]', 'r [m]', look="-", c=numpy.random.rand(3,), label="Windspeed close behind"+str(_u))
+
+        leg_hitrosti = ax2.legend(np.round(list_of_variable_parameter, 2))
+        leg_hitrosti.set_title(variable_parameter_title, prop={'size': 20})
+        ############################################
+
+        ########## U4 (r) ##########################
+        f8 = self.tab_widget.add_tab_figure("Windspeed U4 (radius)")
         for _u in results_3d['U4']:
             ax2 = self.tab_widget.add_2d_plot_to_figure(
                 f8, _u, input_data['r'], 111, '', r'$v_4$ [m/s]', 'r [m]', look="-", c=numpy.random.rand(3,), label="Windspeed far away behind"+str(_u))
-        leg_hitrosti = ax2.legend(np.round(np.array(results_3d["TSR"]), 2))
-        leg_hitrosti.set_title(r"$\lambda$", prop={'size': 20})
+        leg_hitrosti = ax2.legend(np.round(list_of_variable_parameter, 2))
+        leg_hitrosti.set_title(variable_parameter_title, prop={'size': 20})
         ############################################
 
         ############ geometry check ################
@@ -250,6 +276,7 @@ class TabWidget(QtWidgets.QTabWidget):
 class CustomGraphWidget(QWidget):
     def __init__(self, parent=None):
         super(CustomGraphWidget, self).__init__(parent)
+        self.parent = parent
 
         self.figure = Figure()
         self.canvas = FigureCanvas(self.figure)
@@ -288,10 +315,29 @@ class CustomGraphWidget(QWidget):
     def draw_graph(self):
         self.ax.clear()
 
+        if self.parent.input_data["variable_selection"] == 0:
+            list_of_variable_parameter = np.array(self.results["TSR"])
+            variable_parameter_title = r"$\lambda$"
+        elif self.parent.input_data["variable_selection"] == 1:
+            list_of_variable_parameter = np.array(self.results["TSR"])
+            variable_parameter_title = r"$\lambda$"
+        elif self.parent.input_data["variable_selection"] == 2:
+            list_of_variable_parameter = np.array(self.results["J"])
+            variable_parameter_title = "J"
+        elif self.parent.input_data["variable_selection"] == 3:
+            list_of_variable_parameter = np.array(self.results["pitch"])
+            variable_parameter_title = "pitch"
+
         x_data = self.inverse_list[str(self.comboBox_x.currentText())]
         y_data = self.inverse_list[str(self.comboBox_y.currentText())]
         x_ar = np.array(self.results[x_data])
         y_ar = np.array(self.results[y_data])
+
+        if not x_data in OUTPUT_VARIABLES_LIST:
+            raise Exception("Variable %s not defined in OUTPUT_VARIABLES_LIST" % x_data)
+
+        if not y_data in OUTPUT_VARIABLES_LIST:
+            raise Exception("Variable %s not defined in OUTPUT_VARIABLES_LIST" % x_data)
 
         legend_r = False
 
@@ -305,7 +351,7 @@ class CustomGraphWidget(QWidget):
         elif OUTPUT_VARIABLES_LIST[x_data]["type"] == "array" or OUTPUT_VARIABLES_LIST[y_data]["type"] == "array":
             legend_r = True
 
-        draw_3d = True
+        draw_3d = False
 
         self.figure.delaxes(self.ax)
         
@@ -328,16 +374,17 @@ class CustomGraphWidget(QWidget):
                 if num_columns == None:
                     num_columns = x_ar.shape[1]
 
-                z_ar = np.tile(np.array(self.results["TSR"]),(num_columns,1))
+                z_ar = np.tile(np.array(list_of_variable_parameter),(num_columns,1))
+
                 z_ar = np.transpose(z_ar)
                 try:
-                    #p0 = self.ax.plot_trisurf(z_ar.flatten(),x_ar.flatten(),y_ar.flatten(), cmap=plt.cm.CMRmap)
-                    p0 = self.ax.scatter(z_ar.flatten(),x_ar.flatten(),y_ar.flatten(),c=y_ar.flatten(),cmap=plt.cm.CMRmap, label="3d plot")
-                    #cbar = plt.colorbar(p0,cax=self.ax)
+                    p0 = self.ax.plot_trisurf(z_ar.flatten(),x_ar.flatten(),y_ar.flatten(), cmap=plt.cm.CMRmap)
                 except:
-                    msg = MyMessageBox()
-                
-                xlabel = r"$\lambda$"
+                    p0 = self.ax.scatter(z_ar.flatten(),x_ar.flatten(),y_ar.flatten(),c=y_ar.flatten(),cmap=plt.cm.CMRmap, label="3d plot")
+                    
+
+                xlabel = variable_parameter_title
+
                 ylabel = OUTPUT_VARIABLES_LIST[x_data]["symbol"]
                 if OUTPUT_VARIABLES_LIST[x_data]["unit"] != "":
                     ylabel = ylabel+" ["+OUTPUT_VARIABLES_LIST[x_data]["unit"]+"]"
@@ -353,23 +400,23 @@ class CustomGraphWidget(QWidget):
             else:
                 self.ax = self.figure.add_subplot(111)
                 self.ax.plot(x_ar,y_ar,label="2d plot")
-                self.ax.legend(numpy.round(self.results["TSR"],2),title=r"$\lambda$")
+                self.ax.legend(numpy.round(list_of_variable_parameter,2),title=variable_parameter_title)
         else:
             self.ax = self.figure.add_subplot(111)
             self.ax.plot(x_ar,y_ar,label="2d plot")
 
-            self.ax.set_title(OUTPUT_VARIABLES_LIST[y_data]["name"]+" vs. "+OUTPUT_VARIABLES_LIST[x_data]["name"])
+        self.ax.set_title(OUTPUT_VARIABLES_LIST[y_data]["name"]+" vs. "+OUTPUT_VARIABLES_LIST[x_data]["name"])
 
-            xlabel = OUTPUT_VARIABLES_LIST[x_data]["symbol"]
-            if OUTPUT_VARIABLES_LIST[x_data]["unit"] != "":
-                xlabel = xlabel+" ["+OUTPUT_VARIABLES_LIST[x_data]["unit"]+"]"
+        xlabel = OUTPUT_VARIABLES_LIST[x_data]["symbol"]
+        if OUTPUT_VARIABLES_LIST[x_data]["unit"] != "":
+            xlabel = xlabel+" ["+OUTPUT_VARIABLES_LIST[x_data]["unit"]+"]"
 
-            ylabel = OUTPUT_VARIABLES_LIST[y_data]["symbol"]
-            if OUTPUT_VARIABLES_LIST[x_data]["unit"] != "":
-                ylabel = ylabel+" ["+OUTPUT_VARIABLES_LIST[y_data]["unit"]+"]"
-            
-            self.ax.set_xlabel(xlabel)
-            self.ax.set_ylabel(ylabel)
+        ylabel = OUTPUT_VARIABLES_LIST[y_data]["symbol"]
+        if OUTPUT_VARIABLES_LIST[x_data]["unit"] != "":
+            ylabel = ylabel+" ["+OUTPUT_VARIABLES_LIST[y_data]["unit"]+"]"
+        
+        self.ax.set_xlabel(xlabel)
+        self.ax.set_ylabel(ylabel)
 
         self.canvas.draw()
 

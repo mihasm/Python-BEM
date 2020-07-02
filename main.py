@@ -1462,12 +1462,23 @@ class Analysis(QWidget):
 
         self.main = self.parent()
 
+        self.forms_dict = {}
+
         self.settings = {"propeller_mode": False, "tip_loss": False, "hub_loss": False, "new_tip_loss": False,
                          "new_hub_loss": False, "cascade_correction": False, "skewed_wake_correction": False,
                          "rotational_augmentation_correction": False, "rotational_augmentation_correction_method": 1,
                          "mach_number_correction": False, "max_iterations": 100, "convergence_limit": 0.001,
-                         "rho": 1.225, "method": 10, "linspace_interp": False, "num_interp": 25, "v_min": 3,
-                         "v_max": 20, "v_num": 10, "rpm_min": 100, "rpm_max": 3000, "rpm_num": 10, "pitch": 0.0,
+                         "rho": 1.225, "method": 10, "linspace_interp": False, "num_interp": 25,
+                         "variable_selection": 0,
+                         "constant_selection": 0,
+                         "constant_speed":5,
+                         "constant_rpm":1500,
+                         "pitch": 0.0,
+                         "v_min": 3, "v_max": 20, "v_num": 10,
+                         "rpm_min": 100, "rpm_max": 3000, "rpm_num": 10,
+                         "tsr_min":1, "tsr_max":10, "tsr_num":10,
+                         "J_min":0.1, "J_max":1.5, "J_num":10,
+                         "pitch_min":-15, "pitch_max":15, "pitch_num":10,
                          "relaxation_factor": 0.3, "print_all": False, "print_out": False, "reynolds": 50000,
                          "fix_reynolds": False, "yaw_angle": 0}
 
@@ -1476,17 +1487,35 @@ class Analysis(QWidget):
                                  "new_tip_loss": "New tip loss", "new_hub_loss": "New hub loss",
                                  "cascade_correction": "Cascade correction", "max_iterations": "Maximum iterations",
                                  "convergence_limit": "Convergence criteria", "rho": "Air density [kg/m^3]",
-                                 "method": "Calculation method", "v_min": "Min calc. wind speed [m/s]",
-                                 "v_max": "Max calc. wind speed [m/s]", "v_num": "Number of wind speed points",
-                                 "rpm_min": "Min calc. RPM [RPM]", "rpm_max": "Max calc. RPM [RPM]",
-                                 "rpm_num": "Number of RPM points", "relaxation_factor": "Relaxation factor",
+                                 "method": "Calculation method",
+                                 "variable_selection" : "Variable parameter",
+                                 "constant_selection":"Constant value",
+                                 "constant_speed":"Constant speed",
+                                 "constant_rpm":"Constant RPM",
+                                 "pitch": "Pitch",
+                                 "v_min": "Min calc. wind speed [m/s]",
+                                 "v_max": "Max calc. wind speed [m/s]",
+                                 "v_num": "Number of wind speed points",
+                                 "rpm_min": "Min calc. RPM [RPM]",
+                                 "rpm_max": "Max calc. RPM [RPM]",
+                                 "rpm_num": "Number of RPM points",
+                                 "tsr_min":"Min TSR",
+                                 "tsr_max":"Max TSR",
+                                 "tsr_num":"Num TSR",
+                                 "J_min":"Min J",
+                                 "J_max":"Max J",
+                                 "J_num":"Num J",
+                                 "pitch_min":"Min pitch",
+                                 "pitch_max":"Max pitch",
+                                 "pitch_num":"Num pitch",
+                                 "relaxation_factor": "Relaxation factor",
                                  "print_all": "Print every iteration [debug]",
                                  "num_interp": "Number of sections (interp)",
                                  "linspace_interp": "Custom number of sections",
                                  "rotational_augmentation_correction": "Rot. augmentation cor.",
                                  "rotational_augmentation_correction_method": "Rot. augmentation cor. method",
                                  "fix_reynolds": "Fix Reynolds", "reynolds": "Reynolds",
-                                 "mach_number_correction": "Mach number correction", "pitch": "Pitch",
+                                 "mach_number_correction": "Mach number correction",
                                  "yaw_angle": "Yaw angle [°]", "skewed_wake_correction": "Skewed Wake Correction"}
 
         self.settings_to_tooltip = {"propeller_mode": "Ta vrednost mora biti izbrana le v primeru, če preračunavamo propeler.",
@@ -1500,12 +1529,26 @@ class Analysis(QWidget):
                                  "convergence_limit": "Konvergenčni kriterij.",
                                  "rho": "Gostota zraka [kg/m^3]",
                                  "method": "Metoda za preračun. Privzeta je e) Aerodyn (Buhl).",
+                                 "variable_selection": "Izbira spremenljivega parametra",
+                                 "constant_selection":"Konstantna spremenljivka",
+                                 "constant_speed":"Constant speed",
+                                 "constant_rpm":"Constant RPM",
+                                 "pitch": "Nastavni kot lopatice",
                                  "v_min": "Minimalna hitrost vetra [m/s]",
                                  "v_max": "Maksimalna hitrost vetra [m/s]",
                                  "v_num": "Število računskih točk (linearno razporejenih) od min hitrosti vetra do max hitrosti vetra",
                                  "rpm_min": "Minimalni vrtljaji/min [RPM]",
                                  "rpm_max": "Maksimalni vrtljaji/min [RPM]",
                                  "rpm_num": "Število računskih točk (linearno razporejenih) od min RPM do max RPM",
+                                 "tsr_min":"Min TSR",
+                                 "tsr_max":"Max TSR",
+                                 "tsr_num":"Num TSR",
+                                 "J_min":"Min J",
+                                 "J_max":"Max J",
+                                 "J_num":"Num J",
+                                 "pitch_min":"Min pitch",
+                                 "pitch_max":"Max pitch",
+                                 "pitch_num":"Num pitch",
                                  "relaxation_factor": "Relaksacijski faktor. Privzeta vrednost: 0.3",
                                  "print_all": "Podroben izpis vrednosti po vsaki iteraciji (upočasni izračun)",
                                  "num_interp": "Se uporabi samo v primeru, če izberemo 'Custom number of sections' opcijo",
@@ -1515,7 +1558,6 @@ class Analysis(QWidget):
                                  "fix_reynolds": "Izračunaj vse odseke pri enem samem Re",
                                  "reynolds": "Se uporabi samo v primeru, če izberemo 'Fix Reynolds' opcijo",
                                  "mach_number_correction": "Popravek Mach števila (uporabno pri propelerjih)",
-                                 "pitch": "Nastavni kot lopatice",
                                  "yaw_angle": "Kot vetra glede na smer osi rotorja [°]. Če je turbina obrnjena proti vetru, je 0°.",
                                  "skewed_wake_correction": "Popravek nagnjenega zračnega toka za turbino (Skewed wake)"}
 
@@ -1552,6 +1594,8 @@ class Analysis(QWidget):
         self.form_list = []
         self.validator = QtGui.QDoubleValidator()
 
+        hideable_parameters = ["constant_selection","constant_speed","constant_rpm","pitch","v_min","v_max","v_num","rpm_min","rpm_max","rpm_num","tsr_min","tsr_max","tsr_num","J_min","J_max","J_num","pitch_min","pitch_max","pitch_num"]
+
         for key, value in self.settings.items():
             if key == "method":
                 form = QComboBox()
@@ -1560,6 +1604,14 @@ class Analysis(QWidget):
             elif key == "rotational_augmentation_correction_method":
                 form = QComboBox()
                 form.addItems(["1", "2", "3", "4", "5"])
+            elif key == "variable_selection":
+                form = QComboBox()
+                form.addItems(["RPM and v","TSR","J","pitch"])
+                form.currentIndexChanged.connect(self.set_parameter_visibility)
+            elif key == "constant_selection":
+                form = QComboBox()
+                form.addItems(["speed","rpm"])
+                form.currentIndexChanged.connect(self.set_parameter_visibility)
             elif isinstance(value, bool):
                 form = QCheckBox()
                 form.setTristate(value)
@@ -1572,10 +1624,21 @@ class Analysis(QWidget):
                 if key in self.list_settings_for_updating_tsr:
                     form.textChanged.connect(self.update_tsr_and_j)
             form.setToolTip(self.settings_to_tooltip[key])
-            key_orig = key
-            key = self.settings_to_name[key]
-            self.fbox.addRow(key, form)
-            self.form_list.append([key, form, key_orig])
+            label = self.settings_to_name[key]
+            
+            self.form_list.append([label, form, key])
+            
+            if key in hideable_parameters:
+                row = QWidget()
+                row_layout = QFormLayout()
+                row.setLayout(row_layout)
+                row_layout.setContentsMargins(0, 0, 0, 0) # tight layout
+                row_layout.addRow(label,form)
+                self.fbox.addRow(row)
+                self.forms_dict[key] = [form,label,row]
+            else:
+                self.fbox.addRow(label, form)
+                self.forms_dict[key] = [form,label]
 
         self.emptyLabel = QLabel(" ")
         self.buttonRun.clicked.connect(self.run)
@@ -1595,6 +1658,109 @@ class Analysis(QWidget):
         self.J_string = QLabel("0")
         self.fbox.addRow("TSR:", self.tsr_string)
         self.fbox.addRow("J:", self.J_string)
+
+        self.set_parameter_visibility()
+
+    def set_parameter_visibility(self):
+        print("Setting parameter visibility")
+        #print(self.forms_dict)
+        #print("form v_min",self.forms_dict["v_min"])
+        #self.forms_dict["v_min"][2].hide()
+        current_index = self.forms_dict["variable_selection"][0].currentIndex()
+        if current_index == 0:
+            # RPM / speed
+            # rpm, speed need to be shown
+            # constant_selection, TSR, J and pitch need to be hidden
+            self.forms_dict["constant_selection"][2].hide()
+            self.forms_dict["constant_speed"][2].hide()
+            self.forms_dict["constant_rpm"][2].hide()
+            self.forms_dict["pitch"][2].show()
+            self.forms_dict["v_min"][2].show()
+            self.forms_dict["v_max"][2].show()
+            self.forms_dict["v_num"][2].show()
+            self.forms_dict["rpm_min"][2].show()
+            self.forms_dict["rpm_max"][2].show()
+            self.forms_dict["rpm_num"][2].show()
+            self.forms_dict["tsr_min"][2].hide()
+            self.forms_dict["tsr_max"][2].hide()
+            self.forms_dict["tsr_num"][2].hide()
+            self.forms_dict["J_min"][2].hide()
+            self.forms_dict["J_max"][2].hide()
+            self.forms_dict["J_num"][2].hide()
+            self.forms_dict["pitch_min"][2].hide()
+            self.forms_dict["pitch_max"][2].hide()
+            self.forms_dict["pitch_num"][2].hide()
+            pass
+        elif current_index == 1:
+            # variable TSR
+            # tsr, constant_selection, appropriate constant need to be shown
+            self.forms_dict["constant_selection"][2].show()
+            self.forms_dict["constant_speed"][2].show()
+            self.forms_dict["constant_rpm"][2].show()
+            self.forms_dict["pitch"][2].show()
+            self.forms_dict["v_min"][2].hide()
+            self.forms_dict["v_max"][2].hide()
+            self.forms_dict["v_num"][2].hide()
+            self.forms_dict["rpm_min"][2].hide()
+            self.forms_dict["rpm_max"][2].hide()
+            self.forms_dict["rpm_num"][2].hide()
+            self.forms_dict["tsr_min"][2].show()
+            self.forms_dict["tsr_max"][2].show()
+            self.forms_dict["tsr_num"][2].show()
+            self.forms_dict["J_min"][2].hide()
+            self.forms_dict["J_max"][2].hide()
+            self.forms_dict["J_num"][2].hide()
+            self.forms_dict["pitch_min"][2].hide()
+            self.forms_dict["pitch_max"][2].hide()
+            self.forms_dict["pitch_num"][2].hide()
+            pass
+        elif current_index == 2:
+            #variable J
+            # J, constant_selection, appropriate constant need to be shown
+            self.forms_dict["constant_selection"][2].show()
+            self.forms_dict["constant_speed"][2].show()
+            self.forms_dict["constant_rpm"][2].show()
+            self.forms_dict["pitch"][2].show()
+            self.forms_dict["v_min"][2].hide()
+            self.forms_dict["v_max"][2].hide()
+            self.forms_dict["v_num"][2].hide()
+            self.forms_dict["rpm_min"][2].hide()
+            self.forms_dict["rpm_max"][2].hide()
+            self.forms_dict["rpm_num"][2].hide()
+            self.forms_dict["tsr_min"][2].hide()
+            self.forms_dict["tsr_max"][2].hide()
+            self.forms_dict["tsr_num"][2].hide()
+            self.forms_dict["J_min"][2].show()
+            self.forms_dict["J_max"][2].show()
+            self.forms_dict["J_num"][2].show()
+            self.forms_dict["pitch_min"][2].hide()
+            self.forms_dict["pitch_max"][2].hide()
+            self.forms_dict["pitch_num"][2].hide()
+            pass
+        elif current_index == 3:
+            # variable pitch
+            # pitch, both constants need to be shown
+            self.forms_dict["constant_selection"][2].hide()
+            self.forms_dict["constant_speed"][2].show()
+            self.forms_dict["constant_rpm"][2].show()
+            self.forms_dict["pitch"][2].hide()
+            self.forms_dict["v_min"][2].hide()
+            self.forms_dict["v_max"][2].hide()
+            self.forms_dict["v_num"][2].hide()
+            self.forms_dict["rpm_min"][2].hide()
+            self.forms_dict["rpm_max"][2].hide()
+            self.forms_dict["rpm_num"][2].hide()
+            self.forms_dict["tsr_min"][2].hide()
+            self.forms_dict["tsr_max"][2].hide()
+            self.forms_dict["tsr_num"][2].hide()
+            self.forms_dict["J_min"][2].hide()
+            self.forms_dict["J_max"][2].hide()
+            self.forms_dict["J_num"][2].hide()
+            self.forms_dict["pitch_min"][2].show()
+            self.forms_dict["pitch_max"][2].show()
+            self.forms_dict["pitch_num"][2].show()
+            pass
+        print(current_index)
 
     def update_tsr_and_j(self):
         try:
