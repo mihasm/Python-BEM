@@ -185,7 +185,9 @@ class MainWindow(QMainWindow):
             _c = out["c"]
             _theta = out["theta"]
             _foils = out["foils"]
-            r, c, theta, foils, dr = interpolate_geom(_r, _c, _theta, _foils, out["num_interp"], out["linspace_interp"])
+            out["R"] = out["R"]*out["geometry_scale"]
+            out["Rhub"] = out["Rhub"]*out["geometry_scale"]
+            r, c, theta, foils, dr = interpolate_geom(_r, _c, _theta, _foils, out["num_interp"], out["linspace_interp"], out["geometry_scale"])
             out["r"], out["c"], out["theta"], out["foils"], out["dr"] = r, c, theta, foils, dr
             out["r_in"], out["c_in"], out["theta_in"], out["foils_in"] = _r, _c, _theta, _foils
 
@@ -1480,7 +1482,7 @@ class Analysis(QWidget):
                          "J_min":0.1, "J_max":1.5, "J_num":10,
                          "pitch_min":-15, "pitch_max":15, "pitch_num":10,
                          "relaxation_factor": 0.3, "print_all": False, "print_out": False, "reynolds": 50000,
-                         "fix_reynolds": False, "yaw_angle": 0}
+                         "fix_reynolds": False, "yaw_angle": 0,"geometry_scale":1.0}
 
         self.settings_to_name = {"propeller_mode": "Propeller mode", "print_out": "Print final iteration data",
                                  "tip_loss": "Prandtl tip loss", "hub_loss": "Prandtl hub loss",
@@ -1516,7 +1518,8 @@ class Analysis(QWidget):
                                  "rotational_augmentation_correction_method": "Rot. augmentation cor. method",
                                  "fix_reynolds": "Fix Reynolds", "reynolds": "Reynolds",
                                  "mach_number_correction": "Mach number correction",
-                                 "yaw_angle": "Yaw angle [°]", "skewed_wake_correction": "Skewed Wake Correction"}
+                                 "yaw_angle": "Yaw angle [°]", "skewed_wake_correction": "Skewed Wake Correction",
+                                 "geometry_scale":"Geometry scale factor"}
 
         self.settings_to_tooltip = {"propeller_mode": "Ta vrednost mora biti izbrana le v primeru, če preračunavamo propeler.",
                                  "print_out": "Izpis končnih vrednosti po konvergenci za vsak odsek",
@@ -1559,7 +1562,8 @@ class Analysis(QWidget):
                                  "reynolds": "Se uporabi samo v primeru, če izberemo 'Fix Reynolds' opcijo",
                                  "mach_number_correction": "Popravek Mach števila (uporabno pri propelerjih)",
                                  "yaw_angle": "Kot vetra glede na smer osi rotorja [°]. Če je turbina obrnjena proti vetru, je 0°.",
-                                 "skewed_wake_correction": "Popravek nagnjenega zračnega toka za turbino (Skewed wake)"}
+                                 "skewed_wake_correction": "Popravek nagnjenega zračnega toka za turbino (Skewed wake)",
+                                 "geometry_scale":"Manjšanje/večanje geometrije"}
 
         self.list_settings_for_updating_tsr = ["v_min", "v_max", "v_num", "rpm_min", "rpm_max", "rpm_num"]
 

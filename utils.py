@@ -190,7 +190,7 @@ def transitions_to_nearest_profiles(r, foils):
     return foils
 
 
-def interpolate_geom(r, c, theta, foils, num=None, linspace_interp=False):
+def interpolate_geom(r, c, theta, foils, num=None, linspace_interp=False,geometry_scale=1.0):
     """
     interpolates c,r,theta with num elements:
     """
@@ -220,6 +220,12 @@ def interpolate_geom(r, c, theta, foils, num=None, linspace_interp=False):
     dr = r - r_shifted
     dr[0] = dr[1]  # TODO: what
     # print("foils after",foils)
+
+    #scaling
+    r = geometry_scale * r
+    dr = geometry_scale * dr
+    c = geometry_scale * c
+    
     return r, c, theta, foils, dr
 
 
