@@ -1666,7 +1666,7 @@ class Analysis(QWidget):
         self.set_parameter_visibility()
 
     def set_parameter_visibility(self):
-        print("Setting parameter visibility")
+        #print("Setting parameter visibility")
         #print(self.forms_dict)
         #print("form v_min",self.forms_dict["v_min"])
         #self.forms_dict["v_min"][2].hide()
@@ -1764,7 +1764,6 @@ class Analysis(QWidget):
             self.forms_dict["pitch_max"][2].show()
             self.forms_dict["pitch_num"][2].show()
             pass
-        print(current_index)
 
     def update_tsr_and_j(self):
         try:

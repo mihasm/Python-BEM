@@ -710,7 +710,7 @@ def calc_rotational_augmentation_correction(
     if method == 3:
         # Chaviaropoulos and Hansen
         ah = 2.2
-        h = 1.3
+        h = 1.0
         n = 4
         fl = ah * (c / r) ** h * cos(theta) ** n
         fd = fl
@@ -733,7 +733,6 @@ def skewed_wake_correction_calculate(yaw_angle, a, r, R):
     chi = (0.6*a+1)*yaw_angle
     a_skew = a*(1+15*pi/64*r/R*tan(chi/2))
     return a_skew
-
 
 
 def calculate_coefficients(method, input_arguments):

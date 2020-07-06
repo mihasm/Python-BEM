@@ -197,6 +197,8 @@ class Calculator:
         J = v / (rpm / 60 * R * 2)
         kin_viscosity = 1.4207E-5  # Kinematic viscosity
 
+        lambda_r_array = omega * np.array(r) / v
+
         section_number = 0
 
         for n in range(len(theta)):
@@ -312,7 +314,8 @@ class Calculator:
                           hub_loss=False, new_hub_loss=False, cascade_correction=False, rotational_augmentation_correction=False,
                           rotational_augmentation_correction_method=0, mach_number_correction=False, method=5,
                           kin_viscosity=1.4207E-5, rho=1.225, convergence_limit=0.001, max_iterations=100, relaxation_factor=0.3,
-                          printer=None, print_all=False, print_out=False, yaw_angle=0.0, tilt_angle=0.0, skewed_wake_correction=False, *args, **kwargs):
+                          printer=None, print_all=False, print_out=False, yaw_angle=0.0, tilt_angle=0.0, skewed_wake_correction=False,
+                          lambda_r_array = [], *args, **kwargs):
         """
         Function that calculates each section of the blade.
 
@@ -376,6 +379,7 @@ class Calculator:
         yaw_angle = radians(yaw_angle) # [Radians]
         psi = radians(psi) #Coning angle [Radians]
         tilt_angle = radians(tilt_angle) # [Radians]
+        lambda_r_array = np.array(lambda_r_array)
 
         ############ START ITERATION ############
         while True:
@@ -472,6 +476,9 @@ class Calculator:
             if mach_number_correction:
                 Cl = machNumberCorrection(Cl, M)
 
+            # circulation gamma
+            Gamma_B =0.5* Vrel_norm*_c*Cl;
+
             # normal and tangential coefficients
             if propeller_mode:
                 C_norm = Cl * cos(phi) - Cd * sin(phi)
@@ -505,6 +512,12 @@ class Calculator:
 
             #set new values
             a, aprime, Ct = coeffs
+
+            # wake rotation correction
+            k=omega*Gamma_B/(np.pi*v**2)
+            aprime_vct =k/(4*lambda_r**2)
+            relevant_radiuses = lambda_r_array[np.nonzero(lambda_r_array>=lambda_r)]
+            
 
             if skewed_wake_correction:
                 a_skewed = skewed_wake_correction_calculate(yaw_angle,a,_r,R)
