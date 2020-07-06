@@ -11,6 +11,8 @@ from popravki import METHODS_STRINGS
 from utils import get_centroid_coordinates
 from sw_macro_builder import create_macro_text
 from visualize import create_3d_blade
+from chord_lengths import generate_chord_lengths_betz, generate_chord_lengths_schmitz
+from chord_lengths import generate_twists_betz, generate_twists_schmitz
 from xfoil import generate_polars_data
 from montgomerie import Montgomerie
 from polars import scrape_data
@@ -328,6 +330,54 @@ class WindTurbineProperties(QWidget):
         self.propeller_geom = QCheckBox()
         fbox.addRow("Propeller", self.propeller_geom)
 
+        opomba = QLabel("==========================")
+        fbox.addRow(opomba)
+
+        opomba = QLabel("Generate initial geometry")
+        fbox.addRow(opomba)
+
+        _num_gen_sections = QLabel("Number of gen. sections")
+        self.num_gen_sections = QLineEdit()
+        self.num_gen_sections.setText("10")
+        fbox.addRow(_num_gen_sections, self.num_gen_sections)
+        self.num_gen_sections.setToolTip("Število odsekov za generiranje.")
+
+        _design_tsr = QLabel("Design TSR")
+        self.design_tsr = QLineEdit()
+        self.design_tsr.setText("7")
+        fbox.addRow(_design_tsr, self.design_tsr)
+        self.design_tsr.setToolTip("Željeni TSR za generiranje.")
+
+        _design_aoa = QLabel("Design AoA [°]")
+        self.design_aoa = QLineEdit()
+        self.design_aoa.setText("7")
+        fbox.addRow(_design_aoa, self.design_aoa)
+        self.design_aoa.setToolTip("Željeni AoA za generiranje.")
+
+        _design_cl = QLabel("Cl @ Design AoA")
+        self.design_cl = QLineEdit()
+        self.design_cl.setText("1.4")
+        fbox.addRow(_design_cl, self.design_cl)
+        self.design_cl.setToolTip("Koeficient vzgona pri željenem AoA.")
+
+        _design_airfoil = QLabel("Airfoil")
+        self.design_airfoil = QLineEdit()
+        self.design_airfoil.setText("s826")
+        fbox.addRow(_design_airfoil, self.design_airfoil)
+        self.design_airfoil.setToolTip("Tekst za v stolpec airfoil.")
+
+        _design_method = QLabel("Design method.")
+        self.design_method = QComboBox()
+        self.design_method.addItems(["Betz","Schmitz"])
+        fbox.addRow(_design_method, self.design_method)
+        self.design_method.setToolTip("Metoda dizajniranja.")
+
+        _button_generate_geometry = QLabel("Generate geometry.")
+        self.button_generate_geometry = QPushButton("Generate")
+        fbox.addRow(_button_generate_geometry, self.button_generate_geometry)
+        self.button_generate_geometry.clicked.connect(self.generate_geometry)
+        self.button_generate_geometry.setToolTip("Generiraj geometrijo (povozi predhodno!).")
+
         self.window = None
 
     def get_settings(self):
@@ -355,6 +405,31 @@ class WindTurbineProperties(QWidget):
         out_properties["theta"] = array(theta)
         out_properties["foils"] = foils
         return out_properties
+
+    def generate_geometry(self):
+        array = []
+        R = float(self.R.text())
+        Rhub = float(self.Rhub.text())
+        num_gen_sections = int(self.num_gen_sections.text())
+        radiuses = np.linspace(Rhub,R,num_gen_sections)
+        Cl_max = float(self.design_cl.text())
+        B = float(self.B.text())
+        TSR = float(self.design_tsr.text())
+        method = self.design_method.currentIndex()
+        airfoil = self.design_airfoil.text()
+        design_aoa = float(self.design_aoa.text())
+        print(TSR)
+        if method == 0:
+            chords = generate_chord_lengths_betz(radiuses=radiuses,R=R,Cl_max=Cl_max,B=B,TSR=TSR)
+            thetas = generate_twists_betz(radiuses=radiuses,R=R,TSR=TSR,alpha_d=design_aoa)
+
+        elif method == 1:
+            chords = generate_chord_lengths_schmitz(radiuses=radiuses,R=R,Cl_max=Cl_max,B=B,TSR=TSR)
+            thetas = generate_twists_schmitz(radiuses=radiuses,R=R,TSR=TSR,alpha_d=design_aoa)
+
+        for r in range(num_gen_sections):
+            array.append([round(radiuses[r],4), round(chords[r],4), round(thetas[r],4), airfoil])
+        self.table_properties.createTable(array)
 
     def set_settings(self, dict_settings):
         """
