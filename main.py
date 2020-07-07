@@ -2,7 +2,7 @@
 __author__ = "Miha Smrekar"
 __credits__ = ["Miha Smrekar"]
 __license__ = "GPL"
-__version__ = "0.4.3"
+__version__ = "0.4.4"
 __maintainer__ = "Miha Smrekar"
 __email__ = "miha.smrekar9@gmail.com"
 __status__ = "Development"
@@ -38,7 +38,7 @@ from numpy import array
 from PyQt5.QtGui import QPalette, QColor
 from PyQt5.QtWidgets import (QComboBox, QMainWindow, QPushButton, QTextEdit, QWidget, QFormLayout, QLabel, QLineEdit,
                              QGridLayout, QCheckBox, QStyleFactory, QMessageBox, QAction, QFileDialog, QSlider,
-                             QTabWidget, QApplication, QScrollArea, QVBoxLayout)
+                             QTabWidget, QApplication, QScrollArea, QVBoxLayout, QSplitter)
 from PyQt5 import QtCore, QtGui
 from PyQt5.QtCore import QThread, QTextStream, pyqtSignal, QProcess, QRect, Qt
 from PyQt5.QtCore import QLocale
@@ -183,15 +183,6 @@ class MainWindow(QMainWindow):
             curve_manager_settings = self.curve_manager.get_settings()
 
             out = {**properties, **settings, **opt_settings, **curve_manager_settings}
-            _r = out["r"]
-            _c = out["c"]
-            _theta = out["theta"]
-            _foils = out["foils"]
-            out["R"] = out["R"]*out["geometry_scale"]
-            out["Rhub"] = out["Rhub"]*out["geometry_scale"]
-            r, c, theta, foils, dr = interpolate_geom(_r, _c, _theta, _foils, out["num_interp"], out["linspace_interp"], out["geometry_scale"])
-            out["r"], out["c"], out["theta"], out["foils"], out["dr"] = r, c, theta, foils, dr
-            out["r_in"], out["c_in"], out["theta_in"], out["foils_in"] = _r, _c, _theta, _foils
 
             return out
         except:
@@ -314,27 +305,26 @@ class WindTurbineProperties(QWidget):
         fbox.addRow(_B, self.B)
         self.B.setToolTip("Število lopatic.")
 
-        opomba = QLabel("===Spremenljivke spodaj nimajo vpliva na analizo===")
-        fbox.addRow(opomba)
-        opomba2 = QLabel("===vpliv imajo samo na 3D export (Solidworks makro)===")
-        fbox.addRow(opomba2)
+        fbox.addRow(QLabel("————— Scale and interpolation —————"))
 
-        self.export_button = QPushButton("Export curve data")
-        self.export_button.clicked.connect(self.export)
-        fbox.addRow("Export:", self.export_button)
-        self.export_button.setToolTip("Krivulje na vseh radijih lopatice se shranijo v posamezne datoteke. Solidworks makro se nato zgenerira v Python konzoli.")
+        _geometry_scale = QLabel("Scale factor")
+        self.geometry_scale = QLineEdit()
+        self.geometry_scale.setText("1.0")
+        fbox.addRow(_geometry_scale, self.geometry_scale)
+        self.geometry_scale.setToolTip("Scale factor")
 
-        self.flip_turning_direction = QCheckBox()
-        fbox.addRow("Flip turning direction", self.flip_turning_direction)
+        _linspace_interp = QLabel("Interpolate geometry")
+        self.linspace_interp = QCheckBox()
+        fbox.addRow(_linspace_interp, self.linspace_interp)
+        self.linspace_interp.setToolTip("Interpolate_geom")
 
-        self.propeller_geom = QCheckBox()
-        fbox.addRow("Propeller", self.propeller_geom)
+        _num_interp = QLabel("Number of interpolation points")
+        self.num_interp = QLineEdit()
+        self.num_interp.setText("25")
+        fbox.addRow(_num_interp, self.num_interp)
+        self.num_interp.setToolTip("Number of interpolation points")
 
-        opomba = QLabel("==========================")
-        fbox.addRow(opomba)
-
-        opomba = QLabel("Generate initial geometry")
-        fbox.addRow(opomba)
+        fbox.addRow(QLabel("————— Generate geometry —————"))
 
         _num_gen_sections = QLabel("Number of gen. sections")
         self.num_gen_sections = QLineEdit()
@@ -378,6 +368,27 @@ class WindTurbineProperties(QWidget):
         self.button_generate_geometry.clicked.connect(self.generate_geometry)
         self.button_generate_geometry.setToolTip("Generiraj geometrijo (povozi predhodno!).")
 
+        fbox.addRow(QLabel("————— Export to Solidworks —————"))
+
+        self.export_button = QPushButton("Export curve data")
+        self.export_button.clicked.connect(self.export)
+        fbox.addRow("Export:", self.export_button)
+        self.export_button.setToolTip("Krivulje na vseh radijih lopatice se shranijo v posamezne datoteke. Solidworks makro se nato zgenerira v Python konzoli.")
+
+        self.flip_turning_direction = QCheckBox()
+        fbox.addRow("Flip turning direction", self.flip_turning_direction)
+
+        self.propeller_geom = QCheckBox()
+        fbox.addRow("Propeller", self.propeller_geom)
+
+        fbox.addRow(QLabel("—————————————————————————"))
+
+        _button_create_geometry_graph = QLabel("Create R,C,θ graph.")
+        self.button_create_geometry_graph = QPushButton("Create R,C,θ graph.")
+        fbox.addRow(_button_create_geometry_graph, self.button_create_geometry_graph)
+        self.button_create_geometry_graph.clicked.connect(self.create_geometry_graph)
+        self.button_create_geometry_graph.setToolTip("Izris grafa R,C,θ.")
+
         self.window = None
 
     def get_settings(self):
@@ -390,8 +401,10 @@ class WindTurbineProperties(QWidget):
         -geometry (r,c,theta,foils) as four separate list objects
         :return: dict: Settings dictionary (Basic wind turbine information)
         """
-        out_properties = {"Rhub": to_float(self.Rhub.text()), "R": to_float(self.R.text()), "B": int(self.B.text()),
-                          "turbine_name": self.name.text(), }
+        out = {"Rhub": to_float(self.Rhub.text()), "R": to_float(self.R.text()), "B": int(self.B.text()),
+                          "turbine_name": self.name.text(), "geometry_scale":to_float(self.geometry_scale.text()),
+                          "linspace_interp":self.linspace_interp.isChecked(),
+                          "num_interp":int(self.num_interp.text())}
         geom_array = self.table_properties.get_values()
         r, c, theta, foils = [], [], [], []
         for row in geom_array:
@@ -400,11 +413,40 @@ class WindTurbineProperties(QWidget):
                 c.append(to_float(row[1]))
                 theta.append(to_float(row[2]))
                 foils.append(row[3])
-        out_properties["r"] = array(r)
-        out_properties["c"] = array(c)
-        out_properties["theta"] = array(theta)
-        out_properties["foils"] = foils
-        return out_properties
+        out["r"] = array(r)
+        out["c"] = array(c)
+        out["theta"] = array(theta)
+        out["foils"] = foils
+        _r = out["r"]
+        _c = out["c"]
+        _theta = out["theta"]
+        _foils = out["foils"]
+        out["R"] = out["R"]*out["geometry_scale"]
+        out["Rhub"] = out["Rhub"]*out["geometry_scale"]
+        r, c, theta, foils, dr = interpolate_geom(_r, _c, _theta, _foils, out["num_interp"], out["linspace_interp"], out["geometry_scale"])
+        out["r"], out["c"], out["theta"], out["foils"], out["dr"] = r, c, theta, foils, dr
+        out["r_in"], out["c_in"], out["theta_in"], out["foils_in"] = _r, _c, _theta, _foils
+        return out
+
+    def create_geometry_graph(self):
+        out = self.get_settings()
+        gw = MatplotlibWindow()
+        gw.setWindowTitle("r,c,θ graph")
+
+        gw.ax = gw.figure.add_subplot(111)
+        gw.ax.set_title("c(r) and θ(r)")
+
+        gw.ax2 = gw.ax.twinx()
+        gw.ax.plot(out["r"],out["c"],color="b")
+        gw.ax2.plot(out["r"],out["theta"],color="r")
+
+        gw.ax.set_xlabel("Radius r [m]")
+        gw.ax.set_ylabel("Chord c [m]",color="tab:blue")
+        gw.ax2.set_ylabel("Twist θ [°]",color="tab:red")
+        gw.ax.tick_params(axis='y', labelcolor="tab:blue")
+        gw.ax2.tick_params(axis='y', labelcolor="tab:red")
+
+
 
     def generate_geometry(self):
         array = []
@@ -418,7 +460,7 @@ class WindTurbineProperties(QWidget):
         method = self.design_method.currentIndex()
         airfoil = self.design_airfoil.text()
         design_aoa = float(self.design_aoa.text())
-        print(TSR)
+        
         if method == 0:
             chords = generate_chord_lengths_betz(radiuses=radiuses,R=R,Cl_max=Cl_max,B=B,TSR=TSR)
             thetas = generate_twists_betz(radiuses=radiuses,R=R,TSR=TSR,alpha_d=design_aoa)
@@ -1545,7 +1587,8 @@ class Analysis(QWidget):
                          "new_hub_loss": False, "cascade_correction": False, "skewed_wake_correction": False,
                          "rotational_augmentation_correction": False, "rotational_augmentation_correction_method": 1,
                          "mach_number_correction": False, "max_iterations": 100, "convergence_limit": 0.001,
-                         "rho": 1.225, "method": 10, "linspace_interp": False, "num_interp": 25,
+                         "rho": 1.225, "method": 10, 
+                         #"linspace_interp": False, "num_interp": 25,
                          "variable_selection": 0,
                          "constant_selection": 0,
                          "constant_speed":5,
@@ -1557,7 +1600,7 @@ class Analysis(QWidget):
                          "J_min":0.1, "J_max":1.5, "J_num":10,
                          "pitch_min":-15, "pitch_max":15, "pitch_num":10,
                          "relaxation_factor": 0.3, "print_all": False, "print_out": False, "reynolds": 50000,
-                         "fix_reynolds": False, "yaw_angle": 0,"geometry_scale":1.0}
+                         "fix_reynolds": False, "yaw_angle": 0}
 
         self.settings_to_name = {"propeller_mode": "Propeller mode", "print_out": "Print final iteration data",
                                  "tip_loss": "Prandtl tip loss", "hub_loss": "Prandtl hub loss",
@@ -1587,14 +1630,13 @@ class Analysis(QWidget):
                                  "pitch_num":"Num pitch",
                                  "relaxation_factor": "Relaxation factor",
                                  "print_all": "Print every iteration [debug]",
-                                 "num_interp": "Number of sections (interp)",
-                                 "linspace_interp": "Custom number of sections",
+                                 #"num_interp": "Number of sections (interp)",
+                                 #"linspace_interp": "Custom number of sections",
                                  "rotational_augmentation_correction": "Rot. augmentation cor.",
                                  "rotational_augmentation_correction_method": "Rot. augmentation cor. method",
                                  "fix_reynolds": "Fix Reynolds", "reynolds": "Reynolds",
                                  "mach_number_correction": "Mach number correction",
-                                 "yaw_angle": "Yaw angle [°]", "skewed_wake_correction": "Skewed Wake Correction",
-                                 "geometry_scale":"Geometry scale factor"}
+                                 "yaw_angle": "Yaw angle [°]", "skewed_wake_correction": "Skewed Wake Correction"}
 
         self.settings_to_tooltip = {"propeller_mode": "Ta vrednost mora biti izbrana le v primeru, če preračunavamo propeler.",
                                  "print_out": "Izpis končnih vrednosti po konvergenci za vsak odsek",
@@ -1629,16 +1671,15 @@ class Analysis(QWidget):
                                  "pitch_num":"Num pitch",
                                  "relaxation_factor": "Relaksacijski faktor. Privzeta vrednost: 0.3",
                                  "print_all": "Podroben izpis vrednosti po vsaki iteraciji (upočasni izračun)",
-                                 "num_interp": "Se uporabi samo v primeru, če izberemo 'Custom number of sections' opcijo",
-                                 "linspace_interp": "V primeru, da želimo preračunati več/manj odsekov lopatice po radiju (interpolacija geometrije)",
+                                 #"num_interp": "Se uporabi samo v primeru, če izberemo 'Custom number of sections' opcijo",
+                                 #"linspace_interp": "V primeru, da želimo preračunati več/manj odsekov lopatice po radiju (interpolacija geometrije)",
                                  "rotational_augmentation_correction": "Popravek rotacijske augmentacije",
                                  "rotational_augmentation_correction_method": "Izbira metode za popravek rotacijske augmentacije",
                                  "fix_reynolds": "Izračunaj vse odseke pri enem samem Re",
                                  "reynolds": "Se uporabi samo v primeru, če izberemo 'Fix Reynolds' opcijo",
                                  "mach_number_correction": "Popravek Mach števila (uporabno pri propelerjih)",
                                  "yaw_angle": "Kot vetra glede na smer osi rotorja [°]. Če je turbina obrnjena proti vetru, je 0°.",
-                                 "skewed_wake_correction": "Popravek nagnjenega zračnega toka za turbino (Skewed wake)",
-                                 "geometry_scale":"Manjšanje/večanje geometrije"}
+                                 "skewed_wake_correction": "Popravek nagnjenega zračnega toka za turbino (Skewed wake)"}
 
         self.list_settings_for_updating_tsr = ["v_min", "v_max", "v_num", "rpm_min", "rpm_max", "rpm_num"]
 
@@ -2359,6 +2400,12 @@ class MatplotlibWindow(QWidget):
         self.layout.addWidget(self.canvas)
         self.layout.addWidget(self.toolbar)
         self.show()
+
+    def closeEvent(self, event):
+        self.figure.clear()
+        plt.close(self.figure)
+        event.accept()  # let the window close
+
 
 
 class PrintoutWindow(QMainWindow):

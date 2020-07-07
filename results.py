@@ -156,8 +156,8 @@ class ResultsWindow(QMainWindow):
 
         ########## CUSTOM GRAPH ####################
         self.custom_graph = CustomGraphWidget(self)
-        self.tab_widget.add_tab_widget(self.custom_graph,"Custom graph")
         self.custom_graph.set_data(results_3d)
+        self.tab_widget.add_tab_widget(self.custom_graph,"Custom graph")
         ############################################
 
         self.show()
@@ -165,6 +165,7 @@ class ResultsWindow(QMainWindow):
     def closeEvent(self, event):
         for f in self.tab_widget.figures:
             f.clear()
+            plt.close(f)
         event.accept()  # let the window close
 
     def set_menubar(self):
