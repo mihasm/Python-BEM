@@ -525,13 +525,15 @@ class WindTurbineProperties(QWidget):
         w.ax = w.figure.add_subplot(111, projection="3d")
         w.ax.scatter(data["X"], data["Y"], data["Z"])
         X, Y, Z = array(data["X"]), array(data["Y"]), array(data["Z"])
-        max_range = array([X.max() - X.min(), Y.max() - Y.min(), Z.max() - Z.min()]).max() / 2.0
-        mid_x = (X.max() + X.min()) * 0.5
-        mid_y = (Y.max() + Y.min()) * 0.5
-        mid_z = (Z.max() + Z.min()) * 0.5
-        w.ax.set_xlim(mid_x - max_range, mid_x + max_range)
-        w.ax.set_ylim(mid_y - max_range, mid_y + max_range)
-        w.ax.set_zlim(mid_z - max_range, mid_z + max_range)
+
+        # Create cubic bounding box to simulate equal aspect ratio
+        max_range = np.array([X.max()-X.min(), Y.max()-Y.min(), Z.max()-Z.min()]).max()
+        Xb = 0.5*max_range*np.mgrid[-1:2:2,-1:2:2,-1:2:2][0].flatten() + 0.5*(X.max()+X.min())
+        Yb = 0.5*max_range*np.mgrid[-1:2:2,-1:2:2,-1:2:2][1].flatten() + 0.5*(Y.max()+Y.min())
+        Zb = 0.5*max_range*np.mgrid[-1:2:2,-1:2:2,-1:2:2][2].flatten() + 0.5*(Z.max()+Z.min())
+        # Comment or uncomment following both lines to test the fake bounding box:
+        for xb, yb, zb in zip(Xb, Yb, Zb):
+           w.ax.plot([xb], [yb], [zb], 'w')
         # w.ax.set_aspect("equal")
 
         create_folder(os.path.join(application_path,"export"))
