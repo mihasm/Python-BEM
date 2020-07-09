@@ -32,7 +32,7 @@ def calculate_power(inp_args):
                 raise Exception("Section foil not matching airfoil list error")
 
     try:
-        c = Calculator(inp_args["airfoils"])
+        c = Calculator(inp_args)
         results = c.run_array(**inp_args)
         return results
     except:

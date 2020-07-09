@@ -1,6 +1,6 @@
 from turbine_data import SET_INIT
 from calculation import Calculator
-from utils import Printer
+from utils import Printer, get_transition_foils
 from numpy import radians, degrees
 import numpy as np
 import numpy
@@ -49,9 +49,7 @@ def optimize_angles_genetic(inp_args,queue_pyqtgraph):
         output_theta = []
         output_chord = []
 
-        inp_args["theta_in"] = np.array([120]*len(inp_args["theta_in"]))
-
-        C = Calculator(inp_args["airfoils"])
+        C = Calculator(inp_args)
 
         p.print("Input section radiuses:")
         for _r in inp_args["r_in"]:
@@ -83,25 +81,33 @@ def optimize_angles_genetic(inp_args,queue_pyqtgraph):
             best = it[-1]
         else:
             p.print("Starting calculation...")
-            for section_number in range(len(inp_args["r"])):
-                p.print("  Section_number is", section_number)
+            #foils = inp_args["foils"]
+            #transition_foils = get_transition_foils(foils)
 
-                _r = inp_args["r"][section_number]
-                _c = inp_args["c"][section_number]
-                _theta = inp_args["theta"][section_number]
-                _dr = inp_args["dr"][section_number]
-                _airfoil = inp_args["foils"][section_number]
-                max_thickness = inp_args["airfoils"][_airfoil]["max_thickness"] * _c
-                _airfoil_dat = _airfoil + ".dat"
+            for n in range(len(inp_args["r"])):
+                p.print("  Section_number is", n)
+
+                _r = inp_args["r"][n]
+                _c = inp_args["c"][n]
+                _theta = inp_args["theta"][n]
+                _dr = inp_args["dr"][n]
+
+                transition=C.transition_array[n]
+                _airfoil=C.foils[n]
+                _airfoil_prev=C.transition_foils[n][0]
+                _airfoil_next=C.transition_foils[n][1]
+                transition_coefficient=C.transition_foils[n][2]
+                max_thickness=C.max_thickness_array[n]
 
                 #worst_value = 0.0
 
                 def fobj(x):
                     global dT_max
                     global dQ_max
-                    d = C.calculate_section(v=v, omega=omega, _airfoil=_airfoil, _airfoil_dat=_airfoil_dat,
-                                            max_thickness=max_thickness, _r=_r, _c=_c, _dr=_dr, _theta=radians(
-                                                x),
+                    d = C.calculate_section(v=v, omega=omega, _airfoil=_airfoil,
+                                            max_thickness=max_thickness,_r=_r, _c=_c, _dr=_dr, _theta=radians(x),
+                                            transition=transition,_airfoil_prev=_airfoil_prev,_airfoil_next=_airfoil_next,
+                                            transition_coefficient=transition_coefficient,
                                             printer=p, **inp_args)
                     if d == None or d == False:
                         return -1e50
@@ -115,10 +121,11 @@ def optimize_angles_genetic(inp_args,queue_pyqtgraph):
 
                 it = list(de2(fobj, bounds=[(min_bound, max_bound)], M=mut_coeff, num_individuals=population_size,iterations=num_iter,printer=p, queue=queue_pyqtgraph))
                 
-                d_final = C.calculate_section(v=v, omega=omega, _airfoil=_airfoil, _airfoil_dat=_airfoil_dat,
-                                              max_thickness=max_thickness, _r=_r, _c=_c, _dr=_dr, _theta=radians(
-                                                  it[0]),
-                                              printer=p, **inp_args)
+                d_final = C.calculate_section(v=v, omega=omega, _airfoil=_airfoil,
+                                            max_thickness=max_thickness,_r=_r, _c=_c, _dr=_dr, _theta=radians(it[0]),
+                                            transition=transition,_airfoil_prev=_airfoil_prev,_airfoil_next=_airfoil_next,
+                                            transition_coefficient=transition_coefficient,
+                                            printer=p, **inp_args)
 
                 output_theta.append(it[0])
             

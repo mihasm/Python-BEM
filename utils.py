@@ -426,3 +426,27 @@ def import_dat(file_path):
     return x,y
 
 #x,y = import_dat("C:\\Users\\Miha\\Google Drive\\faks\\BEM program\\foils\\DU_91_W2_250.dat")
+
+def get_transition_foils(foils):
+    transition_foils = []
+    for j in range(len(foils)):
+        if foils[j] == "transition":
+            k=j
+            while k>0:
+                k=k-1
+                prev_foil = foils[k]
+                if prev_foil != "transition":
+                    break
+            l=j
+            while l<len(foils):
+                l=l+1
+                next_foil = foils[l]
+                if next_foil != "transition":
+                    break
+            number_of_transition_sections = l-k
+            relative_position = j-k
+            coefficient_lower = relative_position/number_of_transition_sections
+            transition_foils.append([prev_foil,next_foil,coefficient_lower])
+        else:
+            transition_foils.append([None,None,None])
+    return transition_foils

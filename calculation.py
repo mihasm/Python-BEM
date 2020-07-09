@@ -6,7 +6,7 @@ import numpy
 import numpy as np
 from scipy import interpolate
 
-from utils import Printer, generate_dat, sort_data, normalize_angle
+from utils import Printer, generate_dat, sort_data, normalize_angle, get_transition_foils
 from popravki import *
 from xfoil import run_xfoil_analysis, xfoil_runner
 from interpolator import interp
@@ -67,8 +67,12 @@ class Calculator:
     Class for calculation of induction factors using BEM theory.
     """
 
-    def __init__(self, airfoils):
-        self.airfoils = airfoils
+    def __init__(self, input_arguments):
+        p = Printer(input_arguments["return_print"])
+
+        self.airfoils = input_arguments["airfoils"]
+        self.foils = input_arguments["foils"]
+
         for blade_name in self.airfoils:
             self.airfoils[blade_name]["alpha_zero"] = 0.0  # TODO FIX
             generate_dat(
@@ -93,6 +97,34 @@ class Calculator:
 
             self.airfoils[blade_name]["interp_function_cl"] = interpolation_function_cl
             self.airfoils[blade_name]["interp_function_cd"] = interpolation_function_cd
+
+        self.transition_foils = get_transition_foils(self.foils)
+        self.transition_array = [] #True,False,False, etc.
+        self.max_thickness_array = []
+
+
+        for n in range(len(self.foils)):
+            _c = input_arguments["c"][n]
+            if self.foils[n] == 'transition':
+                transition = True
+                _airfoil_prev = self.transition_foils[n][0]
+                _airfoil_next = self.transition_foils[n][1]
+                transition_coefficient = self.transition_foils[n][2]
+
+                max_thickness = self.airfoils[_airfoil_prev]["max_thickness"] * _c * transition_coefficient + \
+                                self.airfoils[_airfoil_next]["max_thickness"] * _c * (1 - transition_coefficient)
+
+                self.transition_array.append(True)
+            else:
+                transition = False
+                _airfoil = self.foils[n]
+                _airfoil_prev,_airfoil_next,transition_coefficient = None, None, None
+                
+                max_thickness = self.airfoils[_airfoil]["max_thickness"] * _c
+                self.transition_array.append(False)
+
+            self.max_thickness_array.append(max_thickness)
+
 
     def printer(self, _locals, p):
         p.print("----Running induction calculation for following parameters----")
@@ -202,27 +234,6 @@ class Calculator:
         section_number = 0
 
         #generate transition airfoil coefficients
-        transition_foils = []
-        for j in range(len(foils)):
-            if foils[j] == "transition":
-                k=j
-                while k>0:
-                    k=k-1
-                    prev_foil = foils[k]
-                    if prev_foil != "transition":
-                        break
-                l=j
-                while l<len(foils):
-                    l=l+1
-                    next_foil = foils[l]
-                    if next_foil != "transition":
-                        break
-                number_of_transition_sections = l-k
-                relative_position = j-k
-                coefficient_lower = relative_position/number_of_transition_sections
-                transition_foils.append([prev_foil,next_foil,coefficient_lower])
-            else:
-                transition_foils.append([])
 
         for n in range(len(theta)):
             section_number += 1
@@ -237,22 +248,13 @@ class Calculator:
 
             # Coning angle (PROPX: Definitions,Derivations, Data Flow, p.22)
             psi = 0.0
-            
-            if foils[n] == 'transition':
-                transition = True
-                _airfoil_prev = transition_foils[n][0]
-                _airfoil_next = transition_foils[n][1]
-                _airfoil_dat_prev = _airfoil_prev + ".dat"
-                _airfoil_dat_next = _airfoil_next + ".dat"
-                transition_coefficient = transition_foils[n][2]
-                max_thickness = self.airfoils[_airfoil_prev]["max_thickness"] * _c * transition_coefficient + \
-                                self.airfoils[_airfoil_next]["max_thickness"] * _c * (1 - transition_coefficient)
-            else:
-                transition = False
-                _airfoil = foils[n]
-                _airfoil_dat = _airfoil + ".dat"
-                # get max thickness
-                max_thickness = self.airfoils[_airfoil]["max_thickness"] * _c
+
+            transition=self.transition_array[n]
+            _airfoil=self.foils[n]
+            _airfoil_prev=self.transition_foils[n][0]
+            _airfoil_next=self.transition_foils[n][1]
+            transition_coefficient=self.transition_foils[n][2]
+            max_thickness=self.max_thickness_array[n]
 
             _locals = locals()
             del _locals["self"]
@@ -343,13 +345,15 @@ class Calculator:
         results["theta"] = theta
         return results
 
-    def calculate_section(self, v, omega, _r, _c, _theta, _dr, B, R, _airfoil_dat, _airfoil, max_thickness, Rhub,
+    def calculate_section(self, v, omega, _r, _c, _theta, _dr, B, R, _airfoil, max_thickness, Rhub,
                           propeller_mode, pitch=0.0, psi=0.0, fix_reynolds=False, reynolds=1e6, tip_loss=False, new_tip_loss=False,
                           hub_loss=False, new_hub_loss=False, cascade_correction=False, rotational_augmentation_correction=False,
                           rotational_augmentation_correction_method=0, mach_number_correction=False, method=5,
                           kin_viscosity=1.4207E-5, rho=1.225, convergence_limit=0.001, max_iterations=100, relaxation_factor=0.3,
                           printer=None, print_all=False, print_out=False, yaw_angle=0.0, tilt_angle=0.0, skewed_wake_correction=False,
-                          lambda_r_array = [], transition=False, _airfoil_prev=None, _airfoil_next=None, transition_coefficient=1.0, *args, **kwargs):
+                          lambda_r_array = [],
+                          transition=False, _airfoil_prev=None, _airfoil_next=None, transition_coefficient=1.0,
+                          *args, **kwargs):
         """
         Function that calculates each section of the blade.
 
@@ -362,7 +366,6 @@ class Calculator:
         _dr:float: Section height [m].
         B:int: Number of blades.
         R:float: Wind turbine radius [m].
-        _airfoil_dat:str: Airfoil file name.
         _airfoil:str: Airfoil name.
         max_thickness:float: Foil thickness in percentage of chord length.
         propeller_mode:bool: Boolean that turns on propeller calculation mode if True.
@@ -478,16 +481,7 @@ class Calculator:
                 alpha = cascadeEffectsCorrection(alpha=alpha, v=v, omega=omega, r=_r, R=R, c=_c, B=B, a=a,
                                                  aprime=aprime, max_thickness=max_thickness)
 
-            """
-            # For xFoil cL,cD
-            xfoil_return = xfoil_runner(airfoil=_airfoil_dat, reynolds=Re, alpha=alpha, printer=p, print_all=print_all)
-
-            if xfoil_return == False:
-                p.print("        Xfoil failed")
-                return None
-
-            #Cl, Cd = xfoil_return["CL"], xfoil_return["CD"] #direct xfoil calculation - no interpolation
-            """
+            
             if transition:
                 Cl1, Cd1 = self.airfoils[_airfoil_prev]["interp_function_cl"](Re, degrees(alpha)), self.airfoils[_airfoil_prev][
                     "interp_function_cd"](Re, degrees(alpha))
@@ -653,7 +647,7 @@ class Calculator:
             p.print(prepend, "        LSR: ", lambda_r)
             p.print(prepend, "        Vrel: ", Vrel_norm)
             p.print(prepend, "        Re:", Re)
-            p.print(prepend, "        foil:", _airfoil_dat)
+            p.print(prepend, "        foil:",_airfoil)
             p.print(prepend, "        Cl:", Cl)
             p.print(prepend, "        Cd:", Cd)
             p.print(prepend, "        U1:", U1)
@@ -672,5 +666,5 @@ class Calculator:
             p.print(prepend, "    ----------------------------")
 
         out = {"a": a, "aprime": aprime, "Cl": Cl, "Cd":Cd, "alpha": alpha, "phi": phi, "F": F, "dFt": dFt, "Ct": Ct, "dFn": dFn,
-               "_airfoil": _airfoil_dat, "dT": dT, "dQ": dQ, "Re": Re, 'U1': U1, 'U2': U2, 'U3': U3, 'U4': U4, "lambda_r":lambda_r}
+               "_airfoil": _airfoil, "dT": dT, "dQ": dQ, "Re": Re, 'U1': U1, 'U2': U2, 'U3': U3, 'U4': U4, "lambda_r":lambda_r}
         return out
