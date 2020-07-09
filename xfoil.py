@@ -96,26 +96,9 @@ def run_xfoil_analysis(airfoil, reynolds, alpha, iterations=70, max_next_angle=2
         call("iteration")
         call("%s" % iterations)
 
-        alpha_current = 0
-        to_break = False
-        while True:
-            call("alfa")
-            call("%s" % alpha_current)
-            if to_break == True:
-                break
-            if alpha > 0:
-                if alpha > alpha_current + max_next_angle:
-                    alpha_current += max_next_angle
-                else:
-                    alpha_current = alpha
-                    to_break = True
-            else:
-                if alpha < alpha_current - max_next_angle:
-                    alpha_current -= max_next_angle
-                else:
-                    alpha_current = alpha
-                    to_break = True
-
+        call("alfa")
+        call("%s" % alpha)
+    
         call("")
         call("quit")
         # print(process.stdout.read())
@@ -192,18 +175,18 @@ def generate_polars(foil):
     all_cd = []
 
     for Re in np.linspace(10e3, 1e6, 10):
-        for a in np.linspace(-45, 45, 21):
+        for a in np.linspace(-10, 20, 31):
             Re = int(Re)
             cl = None
             cd = None
-            print("re", Re, "a", a)
+            print("Re", Re, "Alpha:", a)
             o = None
             o = xfoil_runner(foil, Re, a)
             if o != False:
                 cl = o["CL"]
                 cd = o["CD"]
             if cl != None and cd != None:
-                print("    ", o["CL"], o["CD"])
+                print("CL:", o["CL"], "CD", o["CD"])
                 all_re.append(Re)
                 all_a.append(a)
                 all_cl.append(cl)
@@ -212,6 +195,7 @@ def generate_polars(foil):
 
 
 def generate_polars_data(foil):
+
     all_a, all_re, all_cl, all_cd = generate_polars(foil)
     out = []
     ncrit = 0

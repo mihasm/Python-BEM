@@ -2,7 +2,7 @@
 __author__ = "Miha Smrekar"
 __credits__ = ["Miha Smrekar"]
 __license__ = "GPL"
-__version__ = "0.4.4"
+__version__ = "0.4.5"
 __maintainer__ = "Miha Smrekar"
 __email__ = "miha.smrekar9@gmail.com"
 __status__ = "Development"
@@ -17,7 +17,7 @@ from xfoil import generate_polars_data
 from montgomerie import Montgomerie
 from polars import scrape_data
 from interpolator import interp_at
-from utils import interpolate_geom, to_float, fltr, transpose
+from utils import interpolate_geom, to_float, fltr, transpose, import_dat, generate_dat
 from optimization import optimize_angles_genetic
 from utils import interpolate_geom, to_float, fltr, QDarkPalette, create_folder, ErrorMessageBox, MyMessageBox, sort_data
 from turbine_data import SET_INIT
@@ -703,9 +703,9 @@ class Airfoils(QWidget):
         self.fbox.addRow(self.button_open_viewer)
         self.button_open_viewer.setToolTip("S pomočjo tega okna prilagajamo parametre ekstrapolacije z Montgomerie metodo za vsak dani Reynolds za cL in cD (alpha) krivulji")
 
-        #self.button_generate_curves_xfoil = QPushButton("Generate xfoil curves [debug]")
-        #self.button_generate_curves_xfoil.clicked.connect(self.generate_curves_xfoil)
-        #self.fbox.addRow(self.button_generate_curves_xfoil)
+        self.button_generate_curves_xfoil = QPushButton("Generate xfoil curves [debug]")
+        self.button_generate_curves_xfoil.clicked.connect(self.generate_curves_xfoil)
+        self.fbox.addRow(self.button_generate_curves_xfoil)
 
         self.button_visualize = QPushButton("Create curve visualization")
         self.button_visualize.clicked.connect(self.visualize)
@@ -730,6 +730,11 @@ class Airfoils(QWidget):
         self.centroid_grid.addWidget(self.centroid_label, 1, 1)
         self.centroid_grid.addWidget(self.centroid_x_edit, 1, 2)
         self.centroid_grid.addWidget(self.centroid_y_edit, 1, 3)
+
+        self.button_import_dat_from_file = QPushButton("Import .dat")
+        self.button_import_dat_from_file.clicked.connect(self.dat_importer)
+        self.fbox.addRow(self.button_import_dat_from_file)
+        self.button_import_dat_from_file.setToolTip("Import .dat file")
 
         self.grid.setColumnStretch(1, 1)
         self.grid.setColumnStretch(2, 1)
@@ -756,7 +761,15 @@ class Airfoils(QWidget):
         self.window = None
         self.curve_editor = CurveEditor(self)
 
-
+    def dat_importer(self):
+        """
+        Loads the wind turbine data from a file. Also clears the calculation text areas and sets the appropriate title.
+        """
+        file_path = QFileDialog.getOpenFileName(self, "Import .dat file","", "dat (*.dat)")[0]
+        if file_path != "":
+            x,y = import_dat(file_path)
+            self.set_x_y(x,y)
+            self.refresh()
 
     def visualize(self):
         print("Visualizing")
@@ -819,12 +832,24 @@ class Airfoils(QWidget):
 
     def generate_curves_xfoil(self):
         print("Generating xfoil curves")
+        x, y = self.get_x_y()
+        generate_dat(self.airfoil_name,x,y)
+
         if self.window != None:
             self.window.close()
         self.window = PrintoutWindow(self)
-        data = generate_polars_data(self.airfoil_name + ".dat")
-        self.populate_curve_list(data)
+        self.thread=XFoilThread(self)
+        self.thread.set_params(self.airfoil_name + ".dat")
+        self.thread.completeSignal.connect(self.xfoil_completion)
+        self.thread.start()
+        #self.thread.generate_data()
+        #data = generate_polars_data()
+        #self.populate_curve_list(data)
         print("Done")
+
+    def xfoil_completion(self,nothing_important):
+        self.populate_curve_list(self.xfoil_generated_data)
+        self.refresh()
 
     def generate_curves_link(self):
         print("Scraping from link...")
@@ -942,12 +967,16 @@ class Airfoils(QWidget):
 
     def get_ncrits(self):
         curves = self.curves.gather_curves()
-        ncrit_list = np.unique(curves[:,1])
-        return ncrit_list
+        if len(curves)>0:
+            ncrit_list = np.unique(curves[:,1])
+            return ncrit_list
 
     def refresh_ncrits_combobox(self):
         self.ncrit_selection.clear()
-        self.ncrit_selection.addItems([str(n) for n in list(self.get_ncrits())])
+        ncrits = self.get_ncrits()
+        if ncrits is not None:
+            self.ncrit_selection.addItems([str(n) for n in list(ncrits)])
+        
 
     def get_settings(self):
         x, y = self.get_x_y()
@@ -1050,8 +1079,6 @@ class Curves:
             raise Exception ("DataError: Multiple curves have same Reynolds and Ncrit...")
         
         del self.curve_list[j]
-        
-
 
 
 class Curve:
@@ -2341,6 +2368,29 @@ class DataCaptureThread(QThread):
             best_y = [item[3]]
             self.parent.curve.setData(x, y)
             self.parent.curve_red.setData(best_x, best_y)
+
+
+class XFoilThread(QThread):
+
+    progressSignal = QtCore.Signal(int)
+    completeSignal = QtCore.Signal(str)
+
+    def __init__(self, parent, *args, **kwargs):
+        QThread.__init__(self, parent)
+        self.parent = parent
+        #self.dataCollectionTimer = QtCore.QTimer()
+        #self.dataCollectionTimer.moveToThread(self)
+        #self.dataCollectionTimer.timeout.connect(self.updateInProc)
+
+    def set_params(self,dat_path):
+        self.dat_path = dat_path
+
+    def run(self):
+        out = generate_polars_data(self.dat_path)
+        self.parent.xfoil_generated_data = out
+        self.completeSignal.emit("Done")
+
+        
 
 
 class PyQtGraphWindow(QMainWindow):

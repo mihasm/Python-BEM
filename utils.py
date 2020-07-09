@@ -4,6 +4,7 @@ from scipy import interpolate
 from numpy import array
 import os
 import sys
+import re
 
 from PyQt5.QtGui import QPalette, QColor
 from PyQt5.QtWidgets import (QComboBox, QMainWindow, QPushButton, QTextEdit, QWidget, QFormLayout, QLabel, QLineEdit,
@@ -124,72 +125,6 @@ def sort_xy(array_x, array_y):
         )
 
 
-# noinspection PyUnboundLocalVariable
-def transitions_to_nearest_profiles(r, foils):
-    # print("transitioning foils")
-    # print("transition foils before",foils)
-    r_orig = r.copy()
-    foils_orig = foils.copy()
-    if len(r_orig) != len(foils_orig):
-        raise Exception("Lengths of arrays r and foils must match!")
-    for i in range(len(r)):
-        # print("currently checking i",i)
-        # if there is a transition between two foils,
-        # select the closest foil to the given transition
-        if "transition" in foils_orig[i].lower():
-            _r = r[i]
-            nearest_i_down = int(str(i))
-            while True:
-                nearest_i_down -= 1
-                if nearest_i_down < 0:
-                    nearest_i_down = None
-                    break
-                if "transition" in foils_orig[nearest_i_down].lower():
-                    pass
-                else:
-                    break
-            # print("##nearest_i_down",nearest_i_down)
-            nearest_i_up = int(str(i))
-            while True:
-                nearest_i_up += 1
-                if nearest_i_up >= len(r):
-                    nearest_i_up = None
-                    break
-                if "transition" in foils_orig[nearest_i_up].lower():
-                    pass
-                else:
-                    break
-            # print("##nearest_i_up",nearest_i_up)
-
-            if nearest_i_up == None and nearest_i_down == None:
-                raise Exception(
-                    "Transition %s doesn't end with any profile" % i)
-
-            dr_down, dr_up = None, None
-
-            if nearest_i_down != None:
-                dr_down = abs(_r - r[nearest_i_down])
-
-            if nearest_i_up != None:
-                dr_up = abs(_r - r[nearest_i_up])
-
-            if nearest_i_up != None and nearest_i_down != None:
-                # noinspection PyUnboundLocalVariable
-                if dr_down < dr_up:
-                    best_i = nearest_i_down
-                else:
-                    best_i = nearest_i_up
-            else:
-                if nearest_i_up:
-                    best_i = nearest_i_up
-                else:
-                    best_i = nearest_i_down
-
-            foils[i] = foils_orig[best_i]
-    # print("transition foils after",foils)
-    return foils
-
-
 def interpolate_geom(r, c, theta, foils, num=None, linspace_interp=False,geometry_scale=1.0):
     """
     interpolates c,r,theta with num elements:
@@ -200,7 +135,6 @@ def interpolate_geom(r, c, theta, foils, num=None, linspace_interp=False,geometr
     theta_interpolator = interpolate.interp1d(r, theta)
     r_orig = r.copy()
     foils_orig = foils.copy()
-    foils_orig = transitions_to_nearest_profiles(r_orig, foils_orig)
     if linspace_interp:
         r = numpy.linspace(start=r[0], stop=r[-1], num=int(num) + 1)
         c = c_interpolator(r)
@@ -471,3 +405,24 @@ def generate_v_and_rpm_from_J(J_list,R,v=None,rpm=None):
             _rpm = v / J * 60 / R / 2
             out_rpm.append(_rpm)
     return out_v,out_rpm
+
+def import_dat(file_path):
+    f = open(file_path,"r")
+    #f.readlines()
+    lines = f.readlines()
+    f.close()
+
+    x,y=[],[]
+
+    for l in lines:
+        l = l.strip()
+        l = re.sub(r'\s+',' ', l).strip()
+        splitted = l.split(" ")
+        if len(splitted) == 2:
+            _x = float(splitted[0])
+            _y = float(splitted[1])
+            x.append(_x)
+            y.append(_y)
+    return x,y
+
+#x,y = import_dat("C:\\Users\\Miha\\Google Drive\\faks\\BEM program\\foils\\DU_91_W2_250.dat")

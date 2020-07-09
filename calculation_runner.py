@@ -25,15 +25,12 @@ def calculate_power(inp_args):
     :return: dict with results
     """
     p = Printer(inp_args["return_print"])
-
     for f in inp_args["foils_in"]:
         if f not in inp_args["airfoils"].keys():
-            p.print("Section foil %s does not exist in airfoil list." % f)
-            raise Exception("Section foil not matching airfoil list error")
+            if f != "transition":
+                p.print("Section foil %s does not exist in airfoil list." % f)
+                raise Exception("Section foil not matching airfoil list error")
 
-    if "add_angle" in inp_args:
-        if inp_args["add_angle"] != None:
-            inp_args["theta"] = inp_args["theta"] + inp_args["add_angle"]
     try:
         c = Calculator(inp_args["airfoils"])
         results = c.run_array(**inp_args)
