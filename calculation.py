@@ -17,8 +17,8 @@ numpy.seterr(invalid="raise")
 OUTPUT_VARIABLES_LIST = {
     "a":{"type":"array","name":"Axial induction factor","symbol":"a","unit":""},
     "a'":{"type":"array","name":"Tangential induction factor","symbol":"a'","unit":""},
-    "cL":{"type":"array","name":"Lift coefficient","symbol":r"$C_L$","unit":""},
-    "cD":{"type":"array","name":"Drag coefficient","symbol":r"$C_L$","unit":""},
+    "cL":{"type":"array","name":"Lift coefficient","symbol":r"$C_l$","unit":""},
+    "cD":{"type":"array","name":"Drag coefficient","symbol":r"$C_d$","unit":""},
     "alpha":{"type":"array","name":"Angle of attack","symbol":r"$\alpha$","unit":"°"},
     "phi":{"type":"array","name":"Relative wind angle","symbol":r"$\phi$","unit":"°"},
     "F":{"type":"array","name":"Tip loss correction factor","symbol":"F","unit":""},
@@ -27,7 +27,7 @@ OUTPUT_VARIABLES_LIST = {
     "lambda_r":{"type":"array","name":"Local tip speed ratio","symbol":r"$\lambda_r$","unit":""},
     "Ct":{"type":"array","name":"Tangential coefficient","symbol":r"$C_t$","unit":""},
     "dFn":{"type":"array","name":"Incremental normal force","symbol":r"$dF_n$","unit":"N"},
-    #"foils":{"type":"string_array","name":"Airfoil name","symbol":"airfoil_name","unit":""},
+    "foils":{"type":"string_array","name":"Airfoil name","symbol":"airfoil_name","unit":""},
     "dT":{"type":"array","name":"Incremental thrust","symbol":"dT","unit":"N"},
     "dQ":{"type":"array","name":"Incremental torque","symbol":"dM","unit":"N"},
     "Re":{"type":"array","name":"Reynolds number","symbol":"Re","unit":""},
@@ -57,7 +57,7 @@ OUTPUT_VARIABLES_LIST = {
     "Rhub":{"type":"float","name":"Hub radius","symbol":r"$R_hub$","unit":"m"},
     "B":{"type":"float","name":"Number of blades","symbol":"B","unit":""},
     "J":{"type":"float","name":"Advance ratio","symbol":"J","unit":""},
-    "eff":{"type":"float","name":"Efficiency","symbol":r"$\eta_p$","unit":""},
+    "eff":{"type":"float","name":"Propeller efficiency","symbol":r"$\eta_p$","unit":""},
     "pitch":{"type":"float","name":"Pitch","symbol":"p","unit":"°"}
 }
 

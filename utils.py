@@ -47,7 +47,9 @@ def transpose(a):
 def dict_to_ar(inp_dict):
     prep = []
     i = 0
-    for k, v in inp_dict.items():
+
+    list_items = inp_dict.items()
+    for k, v in list_items:
         prep.append([k])
         for j in v:
             if isinstance(j, numpy.ndarray):
@@ -450,3 +452,63 @@ def get_transition_foils(foils):
         else:
             transition_foils.append([None,None,None])
     return transition_foils
+
+
+def greek_letters_to_string(string):
+    dict_letters={"\\alpha":"α",
+    "\\beta":"β",
+    "\\gamma":"γ",
+    "\\delta":"δ",
+    "\\epsilon":"ε",
+    "\\zeta":"ζ",
+    "\\eta":"η",
+    "\\theta":"Θ",
+    "\\iota":"ι",
+    "\\kappa":"κ",
+    "\\lambda":"λ",
+    "\\mu":"μ",
+    "\\nu":"ν",
+    "\\xi":"ξ",
+    "\\omicron ":"ℴ",
+    "\\pi":"π",
+    "\\rho":"ρ",
+    "\\sigma":"σ",
+    "\\tau":"τ",
+    "\\upsilon":"υ",
+    "\\phi":"ϕ",
+    "\\chi":"χ",
+    "\\psi":"ψ",
+    "\\omega":"ω",
+    "\\Alpha":"A",
+    "\\Beta":"B",
+    "\\Gamma":"Γ",
+    "\\Delta":"Δ",
+    "\\Epsilon":"E",
+    "\\Zeta":"Z",
+    "\\Eta":"H",
+    "\\Theta":"Θ",
+    "\\Iota":"I",
+    "\\Kappa":"K",
+    "\\Lambda":"Λ",
+    "\\Mu":"M",
+    "\\Nu":"N",
+    "\\Xi":"Ξ",
+    "\\Omicron":"O",
+    "\\Pi":"Π",
+    "\\Rho":"P",
+    "\\Sigma":"Σ",
+    "\\Tau":"T",
+    "\\Upsilon":"Υ",
+    "\\Phi":"Φ",
+    "\\Chi":"X",
+    "\\Psi":"Ψ",
+    "\\Omega":"Ω"}
+    while True:
+        found=False
+        for k,v in dict_letters.items():
+            if k in string:
+                string = string.replace(k,v)
+                found=True
+        if found==False:
+            break
+    return string

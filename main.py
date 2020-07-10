@@ -2459,7 +2459,6 @@ class MatplotlibWindow(QWidget):
         event.accept()  # let the window close
 
 
-
 class PrintoutWindow(QMainWindow):
     def __init__(self, parent):
         super(PrintoutWindow, self).__init__(parent)
@@ -2523,7 +2522,7 @@ class TabWidget(QTabWidget):
         return self.tabText(self.currentIndex())
 
 
-def main(quick_results=False):
+def main(quick_results=True):
     if sys.platform.startswith("win"):
         # On Windows calling this function is necessary for multiprocessing.
         multiprocessing.freeze_support()
