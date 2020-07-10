@@ -2522,7 +2522,7 @@ class TabWidget(QTabWidget):
         return self.tabText(self.currentIndex())
 
 
-def main(quick_results=True):
+def main(quick_results=False):
     if sys.platform.startswith("win"):
         # On Windows calling this function is necessary for multiprocessing.
         multiprocessing.freeze_support()
