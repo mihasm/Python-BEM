@@ -665,6 +665,6 @@ class Calculator:
             #p.print(prepend, "        dT_p %.2f dQ_p %.2f" % (dT_p, dQ_p))
             p.print(prepend, "    ----------------------------")
 
-        out = {"a": a, "aprime": aprime, "Cl": Cl, "Cd":Cd, "alpha": alpha, "phi": phi, "F": F, "dFt": dFt, "Ct": Ct, "dFn": dFn,
+        out = {"a": a, "aprime": aprime, "Cl": Cl, "Cd":Cd, "alpha": degrees(alpha), "phi": degrees(phi), "F": F, "dFt": dFt, "Ct": Ct, "dFn": dFn,
                "_airfoil": _airfoil, "dT": dT, "dQ": dQ, "Re": Re, 'U1': U1, 'U2': U2, 'U3': U3, 'U4': U4, "lambda_r":lambda_r}
         return out
