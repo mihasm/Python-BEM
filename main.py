@@ -17,12 +17,12 @@ from xfoil import generate_polars_data
 from montgomerie import Montgomerie
 from polars import scrape_data
 from interpolator import interp_at
-from utils import interpolate_geom, to_float, fltr, transpose, import_dat, generate_dat
+from utils import interpolate_geom, to_float, fltr, transpose, import_dat, import_nrel_dat, generate_dat
 from optimization import optimize_angles_genetic
 from utils import interpolate_geom, to_float, fltr, QDarkPalette, create_folder, ErrorMessageBox, MyMessageBox, sort_data
 from turbine_data import SET_INIT
 from table import Table
-from results import ResultsWindow
+#from results import ResultsWindow
 from scrape_polars import get_x_y_from_link
 from calculation_runner import calculate_power_3d
 from matplotlib import cm
@@ -144,10 +144,12 @@ class MainWindow(QMainWindow):
         """
         name = QFileDialog.getSaveFileName(self, 'Save File',"", "BEM (*.bem)")[0]
         if name != "":
-            file = open(name, 'w')
+            
             d = self.get_all_settings()
             d_to_save = fltr(d, (float, int, list, str, bool, np.ndarray))
             json_d = json.dumps(d_to_save)
+
+            file = open(name, 'w')
             file.write(json_d)
             file.close()
 
@@ -736,6 +738,11 @@ class Airfoils(QWidget):
         self.fbox.addRow(self.button_import_dat_from_file)
         self.button_import_dat_from_file.setToolTip("Import .dat file")
 
+        self.button_import_nrel_dat_from_file = QPushButton("Import NREL .dat")
+        self.button_import_nrel_dat_from_file.clicked.connect(self.nrel_dat_importer)
+        self.fbox.addRow(self.button_import_nrel_dat_from_file)
+        self.button_import_nrel_dat_from_file.setToolTip("Import NREL .dat file (cl and cd curves)")
+
         self.grid.setColumnStretch(1, 1)
         self.grid.setColumnStretch(2, 1)
         self.grid.setColumnStretch(3, 2)
@@ -770,6 +777,17 @@ class Airfoils(QWidget):
             x,y = import_dat(file_path)
             self.set_x_y(x,y)
             self.refresh()
+
+    def nrel_dat_importer(self):
+        """
+        Loads the wind turbine data from a file. Also clears the calculation text areas and sets the appropriate title.
+        """
+        file_path = QFileDialog.getOpenFileName(self, "Import .dat file","", "dat (*.dat)")[0]
+        if file_path != "":
+            data = import_nrel_dat(file_path)
+            self.populate_curve_list(data)
+
+            
 
     def visualize(self):
         print("Visualizing")
@@ -2037,6 +2055,7 @@ class Analysis(QWidget):
             if "v" in results:
                 if len(results["v"]) > 0:
                     inp_params = self.runner_input
+                    from results import ResultsWindow
                     self.r = ResultsWindow(None, self.main.screen_width, self.main.screen_width, results, inp_params, )
                 else:
                     print("Not enough points to print results...")
@@ -2349,7 +2368,6 @@ class DataCaptureThread(QThread):
 
     def __init__(self, parent, *args, **kwargs):
         QThread.__init__(self, parent, *args, **kwargs)
-        self.parent = parent
         self.dataCollectionTimer = QtCore.QTimer()
         self.dataCollectionTimer.moveToThread(self)
         self.dataCollectionTimer.timeout.connect(self.updateInProc)
@@ -2360,14 +2378,14 @@ class DataCaptureThread(QThread):
         self.loop.exec_()
 
     def updateInProc(self):
-        if len(self.parent.parent.queue_pyqtgraph) > 0:
-            item = self.parent.parent.queue_pyqtgraph[0]
+        if len(self.parent().parent.queue_pyqtgraph) > 0:
+            item = self.parent().parent.queue_pyqtgraph[0]
             x = item[0]
             y = item[1]
             best_x = [item[2]]
             best_y = [item[3]]
-            self.parent.curve.setData(x, y)
-            self.parent.curve_red.setData(best_x, best_y)
+            self.parent().curve.setData(x, y)
+            self.parent().curve_red.setData(best_x, best_y)
 
 
 class XFoilThread(QThread):
@@ -2378,9 +2396,6 @@ class XFoilThread(QThread):
     def __init__(self, parent, *args, **kwargs):
         QThread.__init__(self, parent)
         self.parent = parent
-        #self.dataCollectionTimer = QtCore.QTimer()
-        #self.dataCollectionTimer.moveToThread(self)
-        #self.dataCollectionTimer.timeout.connect(self.updateInProc)
 
     def set_params(self,dat_path):
         self.dat_path = dat_path

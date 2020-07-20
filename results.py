@@ -400,15 +400,17 @@ class CustomGraphWidget(QWidget):
             y_ar=np.transpose(y_ar)
             self.ax.plot(x_ar,y_ar,label="2d plot")
             self.ax.legend(numpy.round(list_of_variable_parameter,2),title=variable_parameter_title)
-            data_table = [x_ar,y_ar]
-            data_table=transpose(data_table)
-            self.table.createTable(data_table)
+            #data_table = np.column_stack((x_ar,y_ar))
+            #data_table=transpose(data_table)
+            #self.table.createTable(data_table)
+            self.table.clear_table()
 
         elif type_x == "array" and type_y == "float":
             print("case 2")
             self.ax = self.figure.add_subplot(111)
             #x_ar=np.transpose(x_ar)
-            y_ar=np.transpose(y_ar)
+            #y_ar=np.transpose(y_ar)
+
             self.ax.plot(x_ar,y_ar,label="2d plot")
             self.ax.legend(self.parent.input_data["r"],title="r [m]")
             data_table = np.column_stack((y_ar,x_ar))
@@ -421,8 +423,7 @@ class CustomGraphWidget(QWidget):
             x_ar=np.transpose(x_ar)
             self.ax.plot(x_ar,y_ar,label="2d plot")
             self.ax.legend(self.parent.input_data["r"],title="r [m]")
-            data_table = [x_ar,y_ar]
-            data_table=transpose(data_table)
+            data_table = list(np.column_stack((x_ar,y_ar)))
             self.table.createTable(data_table)
 
         elif type_x == "float" and type_y == "float":

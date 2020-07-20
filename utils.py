@@ -427,6 +427,49 @@ def import_dat(file_path):
             y.append(_y)
     return x,y
 
+def import_nrel_dat(file_path):
+    f = open(file_path,"r")
+    lines = f.readlines()
+    f.close()
+
+    i = 0
+    found = False
+    Re = 0.0
+    ncrit = 0.0
+    startline=0
+    while (i<len(lines)):
+        if "Table of aerodynamics coefficients" in lines[i]:
+            found=True
+            startline=i+4
+        if "Re" in lines[i][14:33]:
+            Re=float(lines[i][0:11])*1e6
+        i+=1
+
+    print("starting line:",startline)
+    print("Reynolds:",Re)
+    print("found:",found)
+    if found:
+        #alpha,cl,cd,cm=[],[],[],[]
+        data = []
+        i=startline
+        while i<len(lines):
+            if "!" in lines[i]:
+                break
+            l = lines[i]
+            l = l.strip()
+            l = re.sub(r'\s+',' ', l).strip()
+            splitted = l.split(" ")
+            if len(splitted) == 4:
+                _alpha = float(splitted[0])
+                _cl = float(splitted[1])
+                _cd = float(splitted[2])
+                _cm = float(splitted[3])
+                data.append([Re, ncrit, _alpha, _cl, _cd])
+            i+=1
+        #print(data)
+        data = numpy.array(data)
+        return data
+
 #x,y = import_dat("C:\\Users\\Miha\\Google Drive\\faks\\BEM program\\foils\\DU_91_W2_250.dat")
 
 def get_transition_foils(foils):

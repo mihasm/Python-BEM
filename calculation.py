@@ -447,8 +447,6 @@ class Calculator:
                 Re = reynolds
             else:
                 Re_next = Vrel_norm * _c / kin_viscosity
-                if Re_next > 1e7:
-                    Re_next = 2e5
                 Re = int(Re_next)
 
             F = 1
