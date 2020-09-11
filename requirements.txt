@@ -4,5 +4,5 @@ cycler
 requests
 numpy
 scipy
-matplotlib
+matplotlib==3.2.2
 pyqt5
