@@ -16,9 +16,6 @@ def interp(re_in, alpha_in, re, alpha, cl):
 
     re_list, alpha_list, cl_list = np.unique(
         re), np.unique(alpha), np.unique(cl)
-    print("re_list",re_list)
-    print("alpha_list",re_list)
-    print("cl_list",re_list)
 
     if re_in >= re_list.max():
         indexes = np.where(re == re_list.max())

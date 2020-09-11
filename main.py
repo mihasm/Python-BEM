@@ -29,8 +29,8 @@ from matplotlib import cm
 import mpl_toolkits.mplot3d as mp3d
 from matplotlib.widgets import Slider, Button, RadioButtons
 import matplotlib.pyplot as plt
-from matplotlib.backends.backend_qt4agg import NavigationToolbar2QT as NavigationToolbar
-from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
+from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
+from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from scipy.interpolate import interp1d
 from scipy import interpolate
 import numpy as np
@@ -432,21 +432,21 @@ class WindTurbineProperties(QWidget):
 
     def create_geometry_graph(self):
         out = self.get_settings()
-        gw = MatplotlibWindow()
-        gw.setWindowTitle("r,c,θ graph")
+        self.gw = MatplotlibWindow()
+        self.gw.setWindowTitle("r,c,θ graph")
 
-        gw.ax = gw.figure.add_subplot(111)
-        gw.ax.set_title("c(r) and θ(r)")
+        self.gw.ax = self.gw.figure.add_subplot(111)
+        self.gw.ax.set_title("c(r) and θ(r)")
 
-        gw.ax2 = gw.ax.twinx()
-        gw.ax.plot(out["r"],out["c"],color="b")
-        gw.ax2.plot(out["r"],out["theta"],color="r")
+        self.gw.ax2 = self.gw.ax.twinx()
+        self.gw.ax.plot(out["r"],out["c"],color="b")
+        self.gw.ax2.plot(out["r"],out["theta"],color="r")
 
-        gw.ax.set_xlabel("Radius r [m]")
-        gw.ax.set_ylabel("Chord c [m]",color="tab:blue")
-        gw.ax2.set_ylabel("Twist θ [°]",color="tab:red")
-        gw.ax.tick_params(axis='y', labelcolor="tab:blue")
-        gw.ax2.tick_params(axis='y', labelcolor="tab:red")
+        self.gw.ax.set_xlabel("Radius r [m]")
+        self.gw.ax.set_ylabel("Chord c [m]",color="tab:blue")
+        self.gw.ax2.set_ylabel("Twist θ [°]",color="tab:red")
+        self.gw.ax.tick_params(axis='y', labelcolor="tab:blue")
+        self.gw.ax2.tick_params(axis='y', labelcolor="tab:red")
 
 
 
@@ -522,10 +522,10 @@ class WindTurbineProperties(QWidget):
         if settings_fetched == None:
             return
         data = create_3d_blade(settings_fetched, self.flip_turning_direction.isChecked(), self.propeller_geom.isChecked())
-        w = MatplotlibWindow()
-        w.setWindowTitle("Export 3D preview")
-        w.ax = w.figure.add_subplot(111, projection="3d")
-        w.ax.scatter(data["X"], data["Y"], data["Z"])
+        self.w = MatplotlibWindow()
+        self.w.setWindowTitle("Export 3D preview")
+        self.w.ax = self.w.figure.add_subplot(111, projection="3d")
+        self.w.ax.scatter(data["X"], data["Y"], data["Z"])
         X, Y, Z = array(data["X"]), array(data["Y"]), array(data["Z"])
 
         # Create cubic bounding box to simulate equal aspect ratio
@@ -535,8 +535,8 @@ class WindTurbineProperties(QWidget):
         Zb = 0.5*max_range*np.mgrid[-1:2:2,-1:2:2,-1:2:2][2].flatten() + 0.5*(Z.max()+Z.min())
         # Comment or uncomment following both lines to test the fake bounding box:
         for xb, yb, zb in zip(Xb, Yb, Zb):
-           w.ax.plot([xb], [yb], [zb], 'w')
-        # w.ax.set_aspect("equal")
+           self.w.ax.plot([xb], [yb], [zb], 'w')
+        # self.w.ax.set_aspect("equal")
 
         create_folder(os.path.join(application_path,"export"))
         folder_path = os.path.join(application_path,"export", SET_INIT["turbine_name"])
@@ -807,31 +807,32 @@ class Airfoils(QWidget):
         xi, yi = xi.flatten(), yi.flatten()
         z_1 = interp_at(re, alpha, cl, xi, yi)
         z_2 = interp_at(re, alpha, cd, xi, yi)
-        w = MatplotlibWindow()
-        w.setWindowTitle("Cl(alpha,Re)")
-        w.ax = w.figure.add_subplot(111, projection="3d")
-        p = w.ax.plot_trisurf(xi, yi, z_1, cmap=cm.coolwarm)
-        w.ax.set_xlabel("Reynolds", fontsize=15, labelpad=20)
-        w.ax.set_ylabel(r'$\alpha$ [°]', fontsize=15, labelpad=20)
-        w.ax.set_zlabel("Cl", fontsize=15, labelpad=20)
-        w.ax.xaxis.set_tick_params(labelsize=12)
-        w.ax.yaxis.set_tick_params(labelsize=12)
-        w.ax.zaxis.set_tick_params(labelsize=12)
-        bar = w.figure.colorbar(p)
+        self.w = MatplotlibWindow()
+        self.w.setWindowTitle("Cl(alpha,Re)")
+        self.w.ax = self.w.figure.add_subplot(111, projection="3d")
+        p = self.w.ax.plot_trisurf(xi, yi, z_1, cmap=cm.coolwarm)
+        self.w.ax.set_xlabel("Reynolds", fontsize=15, labelpad=20)
+        self.w.ax.set_ylabel(r'$\alpha$ [°]', fontsize=15, labelpad=20)
+        self.w.ax.set_zlabel("Cl", fontsize=15, labelpad=20)
+        self.w.ax.xaxis.set_tick_params(labelsize=12)
+        self.w.ax.yaxis.set_tick_params(labelsize=12)
+        self.w.ax.zaxis.set_tick_params(labelsize=12)
+        bar = self.w.figure.colorbar(p)
         bar.ax.set_xlabel('Cl', fontsize=15, labelpad=20)
 
-        w2 = MatplotlibWindow()
-        w2.setWindowTitle("Cd(alpha,Re)")
-        w2.ax = w2.figure.add_subplot(111, projection="3d")
-        p = w2.ax.plot_trisurf(xi, yi, z_2, cmap=cm.coolwarm)
-        w2.ax.set_xlabel("Reynolds", fontsize=15, labelpad=20)
-        w2.ax.set_ylabel(r'$\alpha$ [°]', fontsize=15, labelpad=20)
-        w2.ax.set_zlabel("Cd", fontsize=15, labelpad=20)
-        w2.ax.xaxis.set_tick_params(labelsize=12)
-        w2.ax.yaxis.set_tick_params(labelsize=12)
-        w2.ax.zaxis.set_tick_params(labelsize=12)
-        bar2 = w2.figure.colorbar(p)
+        self.w2 = MatplotlibWindow()
+        self.w2.setWindowTitle("Cd(alpha,Re)")
+        self.w2.ax = self.w2.figure.add_subplot(111, projection="3d")
+        p = self.w2.ax.plot_trisurf(xi, yi, z_2, cmap=cm.coolwarm)
+        self.w2.ax.set_xlabel("Reynolds", fontsize=15, labelpad=20)
+        self.w2.ax.set_ylabel(r'$\alpha$ [°]', fontsize=15, labelpad=20)
+        self.w2.ax.set_zlabel("Cd", fontsize=15, labelpad=20)
+        self.w2.ax.xaxis.set_tick_params(labelsize=12)
+        self.w2.ax.yaxis.set_tick_params(labelsize=12)
+        self.w2.ax.zaxis.set_tick_params(labelsize=12)
+        bar2 = self.w2.figure.colorbar(p)
         bar2.ax.set_xlabel('Cd', fontsize=15, labelpad=20)
+
 
     def open_viewer(self):
         print("opening viewer")
@@ -1656,9 +1657,9 @@ class Analysis(QWidget):
                                  "convergence_limit": "Convergence criteria", "rho": "Air density [kg/m^3]",
                                  "method": "Calculation method",
                                  "variable_selection" : "Variable parameter",
-                                 "constant_selection":"Constant value",
-                                 "constant_speed":"Constant speed",
-                                 "constant_rpm":"Constant RPM",
+                                 "constant_selection" : "Constant variable",
+                                 "constant_speed" : "Wind speed",
+                                 "constant_rpm" : "RPM",
                                  "pitch": "Pitch",
                                  "v_min": "Min calc. wind speed [m/s]",
                                  "v_max": "Max calc. wind speed [m/s]",
@@ -1698,7 +1699,7 @@ class Analysis(QWidget):
                                  "method": "Metoda za preračun. Privzeta je e) Aerodyn (Buhl).",
                                  "variable_selection": "Izbira spremenljivega parametra",
                                  "constant_selection":"Konstantna spremenljivka",
-                                 "constant_speed":"Constant speed",
+                                 "constant_speed":"Constant wind speed",
                                  "constant_rpm":"Constant RPM",
                                  "pitch": "Nastavni kot lopatice",
                                  "v_min": "Minimalna hitrost vetra [m/s]",
@@ -1761,7 +1762,7 @@ class Analysis(QWidget):
         self.form_list = []
         self.validator = QtGui.QDoubleValidator()
 
-        hideable_parameters = ["constant_selection","constant_speed","constant_rpm","pitch","v_min","v_max","v_num","rpm_min","rpm_max","rpm_num","tsr_min","tsr_max","tsr_num","J_min","J_max","J_num","pitch_min","pitch_max","pitch_num"]
+        hideable_parameters = ["constant_selection","constant_speed","constant_rpm","pitch","v_min","v_max","v_num","rpm_min","rpm_max","rpm_num","tsr_min","tsr_max","tsr_num","J_min","J_max","J_num","pitch_min","pitch_max","pitch_num","reynolds"]
 
         for key, value in self.settings.items():
             if key == "method":
@@ -1779,6 +1780,10 @@ class Analysis(QWidget):
                 form = QComboBox()
                 form.addItems(["speed","rpm"])
                 form.currentIndexChanged.connect(self.set_parameter_visibility)
+            elif key == "fix_reynolds":
+                form = QCheckBox()
+                form.setTristate(False)
+                form.stateChanged.connect(self.set_parameter_visibility)
             elif isinstance(value, bool):
                 form = QCheckBox()
                 form.setTristate(value)
@@ -1790,6 +1795,7 @@ class Analysis(QWidget):
                 form.insert(str(value))
                 if key in self.list_settings_for_updating_tsr:
                     form.textChanged.connect(self.update_tsr_and_j)
+
             form.setToolTip(self.settings_to_tooltip[key])
             label = self.settings_to_name[key]
             
@@ -1927,6 +1933,20 @@ class Analysis(QWidget):
             self.forms_dict["pitch_max"][2].show()
             self.forms_dict["pitch_num"][2].show()
             pass
+
+        current_index_constant_value = self.forms_dict["constant_selection"][0].currentIndex()
+        if current_index_constant_value == 0:
+            self.forms_dict["constant_speed"][2].show()
+            self.forms_dict["constant_rpm"][2].hide()
+        elif current_index_constant_value == 1:
+            self.forms_dict["constant_speed"][2].hide()
+            self.forms_dict["constant_rpm"][2].show()
+
+        current_state_fix_reynolds = self.forms_dict["fix_reynolds"][0].isChecked()
+        if current_state_fix_reynolds == True:
+            self.forms_dict["reynolds"][2].show()
+        else:
+            self.forms_dict["reynolds"][2].hide()
 
     def update_tsr_and_j(self):
         try:

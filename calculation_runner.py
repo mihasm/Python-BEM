@@ -100,8 +100,9 @@ def calculate_power_3d(inp_args, print_eof=False, prepend="", print_progress=Tru
         for rpm in rpms:
             for pitch in pitches:
                 if print_progress:
-                    p.print(prepend + "-v:", round(v,2), "[m/s], rpm:", round(rpm,1), "[RPM], lambda:",
-                            round(rpm / 60 * 2 * pi * inp_args["R"] / v,2), "J:", round(v / (rpm / 60 * inp_args["R"] * 2),2))
+                    _lambda = rpm / 60 * 2 * pi * inp_args["R"] / v
+                    _advance_ratio = v / (rpm / 60 * inp_args["R"] * 2)
+                    p.print(prepend + "v=%.1f m/s, n=%.0f RPM, λ=%.2f, J=%.2f" % (v,rpm,_lambda,_advance_ratio))
                 _inp_args = {**inp_args}
                 _inp_args["v"] = v
                 _inp_args["rpm"] = rpm
