@@ -7,54 +7,52 @@ __maintainer__ = "Miha Smrekar"
 __email__ = "miha.smrekar9@gmail.com"
 __status__ = "Development"
 
-from popravki import METHODS_STRINGS
-from utils import get_centroid_coordinates
-from sw_macro_builder import create_macro_text
-from visualize import create_3d_blade
-from chord_lengths import generate_chord_lengths_betz, generate_chord_lengths_schmitz
-from chord_lengths import generate_twists_betz, generate_twists_schmitz
-from xfoil import generate_polars_data
-from montgomerie import Montgomerie
-from polars import scrape_data
-from interpolator import interp_at
-from utils import interpolate_geom, to_float, fltr, transpose, import_dat, import_nrel_dat, generate_dat
-from optimization import optimize_angles_genetic
-from utils import interpolate_geom, to_float, fltr, QDarkPalette, create_folder, ErrorMessageBox, MyMessageBox, sort_data
-from turbine_data import SET_INIT
-from table import Table
-#from results import ResultsWindow
-from scrape_polars import get_x_y_from_link
-from calculation_runner import calculate_power_3d
-from matplotlib import cm
-import mpl_toolkits.mplot3d as mp3d
-from matplotlib.widgets import Slider, Button, RadioButtons
-import matplotlib.pyplot as plt
-from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
-from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
-from scipy.interpolate import interp1d
-from scipy import interpolate
-import numpy as np
-from numpy import array
+from functools import partial
+import json
+from multiprocessing import Process, Manager, Queue
+import multiprocessing
+import os
+from pprint import pprint
+import signal
+import sys
+import time
+import traceback
+
+from PyQt5 import QtCore, QtGui
+import PyQt5
+from PyQt5.QtCore import QThread, QTextStream, pyqtSignal, QProcess, QRect, Qt, QLocale
 from PyQt5.QtGui import QPalette, QColor
 from PyQt5.QtWidgets import (QComboBox, QMainWindow, QPushButton, QTextEdit, QWidget, QFormLayout, QLabel, QLineEdit,
                              QGridLayout, QCheckBox, QStyleFactory, QMessageBox, QAction, QFileDialog, QSlider,
                              QTabWidget, QApplication, QScrollArea, QVBoxLayout, QSplitter)
-from PyQt5 import QtCore, QtGui
-from PyQt5.QtCore import QThread, QTextStream, pyqtSignal, QProcess, QRect, Qt
-from PyQt5.QtCore import QLocale
-
-from multiprocessing import Process, Manager, Queue
-import multiprocessing
-import json
-from pprint import pprint
-import time
-import sys
+from calculation_runner import calculate_power_3d
 import ctypes
-import os
+from matplotlib import cm
+from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
+import matplotlib.pyplot as plt
+from matplotlib.widgets import Slider, Button, RadioButtons
+from montgomerie import Montgomerie
+import mpl_toolkits.mplot3d as mp3d
+from numpy import array
+import numpy as np
+from optimization import optimize_angles_genetic
+from polars import get_x_y_from_link, scrape_data
+from popravki import METHODS_STRINGS
 import pyqtgraph as pg
-from functools import partial
-import traceback
-import signal
+from scipy.interpolate import interp1d
+from turbine_data import SET_INIT
+from utils import (generate_chord_lengths_betz, generate_chord_lengths_schmitz,
+                   generate_twists_betz, generate_twists_schmitz,
+                   get_centroid_coordinates,interpolate_geom, to_float, fltr, QDarkPalette,
+                   create_folder, ErrorMessageBox, MyMessageBox, sort_data,
+                   interpolate_geom, to_float, fltr, transpose, import_dat, import_nrel_dat, generate_dat, interp_at,
+                   Table,create_macro_text)
+from visualize import create_3d_blade
+from xfoil import generate_polars_data
+
+
+#from results import ResultsWindow
 
 np.set_printoptions(threshold=sys.maxsize)
 
@@ -65,6 +63,7 @@ if getattr(sys, 'frozen', False):
     application_path = os.path.dirname(sys.executable)
 elif __file__:
     application_path = os.path.dirname(__file__)
+
 
 
 class MainWindow(QMainWindow):
@@ -93,11 +92,11 @@ class MainWindow(QMainWindow):
         loadFile.setShortcut("Ctrl+L")
         loadFile.setStatusTip('Load File')
         loadFile.triggered.connect(self.file_load)
-        #getSettings = QAction("Get settings", self)
-        #getSettings.triggered.connect(self.get_all_settings)
+        getSettings = QAction("Get settings", self)
+        getSettings.triggered.connect(self.get_all_settings)
         fileMenu.addAction(saveFile)
         fileMenu.addAction(loadFile)
-        #fileMenu.addAction(getSettings)
+        fileMenu.addAction(getSettings)
 
         self.screen_width = width
         self.screen_height = height
@@ -125,6 +124,8 @@ class MainWindow(QMainWindow):
         self.set_all_settings(SET_INIT)
 
         create_folder(os.path.join(application_path,"foils"))  # Used by XFoil
+
+        self.set_process_stopped()
 
         self.show()
 
@@ -185,7 +186,7 @@ class MainWindow(QMainWindow):
             curve_manager_settings = self.curve_manager.get_settings()
 
             out = {**properties, **settings, **opt_settings, **curve_manager_settings}
-
+            #pprint(out)
             return out
         except:
             msg = ErrorMessageBox()

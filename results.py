@@ -1,23 +1,19 @@
-import numpy
 import warnings
+
 from PyQt5 import QtWidgets
 from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import (QComboBox, QMainWindow, QPushButton, QTextEdit, QWidget, QFormLayout,
                              QLabel, QLineEdit, QGridLayout, QCheckBox, QStyleFactory, QMessageBox, QAction, QFileDialog, QSlider)
+from calculation import OUTPUT_VARIABLES_LIST
+from calculation_runner import max_calculate
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
+import matplotlib.cbook
+from matplotlib.figure import Figure
 import matplotlib.pyplot as plt
 import numpy as np
-from matplotlib.figure import Figure
+from utils import sort_xy, dict_to_ar, ErrorMessageBox, MyMessageBox, greek_letters_to_string, transpose, Table
 
-
-from calculation_runner import max_calculate
-from table import Table
-from utils import sort_xy, dict_to_ar, ErrorMessageBox, MyMessageBox, greek_letters_to_string, transpose
-
-from calculation import OUTPUT_VARIABLES_LIST
-
-import matplotlib.cbook
 warnings.filterwarnings("ignore",category=matplotlib.cbook.MatplotlibDeprecationWarning)
 
 
@@ -116,7 +112,7 @@ class ResultsWindow(QMainWindow):
         f8 = self.tab_widget.add_tab_figure("Windspeed U3 (radius)")
         for _u in results_3d['U3']:
             ax2 = self.tab_widget.add_2d_plot_to_figure(
-                f8, _u, input_data['r'], 111, '', r'$v_4$ [m/s]', 'r [m]', look="-", c=numpy.random.rand(3,), label="Windspeed close behind"+str(_u))
+                f8, _u, input_data['r'], 111, '', r'$v_4$ [m/s]', 'r [m]', look="-", c=np.random.rand(3,), label="Windspeed close behind"+str(_u))
 
         leg_hitrosti = ax2.legend(np.round(list_of_variable_parameter, 2))
         leg_hitrosti.set_title(variable_parameter_title, prop={'size': 20})
@@ -126,7 +122,7 @@ class ResultsWindow(QMainWindow):
         f8 = self.tab_widget.add_tab_figure("Windspeed U4 (radius)")
         for _u in results_3d['U4']:
             ax2 = self.tab_widget.add_2d_plot_to_figure(
-                f8, _u, input_data['r'], 111, '', r'$v_4$ [m/s]', 'r [m]', look="-", c=numpy.random.rand(3,), label="Windspeed far away behind"+str(_u))
+                f8, _u, input_data['r'], 111, '', r'$v_4$ [m/s]', 'r [m]', look="-", c=np.random.rand(3,), label="Windspeed far away behind"+str(_u))
         leg_hitrosti = ax2.legend(np.round(list_of_variable_parameter, 2))
         leg_hitrosti.set_title(variable_parameter_title, prop={'size': 20})
         ############################################
@@ -399,7 +395,7 @@ class CustomGraphWidget(QWidget):
             x_ar=np.transpose(x_ar)
             y_ar=np.transpose(y_ar)
             self.ax.plot(x_ar,y_ar,label="2d plot")
-            self.ax.legend(numpy.round(list_of_variable_parameter,2),title=variable_parameter_title)
+            self.ax.legend(np.round(list_of_variable_parameter,2),title=variable_parameter_title)
             #data_table = np.column_stack((x_ar,y_ar))
             #data_table=transpose(data_table)
             #self.table.createTable(data_table)

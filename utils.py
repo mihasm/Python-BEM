@@ -1,18 +1,20 @@
 import copy
-import numpy
-from scipy import interpolate
-from numpy import array
+import csv
 import os
-import sys
 import re
+import sys
+import traceback
 
+from PyQt5 import QtCore, QtGui
+from PyQt5.QtCore import QThread, QTextStream, pyqtSignal, QProcess, QRect, Qt, pyqtSlot
 from PyQt5.QtGui import QPalette, QColor
 from PyQt5.QtWidgets import (QComboBox, QMainWindow, QPushButton, QTextEdit, QWidget, QFormLayout, QLabel, QLineEdit,
                              QGridLayout, QCheckBox, QStyleFactory, QMessageBox, QAction, QFileDialog, QSlider,
-                             QTabWidget, QApplication, QScrollArea, QVBoxLayout)
-from PyQt5 import QtCore, QtGui
-from PyQt5.QtCore import QThread, QTextStream, pyqtSignal, QProcess, QRect, Qt
-import traceback
+                             QTabWidget, QApplication, QScrollArea, QVBoxLayout, QTableWidget,QTableWidgetItem,QMenu)
+from numpy import array
+import numpy as np
+from scipy import interpolate
+
 
 # determine if application is a script file or frozen exe
 if getattr(sys, 'frozen', False):
@@ -52,8 +54,8 @@ def dict_to_ar(inp_dict):
     for k, v in list_items:
         prep.append([k])
         for j in v:
-            if isinstance(j, numpy.ndarray):
-                j = numpy.array2string(j, max_line_width=10000000)
+            if isinstance(j, np.ndarray):
+                j = np.array2string(j, max_line_width=10000000)
             prep[i].append(str(j))
         i += 1
     prep = transpose(prep)
@@ -138,7 +140,7 @@ def interpolate_geom(r, c, theta, foils, num=None, linspace_interp=False,geometr
     r_orig = r.copy()
     foils_orig = foils.copy()
     if linspace_interp:
-        r = numpy.linspace(start=r[0], stop=r[-1], num=int(num) + 1)
+        r = np.linspace(start=r[0], stop=r[-1], num=int(num) + 1)
         c = c_interpolator(r)
         theta = theta_interpolator(r)
         foils = []
@@ -166,15 +168,15 @@ def interpolate_geom(r, c, theta, foils, num=None, linspace_interp=False,geometr
 
 
 def find_nearest(_array, value):
-    _array = numpy.asarray(_array)
-    idx = (numpy.abs(_array - value)).argmin()
+    _array = np.asarray(_array)
+    idx = (np.abs(_array - value)).argmin()
     return idx
 
 
-def to_float(inp):
-    if isinstance(inp, str):
-        inp = inp.replace(",", ".")
-    return float(inp)
+def to_float(inpt):
+    if isinstance(inpt, str):
+        inpt = inpt.replace(",", ".")
+    return float(inpt)
 
 
 class Printer:
@@ -203,7 +205,7 @@ def fltr(node, vals):
     if isinstance(node, dict):
         retVal = {}
         for key, value in node.items():
-            if isinstance(value, numpy.ndarray):
+            if isinstance(value, np.ndarray):
                 node[key] = value.tolist()
             if isinstance(key, vals) and isinstance(value, vals):
                 retVal[key] = copy.deepcopy(node[key])
@@ -327,8 +329,8 @@ def create_folder(name_path):
 
 
 def get_centroid_coordinates(foil_x, foil_y):
-    centroid = (numpy.sum(foil_x) / len(foil_x),
-                numpy.sum(foil_y) / len(foil_y))
+    centroid = (np.sum(foil_x) / len(foil_x),
+                np.sum(foil_y) / len(foil_y))
     return centroid
 
 class MyMessageBox(QMessageBox):
@@ -376,13 +378,13 @@ def generate_v_and_rpm_from_tsr(tsr_list,R,v=None,rpm=None):
         # rpm is fixed
         out_rpm.append(rpm)
         for tsr in tsr_list:
-            _v=2*numpy.pi*rpm/60*R/tsr
+            _v=2*np.pi*rpm/60*R/tsr
             out_v.append(_v)
     elif rpm == None:
         # v is fixed
         out_v.append(v)
         for tsr in tsr_list:
-            _rpm = tsr*v*60/R/2/numpy.pi
+            _rpm = tsr*v*60/R/2/np.pi
             out_rpm.append(_rpm)
     return out_v,out_rpm
 
@@ -467,7 +469,7 @@ def import_nrel_dat(file_path):
                 data.append([Re, ncrit, _alpha, _cl, _cd])
             i+=1
         #print(data)
-        data = numpy.array(data)
+        data = np.array(data)
         return data
 
 #x,y = import_dat("C:\\Users\\Miha\\Google Drive\\faks\\BEM program\\foils\\DU_91_W2_250.dat")
@@ -555,3 +557,416 @@ def greek_letters_to_string(string):
         if found==False:
             break
     return string
+
+### CHORD TWIST GENERATORS ###
+
+def generate_chord_lengths_betz(radiuses,R,Cl_max,B,TSR):
+    """
+    Source: http://wflportal.amcplaza.com/Research/DYNAM/Resource%20Documents/WT_Theory_2009.pdf
+    """
+    chords = 16*np.pi*R/(9*B*Cl_max)*(TSR*np.sqrt(TSR**2*(radiuses/R)**2+4/9))**-1
+    return chords
+
+def generate_chord_lengths_schmitz(radiuses,R,Cl_max,B,TSR):
+    """
+    Source: http://wflportal.amcplaza.com/Research/DYNAM/Resource%20Documents/WT_Theory_2009.pdf
+    """
+    chords = 16*np.pi*radiuses/(B*Cl_max)*np.sin(1/3*np.arctan(R/(TSR*radiuses)))**2
+    return chords
+
+def generate_twists_betz(radiuses,R,TSR,alpha_d):
+    """
+    Source: http://wflportal.amcplaza.com/Research/DYNAM/Resource%20Documents/WT_Theory_2009.pdf
+    """
+    thetas = np.rad2deg(np.arctan(2*R/(3*radiuses*TSR)))+alpha_d
+    return thetas
+
+def generate_twists_schmitz(radiuses,R,TSR,alpha_d):
+    """
+    Source: http://wflportal.amcplaza.com/Research/DYNAM/Resource%20Documents/WT_Theory_2009.pdf
+    """
+    thetas = 2/3*np.rad2deg(np.arctan(R/(radiuses*TSR)))-alpha_d
+    return thetas
+
+### INTERPOLATION ###
+
+def interp(re_in, alpha_in, re, alpha, cl):
+    """
+    Interpolation function uses input arrays re, alpha and cl, and input re_in and alpha_in,
+
+    to get the interpolated value of a curve (cl or cd, or any 3D function for that matter).
+
+    In cases that re_in is too large, or too small, the function returns the closest available valid Reynolds data.
+    """
+
+    re_list, alpha_list, cl_list = np.unique(
+        re), np.unique(alpha), np.unique(cl)
+
+    if re_in >= re_list.max():
+        indexes = np.where(re == re_list.max())
+        alpha_selected = alpha[indexes]
+        cl_selected = cl[indexes]
+        return np.interp(alpha_in, alpha_selected, cl_selected)
+
+    if re_in <= re_list.min():
+        indexes = np.where(re == re_list.min())
+        alpha_selected = alpha[indexes]
+        cl_selected = cl[indexes]
+        return np.interp(alpha_in, alpha_selected, cl_selected)
+
+    re_bottom_index = np.where(re_list < re_in)[0][-1]
+    re_bottom = re_list[re_bottom_index]
+    re_top = re_list[re_bottom_index+1]
+
+    indexes_bottom = np.where(re == re_bottom)
+    indexes_top = np.where(re == re_top)
+
+    alpha_bottom = alpha[indexes_bottom]
+    cl_bottom = cl[indexes_bottom]
+
+    alpha_top = alpha[indexes_top]
+    cl_top = cl[indexes_top]
+
+    _cl_1 = np.interp(alpha_in, alpha_bottom, cl_bottom)
+    _cl_2 = np.interp(alpha_in, alpha_top, cl_top)
+
+    cL = (_cl_2-_cl_1)/(re_top-re_bottom)*(re_in-re_bottom)+_cl_1
+    return cL
+
+
+def interp_at(x, y, v, xp, yp, algorithm='linear', extrapolate=False):
+    """
+    Interpolate data onto the specified points.
+
+    Parameters:
+
+    * x, y : 1D arrays
+        Arrays with the x and y coordinates of the data points.
+    * v : 1D array
+        Array with the scalar value assigned to the data points.
+    * xp, yp : 1D arrays
+        Points where the data values will be interpolated
+    * algorithm : string
+        Interpolation algorithm. Either ``'cubic'``, ``'nearest'``,
+        ``'linear'`` (see scipy.interpolate.griddata)
+    * extrapolate : True or False
+        If True, will extrapolate values outside of the convex hull of the data
+        points.
+
+    Returns:
+
+    * v : 1D array
+        1D array with the interpolated v values.
+
+    """
+    if algorithm not in ['cubic', 'linear', 'nearest']:
+        raise ValueError("Invalid interpolation algorithm: " + str(algorithm))
+    grid = interpolate.griddata(
+        (x, y), v, (xp, yp), method=algorithm).ravel()
+    if extrapolate and algorithm != 'nearest' and numpy.any(numpy.isnan(grid)):
+        if xp.size > 2:
+            grid = extrapolate_nans(xp, yp, grid)
+        else:
+            return interpolate.griddata((x, y), v, (xp, yp), method="nearest")
+    return grid
+
+
+def extrapolate_nans(x, y, v):
+    """
+    Extrapolate the NaNs or masked values in a grid INPLACE using nearest
+    value.
+
+    .. warning:: Replaces the NaN or masked values of the original array!
+
+    Parameters:
+
+    * x, y : 1D arrays
+        Arrays with the x and y coordinates of the data points.
+    * v : 1D array
+        Array with the scalar value assigned to the data points.
+
+    Returns:
+
+    * v : 1D array
+        The array with NaNs or masked values extrapolated.
+
+    """
+    if numpy.ma.is_masked(v):
+        nans = v.mask
+    else:
+        nans = numpy.isnan(v)
+    notnans = numpy.logical_not(nans)
+    v[nans] = scipy.interpolate.griddata((x[notnans], y[notnans]), v[notnans], (x[nans], y[nans]),
+                                         method='nearest').ravel()
+    return v
+
+
+def get_interpolation_function(x, y, z, num_x=10, num_y=360):
+    x, y, z = np.array(x), np.array(y), np.array(z)
+    xi, yi = np.linspace(x.min(), x.max(), num_x), np.linspace(
+        y.min(), y.max(), num_y)
+    xi, yi = np.meshgrid(xi, yi)
+    zi = interp_at(x, y, z, xi.ravel(), yi.ravel(),
+                   algorithm="linear", extrapolate=True)
+    fun = scipy.interpolate.interp2d(xi, yi, zi, kind='linear')
+    return fun
+
+
+### TABLE ###
+
+# noinspection PyArgumentList
+class Table(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.selected_array = []
+        self.tableWidget = QTableWidget()
+        self.tableWidget.setTabKeyNavigation(False)
+        self.layout = QVBoxLayout()
+        self.initUI()
+        self.clip = QApplication.clipboard()
+        self.set_headers()
+
+    def set_headers(self):
+        self.horizontal_headers = self.tableWidget.horizontalHeader()
+        self.horizontal_headers.setContextMenuPolicy(
+            QtCore.Qt.CustomContextMenu)
+        self.horizontal_headers.customContextMenuRequested.connect(
+            self.horizontal_header_popup)
+        self.vertical_headers = self.tableWidget.verticalHeader()
+        self.vertical_headers.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+        self.vertical_headers.customContextMenuRequested.connect(
+            self.vertical_header_popup)
+
+    def set_labels(self, arr):
+        self.tableWidget.setHorizontalHeaderLabels(arr)
+
+    def initUI(self):
+        self.createEmpty(4, 4)
+
+        # Add box layout, add table to box layout and add box layout to widget
+        self.layout.addWidget(self.tableWidget)
+        self.setLayout(self.layout)
+
+        # Show widget
+        self.show()
+
+    def createTable(self, array):
+        if len(array) > 0:
+            # Create table
+            self.tableWidget.setRowCount(len(array))
+            self.tableWidget.setColumnCount(len(array[0]))
+            i = 0
+            for r in array:
+                j = 0
+                for c in r:
+                    if not isinstance(c, str):
+                        c = str(c)
+                    self.tableWidget.setItem(i, j, QTableWidgetItem(c))
+                    j += 1
+                i += 1
+
+            self.tableWidget.move(0, 0)
+
+            # table selection change
+            self.tableWidget.clicked.connect(self.on_click)
+
+    def createEmpty(self, x, y):
+        # Create table
+        self.tableWidget.setRowCount(y)
+        self.tableWidget.setColumnCount(x)
+
+        self.tableWidget.move(0, 0)
+
+        # table selection change
+        self.tableWidget.clicked.connect(self.on_click)
+
+    @pyqtSlot()
+    def on_click(self):
+        self.get_selected()
+
+    def get_selected(self):
+        self.selected_array = []
+
+        rows_added = sorted(set(index.row()
+                                for index in self.tableWidget.selectedIndexes()))
+        columns_added = sorted(set(index.column()
+                                   for index in self.tableWidget.selectedIndexes()))
+
+        delta_r = rows_added[0]
+        delta_c = columns_added[0]
+
+        for r in range(rows_added[-1] - rows_added[0] + 1):
+            self.selected_array.append([])
+            for c in range(columns_added[-1] - columns_added[0] + 1):
+                self.selected_array[r].append(None)
+        for currentQTableWidgetItem in self.tableWidget.selectedItems():
+            row = currentQTableWidgetItem.row() - delta_r
+            column = currentQTableWidgetItem.column() - delta_c
+            text = currentQTableWidgetItem.text()
+            self.selected_array[row][column] = text
+        return self.selected_array
+
+    def keyPressEvent(self, e):
+        if e.modifiers() & QtCore.Qt.ControlModifier:
+            if e.key() == QtCore.Qt.Key_C:  # copy
+                s = array_to_csv(self.get_selected())
+                self.clip.setText(s)
+        if e.key() == QtCore.Qt.Key_Return or e.key() == QtCore.Qt.Key_Enter:
+            self.select_next_row()
+        if e.modifiers() & QtCore.Qt.ControlModifier:
+            if e.key() == QtCore.Qt.Key_V:  # paste
+                self.paste()
+
+        if e.modifiers() & QtCore.Qt.ControlModifier:
+            if e.key() == QtCore.Qt.Key_S:  # test
+                self.get_values()
+
+        if e.key() == QtCore.Qt.Key_Delete:
+            self.delete_data()
+
+    def paste(self):
+        results = []
+        text = self.clip.text()
+        text = text.replace("   ", "\t")
+        text = text.replace("  ", "\t")
+        if len(text) > 0:
+            # change contents to floats
+            reader = csv.reader(text.splitlines(), delimiter="\t")
+            for row in reader:  # each row is a list
+                results.append(row)
+            numrows = len(results)
+            numcolumns = len(results[0])
+            selected_row = sorted(
+                set(index.row() for index in self.tableWidget.selectedIndexes()))[0]
+            selected_column = sorted(
+                set(index.column() for index in self.tableWidget.selectedIndexes()))[0]
+            if selected_row + numrows >= self.tableWidget.rowCount():
+                self.tableWidget.setRowCount(selected_row + numrows)
+            if selected_column + numcolumns >= self.tableWidget.columnCount():
+                self.tableWidget.setColumnCount(selected_column + numcolumns)
+            currow = selected_row
+            for r in results:
+                curcolumn = selected_column
+                for c in r:
+                    self.tableWidget.setItem(
+                        currow, curcolumn, QTableWidgetItem(c))
+                    curcolumn += 1
+                currow += 1
+        return
+
+    def delete_data(self):
+        rows = sorted(set(index.row() for index in self.tableWidget.selectedIndexes()))
+        columns = sorted(set(index.column() for index in self.tableWidget.selectedIndexes()))
+        for r in rows:
+            for c in columns:
+                self.tableWidget.setItem(r, c, QTableWidgetItem(""))
+
+    def clear_table(self):
+        num_rows = self.tableWidget.rowCount()
+        num_columns = self.tableWidget.columnCount()
+        row_indexes = range(num_rows)
+        column_indexes = range(num_columns)
+        for r in row_indexes:
+            for c in column_indexes:
+                self.tableWidget.setItem(r, c, QTableWidgetItem(""))
+
+
+    def select_next_row(self):
+        rows = sorted(set(index.row()
+                          for index in self.tableWidget.selectedIndexes()))
+        columns = sorted(set(index.column()
+                             for index in self.tableWidget.selectedIndexes()))
+        last_selected_row = rows[-1]
+        first_selected_column = columns[0]
+        num_rows = self.tableWidget.rowCount()
+        if last_selected_row + 1 >= num_rows:
+            self.tableWidget.insertRow(num_rows)
+        self.tableWidget.setCurrentCell(
+            last_selected_row + 1, first_selected_column)
+
+    def get_values(self):
+        data = []
+        for row in range(self.tableWidget.rowCount()):
+            data.append([])
+            for column in range(self.tableWidget.columnCount()):
+                item = self.tableWidget.item(row, column)
+                if item == None:
+                    item = ""
+                else:
+                    item = item.text()
+                data[row].append(item)
+        return data
+
+    def contextMenuEvent(self, event):
+        menu = QMenu(self)
+        item = self.tableWidget.itemAt(event.pos())
+        if item != None:
+            delete_row = menu.addAction("delete row(s)")
+            delete_column = menu.addAction("delete column(s)")
+        else:
+            delete_row = False
+            delete_column = False
+
+        insert_row = menu.addAction("insert row")
+        insert_column = menu.addAction("insert column")
+
+        action = menu.exec_(self.mapToGlobal(event.pos()))
+
+        rows = sorted(set(index.row()
+                          for index in self.tableWidget.selectedIndexes()), reverse=True, )
+        columns = sorted(set(index.column()
+                             for index in self.tableWidget.selectedIndexes()), reverse=True, )
+
+        if action == insert_row:
+            if len(rows) == 0:
+                rows.append(0)
+            self.tableWidget.insertRow(rows[-1])
+            for c in range(self.tableWidget.columnCount()):
+                self.tableWidget.setItem(rows[-1], c, QTableWidgetItem(""))
+        elif action == delete_row:
+            for r in rows:
+                self.tableWidget.removeRow(r)
+        elif action == insert_column:
+            if len(columns) == 0:
+                columns.append(0)
+            self.tableWidget.insertColumn(columns[-1])
+            for r in range(self.tableWidget.rowCount()):
+                self.tableWidget.setItem(r, columns[-1], QTableWidgetItem(""))
+        elif action == delete_column:
+            for c in columns:
+                self.tableWidget.removeColumn(c)
+
+    def horizontal_header_popup(self, position):
+        pass
+
+    def vertical_header_popup(self, position):
+        pass
+
+
+### SOLIDWORKS MACRO BUILDER ###
+
+def create_macro_text(list_of_files):
+    template_start = """
+    Dim swApp As Object
+
+    Dim part As Object
+    Dim boolstatus As Boolean
+    Dim longstatus As Long, longwarnings As Long
+
+    Sub main()
+
+    Set swApp = Application.SldWorks
+
+    template = swApp.GetUserPreferenceStringValue(swDefaultTemplatepart)
+    Set part = swApp.NewDocument(template, 0, 0, 0)
+
+    Dim myModelView As Object
+    """
+
+    template_end = """
+    End Sub
+    """
+    str_between = ""
+    for f in list_of_files:
+        str_between += 'boolstatus = part.InsertCurveFile("%s")\n' % f
+    return template_start+"\n"+str_between+"\n"+template_end

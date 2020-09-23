@@ -1,14 +1,14 @@
 import datetime
+from math import pi
 import sys
 import time
 import traceback
-from math import pi
-
-import numpy
-from mpl_toolkits.mplot3d import Axes3D
 
 from calculation import Calculator
+from mpl_toolkits.mplot3d import Axes3D
+import numpy
 from utils import Printer, generate_v_and_rpm_from_tsr, generate_v_and_rpm_from_J
+
 
 a = Axes3D  # only for passing code inspection -> Axes3D needs to be imported
 
@@ -36,7 +36,7 @@ def calculate_power(inp_args):
         results = c.run_array(**inp_args)
         return results
     except:
-        p.print("!!!!EOF!!!!")
+        inp_args["EOF"].value = True
         traceback.print_exc(file=sys.stdout)
         raise
 

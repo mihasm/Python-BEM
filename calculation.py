@@ -6,10 +6,9 @@ import numpy
 import numpy as np
 from scipy import interpolate
 
-from utils import Printer, generate_dat, sort_data, normalize_angle, get_transition_foils
+from utils import Printer, generate_dat, sort_data, normalize_angle, get_transition_foils, interp
 from popravki import *
 from xfoil import run_xfoil_analysis, xfoil_runner
-from interpolator import interp
 
 numpy.seterr(all="raise")
 numpy.seterr(invalid="raise")
@@ -89,11 +88,11 @@ class Calculator:
             cl = data[:, 3].flatten()
             cd = data[:, 4].flatten()
 
-            def interpolation_function_cl(x, y, re=re, alpha=alpha, cl=cl):
-                return interp(x, y, re, alpha, cl)
+            def interpolation_function_cl(re_in, alpha_in, re=re, alpha=alpha, cl=cl):
+                return interp(re_in, alpha_in, re, alpha, cl)
 
-            def interpolation_function_cd(x, y, re=re, alpha=alpha, cd=cd):
-                return interp(x, y, re, alpha, cd)
+            def interpolation_function_cd(re_in, alpha_in, re=re, alpha=alpha, cd=cd):
+                return interp(re_in, alpha_in, re, alpha, cd)
 
             self.airfoils[blade_name]["interp_function_cl"] = interpolation_function_cl
             self.airfoils[blade_name]["interp_function_cd"] = interpolation_function_cd

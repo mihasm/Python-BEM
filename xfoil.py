@@ -1,20 +1,19 @@
 #!/usr/bin/env python3
-import os
-import time
-from subprocess import Popen, PIPE, DEVNULL, STDOUT
-import re as regex
-from threading import Timer
-import sys
 from math import sin, cos, atan, acos, pi, exp, sqrt, radians, atan2, degrees, tan, isinf
-import numpy as np
-import numpy
+import os
+import re as regex
+from subprocess import Popen, PIPE, DEVNULL, STDOUT
+import sys
+from threading import Timer
+import time
+
 from matplotlib import pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D  # noqa: F401 unused import
-import scipy
-import scipy.linalg
-import scipy.interpolate
-import math
 import matplotlib.cm as cm
+from mpl_toolkits.mplot3d import Axes3D  # noqa: F401 unused import
+import numpy as np
+import scipy.interpolate
+import scipy.linalg
+
 
 xfoil_path = os.path.join("xfoil_executables", "xfoil.exe")
 if sys.platform.startswith("darwin"):
@@ -55,7 +54,7 @@ def get_coefficients_from_output(output_str):
         return False
     if "*" in CL or "*" in CD:
         return False
-    if math.isinf(float(CL)) or math.isinf(float(CD)):
+    if isinf(float(CL)) or isinf(float(CD)):
         return False
 
     out = {"CL": float(CL), "CD": float(CD), "Cm": float(
@@ -117,14 +116,14 @@ def run_xfoil_analysis(airfoil, reynolds, alpha, iterations=70, max_next_angle=2
 
 def draw_to_matplotlib(x, y, z, shrani=False, unit='CL'):
     # Ne vem ali je to potrebno. Menda je.
-    x = numpy.array(x)
-    y = numpy.array(y)
-    z = numpy.array(z)
+    x = np.array(x)
+    y = np.array(y)
+    z = np.array(z)
 
     # x/y tocke za risati ozadje
-    xi, yi = numpy.linspace(x.min(), x.max(), 100), numpy.linspace(
+    xi, yi = np.linspace(x.min(), x.max(), 100), np.linspace(
         y.min(), y.max(), 100)
-    xi, yi = numpy.meshgrid(xi, yi)
+    xi, yi = np.meshgrid(xi, yi)
 
     # Linearna interpolacija ozadja, glede na x,y,z
     # interpolacija je lahko linear, cubic, itd.
@@ -146,7 +145,7 @@ def draw_to_matplotlib(x, y, z, shrani=False, unit='CL'):
     # plt.ylim(-1000,0)
 
     # X Label
-    # plt.xlabel('alfa' % (z.min(),z.max(),numpy.mean(z)))
+    # plt.xlabel('alfa' % (z.min(),z.max(),np.mean(z)))
 
     # Y Label
     plt.ylabel('re')
