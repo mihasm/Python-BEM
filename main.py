@@ -181,16 +181,36 @@ class MainWindow(QMainWindow):
         """
         try:
             properties = self.wind_turbine_properties.get_settings()
-            settings = self.analysis.get_settings()
-            opt_settings = self.optimization.get_settings()
-            curve_manager_settings = self.curve_manager.get_settings()
+        except:
+            msg = ErrorMessageBox()
+            properties = {}
 
+        try:
+            settings = self.analysis.get_settings()
+        except:
+            msg = ErrorMessageBox()
+            settings = {}
+
+        try:
+            opt_settings = self.optimization.get_settings()
+        except:
+            msg = ErrorMessageBox()
+            opt_settings = {}
+
+        try:
+            curve_manager_settings = self.curve_manager.get_settings()
+        except:
+            msg = ErrorMessageBox()
+            curve_manager_settings = {}
+
+        try:
             out = {**properties, **settings, **opt_settings, **curve_manager_settings}
-            #pprint(out)
             return out
         except:
             msg = ErrorMessageBox()
+            #pprint(out)
             return None
+        
 
     # noinspection PyBroadException
     def set_all_settings(self, inp_dict):
@@ -601,6 +621,7 @@ class AirfoilManager(QWidget):
         self.p.show()
 
     def add_foil(self, string):
+        print("add_foil",string)
         c = Airfoils(string, self)
         self.tab_widget.add_tab(c, string)
 
@@ -862,9 +883,6 @@ class Airfoils(QWidget):
         self.thread.set_params(self.airfoil_name + ".dat")
         self.thread.completeSignal.connect(self.xfoil_completion)
         self.thread.start()
-        #self.thread.generate_data()
-        #data = generate_polars_data()
-        #self.populate_curve_list(data)
         print("Done")
 
     def xfoil_completion(self,nothing_important):
@@ -876,14 +894,16 @@ class Airfoils(QWidget):
         if self.window != None:
             self.window.close()
         self.window = PrintoutWindow(self)
-        data = scrape_data(self.link.text())
-        x,y=get_x_y_from_link(self.link.text())
+        self.thread=ScrapeThread(self)
+        self.thread.set_params(self.link)
+        self.thread.completeSignal.connect(self.generate_curves_link_completion)
+        self.thread.start()
+        
+    def generate_curves_link_completion(self,nothing_important):
         self.table_dat.clear_table()
-        self.populate_curve_list(data)
-        self.set_x_y(x,y)
+        self.populate_curve_list(self.scraping_generated_data[0])
+        self.set_x_y(self.scraping_generated_data[1],self.scraping_generated_data[2])
         self.refresh()
-        print("Done.")
-        #self.window.close()
 
     def populate_curve_list(self, data):
         self.curves.curve_list = []
@@ -2426,6 +2446,25 @@ class XFoilThread(QThread):
         self.parent.xfoil_generated_data = out
         self.completeSignal.emit("Done")
 
+class ScrapeThread(QThread):
+
+    progressSignal = QtCore.Signal(int)
+    completeSignal = QtCore.Signal(str)
+
+    def __init__(self, parent, *args, **kwargs):
+        QThread.__init__(self, parent)
+        self.parent = parent
+
+    def set_params(self,link):
+        self.link = link
+
+    def run(self):
+        data = scrape_data(self.link.text())
+        x,y=get_x_y_from_link(self.link.text())
+        out = [data,x,y]
+        self.parent.scraping_generated_data = out
+        self.completeSignal.emit("Done")
+
         
 
 
@@ -2472,8 +2511,11 @@ class PopupText(QWidget):
     def send_signal(self):
         if self.emitter != None:
             self.emitter.emit(self.inp.text())
-            self.emitter.disconnect()
         self.close()
+
+    def closeEvent(self, event):
+        self.emitter.disconnect()
+        event.accept()
 
 
 class MatplotlibWindow(QWidget):
@@ -2501,7 +2543,6 @@ class PrintoutWindow(QMainWindow):
         self.setWindowTitle("Progress")
         self.setGeometry(50, 50, 500, 300)
         self.parent = parent
-
         sys.stdout = Stream(newText=self.onUpdateText)
         sys.stderr = Stream(newText=self.onUpdateText)
         self.process  = QtGui.QTextEdit()
@@ -2515,9 +2556,10 @@ class PrintoutWindow(QMainWindow):
         self.process.setTextCursor(cursor)
         self.process.ensureCursorVisible()
 
-    def __del__(self):
+    def closeEvent(self, event):
         sys.stdout = sys.__stdout__
-        sys.stderr = sys.__stdout__
+        sys.stderr = sys.__stderr__
+        QMainWindow.closeEvent(self, event)
 
 
 class Stream(QtCore.QObject):
