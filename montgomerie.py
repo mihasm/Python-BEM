@@ -16,7 +16,7 @@ class POLAR_CLASS:
 
 
 class Montgomerie:
-    def __init__(self, x, y, alpha, Cl, Cd, Re=100000, A=30, Am=5, B=5, Bm=5, m_CD90=2.0, slope=0.106):
+    def __init__(self, x, y, alpha, Cl, Cd, Re=100000, A=-5, Am=8, B=5, Bm=5, m_CD90=2.0, slope=0.106):
         # coefficient of lift at AoA  == 0
         self.CLzero = np.interp(0, alpha, Cl)
         self.CL180 = 0  # lift coefficient at AoA == 180
@@ -41,10 +41,8 @@ class Montgomerie:
 
         self.m_fCamber = 0.043
 
-        # self.m_pCurPolar = POLAR_CLA
         self.m_pCurPolar = POLAR_CLASS(x, y, alpha, Cl, Cd)
         self.posalphamax = np.argmax(self.m_pCurPolar.m_Cl)
-        # self.posalphamax = len(self.m_pCurPolar.m_Alpha)
 
         self.reynolds = Re
 

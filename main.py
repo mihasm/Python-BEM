@@ -621,9 +621,9 @@ class AirfoilManager(QWidget):
         self.p.show()
 
     def add_foil(self, string):
-        print("add_foil",string)
         c = Airfoils(string, self)
         self.tab_widget.add_tab(c, string)
+        self.tab_widget.setCurrentIndex(len(self.tab_widget.tabs)-1)
 
     def rename_foil_popup(self):
         self.emitter.connect(self.rename_foil)
@@ -1019,9 +1019,19 @@ class Airfoils(QWidget):
         
 
     def get_settings(self):
+        out = {}
+
         x, y = self.get_x_y()
-        centroid_x = float(self.centroid_x_edit.text())
-        centroid_y = float(self.centroid_y_edit.text())
+        try:
+            centroid_x = float(self.centroid_x_edit.text())
+            centroid_y = float(self.centroid_y_edit.text())
+        except:
+            centroid_x,centroid_y = 0.0, 0.0
+
+        try:
+            ncrit_selected = float(self.ncrit_selection.currentText())
+        except:
+            ncrit_selected = 0.0
         out = {"x": x,
                "y": y,
                "max_thickness": self.get_max_thickness(),
@@ -1032,7 +1042,7 @@ class Airfoils(QWidget):
                "gathered_curves": self.curves.gather_curves(),
                "centroid_x": centroid_x,
                "centroid_y": centroid_y,
-               "ncrit_selected": float(self.ncrit_selection.currentText())}
+               "ncrit_selected": ncrit_selected}
         return out
 
     def set_settings(self, dict_settings):
@@ -1145,7 +1155,7 @@ class Curve:
         self.alpha = alpha
         self.cl = cl
         self.cd = cd
-        self.A = 8
+        self.A = -5
         self.B = 5
         self.Am = 8
         self.Bm = 5
@@ -1634,6 +1644,7 @@ class CurveControl(QWidget):
         self.curve.B = int(self.B.value())
         self.curve.Am = int(self.Am.value())
         self.curve.Bm = int(self.Bm.value())
+        #print("A",self.curve.A,"B",self.curve.B,"A-",self.curve.Am,"B-",self.curve.Bm)
         try:
             self.curve.m_CD90 = float(self.m_CD90.text())
             self.curve.slope = float(self.slope.text())
