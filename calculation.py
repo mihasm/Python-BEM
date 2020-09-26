@@ -21,11 +21,15 @@ OUTPUT_VARIABLES_LIST = {
     "alpha":{"type":"array","name":"Angle of attack","symbol":r"$\alpha$","unit":"°"},
     "phi":{"type":"array","name":"Relative wind angle","symbol":r"$\phi$","unit":"°"},
     "F":{"type":"array","name":"Tip loss correction factor","symbol":"F","unit":""},
-    "dFt":{"type":"array","name":"Incremental tangential force","symbol":r"$dF_t$","unit":"N"},
     "M":{"type":"array","name":"Torque","symbol":"M","unit":"Nm"},
     "lambda_r":{"type":"array","name":"Local tip speed ratio","symbol":r"$\lambda_r$","unit":""},
     "Ct":{"type":"array","name":"Tangential coefficient","symbol":r"$C_t$","unit":""},
+
     "dFn":{"type":"array","name":"Incremental normal force","symbol":r"$dF_n$","unit":"N"},
+    "dFt":{"type":"array","name":"Incremental tangential force","symbol":r"$dF_t$","unit":"N"},
+    "dFn/n":{"type":"array","name":"Incremental normal force (per unit length)","symbol":r"$dF_n/n$","unit":"N/m"},
+    "dFt/n":{"type":"array","name":"Incremental tangential force (per unit length)","symbol":r"$dF_t/n$","unit":"N/m"},
+
     "foils":{"type":"string_array","name":"Airfoil name","symbol":"airfoil_name","unit":""},
     "dT":{"type":"array","name":"Incremental thrust","symbol":"dT","unit":"N"},
     "dQ":{"type":"array","name":"Incremental torque","symbol":"dM","unit":"N"},
@@ -218,7 +222,7 @@ class Calculator:
         # create results array placeholders
         results = {}
         arrays = ["a", "a'", "cL", "alpha", "phi", "F", "dFt", "M", "lambda_r",
-                  "Ct", "dFn", "foils", "dT", "dQ", "Re", "U1", "U2", "U3", "U4","cD"]
+                  "Ct", "dFn", "foils", "dT", "dQ", "Re", "U1", "U2", "U3", "U4","cD", "dFt/n", "dFn/n"]
         for array in arrays:
             results[array] = numpy.array([])
 
@@ -233,8 +237,9 @@ class Calculator:
         section_number = 0
 
         #generate transition airfoil coefficients
+        num_sections = len(theta)
 
-        for n in range(len(theta)):
+        for n in range(num_sections):
             section_number += 1
 
             _r = r[n]
@@ -273,9 +278,13 @@ class Calculator:
             results["alpha"] = numpy.append(results["alpha"], out_results["alpha"])
             results["phi"] = numpy.append(results["phi"], out_results["phi"])
             results["F"] = numpy.append(results["F"], out_results["F"])
-            results["dFt"] = numpy.append(results["dFt"], out_results["dFt"])
             results["Ct"] = numpy.append(results["Ct"], out_results["Ct"])
+
             results["dFn"] = numpy.append(results["dFn"], out_results["dFn"])
+            results["dFt"] = numpy.append(results["dFt"], out_results["dFt"])
+            results["dFn/n"] = numpy.append(results["dFn/n"], out_results["dFn/n"])
+            results["dFt/n"] = numpy.append(results["dFt/n"], out_results["dFt/n"])
+
             results["foils"] = numpy.append(results["foils"], out_results["_airfoil"])
             results["dT"] = numpy.append(results["dT"], out_results["dT"])
             results["dQ"] = numpy.append(results["dQ"], out_results["dQ"])
@@ -349,7 +358,7 @@ class Calculator:
                           kin_viscosity=1.4207E-5, rho=1.225, convergence_limit=0.001, max_iterations=100, relaxation_factor=0.3,
                           printer=None, print_all=False, print_out=False, yaw_angle=0.0, tilt_angle=0.0, skewed_wake_correction=False,
                           lambda_r_array = [],
-                          transition=False, _airfoil_prev=None, _airfoil_next=None, transition_coefficient=1.0,
+                          transition=False, _airfoil_prev=None, _airfoil_next=None, transition_coefficient=1.0,num_sections=0,
                           *args, **kwargs):
         """
         Function that calculates each section of the blade.
@@ -567,6 +576,9 @@ class Calculator:
             dFt = dFL * sin(phi) - dFD * cos(phi)  # tangential force
             dFn = dFL * cos(phi) + dFD * sin(phi)  # normal force
 
+            dFn_norm = dFn*num_sections
+            dFt_norm = dFt*num_sections
+
             # thrust and torque - Wiley, WE 2nd, p.124
             dT_MT = F * 4 * pi * _r * rho * v ** 2 * a * (1 - a) * _dr
             dT_BET = 0.5 * rho * B * _c * Vrel_norm ** 2 * \
@@ -659,5 +671,5 @@ class Calculator:
             p.print(prepend, "    ----------------------------")
 
         out = {"a": a, "aprime": aprime, "Cl": Cl, "Cd":Cd, "alpha": degrees(alpha), "phi": degrees(phi), "F": F, "dFt": dFt, "Ct": Ct, "dFn": dFn,
-               "_airfoil": _airfoil, "dT": dT, "dQ": dQ, "Re": Re, 'U1': U1, 'U2': U2, 'U3': U3, 'U4': U4, "lambda_r":lambda_r}
+               "_airfoil": _airfoil, "dT": dT, "dQ": dQ, "Re": Re, 'U1': U1, 'U2': U2, 'U3': U3, 'U4': U4, "lambda_r":lambda_r,"dFt/n":dFt_norm,"dFn/n":dFn_norm}
         return out

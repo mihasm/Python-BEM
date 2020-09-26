@@ -61,32 +61,34 @@ def create_3d_blade(SET_INIT, flip_turning_direction=False, propeller_geom=False
         _c = c[i]
         _foil = foil[i]
         _theta = theta[i]  # - because of direction
-        if propeller_geom:
-            _theta = -_theta
 
-        _foil_x, _foil_y = airfoils[_foil]["x"], airfoils[_foil]["y"]
+        if _foil != "transition": #the only exception
+            if propeller_geom:
+                _theta = -_theta
 
-        _centroid_x, _centroid_y = airfoils[_foil]["centroid_x"], airfoils[_foil]["centroid_y"]
+            _foil_x, _foil_y = airfoils[_foil]["x"], airfoils[_foil]["y"]
 
-        if flip_turning_direction:
-            _foil_x = -np.array(_foil_x)
-            _theta = -_theta
-            _centroid_x = -_centroid_x
+            _centroid_x, _centroid_y = airfoils[_foil]["centroid_x"], airfoils[_foil]["centroid_y"]
 
-        _centroid = (_centroid_x, _centroid_y)
-        
-        _foil_x, _foil_y = scale_and_normalize(_foil_x, _foil_y, _c, _centroid)
-        _foil_x, _foil_y = rotate_array(_foil_x, _foil_y, (0, 0), _theta)
+            if flip_turning_direction:
+                _foil_x = -np.array(_foil_x)
+                _theta = -_theta
+                _centroid_x = -_centroid_x
 
-        list_x, list_y = [], []
-        for _x, _y in zip(_foil_x, _foil_y):
-            out_x.append(_x)
-            out_y.append(_y)
-            out_z.append(z)
-            list_x.append(_x)
-            list_y.append(_y)
+            _centroid = (_centroid_x, _centroid_y)
+            
+            _foil_x, _foil_y = scale_and_normalize(_foil_x, _foil_y, _c, _centroid)
+            _foil_x, _foil_y = rotate_array(_foil_x, _foil_y, (0, 0), _theta)
 
-        data.append([z, np.array(list_x), np.array(list_y)])
+            list_x, list_y = [], []
+            for _x, _y in zip(_foil_x, _foil_y):
+                out_x.append(_x)
+                out_y.append(_y)
+                out_z.append(z)
+                list_x.append(_x)
+                list_y.append(_y)
+
+            data.append([z, np.array(list_x), np.array(list_y)])
 
     X, Y, Z = np.array(out_x), np.array(out_y), np.array(out_z)
     max_range = np.array(

@@ -124,8 +124,6 @@ class ResultsWindow(QMainWindow):
             "cL", label="Used lift coefficient")
         ############################################
 
-        
-
         ############ geometry check ################
         array_geom = []
         for r in range(len(input_data["r"])):
