@@ -96,36 +96,35 @@ class ResultsWindow(QMainWindow):
             ax1 = self.tab_widget.add_2d_plot_to_figure(f5, results_3d['J'], results_3d['eff'], 111, None, None,
                                                         None, look='g-', label="Eff (Efficiency)")
             ax1.legend()
+            ########## U3 (r) ##########################
+            f8 = self.tab_widget.add_tab_figure("Windspeed U3 (radius)")
+            for _u in results_3d['U3']:
+                ax2 = self.tab_widget.add_2d_plot_to_figure(
+                    f8, _u, input_data['r'], 111, '', r'$v_4$ [m/s]', 'r [m]', look="-", c=np.random.rand(3,), label="Windspeed close behind"+str(_u))
+
+            leg_hitrosti = ax2.legend(np.round(list_of_variable_parameter, 2))
+            leg_hitrosti.set_title(variable_parameter_title, prop={'size': 20})
+        else:
+            ########## U4 (r) ##########################
+            f9 = self.tab_widget.add_tab_figure("Windspeed U4 (radius)")
+            for _u in results_3d['U4']:
+                ax2 = self.tab_widget.add_2d_plot_to_figure(
+                    f9, _u, input_data['r'], 111, '', r'$v_4$ [m/s]', 'r [m]', look="-", c=np.random.rand(3,), label="Windspeed far away behind"+str(_u))
+            leg_hitrosti = ax2.legend(np.round(list_of_variable_parameter, 2))
+            leg_hitrosti.set_title(variable_parameter_title, prop={'size': 20})
+            ############################################
 
         ############################################
 
         ########## CL plot #########################
         f7 = self.tab_widget.add_tab_figure("check CL")
         self.tab_widget.add_3d_scatter_plot(f7, np.array(results_3d["Re"]).flatten(),
-                                            np.degrees(
-                                                np.array(results_3d["alpha"]).flatten()),
+                                            np.array(results_3d["alpha"]).flatten(),
                                             np.array(results_3d["cL"]).flatten(), 111, "Title", "Re", "alpha[deg]",
             "cL", label="Used lift coefficient")
         ############################################
 
-        ########## U4 (r) ##########################
-        f8 = self.tab_widget.add_tab_figure("Windspeed U3 (radius)")
-        for _u in results_3d['U3']:
-            ax2 = self.tab_widget.add_2d_plot_to_figure(
-                f8, _u, input_data['r'], 111, '', r'$v_4$ [m/s]', 'r [m]', look="-", c=np.random.rand(3,), label="Windspeed close behind"+str(_u))
-
-        leg_hitrosti = ax2.legend(np.round(list_of_variable_parameter, 2))
-        leg_hitrosti.set_title(variable_parameter_title, prop={'size': 20})
-        ############################################
-
-        ########## U4 (r) ##########################
-        f8 = self.tab_widget.add_tab_figure("Windspeed U4 (radius)")
-        for _u in results_3d['U4']:
-            ax2 = self.tab_widget.add_2d_plot_to_figure(
-                f8, _u, input_data['r'], 111, '', r'$v_4$ [m/s]', 'r [m]', look="-", c=np.random.rand(3,), label="Windspeed far away behind"+str(_u))
-        leg_hitrosti = ax2.legend(np.round(list_of_variable_parameter, 2))
-        leg_hitrosti.set_title(variable_parameter_title, prop={'size': 20})
-        ############################################
+        
 
         ############ geometry check ################
         array_geom = []

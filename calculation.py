@@ -270,15 +270,13 @@ class Calculator:
             results["a'"] = numpy.append(results["a'"], out_results["aprime"])
             results["cL"] = numpy.append(results["cL"], out_results["Cl"])
             results["cD"] = numpy.append(results["cD"], out_results["Cd"])
-            results["alpha"] = numpy.append(
-                results["alpha"], out_results["alpha"])
+            results["alpha"] = numpy.append(results["alpha"], out_results["alpha"])
             results["phi"] = numpy.append(results["phi"], out_results["phi"])
             results["F"] = numpy.append(results["F"], out_results["F"])
             results["dFt"] = numpy.append(results["dFt"], out_results["dFt"])
             results["Ct"] = numpy.append(results["Ct"], out_results["Ct"])
             results["dFn"] = numpy.append(results["dFn"], out_results["dFn"])
-            results["foils"] = numpy.append(
-                results["foils"], out_results["_airfoil"])
+            results["foils"] = numpy.append(results["foils"], out_results["_airfoil"])
             results["dT"] = numpy.append(results["dT"], out_results["dT"])
             results["dQ"] = numpy.append(results["dQ"], out_results["dQ"])
             results["Re"] = numpy.append(results["Re"], out_results["Re"])
@@ -467,11 +465,9 @@ class Calculator:
 
             # angle of attack
             if propeller_mode:
-                alpha = (_theta + _pitch) - phi
+                alpha = (_theta + _pitch) - phi #radians
             else:
-                alpha = phi - (_theta + _pitch)
-
-            alpha = radians(normalize_angle(degrees(alpha)))
+                alpha = phi - (_theta + _pitch) #radians
 
             # cascade correction
             if cascade_correction:
@@ -529,7 +525,7 @@ class Calculator:
                 C_tang = Cl * sin(phi) - Cd * cos(phi)
 
             input_arguments = {"F": F, "lambda_r": lambda_r, "phi": phi, "sigma": sigma, "C_norm": C_norm,
-                               "C_tang": C_tang, "Cl": Cl, "Cd": Cd, "B": B, "c": _c, "r": _r, "R": R, "psi": 0.0,
+                               "C_tang": C_tang, "Cl": Cl, "Cd": Cd, "B": B, "c": _c, "r": _r, "R": R, "psi": psi,
                                "aprime_last": aprime, "omega": omega, "v": v, "a_last": a,
                                # "alpha_zero": airfoils[_airfoil]["alpha_zero"],
                                "method": method, "alpha": alpha, "alpha_deg": degrees(alpha)}
