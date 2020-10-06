@@ -57,34 +57,34 @@ def create_3d_blade(SET_INIT, flip_turning_direction=False, propeller_geom=False
     out_x, out_y, out_z = [], [], []
     data = []
     for i in range(len(r)):
-        z = r[i]
+        _r = r[i]
         _c = c[i]
-        _foil = foil[i]
+        _airfoil = foil[i]
         _theta = theta[i]  # - because of direction
 
-        if _foil != "transition": #the only exception
+        if _airfoil != "transition": #the only exception
             if propeller_geom:
                 _theta = -_theta
 
-            _foil_x, _foil_y = airfoils[_foil]["x"], airfoils[_foil]["y"]
+            _airfoil_x, _airfoil_y = airfoils[_airfoil]["x"], airfoils[_airfoil]["y"]
 
-            _centroid_x, _centroid_y = airfoils[_foil]["centroid_x"], airfoils[_foil]["centroid_y"]
+            _centroid_x, _centroid_y = airfoils[_airfoil]["centroid_x"], airfoils[_airfoil]["centroid_y"]
 
             if flip_turning_direction:
-                _foil_x = -np.array(_foil_x)
+                _airfoil_x = -np.array(_airfoil_x)
                 _theta = -_theta
                 _centroid_x = -_centroid_x
 
             _centroid = (_centroid_x, _centroid_y)
             
-            _foil_x, _foil_y = scale_and_normalize(_foil_x, _foil_y, _c, _centroid)
-            _foil_x, _foil_y = rotate_array(_foil_x, _foil_y, (0, 0), _theta)
+            _airfoil_x, _airfoil_y = scale_and_normalize(_airfoil_x, _airfoil_y, _c, _centroid)
+            _airfoil_x, _airfoil_y = rotate_array(_airfoil_x, _airfoil_y, (0, 0), _theta)
 
             list_x, list_y = [], []
-            for _x, _y in zip(_foil_x, _foil_y):
+            for _x, _y in zip(_airfoil_x, _airfoil_y):
                 out_x.append(_x)
                 out_y.append(_y)
-                out_z.append(z)
+                out_z.append(_r)
                 list_x.append(_x)
                 list_y.append(_y)
 

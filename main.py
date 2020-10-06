@@ -328,6 +328,18 @@ class WindTurbineProperties(QWidget):
         fbox.addRow(_B, self.B)
         self.B.setToolTip("Število lopatic.")
 
+        _blade_design = QLabel("Blade design")
+        self.blade_design = QComboBox()
+        self.blade_design.addItems(["Filled","Hollow","Spar"])
+        fbox.addRow(_blade_design, self.blade_design)
+        self.B.setToolTip("Pomembno za statični izračun.")
+
+        _blade_thickness = QLabel("Blade thickness [m]")
+        self.blade_thickness = QLineEdit()
+        self.blade_thickness.setText("0.001")
+        fbox.addRow(_blade_thickness, self.blade_thickness)
+        self.blade_thickness.setToolTip("Debelina lopatice / Spar Cap-a.")
+
         fbox.addRow(QLabel("————— Scale and interpolation —————"))
 
         _geometry_scale = QLabel("Scale factor")
@@ -425,9 +437,11 @@ class WindTurbineProperties(QWidget):
         :return: dict: Settings dictionary (Basic wind turbine information)
         """
         out = {"Rhub": to_float(self.Rhub.text()), "R": to_float(self.R.text()), "B": int(self.B.text()),
-                          "turbine_name": self.name.text(), "geometry_scale":to_float(self.geometry_scale.text()),
-                          "linspace_interp":self.linspace_interp.isChecked(),
-                          "num_interp":int(self.num_interp.text())}
+              "turbine_name": self.name.text(), "geometry_scale":to_float(self.geometry_scale.text()),
+              "linspace_interp":self.linspace_interp.isChecked(),
+              "num_interp":int(self.num_interp.text()),
+              "blade_thickness":to_float(self.blade_thickness.text()),
+              "blade_design":self.blade_design.currentIndex()}
         geom_array = self.table_properties.get_values()
         r, c, theta, foils = [], [], [], []
         for row in geom_array:
@@ -524,6 +538,11 @@ class WindTurbineProperties(QWidget):
             self.name.setText(t)
         else:
             self.name.setText("")
+        if "blade_thickness" in dict_settings:
+            t=str(dict_settings["blade_thickness"])
+            self.blade_thickness.setText(t)
+        if "blade_design" in dict_settings:
+            self.blade_design.setCurrentIndex(dict_settings["blade_design"])
 
     def export(self):
         """

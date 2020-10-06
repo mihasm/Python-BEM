@@ -2,7 +2,18 @@ from polars import get_x_y_from_link
 from matplotlib import pyplot as plt
 import numpy as np
 from scipy.interpolate import interp1d
+import math
+pi = math.pi
+from visualize import scale_and_normalize,rotate_array
 
+
+def PointsInCircum(r,n=1000):
+	"""
+	Generate circle x,y coordinates...
+	"""
+	x_points = [math.cos(2*pi/n*x)*r for x in range(0,n+1)]
+	y_points = [math.sin(2*pi/n*x)*r for x in range(0,n+1)]
+	return x_points,y_points
 
 def interpolate_airfoil(x,y,num_interp=100):
 	cross = np.where(np.diff(np.signbit(np.gradient(x))))[0][0]
@@ -54,9 +65,6 @@ def calculate_bending_inertia(x,y,num_interp=100):
 	y_down=interp_down(x)
 	y_up = np.nan_to_num(y_up)
 	y_down = np.nan_to_num(y_down)
-	#print(x)
-	#print(y_up)
-	#print(y_down)
 
 	A=0
 	zsum=0
@@ -81,17 +89,112 @@ def calculate_bending_inertia(x,y,num_interp=100):
 
 	return I,A
 
-from visualize import scale_and_normalize,rotate_array
+def calculate_bending_inertia_2(x,y):
+	"""
+	Any polygon equations: https://en.wikipedia.org/wiki/Second_moment_of_area
+	Area equation: https://en.wikipedia.org/wiki/Polygon#Area
+	"""
+	Iy=0
+	Ix=0
+	Ixy=0
+	A=0
+	for i in range(len(x)-1):
+		Iy += 1/12*(x[i]*y[i+1]-x[i+1]*y[i])*(x[i]**2+x[i]*x[i+1]+x[i+1]**2)
+		Ix += 1/12*(x[i]*y[i+1]-x[i+1]*y[i])*(y[i]**2+y[i]*y[i+1]+y[i+1]**2)
+		Ixy += 1/24*(x[i]*y[i+1]-x[i+1]*y[i])*(x[i]*y[i+1]+2*x[i]*y[i]+2*x[i+1]*y[i+1]+x[i+1]*y[i])
+		A += 0.5*(x[i]*y[i+1]-x[i+1]*y[i])
+	return Ix,Iy,Ixy,A
 
-x,y = get_x_y_from_link('http://airfoiltools.com/airfoil/details?airfoil=clarky-il')
-x,y = scale_and_normalize(x,y,150,(0.5,0))
-x,y = interpolate_airfoil(x,y)
-y=y*1.14
-x,y = rotate_array(x,y,(0,0),30)
-I,A = calculate_bending_inertia(x,y)
-print("I:",I,"mm4","A:",A,"mm2")
+def generate_hollow_foil(x,y,thickness):
+	"""
+	Generates hollow airfoil from x,y coordinates.
 
-plt.plot(x,y)
-plt.show()
+	thickness should be given in p.u.
 
-#print(airfoil_bending_inertia(x,y))
+	This operation must be done BEFORE ROTATION.
+	(otherwise, criterion should be modified)
+	"""
+	xout,yout = [],[]
+
+	cross = np.where(np.diff(np.signbit(np.gradient(x))))[0][0]
+
+	x_up = x[:cross+2]
+	y_up = y[:cross+2]
+	x_down = x[cross+1:]
+	y_down = y[cross+1:]
+
+	interp_up = interp1d(x_up,y_up,'linear',fill_value="extrapolate")
+	interp_down = interp1d(x_down,y_down,'linear',fill_value="extrapolate")
+
+
+	for i in range(1,len(x)):
+		if interp_up(x[i])-interp_down(x[i]) > 2*thickness:
+			dx=x[i]-x[i-1]
+			dy=y[i]-y[i-1]
+			x_90 = -dy
+			y_90 = dx
+			vec_len = np.sqrt(x_90**2+y_90**2)
+			a = thickness/vec_len
+			pristeto_x=x[i]+x_90*a
+			pristeto_y=y[i]+y_90*a
+			xout.append(pristeto_x)
+			yout.append(pristeto_y)
+
+	return xout,yout
+
+
+def test_circle():
+	r=1
+	x,y = PointsInCircum(r,10000)
+	I,A = calculate_bending_inertia(x,y,100000)
+	I_theor=pi/4*r**4
+	error = abs(I-I_theor)/I_theor*100
+	print("Ix:",I,"m4","A:",A,"m2")
+	print("Ix_theor",I_theor)
+	print("Napaka:",abs(I-I_theor)/I_theor*100," %")
+
+	I,_,_,A = calculate_bending_inertia_2(x,y)
+	I_theor=pi/4*r**4
+	error = abs(I-I_theor)/I_theor*100
+	print("I:",I,"m4","A:",A,"m2")
+	print("I_theor",I_theor)
+	print("Napaka:",abs(I-I_theor)/I_theor*100," %")
+	if error <= 1e-4:
+		return True
+	return False
+
+def test_hollow_circle():
+	r1=0.5
+	r2=1
+	x1,y1 = PointsInCircum(r1,10000)
+	x2,y2 = PointsInCircum(r2,10000)
+	I1,_,_,A1 = calculate_bending_inertia_2(x1,y1)
+	I2,_,_,A2 = calculate_bending_inertia_2(x2,y2)
+	I_theor=pi/4*(r2**4-r1**4)
+	Ix=I2-I1
+	error = abs(Ix-I_theor)/I_theor*100
+	print("Ix",Ix)
+	print("Ix_theor",I_theor)
+	print("Napaka:",abs(Ix-I_theor)/I_theor*100," %")
+	if error <= 1e-4:
+		return True
+	return False
+
+def test_airfoil():
+	x,y = get_x_y_from_link('http://airfoiltools.com/airfoil/details?airfoil=clarky-il')
+	x,y = scale_and_normalize(x,y,150,(0.5,0))
+	x,y = interpolate_airfoil(x,y)
+	y=y*1.14
+	x,y = rotate_array(x,y,(0,0),30)
+
+def test_hollow_airfoil():
+	x,y = get_x_y_from_link('http://airfoiltools.com/airfoil/details?airfoil=clarky-il')
+	x,y = scale_and_normalize(x,y,150,(0.5,0))
+	x2,y2=generate_hollow_foil(x,y,5)
+	x,y = rotate_array(x,y,(0,0),30)
+	x2,y2 = rotate_array(x2,y2,(0,0),30)
+
+	plt.plot(x,y,'b.')
+	plt.plot(x2,y2,'r.')
+	plt.axis('equal')
+	plt.show()

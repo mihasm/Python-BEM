@@ -9,6 +9,8 @@ from scipy import interpolate
 from utils import Printer, generate_dat, sort_data, normalize_angle, get_transition_foils, interp
 from popravki import *
 from xfoil import run_xfoil_analysis, xfoil_runner
+from moment import generate_hollow_foil, calculate_bending_inertia_2
+from visualize import scale_and_normalize, rotate_array
 
 numpy.seterr(all="raise")
 numpy.seterr(invalid="raise")
@@ -38,6 +40,11 @@ OUTPUT_VARIABLES_LIST = {
     "U2":{"type":"array","name":"Near-upwind speed","symbol":"U2","unit":"m/s"},
     "U3":{"type":"array","name":"Near-downwind speed","symbol":"U3","unit":"m/s"},
     "U4":{"type":"array","name":"Far-downwind speed","symbol":"U4","unit":"m/s"},
+
+    "Ix":{"type":"array","name":"Bending inertia (normal)","symbol":r"$I_x$","unit":r"$mm^4$"},
+    "Iy":{"type":"array","name":"Bending inertia (tangential)","symbol":r"$I_y$","unit":r"$mm^4$"},
+    "Ixy":{"type":"array","name":"Bending inertia (xy)","symbol":r"$I_xy$","unit":r"$mm^4$"},
+    "A":{"type":"array","name":"Airfoil area","symbol":"A","unit":r"$mm^2$"},
 
     "Ms_t":{"type":"array","name":"Bending moment (tangential)","symbol":r"$M_{bend,tang.}$","unit":"Nm"},
     "Ms_n":{"type":"array","name":"Bending moment (normal)","symbol":r"$M_{bend,norm.}$","unit":"Nm"},
@@ -76,8 +83,8 @@ class Calculator:
     def __init__(self, input_arguments):
         p = Printer(input_arguments["return_print"])
 
-        self.airfoils = input_arguments["airfoils"]
-        self.foils = input_arguments["foils"]
+        self.airfoils = input_arguments["airfoils"] # Define airfoil data
+        foils = input_arguments["foils"] # List of airfoils per section
 
         for blade_name in self.airfoils:
             self.airfoils[blade_name]["alpha_zero"] = 0.0  # TODO FIX
@@ -104,14 +111,14 @@ class Calculator:
             self.airfoils[blade_name]["interp_function_cl"] = interpolation_function_cl
             self.airfoils[blade_name]["interp_function_cd"] = interpolation_function_cd
 
-        self.transition_foils = get_transition_foils(self.foils)
+        self.transition_foils = get_transition_foils(foils)
         self.transition_array = [] #True,False,False, etc.
         self.max_thickness_array = []
 
 
-        for n in range(len(self.foils)):
+        for n in range(len(foils)):
             _c = input_arguments["c"][n]
-            if self.foils[n] == 'transition':
+            if foils[n] == 'transition':
                 transition = True
                 _airfoil_prev = self.transition_foils[n][0]
                 _airfoil_next = self.transition_foils[n][1]
@@ -123,7 +130,7 @@ class Calculator:
                 self.transition_array.append(True)
             else:
                 transition = False
-                _airfoil = self.foils[n]
+                _airfoil = foils[n]
                 _airfoil_prev,_airfoil_next,transition_coefficient = None, None, None
                 
                 max_thickness = self.airfoils[_airfoil]["max_thickness"] * _c
@@ -168,8 +175,8 @@ class Calculator:
     def run_array(self, theta, B, c, r, foils, dr, R, Rhub, rpm, v, pitch, method, propeller_mode, print_out, tip_loss,mach_number_correction, 
                   hub_loss, new_tip_loss, new_hub_loss, cascade_correction, max_iterations, convergence_limit, rho,
                   relaxation_factor, print_all, rotational_augmentation_correction,rotational_augmentation_correction_method,
-                   fix_reynolds, reynolds, yaw_angle, skewed_wake_correction, print_progress=False, return_print=[], return_results=[], 
-                   *args,**kwargs):
+                   fix_reynolds, reynolds, yaw_angle, skewed_wake_correction, blade_design, blade_thickness,
+                   print_progress=False, return_print=[], return_results=[],*args,**kwargs):
         """
         Calculates induction factors using standard iteration methods.
 
@@ -225,7 +232,8 @@ class Calculator:
         # create results array placeholders
         results = {}
         arrays = ["a", "a'", "cL", "alpha", "phi", "F", "dFt", "M", "lambda_r",
-                  "Ct", "dFn", "foils", "dT", "dQ", "Re", "U1", "U2", "U3", "U4","cD", "dFt/n", "dFn/n","Ms_t","Ms_n"]
+                  "Ct", "dFn", "foils", "dT", "dQ", "Re", "U1", "U2", "U3", "U4","cD", "dFt/n", "dFn/n","Ms_t","Ms_n",
+                  "Ix","Iy","Ixy","A"]
         for array in arrays:
             results[array] = numpy.array([])
 
@@ -242,6 +250,8 @@ class Calculator:
         #generate transition airfoil coefficients
         num_sections = len(theta)
 
+
+        ### BEM CALCULATION FOR EVERY SECTION
         for n in range(num_sections):
             section_number += 1
 
@@ -257,7 +267,7 @@ class Calculator:
             psi = 0.0
 
             transition=self.transition_array[n]
-            _airfoil=self.foils[n]
+            _airfoil=foils[n]
             _airfoil_prev=self.transition_foils[n][0]
             _airfoil_next=self.transition_foils[n][1]
             transition_coefficient=self.transition_foils[n][2]
@@ -299,6 +309,7 @@ class Calculator:
             results["lambda_r"] = numpy.append(results["lambda_r"], out_results["lambda_r"])
 
         
+        ### BENDING MOMENT CALCULATION
         for i in range(num_sections):
             Ms_n=0
             Ms_t=0
@@ -310,6 +321,44 @@ class Calculator:
 
             results["Ms_t"] = numpy.append(results["Ms_t"], Ms_t)
             results["Ms_n"] = numpy.append(results["Ms_n"], Ms_n)
+
+        ### STATICAL ANALYSIS
+        for i in range(num_sections):
+            _r = r[i]
+            _c = c[i]
+            _foil = foils[i]
+            _theta = theta[i]  # - because of direction
+
+            if _foil != "transition": #the only exception
+                _foil_x, _foil_y = self.airfoils[_foil]["x"], self.airfoils[_foil]["y"]
+                _centroid_x, _centroid_y = self.airfoils[_foil]["centroid_x"], self.airfoils[_foil]["centroid_y"]
+                _centroid = (_centroid_x, _centroid_y)
+                _foil_x, _foil_y = scale_and_normalize(_foil_x, _foil_y, _c, _centroid)
+                
+                if blade_design == 1:
+                    _foil_x2, _foil_y2 = generate_hollow_foil(_foil_x,_foil_y,blade_thickness)
+                    
+                    _foil_x2, _foil_y2 = rotate_array(_foil_x2, _foil_y2, (0, 0), _theta)
+                    _foil_x1, _foil_y1 = rotate_array(_foil_x, _foil_y, (0, 0), _theta)
+                    
+                    Ix1,Iy1,Ixy1,A1 = calculate_bending_inertia_2(_foil_x1,_foil_y1)
+                    Ix2,Iy2,Ixy2,A2 = calculate_bending_inertia_2(_foil_x2,_foil_y2)
+
+                    Ix=Ix1-Ix2
+                    Iy=Iy1-Iy2
+                    Ixy=Ixy1-Ixy2
+                    A=A1-A2
+
+                else:
+                    _foil_x, _foil_y = rotate_array(_foil_x, _foil_y, (0, 0), _theta)
+                    
+                    Ix,Iy,Ixy,A = calculate_bending_inertia_2(_foil_x,_foil_y)
+
+
+                results["Ix"] = numpy.append(results["Ix"], Ix*1e12) # to mm4
+                results["Iy"] = numpy.append(results["Iy"], Iy*1e12) # to mm4
+                results["Ixy"] = numpy.append(results["Ixy"], Ixy*1e12) # to mm4
+                results["A"] = numpy.append(results["A"], A*1e6) # to mm2
 
 
         dFt = results["dFt"]
