@@ -39,6 +39,9 @@ OUTPUT_VARIABLES_LIST = {
     "U3":{"type":"array","name":"Near-downwind speed","symbol":"U3","unit":"m/s"},
     "U4":{"type":"array","name":"Far-downwind speed","symbol":"U4","unit":"m/s"},
 
+    "Ms_t":{"type":"array","name":"Bending moment (tangential)","symbol":r"$M_{bend,tang.}$","unit":"Nm"},
+    "Ms_n":{"type":"array","name":"Bending moment (normal)","symbol":r"$M_{bend,norm.}$","unit":"Nm"},
+
 
     "r":{"type":"array","name":"Section radius","symbol":"r","unit":"m"},
     "M":{"type":"array","name":"Section torque","symbol":"M","unit":"Nm"},
@@ -222,7 +225,7 @@ class Calculator:
         # create results array placeholders
         results = {}
         arrays = ["a", "a'", "cL", "alpha", "phi", "F", "dFt", "M", "lambda_r",
-                  "Ct", "dFn", "foils", "dT", "dQ", "Re", "U1", "U2", "U3", "U4","cD", "dFt/n", "dFn/n"]
+                  "Ct", "dFn", "foils", "dT", "dQ", "Re", "U1", "U2", "U3", "U4","cD", "dFt/n", "dFn/n","Ms_t","Ms_n"]
         for array in arrays:
             results[array] = numpy.array([])
 
@@ -294,6 +297,20 @@ class Calculator:
             results["U3"] = numpy.append(results["U3"], out_results["U3"])
             results["U4"] = numpy.append(results["U4"], out_results["U4"])
             results["lambda_r"] = numpy.append(results["lambda_r"], out_results["lambda_r"])
+
+        
+        for i in range(num_sections):
+            Ms_n=0
+            Ms_t=0
+            for j in range(i,num_sections):
+                Ms_n=Ms_n+results["dFn"][j]*\
+                            (r[j]-r[i])
+                Ms_t=Ms_t+results["dFt"][j]*\
+                            (r[j]-r[i])
+
+            results["Ms_t"] = numpy.append(results["Ms_t"], Ms_t)
+            results["Ms_n"] = numpy.append(results["Ms_n"], Ms_n)
+
 
         dFt = results["dFt"]
         Ft = numpy.sum(dFt)

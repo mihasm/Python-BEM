@@ -18,7 +18,7 @@ def rotate(origin, point, angle):
     """
     Rotate a point counterclockwise by a given angle around a given origin.
 
-    The angle should be given in radians.
+    The angle must be given in radians.
     """
     ox, oy = origin
     px, py = point
