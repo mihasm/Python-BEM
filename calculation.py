@@ -48,6 +48,8 @@ OUTPUT_VARIABLES_LIST = {
 
     "Ms_t":{"type":"array","name":"Bending moment (tangential)","symbol":r"$M_{bend,tang.}$","unit":"Nm"},
     "Ms_n":{"type":"array","name":"Bending moment (normal)","symbol":r"$M_{bend,norm.}$","unit":"Nm"},
+    "stress_norm":{"type":"array","name":"Bending stress (normal)","symbol":r"$\sigma_n$","unit":"MPa"},
+    "stress_tang":{"type":"array","name":"Bending stress (tangential)","symbol":r"$\sigma_t$","unit":"MPa"},
 
 
     "r":{"type":"array","name":"Section radius","symbol":"r","unit":"m"},
@@ -84,7 +86,7 @@ class Calculator:
         p = Printer(input_arguments["return_print"])
 
         self.airfoils = input_arguments["airfoils"] # Define airfoil data
-        foils = input_arguments["foils"] # List of airfoils per section
+        self.airfoils_list = input_arguments["foils"] # List of airfoils per section
 
         for blade_name in self.airfoils:
             self.airfoils[blade_name]["alpha_zero"] = 0.0  # TODO FIX
@@ -111,14 +113,14 @@ class Calculator:
             self.airfoils[blade_name]["interp_function_cl"] = interpolation_function_cl
             self.airfoils[blade_name]["interp_function_cd"] = interpolation_function_cd
 
-        self.transition_foils = get_transition_foils(foils)
+        self.transition_foils = get_transition_foils(self.airfoils_list)
         self.transition_array = [] #True,False,False, etc.
         self.max_thickness_array = []
 
 
-        for n in range(len(foils)):
+        for n in range(len(self.airfoils_list)):
             _c = input_arguments["c"][n]
-            if foils[n] == 'transition':
+            if self.airfoils_list[n] == 'transition':
                 transition = True
                 _airfoil_prev = self.transition_foils[n][0]
                 _airfoil_next = self.transition_foils[n][1]
@@ -130,7 +132,7 @@ class Calculator:
                 self.transition_array.append(True)
             else:
                 transition = False
-                _airfoil = foils[n]
+                _airfoil = self.airfoils_list[n]
                 _airfoil_prev,_airfoil_next,transition_coefficient = None, None, None
                 
                 max_thickness = self.airfoils[_airfoil]["max_thickness"] * _c
@@ -233,7 +235,7 @@ class Calculator:
         results = {}
         arrays = ["a", "a'", "cL", "alpha", "phi", "F", "dFt", "M", "lambda_r",
                   "Ct", "dFn", "foils", "dT", "dQ", "Re", "U1", "U2", "U3", "U4","cD", "dFt/n", "dFn/n","Ms_t","Ms_n",
-                  "Ix","Iy","Ixy","A"]
+                  "Ix","Iy","Ixy","A","stress_norm","stress_tang"]
         for array in arrays:
             results[array] = numpy.array([])
 
@@ -308,9 +310,11 @@ class Calculator:
             results["U4"] = numpy.append(results["U4"], out_results["U4"])
             results["lambda_r"] = numpy.append(results["lambda_r"], out_results["lambda_r"])
 
-        
-        ### BENDING MOMENT CALCULATION
+
+        ### STATICAL ANALYSIS
         for i in range(num_sections):
+
+            ### BENDING MOMENT CALCULATION
             Ms_n=0
             Ms_t=0
             for j in range(i,num_sections):
@@ -322,43 +326,48 @@ class Calculator:
             results["Ms_t"] = numpy.append(results["Ms_t"], Ms_t)
             results["Ms_n"] = numpy.append(results["Ms_n"], Ms_n)
 
-        ### STATICAL ANALYSIS
-        for i in range(num_sections):
-            _r = r[i]
+            ### BENDING INTERTIA AND STRESS CALCULATION
             _c = c[i]
-            _foil = foils[i]
-            _theta = theta[i]  # - because of direction
+            _theta = theta[i]
 
-            if _foil != "transition": #the only exception
-                _foil_x, _foil_y = self.airfoils[_foil]["x"], self.airfoils[_foil]["y"]
-                _centroid_x, _centroid_y = self.airfoils[_foil]["centroid_x"], self.airfoils[_foil]["centroid_y"]
-                _centroid = (_centroid_x, _centroid_y)
-                _foil_x, _foil_y = scale_and_normalize(_foil_x, _foil_y, _c, _centroid)
-                
-                if blade_design == 1:
-                    _foil_x2, _foil_y2 = generate_hollow_foil(_foil_x,_foil_y,blade_thickness)
-                    
-                    _foil_x2, _foil_y2 = rotate_array(_foil_x2, _foil_y2, (0, 0), _theta)
-                    _foil_x1, _foil_y1 = rotate_array(_foil_x, _foil_y, (0, 0), _theta)
-                    
-                    Ix1,Iy1,Ixy1,A1 = calculate_bending_inertia_2(_foil_x1,_foil_y1)
-                    Ix2,Iy2,Ixy2,A2 = calculate_bending_inertia_2(_foil_x2,_foil_y2)
+            transition=self.transition_array[i]
+            _airfoil=foils[i]
+            _airfoil_prev=self.transition_foils[i][0]
+            _airfoil_next=self.transition_foils[i][1]
+            transition_coefficient=self.transition_foils[i][2]
+            max_thickness=self.max_thickness_array[i]
 
-                    Ix=Ix1-Ix2
-                    Iy=Iy1-Iy2
-                    Ixy=Ixy1-Ixy2
-                    A=A1-A2
+            if _airfoil != "transition":
+                Ix,Iy,Ixy,A,tang_dist,norm_dist=self.get_crossection_data(_c,_theta,_airfoil,blade_design,blade_thickness)
+                _centroid_x, _centroid_y = self.airfoils[_airfoil]["centroid_x"], self.airfoils[_airfoil]["centroid_y"]
+            else:
+                Ix1,Iy1,Ixy1,A1,tang_dist1,norm_dist1=self.get_crossection_data(_c,_theta,_airfoil_prev,blade_design,blade_thickness)
+                Ix2,Iy2,Ixy2,A2,tang_dist2,norm_dist2=self.get_crossection_data(_c,_theta,_airfoil_next,blade_design,blade_thickness)
+                _centroid_x1, _centroid_y1 = self.airfoils[_airfoil_prev]["centroid_x"], self.airfoils[_airfoil_prev]["centroid_y"]
+                _centroid_x2, _centroid_y2 = self.airfoils[_airfoil_next]["centroid_x"], self.airfoils[_airfoil_next]["centroid_y"]
+                _centroid_x = _centroid_x1*transition_coefficient+_centroid_x2*(1-transition_coefficient)
+                _centroid_y = _centroid_y1*transition_coefficient+_centroid_y2*(1-transition_coefficient)
+                tang_dist=tang_dist1*transition_coefficient+tang_dist2*(1-transition_coefficient)
+                norm_dist=norm_dist1*transition_coefficient+norm_dist2*(1-transition_coefficient)
 
-                else:
-                    _foil_x, _foil_y = rotate_array(_foil_x, _foil_y, (0, 0), _theta)
-                    
-                    Ix,Iy,Ixy,A = calculate_bending_inertia_2(_foil_x,_foil_y)
+                Ix=Ix1*transition_coefficient+Ix2*(1-transition_coefficient)
+                Iy=Iy1*transition_coefficient+Iy2*(1-transition_coefficient)
+                Ixy=Ixy1*transition_coefficient+Ixy2*(1-transition_coefficient)
+                A=A1*transition_coefficient+A2*(1-transition_coefficient)
 
+            results["Ix"] = numpy.append(results["Ix"], Ix*1e12) # to mm4
+            results["Iy"] = numpy.append(results["Iy"], Iy*1e12) # to mm4
+            results["Ixy"] = numpy.append(results["Ixy"], Ixy*1e12) # to mm4
+            results["A"] = numpy.append(results["A"], A*1e6) # to mm2
 
-                results["Ix"] = numpy.append(results["Ix"], Ix*1e12) # to mm4
-                results["Iy"] = numpy.append(results["Iy"], Iy*1e12) # to mm4
-                results["Ixy"] = numpy.append(results["Ixy"], Ixy*1e12) # to mm4
-                results["A"] = numpy.append(results["A"], A*1e6) # to mm2
+            # STRESS CALCULATION
+            max_tang_dist = numpy.max(numpy.abs(tang_dist))
+            max_norm_dist = numpy.max(numpy.abs(norm_dist))
+            stress_norm = max_norm_dist*Ms_n/Ix/1e6 #MPa
+            stress_tang = max_tang_dist*Ms_t/Iy/1e6 #MPa
+
+            results["stress_norm"] = numpy.append(results["stress_norm"], stress_norm)
+            results["stress_tang"] = numpy.append(results["stress_tang"], stress_tang)
 
 
         dFt = results["dFt"]
@@ -739,3 +748,32 @@ class Calculator:
         out = {"a": a, "aprime": aprime, "Cl": Cl, "Cd":Cd, "alpha": degrees(alpha), "phi": degrees(phi), "F": F, "dFt": dFt, "Ct": Ct, "dFn": dFn,
                "_airfoil": _airfoil, "dT": dT, "dQ": dQ, "Re": Re, 'U1': U1, 'U2': U2, 'U3': U3, 'U4': U4, "lambda_r":lambda_r,"dFt/n":dFt_norm,"dFn/n":dFn_norm}
         return out
+
+    def get_crossection_data(self,_c,_theta,_airfoil,blade_design,blade_thickness):
+        _airfoil_x, _airfoil_y = self.airfoils[_airfoil]["x"], self.airfoils[_airfoil]["y"]
+        _centroid_x, _centroid_y = self.airfoils[_airfoil]["centroid_x"], self.airfoils[_airfoil]["centroid_y"]
+        _centroid = (_centroid_x, _centroid_y)
+        _airfoil_x, _airfoil_y = scale_and_normalize(_airfoil_x, _airfoil_y, _c, _centroid) #outer foil
+        _airfoil_x, _airfoil_y = rotate_array(_airfoil_x, _airfoil_y, (0, 0), _theta) #outer foil
+        
+        if blade_design == 1:
+            _airfoil_x2, _airfoil_y2 = generate_hollow_foil(_airfoil_x,_airfoil_y,blade_thickness) #inner foil
+            _airfoil_x2, _airfoil_y2 = rotate_array(_airfoil_x2, _airfoil_y2, (0, 0), _theta) #inner foil
+            
+            Ix1,Iy1,Ixy1,A1 = calculate_bending_inertia_2(_airfoil_x,_airfoil_y) #outer foil
+            Ix2,Iy2,Ixy2,A2 = calculate_bending_inertia_2(_airfoil_x2,_airfoil_y2) #inner foil
+
+            Ix=Ix1-Ix2
+            Iy=Iy1-Iy2
+            Ixy=Ixy1-Ixy2
+            A=A1-A2
+
+        else:
+            Ix,Iy,Ixy,A = calculate_bending_inertia_2(_airfoil_x,_airfoil_y)
+
+        min_x = numpy.min(_airfoil_x)
+        max_x = numpy.max(_airfoil_x)
+        min_y = numpy.min(_airfoil_y)
+        max_y = numpy.max(_airfoil_y)
+
+        return Ix,Iy,Ixy,A,numpy.array((min_x,max_x)),numpy.array((min_y,max_y))

@@ -88,7 +88,7 @@ def create_3d_blade(SET_INIT, flip_turning_direction=False, propeller_geom=False
                 list_x.append(_x)
                 list_y.append(_y)
 
-            data.append([z, np.array(list_x), np.array(list_y)])
+            data.append([_r, np.array(list_x), np.array(list_y)])
 
     X, Y, Z = np.array(out_x), np.array(out_y), np.array(out_z)
     max_range = np.array(

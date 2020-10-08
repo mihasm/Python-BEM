@@ -93,7 +93,7 @@ def optimize_angles_genetic(inp_args,queue_pyqtgraph):
                 _dr = inp_args["dr"][n]
 
                 transition=C.transition_array[n]
-                _airfoil=C.foils[n]
+                _airfoil=C.airfoils_list[n]
                 _airfoil_prev=C.transition_foils[n][0]
                 _airfoil_next=C.transition_foils[n][1]
                 transition_coefficient=C.transition_foils[n][2]
