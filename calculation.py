@@ -12,6 +12,8 @@ from xfoil import run_xfoil_analysis, xfoil_runner
 from moment import generate_hollow_foil, calculate_bending_inertia_2
 from visualize import scale_and_normalize, rotate_array
 
+from matplotlib import pyplot as plt
+
 numpy.seterr(all="raise")
 numpy.seterr(invalid="raise")
 
@@ -226,8 +228,8 @@ class Calculator:
 
         p = Printer(return_print)
 
-        if print_all:
-            self.printer(locals(), p=p)
+        #if print_all:
+        #    self.printer(locals(), p=p)
 
         theta, c, r = self.convert_to_array(theta, c, r)
 
@@ -564,8 +566,17 @@ class Calculator:
                     "interp_function_cd"](Re, degrees(alpha))
                 Cl2, Cd2 = self.airfoils[_airfoil_next]["interp_function_cl"](Re, degrees(alpha)), self.airfoils[_airfoil_next][
                     "interp_function_cd"](Re, degrees(alpha))
+
+                if Cl1 == False and Cd1 == False:
+                    return None
+                if Cl2 == False and Cd2 == False:
+                    return None
+                
+                
                 Cl = Cl1*transition_coefficient + Cl2*(1 - transition_coefficient)
                 Cd = Cd1*transition_coefficient + Cd2*(1 - transition_coefficient)
+
+
                 if print_all:
                     p.print("Transition detected, combining airfoils.")
                     p.print("Previous airfoil is",_airfoil_prev)
@@ -577,6 +588,8 @@ class Calculator:
             else:
                 Cl, Cd = self.airfoils[_airfoil]["interp_function_cl"](Re, degrees(alpha)), self.airfoils[_airfoil][
                     "interp_function_cd"](Re, degrees(alpha))
+                if Cl == False and Cd == False:
+                    return None
 
             if print_all:
                 p.print("        Cl:", Cl, "Cd:", Cd)
@@ -754,10 +767,11 @@ class Calculator:
         _centroid_x, _centroid_y = self.airfoils[_airfoil]["centroid_x"], self.airfoils[_airfoil]["centroid_y"]
         _centroid = (_centroid_x, _centroid_y)
         _airfoil_x, _airfoil_y = scale_and_normalize(_airfoil_x, _airfoil_y, _c, _centroid) #outer foil
-        _airfoil_x, _airfoil_y = rotate_array(_airfoil_x, _airfoil_y, (0, 0), _theta) #outer foil
         
         if blade_design == 1:
             _airfoil_x2, _airfoil_y2 = generate_hollow_foil(_airfoil_x,_airfoil_y,blade_thickness) #inner foil
+
+            _airfoil_x, _airfoil_y = rotate_array(_airfoil_x, _airfoil_y, (0, 0), _theta) #outer foil
             _airfoil_x2, _airfoil_y2 = rotate_array(_airfoil_x2, _airfoil_y2, (0, 0), _theta) #inner foil
             
             Ix1,Iy1,Ixy1,A1 = calculate_bending_inertia_2(_airfoil_x,_airfoil_y) #outer foil
@@ -769,6 +783,7 @@ class Calculator:
             A=A1-A2
 
         else:
+            _airfoil_x, _airfoil_y = rotate_array(_airfoil_x, _airfoil_y, (0, 0), _theta) #outer foil
             Ix,Iy,Ixy,A = calculate_bending_inertia_2(_airfoil_x,_airfoil_y)
 
         min_x = numpy.min(_airfoil_x)

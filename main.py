@@ -760,6 +760,11 @@ class Airfoils(QWidget):
         self.fbox.addRow(self.get_centroid_button)
         self.get_centroid_button.setToolTip("S pomočjo tega gumba izračunamo sredino podanih točk v tabeli (težišče ploskve).")
 
+
+        self.extrapolation_bool = QCheckBox("Use extrapolation")
+        #self.extrapolation_bool.clicked.connect(self.calculate_centroid)
+        self.fbox.addRow(self.extrapolation_bool)
+
         self.centroid_widget = QWidget()
         self.centroid_grid = QGridLayout()
         self.centroid_widget.setLayout(self.centroid_grid)
@@ -832,7 +837,7 @@ class Airfoils(QWidget):
 
     def visualize(self):
         print("Visualizing")
-        data = self.curves.gather_curves()
+        data = self.gather_curves()
         data = data[np.in1d(data[:,1],float(self.ncrit_selection.currentText()))] #current Ncrit
 
         re = data[:, 0]
@@ -884,11 +889,6 @@ class Airfoils(QWidget):
         print("opening curve editor")
         self.curve_editor.show()
         self.curve_editor.load_curves()
-
-    def generate_interp_functions(self):
-        data = self.gather_curves()
-        x, y = self.get_x_y()
-        self.interp_function_cl, self.interp_function_cd = get_cl_cd_interpolation_function(data, x, y)
 
     def generate_curves_xfoil(self):
         print("Generating xfoil curves")
@@ -1025,7 +1025,7 @@ class Airfoils(QWidget):
         return x, y
 
     def get_ncrits(self):
-        curves = self.curves.gather_curves()
+        curves = self.gather_curves()
         if len(curves)>0:
             ncrit_list = np.unique(curves[:,1])
             return ncrit_list
@@ -1035,7 +1035,9 @@ class Airfoils(QWidget):
         ncrits = self.get_ncrits()
         if ncrits is not None:
             self.ncrit_selection.addItems([str(n) for n in list(ncrits)])
-        
+
+    def gather_curves(self):
+        return self.curves.gather_curves(self.extrapolation_bool.checkState())
 
     def get_settings(self):
         out = {}
@@ -1058,10 +1060,11 @@ class Airfoils(QWidget):
                "interp_function_cl": self.interp_function_cl,
                "interp_function_cd": self.interp_function_cd,
                "curves": self.curves.save_curves(),
-               "gathered_curves": self.curves.gather_curves(),
+               "gathered_curves": self.gather_curves(),
                "centroid_x": centroid_x,
                "centroid_y": centroid_y,
-               "ncrit_selected": ncrit_selected}
+               "ncrit_selected": ncrit_selected,
+               "extrapolation_bool": self.extrapolation_bool.checkState()}
         return out
 
     def set_settings(self, dict_settings):
@@ -1071,6 +1074,7 @@ class Airfoils(QWidget):
         self.set_x_y(x,y)
         self.link.setText(dict_settings["link"])
         self.curves.load_curves(dict_settings["curves"])
+        self.extrapolation_bool.setChecked(dict_settings["extrapolation_bool"])
         self.refresh()
 
 
@@ -1098,10 +1102,13 @@ class Curves:
             c.load_curve(data_curve)
             self.curve_list.append(c)
 
-    def gather_curves(self):
+    def gather_curves(self,extrapolation=True):
         out = []
         for curve in self.get_curves_sorted():
-            alpha, cl, cd = curve.get_combined_curve()
+            if extrapolation:
+                alpha, cl, cd = curve.get_combined_curve()
+            else:
+                alpha, cl, cd = curve.get_curves()
             for i in range(len(alpha)):
                 Re = curve.Re
                 ncrit = curve.ncrit
@@ -1181,8 +1188,8 @@ class Curve:
         self.m_CD90 = 1.5
         self.slope = 0.106
 
-    def get_cl_curve(self):
-        return self.alpha_cl, self.cl
+    def get_curves(self):
+        return self.alpha, self.cl, self.cd
 
     def get_extrapolated_curve(self):
         M = Montgomerie(x=self.x, y=self.y, alpha=self.alpha, Cl=self.cl, Cd=self.cd, Re=self.Re, A=self.A, Am=self.Am,

@@ -599,20 +599,29 @@ def interp(re_in, alpha_in, re, alpha, cl):
     In cases that re_in is too large, or too small, the function returns the closest available valid Reynolds data.
     """
 
+
     re_list, alpha_list, cl_list = np.unique(
         re), np.unique(alpha), np.unique(cl)
 
+    #print("For itnerpolation:",alpha,cl)
+
     if re_in >= re_list.max():
+        #print("Reyonlds is bigger")
         indexes = np.where(re == re_list.max())
         alpha_selected = alpha[indexes]
         cl_selected = cl[indexes]
-        return np.interp(alpha_in, alpha_selected, cl_selected)
+        return np.interp(alpha_in, alpha_selected, cl_selected,left=False, right=False)
 
     if re_in <= re_list.min():
+        #print("Reynolds is smaller")
+        #print("Alpha_in",alpha_in)
         indexes = np.where(re == re_list.min())
         alpha_selected = alpha[indexes]
         cl_selected = cl[indexes]
-        return np.interp(alpha_in, alpha_selected, cl_selected)
+        #print("alpha_selected:",alpha_selected)
+        oo = np.interp(alpha_in, alpha_selected, cl_selected,left=False, right=False)
+        #print(oo)
+        return oo
 
     re_bottom_index = np.where(re_list < re_in)[0][-1]
     re_bottom = re_list[re_bottom_index]
@@ -627,8 +636,11 @@ def interp(re_in, alpha_in, re, alpha, cl):
     alpha_top = alpha[indexes_top]
     cl_top = cl[indexes_top]
 
-    _cl_1 = np.interp(alpha_in, alpha_bottom, cl_bottom)
-    _cl_2 = np.interp(alpha_in, alpha_top, cl_top)
+    _cl_1 = np.interp(alpha_in, alpha_bottom, cl_bottom,left=False, right=False)
+    _cl_2 = np.interp(alpha_in, alpha_top, cl_top,left=False, right=False)
+
+    if _cl_1 == False or _cl_2 == False:
+        return False
 
     cL = (_cl_2-_cl_1)/(re_top-re_bottom)*(re_in-re_bottom)+_cl_1
     return cL
