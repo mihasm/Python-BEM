@@ -31,8 +31,10 @@ OUTPUT_VARIABLES_LIST = {
 
     "dFn":{"type":"array","name":"Incremental normal force","symbol":r"$dF_n$","unit":"N"},
     "dFt":{"type":"array","name":"Incremental tangential force","symbol":r"$dF_t$","unit":"N"},
+    "dFc":{"type":"array","name":"Incremental centrifugal force","symbol":r"$dF_c$","unit":"N"},
     "dFn/n":{"type":"array","name":"Incremental normal force (per unit length)","symbol":r"$dF_n/n$","unit":"N/m"},
     "dFt/n":{"type":"array","name":"Incremental tangential force (per unit length)","symbol":r"$dF_t/n$","unit":"N/m"},
+    "dFc/n":{"type":"array","name":"Incremental centrifugal force (per unit length)","symbol":r"$dF_c/n$","unit":"N/m"},
 
     "foils":{"type":"string_array","name":"Airfoil name","symbol":"airfoil_name","unit":""},
     "dT":{"type":"array","name":"Incremental thrust","symbol":"dT","unit":"N"},
@@ -52,6 +54,8 @@ OUTPUT_VARIABLES_LIST = {
     "Ms_n":{"type":"array","name":"Bending moment (normal)","symbol":r"$M_{bend,norm.}$","unit":"Nm"},
     "stress_norm":{"type":"array","name":"Bending stress (normal)","symbol":r"$\sigma_n$","unit":"MPa"},
     "stress_tang":{"type":"array","name":"Bending stress (tangential)","symbol":r"$\sigma_t$","unit":"MPa"},
+    "stress_cent":{"type":"array","name":"Axial stress (centrifugal)","symbol":r"$\sigma_c$","unit":"MPa"},
+    "stress_von_mises":{"type":"array","name":"Von Mises stress","symbol":r"$\sigma_y$","unit":"MPa"},
 
 
     "r":{"type":"array","name":"Section radius","symbol":"r","unit":"m"},
@@ -179,7 +183,7 @@ class Calculator:
     def run_array(self, theta, B, c, r, foils, dr, R, Rhub, rpm, v, pitch, method, propeller_mode, print_out, tip_loss,mach_number_correction, 
                   hub_loss, new_tip_loss, new_hub_loss, cascade_correction, max_iterations, convergence_limit, rho,
                   relaxation_factor, print_all, rotational_augmentation_correction,rotational_augmentation_correction_method,
-                   fix_reynolds, reynolds, yaw_angle, skewed_wake_correction, blade_design, blade_thickness,
+                   fix_reynolds, reynolds, yaw_angle, skewed_wake_correction, blade_design, blade_thickness, mass_density,
                    print_progress=False, return_print=[], return_results=[],*args,**kwargs):
         """
         Calculates induction factors using standard iteration methods.
@@ -237,7 +241,7 @@ class Calculator:
         results = {}
         arrays = ["a", "a'", "cL", "alpha", "phi", "F", "dFt", "M", "lambda_r",
                   "Ct", "dFn", "foils", "dT", "dQ", "Re", "U1", "U2", "U3", "U4","cD", "dFt/n", "dFn/n","Ms_t","Ms_n",
-                  "Ix","Iy","Ixy","A","stress_norm","stress_tang"]
+                  "Ix","Iy","Ixy","A","stress_norm","stress_tang","stress_cent","dFc","dFc/n","stress_von_mises"]
         for array in arrays:
             results[array] = numpy.array([])
 
@@ -246,6 +250,7 @@ class Calculator:
         TSR = omega * R / v  # tip speed ratio
         J = v / (rpm / 60 * R * 2)
         kin_viscosity = 1.4207E-5  # Kinematic viscosity
+        mass_density = mass_density
 
         lambda_r_array = omega * np.array(r) / v
 
@@ -313,24 +318,14 @@ class Calculator:
             results["lambda_r"] = numpy.append(results["lambda_r"], out_results["lambda_r"])
 
 
+        blade_mass = 0
         ### STATICAL ANALYSIS
         for i in range(num_sections):
-
-            ### BENDING MOMENT CALCULATION
-            Ms_n=0
-            Ms_t=0
-            for j in range(i,num_sections):
-                Ms_n=Ms_n+results["dFn"][j]*\
-                            (r[j]-r[i])
-                Ms_t=Ms_t+results["dFt"][j]*\
-                            (r[j]-r[i])
-
-            results["Ms_t"] = numpy.append(results["Ms_t"], Ms_t)
-            results["Ms_n"] = numpy.append(results["Ms_n"], Ms_n)
 
             ### BENDING INTERTIA AND STRESS CALCULATION
             _c = c[i]
             _theta = theta[i]
+            _dr = dr[i]
 
             transition=self.transition_array[i]
             _airfoil=foils[i]
@@ -357,6 +352,20 @@ class Calculator:
                 Ixy=Ixy1*transition_coefficient+Ixy2*(1-transition_coefficient)
                 A=A1*transition_coefficient+A2*(1-transition_coefficient)
 
+            section_mass = A*_dr*mass_density
+            blade_mass+=section_mass
+
+            ### BENDING MOMENT CALCULATION
+            Ms_n=0
+            Ms_t=0
+            for j in range(i,num_sections):
+                Ms_n=Ms_n+results["dFn"][j]*\
+                            (r[j]-r[i])
+                Ms_t=Ms_t+results["dFt"][j]*\
+                            (r[j]-r[i])
+
+            results["Ms_t"] = numpy.append(results["Ms_t"], Ms_t)
+            results["Ms_n"] = numpy.append(results["Ms_n"], Ms_n)
             results["Ix"] = numpy.append(results["Ix"], Ix*1e12) # to mm4
             results["Iy"] = numpy.append(results["Iy"], Iy*1e12) # to mm4
             results["Ixy"] = numpy.append(results["Ixy"], Ixy*1e12) # to mm4
@@ -370,6 +379,34 @@ class Calculator:
 
             results["stress_norm"] = numpy.append(results["stress_norm"], stress_norm)
             results["stress_tang"] = numpy.append(results["stress_tang"], stress_tang)
+
+        ### CENTRIFUGAL FORCE CALCULATION
+        
+        for i in range(num_sections):
+            F_centrifugal=0
+            _A_section = results["A"][i] #mm2 !
+            for j in range(i,num_sections):
+                _dr = dr[j]
+                _r = r[j]
+                _A = results["A"][j]
+                v_tan = _r*omega
+                section_mass1 = _A*_dr*mass_density
+                F_centrifugal_section = section_mass*v_tan**2/_r
+                F_centrifugal+=F_centrifugal_section
+            F_centrifugal_norm = F_centrifugal*num_sections
+            stress_cent = F_centrifugal/_A_section #MPa
+            results["dFc"] = numpy.append(results["dFc"], F_centrifugal)
+            results["dFc/n"] = numpy.append(results["dFc/n"], F_centrifugal_norm)
+            results["stress_cent"] = numpy.append(results["stress_cent"], stress_cent)
+
+        ### VON MISES STRESS CALCULATION
+
+        for i in range(num_sections):
+            sigma_1 = results["stress_norm"][i]
+            sigma_2 = results["stress_tang"][i]
+            sigma_3 = results["stress_cent"][i]
+            stress_von_mises = numpy.sqrt(0.5*(sigma_1-sigma_2)**2+(sigma_2-sigma_3)**2+(sigma_3-sigma_1)**2)
+            results["stress_von_mises"] = numpy.append(results["stress_von_mises"], stress_von_mises)
 
 
         dFt = results["dFt"]

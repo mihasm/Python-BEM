@@ -340,6 +340,12 @@ class WindTurbineProperties(QWidget):
         fbox.addRow(_blade_thickness, self.blade_thickness)
         self.blade_thickness.setToolTip("Debelina lopatice / Spar Cap-a.")
 
+        _mass_density = QLabel("Mass density [kg/m^3]")
+        self.mass_density = QLineEdit()
+        self.mass_density.setText("1060")
+        fbox.addRow(_mass_density, self.mass_density)
+        self.mass_density.setToolTip("Debelina lopatice / Spar Cap-a.")
+
         fbox.addRow(QLabel("————— Scale and interpolation —————"))
 
         _geometry_scale = QLabel("Scale factor")
@@ -441,7 +447,8 @@ class WindTurbineProperties(QWidget):
               "linspace_interp":self.linspace_interp.isChecked(),
               "num_interp":int(self.num_interp.text()),
               "blade_thickness":to_float(self.blade_thickness.text()),
-              "blade_design":self.blade_design.currentIndex()}
+              "blade_design":self.blade_design.currentIndex(),
+              "mass_density":to_float(self.mass_density.text())}
         geom_array = self.table_properties.get_values()
         r, c, theta, foils = [], [], [], []
         for row in geom_array:
@@ -543,6 +550,9 @@ class WindTurbineProperties(QWidget):
             self.blade_thickness.setText(t)
         if "blade_design" in dict_settings:
             self.blade_design.setCurrentIndex(dict_settings["blade_design"])
+        if "mass_density" in dict_settings:
+            t=str(dict_settings["mass_density"])
+            self.mass_density.setText(t)
 
     def export(self):
         """
