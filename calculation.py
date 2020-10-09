@@ -825,4 +825,4 @@ class Calculator:
         min_y = numpy.min(_airfoil_y)
         max_y = numpy.max(_airfoil_y)
 
-        return Ix,Iy,Ixy,A,numpy.array((min_x,max_x)),numpy.array((min_y,max_y))
+        return Ix,Iy,Ixy,A,numpy.abs(numpy.array((min_x,max_x))),numpy.abs(numpy.array((min_y,max_y)))
