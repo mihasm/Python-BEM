@@ -34,7 +34,6 @@ OUTPUT_VARIABLES_LIST = {
     "dFc":{"type":"array","name":"Incremental centrifugal force","symbol":r"$dF_c$","unit":"N"},
     "dFn/n":{"type":"array","name":"Incremental normal force (per unit length)","symbol":r"$dF_n/n$","unit":"N/m"},
     "dFt/n":{"type":"array","name":"Incremental tangential force (per unit length)","symbol":r"$dF_t/n$","unit":"N/m"},
-    "dFc/n":{"type":"array","name":"Incremental centrifugal force (per unit length)","symbol":r"$dF_c/n$","unit":"N/m"},
 
     "foils":{"type":"string_array","name":"Airfoil name","symbol":"airfoil_name","unit":""},
     "dT":{"type":"array","name":"Incremental thrust","symbol":"dT","unit":"N"},
@@ -241,7 +240,7 @@ class Calculator:
         results = {}
         arrays = ["a", "a'", "cL", "alpha", "phi", "F", "dFt", "M", "lambda_r",
                   "Ct", "dFn", "foils", "dT", "dQ", "Re", "U1", "U2", "U3", "U4","cD", "dFt/n", "dFn/n","Ms_t","Ms_n",
-                  "Ix","Iy","Ixy","A","stress_norm","stress_tang","stress_cent","dFc","dFc/n","stress_von_mises"]
+                  "Ix","Iy","Ixy","A","stress_norm","stress_tang","stress_cent","dFc","stress_von_mises"]
         for array in arrays:
             results[array] = numpy.array([])
 
@@ -393,10 +392,8 @@ class Calculator:
                 section_mass1 = _A*_dr*mass_density
                 F_centrifugal_section = section_mass*v_tan**2/_r
                 F_centrifugal+=F_centrifugal_section
-            F_centrifugal_norm = F_centrifugal*num_sections
             stress_cent = F_centrifugal/_A_section #MPa
             results["dFc"] = numpy.append(results["dFc"], F_centrifugal)
-            results["dFc/n"] = numpy.append(results["dFc/n"], F_centrifugal_norm)
             results["stress_cent"] = numpy.append(results["stress_cent"], stress_cent)
 
         ### VON MISES STRESS CALCULATION
