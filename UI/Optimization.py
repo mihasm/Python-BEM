@@ -7,7 +7,7 @@ from PyQt5.QtWidgets import QWidget, QTextEdit, QLineEdit, QLabel, QComboBox, QC
     QFormLayout, QMessageBox
 
 from UI.helpers import PyQtGraphWindow
-from optimization import optimize_angles_genetic
+from optimization import optimize
 from utils import MyMessageBox, to_float
 
 
@@ -234,7 +234,7 @@ class Optimization(QWidget):
             self.main.set_process_running()
             self.runner_input = self.main.get_input_params()
             self.main.getter.start()
-            self.p = Process(target=optimize_angles_genetic, args=[self.runner_input, self.queue_pyqtgraph])
+            self.p = Process(target=optimize, args=[self.runner_input, self.queue_pyqtgraph])
             self.p.start()
             self.win.show()
             self.win.start_update()

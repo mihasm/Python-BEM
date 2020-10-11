@@ -10,10 +10,10 @@ from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
 from matplotlib.figure import Figure
 
+from UI.Table import Table
 from calculation import OUTPUT_VARIABLES_LIST
 from calculation_runner import max_calculate
 from utils import sort_xy, dict_to_ar, greek_letters_to_string, transpose
-from UI.Table import Table
 
 warnings.filterwarnings("ignore",category=matplotlib.cbook.MatplotlibDeprecationWarning)
 

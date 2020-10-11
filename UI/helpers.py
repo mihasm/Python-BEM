@@ -8,7 +8,7 @@ from matplotlib import pyplot as plt
 from matplotlib.backends.backend_qt5 import NavigationToolbar2QT as NavigationToolbar
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 
-from polars import scrape_data, get_x_y_from_link
+from scraping import scrape_data, get_x_y_from_link
 from xfoil import generate_polars_data
 
 

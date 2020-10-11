@@ -65,8 +65,6 @@ class Analysis(QWidget):
                                  "pitch_num": "Num pitch",
                                  "relaxation_factor": "Relaxation factor",
                                  "print_all": "Print every iteration [debug]",
-                                 # "num_interp": "Number of sections (interp)",
-                                 # "linspace_interp": "Custom number of sections",
                                  "rotational_augmentation_correction": "Rot. augmentation cor.",
                                  "rotational_augmentation_correction_method": "Rot. augmentation cor. method",
                                  "fix_reynolds": "Fix Reynolds", "reynolds": "Reynolds",
@@ -107,8 +105,6 @@ class Analysis(QWidget):
             "pitch_num": "Num pitch",
             "relaxation_factor": "Relaksacijski faktor. Privzeta vrednost: 0.3",
             "print_all": "Podroben izpis vrednosti po vsaki iteraciji (upočasni izračun)",
-            # "num_interp": "Se uporabi samo v primeru, če izberemo 'Custom number of sections' opcijo",
-            # "linspace_interp": "V primeru, da želimo preračunati več/manj odsekov lopatice po radiju (interpolacija geometrije)",
             "rotational_augmentation_correction": "Popravek rotacijske augmentacije",
             "rotational_augmentation_correction_method": "Izbira metode za popravek rotacijske augmentacije",
             "fix_reynolds": "Izračunaj vse odseke pri enem samem Re",
@@ -225,10 +221,6 @@ class Analysis(QWidget):
         self.set_parameter_visibility()
 
     def set_parameter_visibility(self):
-        # print("Setting parameter visibility")
-        # print(self.forms_dict)
-        # print("form v_min",self.forms_dict["v_min"])
-        # self.forms_dict["v_min"][2].hide()
         current_index = self.forms_dict["variable_selection"][0].currentIndex()
         if current_index == 0:
             # RPM / speed

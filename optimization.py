@@ -2,7 +2,6 @@ import time
 import traceback
 from math import pi
 
-# for display
 import numpy as np
 from numpy import radians
 
@@ -10,9 +9,7 @@ from calculation import Calculator
 from utils import Printer
 
 
-def optimize_angles_genetic(inp_args,queue_pyqtgraph):
-
-    # brute force method
+def optimize(inp_args, queue_pyqtgraph):
 
     p = Printer(inp_args["return_print"])
     try:
@@ -33,7 +30,7 @@ def optimize_angles_genetic(inp_args,queue_pyqtgraph):
         weight_dq = inp_args["weight_dq"]
 
         p.print("Optimization variable is", optimization_variable)
-        p.print("Pitch optimization:",pitch_optimization)
+        p.print("Pitch optimization:", pitch_optimization)
         p.print("Propeller mode:", inp_args["propeller_mode"])
 
         output_theta = []
@@ -59,20 +56,20 @@ def optimize_angles_genetic(inp_args,queue_pyqtgraph):
 
             del inp_args["pitch"]
 
-
             def fobj(x):
                 out = C.run_array(**inp_args, rpm=rpm, v=v, pitch=x)
                 if out == None or out == False:
                     return 0.0
                 return out[optimization_variable]
 
-            results = de2(fobj, bounds=[(min_bound, max_bound)], M=mut_coeff, num_individuals=population_size,iterations=num_iter,printer=p, queue=queue_pyqtgraph)
+            results = de2(fobj, bounds=[(min_bound, max_bound)], M=mut_coeff, num_individuals=population_size,
+                          iterations=num_iter, printer=p, queue=queue_pyqtgraph)
             it = list(results)
             best = it[-1]
         else:
             p.print("Starting calculation...")
-            #foils = inp_args["foils"]
-            #transition_foils = get_transition_foils(foils)
+            # foils = inp_args["foils"]
+            # transition_foils = get_transition_foils(foils)
 
             for n in range(len(inp_args["r"])):
                 p.print("  Section_number is", n)
@@ -82,62 +79,65 @@ def optimize_angles_genetic(inp_args,queue_pyqtgraph):
                 _theta = inp_args["theta"][n]
                 _dr = inp_args["dr"][n]
 
-                transition=C.transition_array[n]
-                _airfoil=C.airfoils_list[n]
-                _airfoil_prev=C.transition_foils[n][0]
-                _airfoil_next=C.transition_foils[n][1]
-                transition_coefficient=C.transition_foils[n][2]
-                max_thickness=C.max_thickness_array[n]
+                transition = C.transition_array[n]
+                _airfoil = C.airfoils_list[n]
+                _airfoil_prev = C.transition_foils[n][0]
+                _airfoil_next = C.transition_foils[n][1]
+                transition_coefficient = C.transition_foils[n][2]
+                max_thickness = C.max_thickness_array[n]
 
-                #worst_value = 0.0
+                # worst_value = 0.0
 
                 def fobj(x):
                     global dT_max
                     global dQ_max
                     d = C.calculate_section(v=v, omega=omega, _airfoil=_airfoil,
-                                            max_thickness=max_thickness,_r=_r, _c=_c, _dr=_dr, _theta=radians(x),
-                                            transition=transition,_airfoil_prev=_airfoil_prev,_airfoil_next=_airfoil_next,
+                                            max_thickness=max_thickness, _r=_r, _c=_c, _dr=_dr, _theta=radians(x),
+                                            transition=transition, _airfoil_prev=_airfoil_prev,
+                                            _airfoil_next=_airfoil_next,
                                             transition_coefficient=transition_coefficient,
                                             printer=p, **inp_args)
                     if d == None or d == False:
                         return -1e50
 
                     if optimization_variable == "dQ-dT":
-                        return d["dQ"]*weight_dq-d["dT"]*weight_dt
+                        return d["dQ"] * weight_dq - d["dT"] * weight_dt
                     if optimization_variable == "dT-dQ":
-                        return d["dT"]*weight_dt-d["dQ"]*weight_dq
-                    
+                        return d["dT"] * weight_dt - d["dQ"] * weight_dq
+
                     return d[optimization_variable]
 
-                it = list(de2(fobj, bounds=[(min_bound, max_bound)], M=mut_coeff, num_individuals=population_size,iterations=num_iter,printer=p, queue=queue_pyqtgraph))
-                
+                it = list(de2(fobj, bounds=[(min_bound, max_bound)], M=mut_coeff, num_individuals=population_size,
+                              iterations=num_iter, printer=p, queue=queue_pyqtgraph))
+
                 d_final = C.calculate_section(v=v, omega=omega, _airfoil=_airfoil,
-                                            max_thickness=max_thickness,_r=_r, _c=_c, _dr=_dr, _theta=radians(it[0]),
-                                            transition=transition,_airfoil_prev=_airfoil_prev,_airfoil_next=_airfoil_next,
-                                            transition_coefficient=transition_coefficient,
-                                            printer=p, **inp_args)
+                                              max_thickness=max_thickness, _r=_r, _c=_c, _dr=_dr, _theta=radians(it[0]),
+                                              transition=transition, _airfoil_prev=_airfoil_prev,
+                                              _airfoil_next=_airfoil_next,
+                                              transition_coefficient=transition_coefficient,
+                                              printer=p, **inp_args)
 
                 output_theta.append(it[0])
-            
-            p.print("Number of final angles:",len(output_theta))
+
+            p.print("Number of final angles:", len(output_theta))
             p.print("Final angles:")
             for a in output_theta:
                 p.print(a)
 
-            #p.print("Final chords:")
-            #for c in output_chord:
+            # p.print("Final chords:")
+            # for c in output_chord:
             #    p.print(c)
         p.print("Done!")
         time.sleep(0.5)
         inp_args["EOF"].value = True
     except Exception as e:
         var = traceback.format_exc()
-        p.print("Error in running optimizer: %s \n %s" % (str(e),var))
+        p.print("Error in running optimizer: %s \n %s" % (str(e), var))
         inp_args["EOF"].value = True
         raise
 
 
-#https://pablormier.github.io/2017/09/05/a-tutorial-on-differential-evolution-with-python/#
+# https://pablormier.github.io/2017/09/05/a-tutorial-on-differential-evolution-with-python/#
 
 def de2(function, bounds, M=0.8, num_individuals=30, iterations=50, printer=None, queue=None):
     """
@@ -168,16 +168,14 @@ def de2(function, bounds, M=0.8, num_individuals=30, iterations=50, printer=None
     for i in range(iterations):
         for j in range(num_individuals):
             other_i = list(set(range(num_individuals)) - {j})
-            a, b, c = population[np.random.choice(other_i, 3,
-                                                  replace=False)]
-            mutation_vector = a+M*(b-c)
+            a, b, c = population[np.random.choice(other_i, 3, replace=False)]
+            mutation_vector = a + M * (b - c)
             for k in range(dimensions):
                 if mutation_vector[k] < min_bound[k]:
                     mutation_vector[k] = min_bound[k]
                 if mutation_vector[k] > max_bound[k]:
                     mutation_vector[k] = max_bound[k]
-            random_locations = np.random.choice(a=[False, True],
-                                                size=(1, dimensions))[0]
+            random_locations = np.random.choice(a=[False, True], size=(1, dimensions))[0]
             trial = np.where(random_locations, mutation_vector, population[j])
             f = function(trial)
             if f > fitness[j]:
@@ -186,10 +184,9 @@ def de2(function, bounds, M=0.8, num_individuals=30, iterations=50, printer=None
                 if f > fitness[best_i]:
                     best_i = j
                     best = trial
-            queue[0]=[population.flatten(),fitness.flatten(),population[best_i][0],fitness[best_i]]
+            queue[0] = [population.flatten(), fitness.flatten(), population[best_i][0], fitness[best_i]]
         if len(set(population.flatten())) == 1:
             break
-        p.print(best,fitness[best_i])
-
+        p.print(best, fitness[best_i])
 
     return best

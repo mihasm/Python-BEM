@@ -4,7 +4,9 @@ import re
 import sys
 import traceback
 
+import numpy
 import numpy as np
+import scipy
 from PyQt5 import QtGui
 from PyQt5.QtGui import QPalette, QColor
 from PyQt5.QtWidgets import (QMessageBox)
@@ -294,12 +296,12 @@ class QDarkPalette(QPalette):
         self.set_stylesheet(app)
 
 
-def sort_data(data, columns=[0, 2]):
+def sort_data(data, columns=(0, 2)):
     if len(columns) == 0:
         raise Exception("Sorting must be done for more than zero columns.")
     first = False
     for i in columns:
-        if first == False:
+        if not first:
             data = data[data[:, i].argsort()]  # sort by reynolds
             first = True
         else:
@@ -313,7 +315,7 @@ def normalize_angle(angle):
     # force it to be the positive remainder, so that 0 <= angle < 360
     angle = (angle + 360) % 360
     # force into the minimum absolute value residue class, so that -180 < angle <= 180
-    if (angle > 180):
+    if angle > 180:
         angle -= 360
 
     return angle
@@ -502,62 +504,61 @@ def get_transition_foils(foils):
 
 
 def greek_letters_to_string(string):
-    dict_letters = { \
-        "\\alpha": "α",
-        "\\beta": "β",
-        "\\gamma": "γ",
-        "\\delta": "δ",
-        "\\epsilon": "ε",
-        "\\zeta": "ζ",
-        "\\eta": "η",
-        "\\theta": "Θ",
-        "\\iota": "ι",
-        "\\kappa": "κ",
-        "\\lambda": "λ",
-        "\\mu": "μ",
-        "\\nu": "ν",
-        "\\xi": "ξ",
-        "\\omicron ": "ℴ",
-        "\\pi": "π",
-        "\\rho": "ρ",
-        "\\sigma": "σ",
-        "\\tau": "τ",
-        "\\upsilon": "υ",
-        "\\phi": "ϕ",
-        "\\chi": "χ",
-        "\\psi": "ψ",
-        "\\omega": "ω",
-        "\\Alpha": "A",
-        "\\Beta": "B",
-        "\\Gamma": "Γ",
-        "\\Delta": "Δ",
-        "\\Epsilon": "E",
-        "\\Zeta": "Z",
-        "\\Eta": "H",
-        "\\Theta": "Θ",
-        "\\Iota": "I",
-        "\\Kappa": "K",
-        "\\Lambda": "Λ",
-        "\\Mu": "M",
-        "\\Nu": "N",
-        "\\Xi": "Ξ",
-        "\\Omicron": "O",
-        "\\Pi": "Π",
-        "\\Rho": "P",
-        "\\Sigma": "Σ",
-        "\\Tau": "T",
-        "\\Upsilon": "Υ",
-        "\\Phi": "Φ",
-        "\\Chi": "X",
-        "\\Psi": "Ψ",
-        "\\Omega": "Ω"}
+    dict_letters = {"\\alpha": "α",
+                    "\\beta": "β",
+                    "\\gamma": "γ",
+                    "\\delta": "δ",
+                    "\\epsilon": "ε",
+                    "\\zeta": "ζ",
+                    "\\eta": "η",
+                    "\\theta": "Θ",
+                    "\\iota": "ι",
+                    "\\kappa": "κ",
+                    "\\lambda": "λ",
+                    "\\mu": "μ",
+                    "\\nu": "ν",
+                    "\\xi": "ξ",
+                    "\\omicron ": "ℴ",
+                    "\\pi": "π",
+                    "\\rho": "ρ",
+                    "\\sigma": "σ",
+                    "\\tau": "τ",
+                    "\\upsilon": "υ",
+                    "\\phi": "ϕ",
+                    "\\chi": "χ",
+                    "\\psi": "ψ",
+                    "\\omega": "ω",
+                    "\\Alpha": "A",
+                    "\\Beta": "B",
+                    "\\Gamma": "Γ",
+                    "\\Delta": "Δ",
+                    "\\Epsilon": "E",
+                    "\\Zeta": "Z",
+                    "\\Eta": "H",
+                    "\\Theta": "Θ",
+                    "\\Iota": "I",
+                    "\\Kappa": "K",
+                    "\\Lambda": "Λ",
+                    "\\Mu": "M",
+                    "\\Nu": "N",
+                    "\\Xi": "Ξ",
+                    "\\Omicron": "O",
+                    "\\Pi": "Π",
+                    "\\Rho": "P",
+                    "\\Sigma": "Σ",
+                    "\\Tau": "T",
+                    "\\Upsilon": "Υ",
+                    "\\Phi": "Φ",
+                    "\\Chi": "X",
+                    "\\Psi": "Ψ",
+                    "\\Omega": "Ω"}
     while True:
         found = False
         for k, v in dict_letters.items():
             if k in string:
                 string = string.replace(k, v)
                 found = True
-        if found == False:
+        if not found:
             break
     return string
 
