@@ -52,7 +52,6 @@ class DataCaptureThread(QThread):
             y = item[1]
             best_x = [item[2]]
             best_y = [item[3]]
-            print("x",x,"y",y)
             self.parent().curve.setData(x, y)
             self.parent().curve_red.setData(best_x, best_y)
 

@@ -176,8 +176,11 @@ class WindTurbineProperties(QWidget):
         -geometry (r,c,theta,foils) as four separate list objects
         :return: dict: Settings dictionary (Basic wind turbine information)
         """
-        out = {"Rhub": to_float(self.Rhub.text()), "R": to_float(self.R.text()), "B": int(self.B.text()),
-               "turbine_name": self.name.text(), "geometry_scale": to_float(self.geometry_scale.text()),
+        out = {"Rhub": to_float(self.Rhub.text()),
+               "R": to_float(self.R.text()),
+               "B": int(self.B.text()),
+               "turbine_name": self.name.text(),
+               "geometry_scale": to_float(self.geometry_scale.text()),
                "linspace_interp": self.linspace_interp.isChecked(),
                "num_interp": int(self.num_interp.text()),
                "blade_thickness": to_float(self.blade_thickness.text()),
