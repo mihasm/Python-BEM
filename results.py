@@ -12,7 +12,8 @@ from matplotlib.figure import Figure
 
 from calculation import OUTPUT_VARIABLES_LIST
 from calculation_runner import max_calculate
-from utils import sort_xy, dict_to_ar, greek_letters_to_string, transpose, Table
+from utils import sort_xy, dict_to_ar, greek_letters_to_string, transpose
+from UI.Table import Table
 
 warnings.filterwarnings("ignore",category=matplotlib.cbook.MatplotlibDeprecationWarning)
 

@@ -129,7 +129,7 @@ def calculate_power_3d(inp_args, print_eof=False, prepend="", print_progress=Tru
                 t_left_str = str(datetime.timedelta(seconds=t_left))
                 eta_seconds = datetime.datetime.now() + datetime.timedelta(seconds=t_left)
                 eta = str(eta_seconds).split(".")[0]
-                #p.print("    ### Time left:", t_left_str, "ETA:", eta, "###")
+                # p.print("    ### Time left:", t_left_str, "ETA:", eta, "###")
                 if print_progress:
                     p.print("")
 

@@ -1,15 +1,13 @@
 import copy
-import csv
 import os
 import re
 import sys
 import traceback
 
 import numpy as np
-from PyQt5 import QtCore, QtGui
-from PyQt5.QtCore import pyqtSlot
+from PyQt5 import QtGui
 from PyQt5.QtGui import QPalette, QColor
-from PyQt5.QtWidgets import (QWidget, QMessageBox, QApplication, QVBoxLayout, QTableWidget, QTableWidgetItem, QMenu)
+from PyQt5.QtWidgets import (QMessageBox)
 from numpy import array
 from scipy import interpolate
 
@@ -18,6 +16,7 @@ if getattr(sys, 'frozen', False):
     application_path = os.path.dirname(sys.executable)
 elif __file__:
     application_path = os.path.dirname(__file__)
+
 
 def transpose(a):
     """
@@ -126,7 +125,7 @@ def sort_xy(array_x, array_y):
         )
 
 
-def interpolate_geom(r, c, theta, foils, num=None, linspace_interp=False,geometry_scale=1.0):
+def interpolate_geom(r, c, theta, foils, num=None, linspace_interp=False, geometry_scale=1.0):
     """
     interpolates c,r,theta with num elements:
     """
@@ -156,11 +155,11 @@ def interpolate_geom(r, c, theta, foils, num=None, linspace_interp=False,geometr
     dr[0] = dr[1]  # TODO: what
     # print("foils after",foils)
 
-    #scaling
+    # scaling
     r = geometry_scale * r
     dr = geometry_scale * dr
     c = geometry_scale * c
-    
+
     return r, c, theta, foils, dr
 
 
@@ -237,7 +236,7 @@ def generate_dat(name, x, y):
         else:
             out += "%.6f  %.6f\n" % (_x, _y)
 
-    f = open(os.path.join(application_path,"foils", name + ".dat"), "w")
+    f = open(os.path.join(application_path, "foils", name + ".dat"), "w")
     f.write(out)
     f.close()
     return out
@@ -330,6 +329,7 @@ def get_centroid_coordinates(foil_x, foil_y):
                 np.sum(foil_y) / len(foil_y))
     return centroid
 
+
 class MyMessageBox(QMessageBox):
     def __init__(self):
         QtGui.QMessageBox.__init__(self)
@@ -354,6 +354,7 @@ class MyMessageBox(QMessageBox):
 
         return result
 
+
 def ErrorMessageBox():
     msg = MyMessageBox()
     msg.setIcon(QMessageBox.Warning)
@@ -363,7 +364,7 @@ def ErrorMessageBox():
     msg.exec_()
 
 
-def generate_v_and_rpm_from_tsr(tsr_list,R,v=None,rpm=None):
+def generate_v_and_rpm_from_tsr(tsr_list, R, v=None, rpm=None):
     """
     TSR = omega * R / v
 
@@ -375,17 +376,18 @@ def generate_v_and_rpm_from_tsr(tsr_list,R,v=None,rpm=None):
         # rpm is fixed
         out_rpm.append(rpm)
         for tsr in tsr_list:
-            _v=2*np.pi*rpm/60*R/tsr
+            _v = 2 * np.pi * rpm / 60 * R / tsr
             out_v.append(_v)
     elif rpm == None:
         # v is fixed
         out_v.append(v)
         for tsr in tsr_list:
-            _rpm = tsr*v*60/R/2/np.pi
+            _rpm = tsr * v * 60 / R / 2 / np.pi
             out_rpm.append(_rpm)
-    return out_v,out_rpm
+    return out_v, out_rpm
 
-def generate_v_and_rpm_from_J(J_list,R,v=None,rpm=None):
+
+def generate_v_and_rpm_from_J(J_list, R, v=None, rpm=None):
     """
     J = v / (rpm / 60 * R * 2)
 
@@ -397,7 +399,7 @@ def generate_v_and_rpm_from_J(J_list,R,v=None,rpm=None):
         # rpm is fixed
         out_rpm.append(rpm)
         for J in J_list:
-            _v=J*(rpm / 60 * R * 2)
+            _v = J * (rpm / 60 * R * 2)
             out_v.append(_v)
     elif rpm == None:
         # v is fixed
@@ -405,29 +407,31 @@ def generate_v_and_rpm_from_J(J_list,R,v=None,rpm=None):
         for J in J_list:
             _rpm = v / J * 60 / R / 2
             out_rpm.append(_rpm)
-    return out_v,out_rpm
+    return out_v, out_rpm
+
 
 def import_dat(file_path):
-    f = open(file_path,"r")
-    #f.readlines()
+    f = open(file_path, "r")
+    # f.readlines()
     lines = f.readlines()
     f.close()
 
-    x,y=[],[]
+    x, y = [], []
 
     for l in lines:
         l = l.strip()
-        l = re.sub(r'\s+',' ', l).strip()
+        l = re.sub(r'\s+', ' ', l).strip()
         splitted = l.split(" ")
         if len(splitted) == 2:
             _x = float(splitted[0])
             _y = float(splitted[1])
             x.append(_x)
             y.append(_y)
-    return x,y
+    return x, y
+
 
 def import_nrel_dat(file_path):
-    f = open(file_path,"r")
+    f = open(file_path, "r")
     lines = f.readlines()
     f.close()
 
@@ -435,28 +439,28 @@ def import_nrel_dat(file_path):
     found = False
     Re = 0.0
     ncrit = 0.0
-    startline=0
-    while (i<len(lines)):
+    startline = 0
+    while (i < len(lines)):
         if "Table of aerodynamics coefficients" in lines[i]:
-            found=True
-            startline=i+4
+            found = True
+            startline = i + 4
         if "Re" in lines[i][14:33]:
-            Re=float(lines[i][0:11])*1e6
-        i+=1
+            Re = float(lines[i][0:11]) * 1e6
+        i += 1
 
-    print("starting line:",startline)
-    print("Reynolds:",Re)
-    print("found:",found)
+    print("starting line:", startline)
+    print("Reynolds:", Re)
+    print("found:", found)
     if found:
-        #alpha,cl,cd,cm=[],[],[],[]
+        # alpha,cl,cd,cm=[],[],[],[]
         data = []
-        i=startline
-        while i<len(lines):
+        i = startline
+        while i < len(lines):
             if "!" in lines[i]:
                 break
             l = lines[i]
             l = l.strip()
-            l = re.sub(r'\s+',' ', l).strip()
+            l = re.sub(r'\s+', ' ', l).strip()
             splitted = l.split(" ")
             if len(splitted) == 4:
                 _alpha = float(splitted[0])
@@ -464,126 +468,133 @@ def import_nrel_dat(file_path):
                 _cd = float(splitted[2])
                 _cm = float(splitted[3])
                 data.append([Re, ncrit, _alpha, _cl, _cd])
-            i+=1
-        #print(data)
+            i += 1
+        # print(data)
         data = np.array(data)
         return data
 
-#x,y = import_dat("C:\\Users\\Miha\\Google Drive\\faks\\BEM program\\foils\\DU_91_W2_250.dat")
+
+# x,y = import_dat("C:\\Users\\Miha\\Google Drive\\faks\\BEM program\\foils\\DU_91_W2_250.dat")
 
 def get_transition_foils(foils):
     transition_foils = []
     for j in range(len(foils)):
         if foils[j] == "transition":
-            k=j
-            while k>0:
-                k=k-1
+            k = j
+            while k > 0:
+                k = k - 1
                 prev_foil = foils[k]
                 if prev_foil != "transition":
                     break
-            l=j
-            while l<len(foils):
-                l=l+1
+            l = j
+            while l < len(foils):
+                l = l + 1
                 next_foil = foils[l]
                 if next_foil != "transition":
                     break
-            number_of_transition_sections = l-k
-            relative_position = j-k
-            coefficient_lower = relative_position/number_of_transition_sections
-            transition_foils.append([prev_foil,next_foil,coefficient_lower])
+            number_of_transition_sections = l - k
+            relative_position = j - k
+            coefficient_lower = relative_position / number_of_transition_sections
+            transition_foils.append([prev_foil, next_foil, coefficient_lower])
         else:
-            transition_foils.append([None,None,None])
+            transition_foils.append([None, None, None])
     return transition_foils
 
 
 def greek_letters_to_string(string):
-    dict_letters={"\\alpha":"α",
-    "\\beta":"β",
-    "\\gamma":"γ",
-    "\\delta":"δ",
-    "\\epsilon":"ε",
-    "\\zeta":"ζ",
-    "\\eta":"η",
-    "\\theta":"Θ",
-    "\\iota":"ι",
-    "\\kappa":"κ",
-    "\\lambda":"λ",
-    "\\mu":"μ",
-    "\\nu":"ν",
-    "\\xi":"ξ",
-    "\\omicron ":"ℴ",
-    "\\pi":"π",
-    "\\rho":"ρ",
-    "\\sigma":"σ",
-    "\\tau":"τ",
-    "\\upsilon":"υ",
-    "\\phi":"ϕ",
-    "\\chi":"χ",
-    "\\psi":"ψ",
-    "\\omega":"ω",
-    "\\Alpha":"A",
-    "\\Beta":"B",
-    "\\Gamma":"Γ",
-    "\\Delta":"Δ",
-    "\\Epsilon":"E",
-    "\\Zeta":"Z",
-    "\\Eta":"H",
-    "\\Theta":"Θ",
-    "\\Iota":"I",
-    "\\Kappa":"K",
-    "\\Lambda":"Λ",
-    "\\Mu":"M",
-    "\\Nu":"N",
-    "\\Xi":"Ξ",
-    "\\Omicron":"O",
-    "\\Pi":"Π",
-    "\\Rho":"P",
-    "\\Sigma":"Σ",
-    "\\Tau":"T",
-    "\\Upsilon":"Υ",
-    "\\Phi":"Φ",
-    "\\Chi":"X",
-    "\\Psi":"Ψ",
-    "\\Omega":"Ω"}
+    dict_letters = { \
+        "\\alpha": "α",
+        "\\beta": "β",
+        "\\gamma": "γ",
+        "\\delta": "δ",
+        "\\epsilon": "ε",
+        "\\zeta": "ζ",
+        "\\eta": "η",
+        "\\theta": "Θ",
+        "\\iota": "ι",
+        "\\kappa": "κ",
+        "\\lambda": "λ",
+        "\\mu": "μ",
+        "\\nu": "ν",
+        "\\xi": "ξ",
+        "\\omicron ": "ℴ",
+        "\\pi": "π",
+        "\\rho": "ρ",
+        "\\sigma": "σ",
+        "\\tau": "τ",
+        "\\upsilon": "υ",
+        "\\phi": "ϕ",
+        "\\chi": "χ",
+        "\\psi": "ψ",
+        "\\omega": "ω",
+        "\\Alpha": "A",
+        "\\Beta": "B",
+        "\\Gamma": "Γ",
+        "\\Delta": "Δ",
+        "\\Epsilon": "E",
+        "\\Zeta": "Z",
+        "\\Eta": "H",
+        "\\Theta": "Θ",
+        "\\Iota": "I",
+        "\\Kappa": "K",
+        "\\Lambda": "Λ",
+        "\\Mu": "M",
+        "\\Nu": "N",
+        "\\Xi": "Ξ",
+        "\\Omicron": "O",
+        "\\Pi": "Π",
+        "\\Rho": "P",
+        "\\Sigma": "Σ",
+        "\\Tau": "T",
+        "\\Upsilon": "Υ",
+        "\\Phi": "Φ",
+        "\\Chi": "X",
+        "\\Psi": "Ψ",
+        "\\Omega": "Ω"}
     while True:
-        found=False
-        for k,v in dict_letters.items():
+        found = False
+        for k, v in dict_letters.items():
             if k in string:
-                string = string.replace(k,v)
-                found=True
-        if found==False:
+                string = string.replace(k, v)
+                found = True
+        if found == False:
             break
     return string
 
+
 ### CHORD TWIST GENERATORS ###
 
-def generate_chord_lengths_betz(radiuses,R,Cl_max,B,TSR):
+def generate_chord_lengths_betz(radiuses, R, Cl_max, B, TSR):
     """
     Source: http://wflportal.amcplaza.com/Research/DYNAM/Resource%20Documents/WT_Theory_2009.pdf
     """
-    chords = 16*np.pi*R/(9*B*Cl_max)*(TSR*np.sqrt(TSR**2*(radiuses/R)**2+4/9))**-1
+    chords = 16 * np.pi * R / (9 * B * Cl_max) * (TSR * np.sqrt(TSR ** 2 * (radiuses / R) ** 2 + 4 / 9)) ** -1
     return chords
 
-def generate_chord_lengths_schmitz(radiuses,R,Cl_max,B,TSR):
+
+def generate_chord_lengths_schmitz(radiuses, R, Cl_max, B, TSR):
     """
     Source: http://wflportal.amcplaza.com/Research/DYNAM/Resource%20Documents/WT_Theory_2009.pdf
     """
-    chords = 16*np.pi*radiuses/(B*Cl_max)*np.sin(1/3*np.arctan(R/(TSR*radiuses)))**2
+    chords = 16 * np.pi * radiuses / (B * Cl_max) * np.sin(1 / 3 * np.arctan(R / (TSR * radiuses))) ** 2
     return chords
 
-def generate_twists_betz(radiuses,R,TSR,alpha_d):
+
+def generate_twists_betz(radiuses, R, TSR, alpha_d):
     """
     Source: http://wflportal.amcplaza.com/Research/DYNAM/Resource%20Documents/WT_Theory_2009.pdf
     """
-    thetas = np.rad2deg(np.arctan(2*R/(3*radiuses*TSR)))+alpha_d
+    thetas = np.rad2deg(np.arctan(2 * R / (3 * radiuses * TSR))) + alpha_d
     return thetas
 
-def generate_twists_schmitz(radiuses,R,TSR,alpha_d):
+
+def generate_twists_schmitz(radiuses, R, TSR, alpha_d):
     """
     Source: http://wflportal.amcplaza.com/Research/DYNAM/Resource%20Documents/WT_Theory_2009.pdf
     """
-    thetas = 2/3*np.rad2deg(np.arctan(R/(radiuses*TSR)))-alpha_d
+    thetas = 2 / 3 * np.rad2deg(np.arctan(R / (radiuses * TSR))) - alpha_d
     return thetas
+
 
 ### INTERPOLATION ###
 
@@ -596,33 +607,32 @@ def interp(re_in, alpha_in, re, alpha, cl):
     In cases that re_in is too large, or too small, the function returns the closest available valid Reynolds data.
     """
 
-
     re_list, alpha_list, cl_list = np.unique(
         re), np.unique(alpha), np.unique(cl)
 
-    #print("For itnerpolation:",alpha,cl)
+    # print("For itnerpolation:",alpha,cl)
 
     if re_in >= re_list.max():
-        #print("Reyonlds is bigger")
+        # print("Reyonlds is bigger")
         indexes = np.where(re == re_list.max())
         alpha_selected = alpha[indexes]
         cl_selected = cl[indexes]
-        return np.interp(alpha_in, alpha_selected, cl_selected,left=False, right=False)
+        return np.interp(alpha_in, alpha_selected, cl_selected, left=False, right=False)
 
     if re_in <= re_list.min():
-        #print("Reynolds is smaller")
-        #print("Alpha_in",alpha_in)
+        # print("Reynolds is smaller")
+        # print("Alpha_in",alpha_in)
         indexes = np.where(re == re_list.min())
         alpha_selected = alpha[indexes]
         cl_selected = cl[indexes]
-        #print("alpha_selected:",alpha_selected)
-        oo = np.interp(alpha_in, alpha_selected, cl_selected,left=False, right=False)
-        #print(oo)
+        # print("alpha_selected:",alpha_selected)
+        oo = np.interp(alpha_in, alpha_selected, cl_selected, left=False, right=False)
+        # print(oo)
         return oo
 
     re_bottom_index = np.where(re_list < re_in)[0][-1]
     re_bottom = re_list[re_bottom_index]
-    re_top = re_list[re_bottom_index+1]
+    re_top = re_list[re_bottom_index + 1]
 
     indexes_bottom = np.where(re == re_bottom)
     indexes_top = np.where(re == re_top)
@@ -633,13 +643,13 @@ def interp(re_in, alpha_in, re, alpha, cl):
     alpha_top = alpha[indexes_top]
     cl_top = cl[indexes_top]
 
-    _cl_1 = np.interp(alpha_in, alpha_bottom, cl_bottom,left=False, right=False)
-    _cl_2 = np.interp(alpha_in, alpha_top, cl_top,left=False, right=False)
+    _cl_1 = np.interp(alpha_in, alpha_bottom, cl_bottom, left=False, right=False)
+    _cl_2 = np.interp(alpha_in, alpha_top, cl_top, left=False, right=False)
 
     if _cl_1 == False or _cl_2 == False:
         return False
 
-    cL = (_cl_2-_cl_1)/(re_top-re_bottom)*(re_in-re_bottom)+_cl_1
+    cL = (_cl_2 - _cl_1) / (re_top - re_bottom) * (re_in - re_bottom) + _cl_1
     return cL
 
 
@@ -721,237 +731,6 @@ def get_interpolation_function(x, y, z, num_x=10, num_y=360):
     return fun
 
 
-### TABLE ###
-
-# noinspection PyArgumentList
-class Table(QWidget):
-    def __init__(self):
-        super().__init__()
-        self.selected_array = []
-        self.tableWidget = QTableWidget()
-        self.tableWidget.setTabKeyNavigation(False)
-        self.layout = QVBoxLayout()
-        self.initUI()
-        self.clip = QApplication.clipboard()
-        self.set_headers()
-
-    def set_headers(self):
-        self.horizontal_headers = self.tableWidget.horizontalHeader()
-        self.horizontal_headers.setContextMenuPolicy(
-            QtCore.Qt.CustomContextMenu)
-        self.horizontal_headers.customContextMenuRequested.connect(
-            self.horizontal_header_popup)
-        self.vertical_headers = self.tableWidget.verticalHeader()
-        self.vertical_headers.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
-        self.vertical_headers.customContextMenuRequested.connect(
-            self.vertical_header_popup)
-
-    def set_labels(self, arr):
-        self.tableWidget.setHorizontalHeaderLabels(arr)
-
-    def initUI(self):
-        self.createEmpty(4, 4)
-
-        # Add box layout, add table to box layout and add box layout to widget
-        self.layout.addWidget(self.tableWidget)
-        self.setLayout(self.layout)
-
-        # Show widget
-        self.show()
-
-    def createTable(self, array):
-        if len(array) > 0:
-            # Create table
-            self.tableWidget.setRowCount(len(array))
-            self.tableWidget.setColumnCount(len(array[0]))
-            i = 0
-            for r in array:
-                j = 0
-                for c in r:
-                    if not isinstance(c, str):
-                        c = str(c)
-                    self.tableWidget.setItem(i, j, QTableWidgetItem(c))
-                    j += 1
-                i += 1
-
-            self.tableWidget.move(0, 0)
-
-            # table selection change
-            self.tableWidget.clicked.connect(self.on_click)
-
-    def createEmpty(self, x, y):
-        # Create table
-        self.tableWidget.setRowCount(y)
-        self.tableWidget.setColumnCount(x)
-
-        self.tableWidget.move(0, 0)
-
-        # table selection change
-        self.tableWidget.clicked.connect(self.on_click)
-
-    @pyqtSlot()
-    def on_click(self):
-        self.get_selected()
-
-    def get_selected(self):
-        self.selected_array = []
-
-        rows_added = sorted(set(index.row()
-                                for index in self.tableWidget.selectedIndexes()))
-        columns_added = sorted(set(index.column()
-                                   for index in self.tableWidget.selectedIndexes()))
-
-        delta_r = rows_added[0]
-        delta_c = columns_added[0]
-
-        for r in range(rows_added[-1] - rows_added[0] + 1):
-            self.selected_array.append([])
-            for c in range(columns_added[-1] - columns_added[0] + 1):
-                self.selected_array[r].append(None)
-        for currentQTableWidgetItem in self.tableWidget.selectedItems():
-            row = currentQTableWidgetItem.row() - delta_r
-            column = currentQTableWidgetItem.column() - delta_c
-            text = currentQTableWidgetItem.text()
-            self.selected_array[row][column] = text
-        return self.selected_array
-
-    def keyPressEvent(self, e):
-        if e.modifiers() & QtCore.Qt.ControlModifier:
-            if e.key() == QtCore.Qt.Key_C:  # copy
-                s = array_to_csv(self.get_selected())
-                self.clip.setText(s)
-        if e.key() == QtCore.Qt.Key_Return or e.key() == QtCore.Qt.Key_Enter:
-            self.select_next_row()
-        if e.modifiers() & QtCore.Qt.ControlModifier:
-            if e.key() == QtCore.Qt.Key_V:  # paste
-                self.paste()
-
-        if e.modifiers() & QtCore.Qt.ControlModifier:
-            if e.key() == QtCore.Qt.Key_S:  # test
-                self.get_values()
-
-        if e.key() == QtCore.Qt.Key_Delete:
-            self.delete_data()
-
-    def paste(self):
-        results = []
-        text = self.clip.text()
-        text = text.replace("   ", "\t")
-        text = text.replace("  ", "\t")
-        if len(text) > 0:
-            # change contents to floats
-            reader = csv.reader(text.splitlines(), delimiter="\t")
-            for row in reader:  # each row is a list
-                results.append(row)
-            numrows = len(results)
-            numcolumns = len(results[0])
-            selected_row = sorted(
-                set(index.row() for index in self.tableWidget.selectedIndexes()))[0]
-            selected_column = sorted(
-                set(index.column() for index in self.tableWidget.selectedIndexes()))[0]
-            if selected_row + numrows >= self.tableWidget.rowCount():
-                self.tableWidget.setRowCount(selected_row + numrows)
-            if selected_column + numcolumns >= self.tableWidget.columnCount():
-                self.tableWidget.setColumnCount(selected_column + numcolumns)
-            currow = selected_row
-            for r in results:
-                curcolumn = selected_column
-                for c in r:
-                    self.tableWidget.setItem(
-                        currow, curcolumn, QTableWidgetItem(c))
-                    curcolumn += 1
-                currow += 1
-        return
-
-    def delete_data(self):
-        rows = sorted(set(index.row() for index in self.tableWidget.selectedIndexes()))
-        columns = sorted(set(index.column() for index in self.tableWidget.selectedIndexes()))
-        for r in rows:
-            for c in columns:
-                self.tableWidget.setItem(r, c, QTableWidgetItem(""))
-
-    def clear_table(self):
-        num_rows = self.tableWidget.rowCount()
-        num_columns = self.tableWidget.columnCount()
-        row_indexes = range(num_rows)
-        column_indexes = range(num_columns)
-        for r in row_indexes:
-            for c in column_indexes:
-                self.tableWidget.setItem(r, c, QTableWidgetItem(""))
-
-
-    def select_next_row(self):
-        rows = sorted(set(index.row()
-                          for index in self.tableWidget.selectedIndexes()))
-        columns = sorted(set(index.column()
-                             for index in self.tableWidget.selectedIndexes()))
-        last_selected_row = rows[-1]
-        first_selected_column = columns[0]
-        num_rows = self.tableWidget.rowCount()
-        if last_selected_row + 1 >= num_rows:
-            self.tableWidget.insertRow(num_rows)
-        self.tableWidget.setCurrentCell(
-            last_selected_row + 1, first_selected_column)
-
-    def get_values(self):
-        data = []
-        for row in range(self.tableWidget.rowCount()):
-            data.append([])
-            for column in range(self.tableWidget.columnCount()):
-                item = self.tableWidget.item(row, column)
-                if item == None:
-                    item = ""
-                else:
-                    item = item.text()
-                data[row].append(item)
-        return data
-
-    def contextMenuEvent(self, event):
-        menu = QMenu(self)
-        item = self.tableWidget.itemAt(event.pos())
-        if item != None:
-            delete_row = menu.addAction("delete row(s)")
-            delete_column = menu.addAction("delete column(s)")
-        else:
-            delete_row = False
-            delete_column = False
-
-        insert_row = menu.addAction("insert row")
-        insert_column = menu.addAction("insert column")
-
-        action = menu.exec_(self.mapToGlobal(event.pos()))
-
-        rows = sorted(set(index.row()
-                          for index in self.tableWidget.selectedIndexes()), reverse=True, )
-        columns = sorted(set(index.column()
-                             for index in self.tableWidget.selectedIndexes()), reverse=True, )
-
-        if action == insert_row:
-            if len(rows) == 0:
-                rows.append(0)
-            self.tableWidget.insertRow(rows[-1])
-            for c in range(self.tableWidget.columnCount()):
-                self.tableWidget.setItem(rows[-1], c, QTableWidgetItem(""))
-        elif action == delete_row:
-            for r in rows:
-                self.tableWidget.removeRow(r)
-        elif action == insert_column:
-            if len(columns) == 0:
-                columns.append(0)
-            self.tableWidget.insertColumn(columns[-1])
-            for r in range(self.tableWidget.rowCount()):
-                self.tableWidget.setItem(r, columns[-1], QTableWidgetItem(""))
-        elif action == delete_column:
-            for c in columns:
-                self.tableWidget.removeColumn(c)
-
-    def horizontal_header_popup(self, position):
-        pass
-
-    def vertical_header_popup(self, position):
-        pass
-
-
 ### SOLIDWORKS MACRO BUILDER ###
 
 def create_macro_text(list_of_files):
@@ -978,4 +757,4 @@ def create_macro_text(list_of_files):
     str_between = ""
     for f in list_of_files:
         str_between += 'boolstatus = part.InsertCurveFile("%s")\n' % f
-    return template_start+"\n"+str_between+"\n"+template_end
+    return template_start + "\n" + str_between + "\n" + template_end

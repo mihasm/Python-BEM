@@ -38,13 +38,11 @@ def get_coefficients_from_output(output_str):
         return False
     if "TRCHEK2: N2 convergence failed." in last_lines:
         return False
-    i = -1
-    cur_line = 0
     _, __, a, CL, Cm, CD, CDf, CDp = [None] * 8
     for l in lines:
-        a = regex.match("(.+)a =(.+)CL =(.+)", l)
+        a = regex.match('(.+)a =(.+)CL =(.+)', l)
         _, a, CL = a.groups() if a != None else [_, a, CL]
-        b = regex.match("(.+)Cm =(.+)CD =(.+)=>.+CDf =(.+)CDp =(.+)", l)
+        b = regex.match('(.+)Cm =(.+)CD =(.+)=>.+CDf =(.+)CDp =(.+)', l)
         __, Cm, CD, CDf, CDp = b.groups() if b != None else [
             __, Cm, CD, CDf, CDp]
     # Weird cases
