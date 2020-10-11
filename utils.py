@@ -476,8 +476,6 @@ def import_nrel_dat(file_path):
         return data
 
 
-# x,y = import_dat("C:\\Users\\Miha\\Google Drive\\faks\\BEM program\\foils\\DU_91_W2_250.dat")
-
 def get_transition_foils(foils):
     transition_foils = []
     for j in range(len(foils)):
