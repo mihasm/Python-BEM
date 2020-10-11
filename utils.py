@@ -5,16 +5,13 @@ import re
 import sys
 import traceback
 
-from PyQt5 import QtCore, QtGui
-from PyQt5.QtCore import QThread, QTextStream, pyqtSignal, QProcess, QRect, Qt, pyqtSlot
-from PyQt5.QtGui import QPalette, QColor
-from PyQt5.QtWidgets import (QComboBox, QMainWindow, QPushButton, QTextEdit, QWidget, QFormLayout, QLabel, QLineEdit,
-                             QGridLayout, QCheckBox, QStyleFactory, QMessageBox, QAction, QFileDialog, QSlider,
-                             QTabWidget, QApplication, QScrollArea, QVBoxLayout, QTableWidget,QTableWidgetItem,QMenu)
-from numpy import array
 import numpy as np
+from PyQt5 import QtCore, QtGui
+from PyQt5.QtCore import pyqtSlot
+from PyQt5.QtGui import QPalette, QColor
+from PyQt5.QtWidgets import (QWidget, QMessageBox, QApplication, QVBoxLayout, QTableWidget, QTableWidgetItem, QMenu)
+from numpy import array
 from scipy import interpolate
-
 
 # determine if application is a script file or frozen exe
 if getattr(sys, 'frozen', False):

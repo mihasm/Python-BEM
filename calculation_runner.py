@@ -1,14 +1,14 @@
 import datetime
-from math import pi
 import sys
 import time
 import traceback
+from math import pi
+
+import numpy
+from mpl_toolkits.mplot3d import Axes3D
 
 from calculation import Calculator
-from mpl_toolkits.mplot3d import Axes3D
-import numpy
 from utils import Printer, generate_v_and_rpm_from_tsr, generate_v_and_rpm_from_J
-
 
 a = Axes3D  # only for passing code inspection -> Axes3D needs to be imported
 
@@ -103,10 +103,7 @@ def calculate_power_3d(inp_args, print_eof=False, prepend="", print_progress=Tru
                     _lambda = rpm / 60 * 2 * pi * inp_args["R"] / v
                     _advance_ratio = v / (rpm / 60 * inp_args["R"] * 2)
                     p.print(prepend + "v=%.1f m/s, n=%.0f RPM, λ=%.2f, J=%.2f" % (v,rpm,_lambda,_advance_ratio))
-                _inp_args = {**inp_args}
-                _inp_args["v"] = v
-                _inp_args["rpm"] = rpm
-                _inp_args["pitch"] = pitch
+                _inp_args = {**inp_args, "v": v, "rpm": rpm, "pitch": pitch}
                 try:
                     _results = calculate_power(_inp_args)
                 except Exception as e:

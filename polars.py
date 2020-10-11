@@ -1,12 +1,12 @@
-from pprint import pprint
+from urllib.parse import parse_qsl, urlparse
 
-import matplotlib.cm as cm
-import matplotlib.pyplot as plt
-from montgomerie import Montgomerie
-from mpl_toolkits.mplot3d import Axes3D
 import numpy as np
-from scipy.interpolate import Rbf,griddata,interp1d
-from xfoil import generate_polars_data
+import requests
+from bs4 import BeautifulSoup as bs
+from scipy.interpolate import interp1d
+
+from montgomerie import Montgomerie
+
 
 def scrape_data(link):
     out = []
@@ -63,11 +63,6 @@ def get_extrapolated_data(data, airfoil_x=[], airfoil_y=[]):
             z_cd.append(cd)
             out.append([Re, ncrit_selected, m_Alpha[i], cl, cd])
     return np.array(out)
-
-import requests
-from bs4 import BeautifulSoup as bs
-from urllib.parse import parse_qsl, urlparse
-from urllib import parse
 
 
 def get_polars(link):

@@ -7,52 +7,41 @@ __maintainer__ = "Miha Smrekar"
 __email__ = "miha.smrekar9@gmail.com"
 __status__ = "Development"
 
-from functools import partial
+import ctypes
 import json
-from multiprocessing import Process, Manager, Queue
 import multiprocessing
 import os
-from pprint import pprint
-import signal
 import sys
-import time
-import traceback
+from multiprocessing import Process, Manager
 
+import matplotlib.pyplot as plt
+import numpy as np
+import pyqtgraph as pg
 from PyQt5 import QtCore, QtGui
-import PyQt5
-from PyQt5.QtCore import QThread, QTextStream, pyqtSignal, QProcess, QRect, Qt, QLocale
-from PyQt5.QtGui import QPalette, QColor
+from PyQt5.QtCore import QThread, pyqtSignal, QRect, Qt, QLocale
 from PyQt5.QtWidgets import (QComboBox, QMainWindow, QPushButton, QTextEdit, QWidget, QFormLayout, QLabel, QLineEdit,
-                             QGridLayout, QCheckBox, QStyleFactory, QMessageBox, QAction, QFileDialog, QSlider,
-                             QTabWidget, QApplication, QScrollArea, QVBoxLayout, QSplitter)
-from calculation_runner import calculate_power_3d
-import ctypes
+                             QGridLayout, QCheckBox, QMessageBox, QAction, QFileDialog, QSlider,
+                             QTabWidget, QApplication, QScrollArea, QVBoxLayout)
 from matplotlib import cm
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
-import matplotlib.pyplot as plt
-from matplotlib.widgets import Slider, Button, RadioButtons
-from montgomerie import Montgomerie
-import mpl_toolkits.mplot3d as mp3d
 from numpy import array
-import numpy as np
+from scipy.interpolate import interp1d
+
+from calculation_runner import calculate_power_3d
+from montgomerie import Montgomerie
 from optimization import optimize_angles_genetic
 from polars import get_x_y_from_link, scrape_data
 from popravki import METHODS_STRINGS
-import pyqtgraph as pg
-from scipy.interpolate import interp1d
 from turbine_data import SET_INIT
 from utils import (generate_chord_lengths_betz, generate_chord_lengths_schmitz,
                    generate_twists_betz, generate_twists_schmitz,
-                   get_centroid_coordinates,interpolate_geom, to_float, fltr, QDarkPalette,
-                   create_folder, ErrorMessageBox, MyMessageBox, sort_data,
-                   interpolate_geom, to_float, fltr, transpose, import_dat, import_nrel_dat, generate_dat, interp_at,
-                   Table,create_macro_text)
+                   get_centroid_coordinates, QDarkPalette,
+                   create_folder, ErrorMessageBox, MyMessageBox, interpolate_geom, to_float, fltr, transpose,
+                   import_dat, import_nrel_dat, generate_dat, interp_at,
+                   Table, create_macro_text)
 from visualize import create_3d_blade
 from xfoil import generate_polars_data
-
-
-#from results import ResultsWindow
 
 np.set_printoptions(threshold=sys.maxsize)
 
@@ -63,7 +52,6 @@ if getattr(sys, 'frozen', False):
     application_path = os.path.dirname(sys.executable)
 elif __file__:
     application_path = os.path.dirname(__file__)
-
 
 
 class MainWindow(QMainWindow):
@@ -117,13 +105,14 @@ class MainWindow(QMainWindow):
         self.getter = ThreadGetter(self)
 
         self.optimization = Optimization(self)
-        self.tab_widget.add_tab(self.optimization, "Optimization", "Optimizacija lopatice s pomočjo algoritma diferencialne evolucije")
+        self.tab_widget.add_tab(self.optimization, "Optimization",
+                                "Optimizacija lopatice s pomočjo algoritma diferencialne evolucije")
 
         self.running = False
         self.manager = Manager()
         self.set_all_settings(SET_INIT)
 
-        create_folder(os.path.join(application_path,"foils"))  # Used by XFoil
+        create_folder(os.path.join(application_path, "foils"))  # Used by XFoil
 
         self.set_process_stopped()
 
@@ -143,9 +132,8 @@ class MainWindow(QMainWindow):
         """
         Saves the wind turbine data to a file.
         """
-        name = QFileDialog.getSaveFileName(self, 'Save File',"", "BEM (*.bem)")[0]
+        name = QFileDialog.getSaveFileName(self, 'Save File', "", "BEM (*.bem)")[0]
         if name != "":
-            
             d = self.get_all_settings()
             d_to_save = fltr(d, (float, int, list, str, bool, np.ndarray))
             json_d = json.dumps(d_to_save)
@@ -158,7 +146,7 @@ class MainWindow(QMainWindow):
         """
         Loads the wind turbine data from a file. Also clears the calculation text areas and sets the appropriate title.
         """
-        file_path = QFileDialog.getOpenFileName(self, "Load File","", "BEM (*.bem)")[0]
+        file_path = QFileDialog.getOpenFileName(self, "Load File", "", "BEM (*.bem)")[0]
         if file_path != "":
             with open(file_path, "r") as fp:
                 data = json.load(fp)
@@ -208,9 +196,8 @@ class MainWindow(QMainWindow):
             return out
         except:
             msg = ErrorMessageBox()
-            #pprint(out)
+            # pprint(out)
             return None
-        
 
     # noinspection PyBroadException
     def set_all_settings(self, inp_dict):
@@ -286,6 +273,7 @@ class WindTurbineProperties(QWidget):
     Class used for storing the main wind turbine information, such as its name, number of blades, radiuses, and
     its geometry information (radius, chord length, twist angle and airfoil name for each wind blade section).
     """
+
     def __init__(self, parent=None):
         super(WindTurbineProperties, self).__init__(parent)
 
@@ -330,7 +318,7 @@ class WindTurbineProperties(QWidget):
 
         _blade_design = QLabel("Blade design")
         self.blade_design = QComboBox()
-        self.blade_design.addItems(["Filled","Hollow","Spar"])
+        self.blade_design.addItems(["Filled", "Hollow", "Spar"])
         fbox.addRow(_blade_design, self.blade_design)
         self.B.setToolTip("Pomembno za statični izračun.")
 
@@ -399,7 +387,7 @@ class WindTurbineProperties(QWidget):
 
         _design_method = QLabel("Design method.")
         self.design_method = QComboBox()
-        self.design_method.addItems(["Betz","Schmitz"])
+        self.design_method.addItems(["Betz", "Schmitz"])
         fbox.addRow(_design_method, self.design_method)
         self.design_method.setToolTip("Metoda dizajniranja.")
 
@@ -414,7 +402,8 @@ class WindTurbineProperties(QWidget):
         self.export_button = QPushButton("Export curve data")
         self.export_button.clicked.connect(self.export)
         fbox.addRow("Export:", self.export_button)
-        self.export_button.setToolTip("Krivulje na vseh radijih lopatice se shranijo v posamezne datoteke. Solidworks makro se nato zgenerira v Python konzoli.")
+        self.export_button.setToolTip(
+            "Krivulje na vseh radijih lopatice se shranijo v posamezne datoteke. Solidworks makro se nato zgenerira v Python konzoli.")
 
         self.flip_turning_direction = QCheckBox()
         fbox.addRow("Flip turning direction", self.flip_turning_direction)
@@ -443,12 +432,12 @@ class WindTurbineProperties(QWidget):
         :return: dict: Settings dictionary (Basic wind turbine information)
         """
         out = {"Rhub": to_float(self.Rhub.text()), "R": to_float(self.R.text()), "B": int(self.B.text()),
-              "turbine_name": self.name.text(), "geometry_scale":to_float(self.geometry_scale.text()),
-              "linspace_interp":self.linspace_interp.isChecked(),
-              "num_interp":int(self.num_interp.text()),
-              "blade_thickness":to_float(self.blade_thickness.text()),
-              "blade_design":self.blade_design.currentIndex(),
-              "mass_density":to_float(self.mass_density.text())}
+               "turbine_name": self.name.text(), "geometry_scale": to_float(self.geometry_scale.text()),
+               "linspace_interp": self.linspace_interp.isChecked(),
+               "num_interp": int(self.num_interp.text()),
+               "blade_thickness": to_float(self.blade_thickness.text()),
+               "blade_design": self.blade_design.currentIndex(),
+               "mass_density": to_float(self.mass_density.text())}
         geom_array = self.table_properties.get_values()
         r, c, theta, foils = [], [], [], []
         for row in geom_array:
@@ -465,9 +454,10 @@ class WindTurbineProperties(QWidget):
         _c = out["c"]
         _theta = out["theta"]
         _foils = out["foils"]
-        out["R"] = out["R"]*out["geometry_scale"]
-        out["Rhub"] = out["Rhub"]*out["geometry_scale"]
-        r, c, theta, foils, dr = interpolate_geom(_r, _c, _theta, _foils, out["num_interp"], out["linspace_interp"], out["geometry_scale"])
+        out["R"] = out["R"]
+        out["Rhub"] = out["Rhub"]
+        r, c, theta, foils, dr = interpolate_geom(_r, _c, _theta, _foils, out["num_interp"], out["linspace_interp"],
+                                                  out["geometry_scale"])
         out["r"], out["c"], out["theta"], out["foils"], out["dr"] = r, c, theta, foils, dr
         out["r_in"], out["c_in"], out["theta_in"], out["foils_in"] = _r, _c, _theta, _foils
         return out
@@ -481,41 +471,39 @@ class WindTurbineProperties(QWidget):
         self.gw.ax.set_title("c(r) and θ(r)")
 
         self.gw.ax2 = self.gw.ax.twinx()
-        self.gw.ax.plot(out["r"],out["c"],color="b")
-        self.gw.ax2.plot(out["r"],out["theta"],color="r")
+        self.gw.ax.plot(out["r"], out["c"], color="b")
+        self.gw.ax2.plot(out["r"], out["theta"], color="r")
 
         self.gw.ax.set_xlabel("Radius r [m]")
-        self.gw.ax.set_ylabel("Chord c [m]",color="tab:blue")
-        self.gw.ax2.set_ylabel("Twist θ [°]",color="tab:red")
+        self.gw.ax.set_ylabel("Chord c [m]", color="tab:blue")
+        self.gw.ax2.set_ylabel("Twist θ [°]", color="tab:red")
         self.gw.ax.tick_params(axis='y', labelcolor="tab:blue")
         self.gw.ax2.tick_params(axis='y', labelcolor="tab:red")
 
-
-
     def generate_geometry(self):
-        array = []
+        array_out = []
         R = float(self.R.text())
         Rhub = float(self.Rhub.text())
         num_gen_sections = int(self.num_gen_sections.text())
-        radiuses = np.linspace(Rhub,R,num_gen_sections)
+        radiuses = np.linspace(Rhub, R, num_gen_sections)
         Cl_max = float(self.design_cl.text())
         B = float(self.B.text())
         TSR = float(self.design_tsr.text())
         method = self.design_method.currentIndex()
         airfoil = self.design_airfoil.text()
         design_aoa = float(self.design_aoa.text())
-        
+
         if method == 0:
-            chords = generate_chord_lengths_betz(radiuses=radiuses,R=R,Cl_max=Cl_max,B=B,TSR=TSR)
-            thetas = generate_twists_betz(radiuses=radiuses,R=R,TSR=TSR,alpha_d=design_aoa)
+            chords = generate_chord_lengths_betz(radiuses=radiuses, R=R, Cl_max=Cl_max, B=B, TSR=TSR)
+            thetas = generate_twists_betz(radiuses=radiuses, R=R, TSR=TSR, alpha_d=design_aoa)
 
         elif method == 1:
-            chords = generate_chord_lengths_schmitz(radiuses=radiuses,R=R,Cl_max=Cl_max,B=B,TSR=TSR)
-            thetas = generate_twists_schmitz(radiuses=radiuses,R=R,TSR=TSR,alpha_d=design_aoa)
+            chords = generate_chord_lengths_schmitz(radiuses=radiuses, R=R, Cl_max=Cl_max, B=B, TSR=TSR)
+            thetas = generate_twists_schmitz(radiuses=radiuses, R=R, TSR=TSR, alpha_d=design_aoa)
 
         for r in range(num_gen_sections):
-            array.append([round(radiuses[r],4), round(chords[r],4), round(thetas[r],4), airfoil])
-        self.table_properties.createTable(array)
+            array_out.append([round(radiuses[r], 4), round(chords[r], 4), round(thetas[r], 4), airfoil])
+        self.table_properties.createTable(array_out)
 
     def set_settings(self, dict_settings):
         """
@@ -528,6 +516,9 @@ class WindTurbineProperties(QWidget):
         if "R" in dict_settings:
             t = str(dict_settings["R"])
             self.R.setText(t)
+        if "geometry_scale" in dict_settings:
+            t = str(dict_settings["geometry_scale"])
+            self.geometry_scale.setText(t)
         if "B" in dict_settings:
             t = str(dict_settings["B"])
             self.B.setText(t)
@@ -546,12 +537,12 @@ class WindTurbineProperties(QWidget):
         else:
             self.name.setText("")
         if "blade_thickness" in dict_settings:
-            t=str(dict_settings["blade_thickness"])
+            t = str(dict_settings["blade_thickness"])
             self.blade_thickness.setText(t)
         if "blade_design" in dict_settings:
             self.blade_design.setCurrentIndex(dict_settings["blade_design"])
         if "mass_density" in dict_settings:
-            t=str(dict_settings["mass_density"])
+            t = str(dict_settings["mass_density"])
             self.mass_density.setText(t)
 
     def export(self):
@@ -566,12 +557,12 @@ class WindTurbineProperties(QWidget):
         self.window = PrintoutWindow(self)
         self.window.setWindowTitle("Solidworks Export Macro")
 
-
         print("Getting settings...")
         settings_fetched = self.parent().parent().parent().get_all_settings()
         if settings_fetched == None:
             return
-        data = create_3d_blade(settings_fetched, self.flip_turning_direction.isChecked(), self.propeller_geom.isChecked())
+        data = create_3d_blade(settings_fetched, self.flip_turning_direction.isChecked(),
+                               self.propeller_geom.isChecked())
         self.w = MatplotlibWindow()
         self.w.setWindowTitle("Export 3D preview")
         self.w.ax = self.w.figure.add_subplot(111, projection="3d")
@@ -579,17 +570,17 @@ class WindTurbineProperties(QWidget):
         X, Y, Z = array(data["X"]), array(data["Y"]), array(data["Z"])
 
         # Create cubic bounding box to simulate equal aspect ratio
-        max_range = np.array([X.max()-X.min(), Y.max()-Y.min(), Z.max()-Z.min()]).max()
-        Xb = 0.5*max_range*np.mgrid[-1:2:2,-1:2:2,-1:2:2][0].flatten() + 0.5*(X.max()+X.min())
-        Yb = 0.5*max_range*np.mgrid[-1:2:2,-1:2:2,-1:2:2][1].flatten() + 0.5*(Y.max()+Y.min())
-        Zb = 0.5*max_range*np.mgrid[-1:2:2,-1:2:2,-1:2:2][2].flatten() + 0.5*(Z.max()+Z.min())
+        max_range = np.array([X.max() - X.min(), Y.max() - Y.min(), Z.max() - Z.min()]).max()
+        Xb = 0.5 * max_range * np.mgrid[-1:2:2, -1:2:2, -1:2:2][0].flatten() + 0.5 * (X.max() + X.min())
+        Yb = 0.5 * max_range * np.mgrid[-1:2:2, -1:2:2, -1:2:2][1].flatten() + 0.5 * (Y.max() + Y.min())
+        Zb = 0.5 * max_range * np.mgrid[-1:2:2, -1:2:2, -1:2:2][2].flatten() + 0.5 * (Z.max() + Z.min())
         # Comment or uncomment following both lines to test the fake bounding box:
         for xb, yb, zb in zip(Xb, Yb, Zb):
-           self.w.ax.plot([xb], [yb], [zb], 'w')
+            self.w.ax.plot([xb], [yb], [zb], 'w')
         # self.w.ax.set_aspect("equal")
 
-        create_folder(os.path.join(application_path,"export"))
-        folder_path = os.path.join(application_path,"export", SET_INIT["turbine_name"])
+        create_folder(os.path.join(application_path, "export"))
+        folder_path = os.path.join(application_path, "export", SET_INIT["turbine_name"])
         create_folder(folder_path)
 
         filenames = []
@@ -652,7 +643,7 @@ class AirfoilManager(QWidget):
     def add_foil(self, string):
         c = Airfoils(string, self)
         self.tab_widget.add_tab(c, string)
-        self.tab_widget.setCurrentIndex(len(self.tab_widget.tabs)-1)
+        self.tab_widget.setCurrentIndex(len(self.tab_widget.tabs) - 1)
 
     def rename_foil_popup(self):
         self.emitter.connect(self.rename_foil)
@@ -726,35 +717,36 @@ class Airfoils(QWidget):
 
         self.canvas = FigureCanvas(self.plt)
         self.grid.addWidget(self.canvas, 1, 3)
-        
+
         toolbar = NavigationToolbar(self.canvas, self)
         self.grid.addWidget(toolbar, 2, 3)
-        
+
         self.buttonRefresh = QPushButton("Refresh curve")
         self.grid.addWidget(self.buttonRefresh, 3, 3)
         self.buttonRefresh.setToolTip("Osvežitev grafa krivulje profila (na podlagi tabele na levi strani)")
         self.buttonRefresh.clicked.connect(self.refresh)
-        
+
         self.link = QLineEdit("link (airfoiltools.com)")
         self.fbox.addRow(self.link)
-        self.link.setToolTip("Tu lahko downloadamo krivulje cL/cD iz airfoiltools.com. Obliko profila moramo vnesti sami v tabelo (copy-paste iz excela).")
+        self.link.setToolTip(
+            "Tu lahko downloadamo krivulje cL/cD iz airfoiltools.com. Obliko profila moramo vnesti sami v tabelo (copy-paste iz excela).")
 
         self.button_generate_curves_link = QPushButton("Scrape curves from link")
         self.button_generate_curves_link.clicked.connect(self.generate_curves_link)
         self.fbox.addRow(self.button_generate_curves_link)
-        self.button_generate_curves_link.setToolTip("S pomočjo linka do profila, dostopnega na strani airfoiltools.com, lahko program zdownloada vrednosti, zgenerirane z XFOIL, direktno iz spletne strani")
-
+        self.button_generate_curves_link.setToolTip(
+            "S pomočjo linka do profila, dostopnega na strani airfoiltools.com, lahko program zdownloada vrednosti, zgenerirane z XFOIL, direktno iz spletne strani")
 
         self.button_curve_editor = QPushButton("Curve Editor")
         self.button_curve_editor.clicked.connect(self.open_curve_editor)
         self.fbox.addRow(self.button_curve_editor)
         self.button_curve_editor.setToolTip("Ročno spreminjanje/uvažanje/izvažanje cL/cD krivulj")
 
-
         self.button_open_viewer = QPushButton("Open Curve Extrapolator (Montgomerie)")
         self.button_open_viewer.clicked.connect(self.open_viewer)
         self.fbox.addRow(self.button_open_viewer)
-        self.button_open_viewer.setToolTip("S pomočjo tega okna prilagajamo parametre ekstrapolacije z Montgomerie metodo za vsak dani Reynolds za cL in cD (alpha) krivulji")
+        self.button_open_viewer.setToolTip(
+            "S pomočjo tega okna prilagajamo parametre ekstrapolacije z Montgomerie metodo za vsak dani Reynolds za cL in cD (alpha) krivulji")
 
         self.button_generate_curves_xfoil = QPushButton("Generate xfoil curves [debug]")
         self.button_generate_curves_xfoil.clicked.connect(self.generate_curves_xfoil)
@@ -763,16 +755,17 @@ class Airfoils(QWidget):
         self.button_visualize = QPushButton("Create curve visualization")
         self.button_visualize.clicked.connect(self.visualize)
         self.fbox.addRow(self.button_visualize)
-        self.button_visualize.setToolTip("Prikaz 3D grafa ekstrapoliranih krivulj, za dodatno verifikacijo vhodnih podatkov v analizo")
+        self.button_visualize.setToolTip(
+            "Prikaz 3D grafa ekstrapoliranih krivulj, za dodatno verifikacijo vhodnih podatkov v analizo")
 
         self.get_centroid_button = QPushButton("Calculate centroid")
         self.get_centroid_button.clicked.connect(self.calculate_centroid)
         self.fbox.addRow(self.get_centroid_button)
-        self.get_centroid_button.setToolTip("S pomočjo tega gumba izračunamo sredino podanih točk v tabeli (težišče ploskve).")
-
+        self.get_centroid_button.setToolTip(
+            "S pomočjo tega gumba izračunamo sredino podanih točk v tabeli (težišče ploskve).")
 
         self.extrapolation_bool = QCheckBox("Use extrapolation")
-        #self.extrapolation_bool.clicked.connect(self.calculate_centroid)
+        # self.extrapolation_bool.clicked.connect(self.calculate_centroid)
         self.fbox.addRow(self.extrapolation_bool)
 
         self.centroid_widget = QWidget()
@@ -780,7 +773,8 @@ class Airfoils(QWidget):
         self.centroid_widget.setLayout(self.centroid_grid)
         self.centroid_label = QLabel("Centroid coordinates:")
         self.fbox.addRow(self.centroid_widget)
-        self.centroid_label.setToolTip("Okoli te točke se zavrtijo točke pri 3D generaciji geometrije (Solidworks Makro). Na samo analizo nima vpliva.")
+        self.centroid_label.setToolTip(
+            "Okoli te točke se zavrtijo točke pri 3D generaciji geometrije (Solidworks Makro). Na samo analizo nima vpliva.")
 
         self.centroid_x_edit = QLineEdit()
         self.centroid_y_edit = QLineEdit()
@@ -805,20 +799,21 @@ class Airfoils(QWidget):
 
         self.ncrit_selection = QComboBox()
         self._ncrit_selection = QLabel("Ncrit")
-        self.fbox.addRow(self._ncrit_selection,self.ncrit_selection)
-        self.ncrit_selection.setToolTip("Tu nastavimo N vrednost krivulj, ki jih želimo uporabiti. (oblika mejne plasti (e^N) -> XFOIL)")
+        self.fbox.addRow(self._ncrit_selection, self.ncrit_selection)
+        self.ncrit_selection.setToolTip(
+            "Tu nastavimo N vrednost krivulj, ki jih želimo uporabiti. (oblika mejne plasti (e^N) -> XFOIL)")
 
-        navodila = QLabel("Navodila za uporabo:\n"+
-            "1. Na strani http://airfoiltools.com/\n"+
-            "izberite poljubni aerodinamični profil.\n"+
-            "2. Link vnesite zgoraj in pritisnite 'Scrape'.\n"+
-            "Sedaj so cL/cD krivulje naložene v program.\n"+
-            "(Ročno jih lahko spremenite s Curve Editor)\n"+
-            "3. Sedaj je treba nastaviti koef. ekstrapolacije\n"+
-            "z orodjem Curve Extrapolator (Montgomerie)\n"+
-            "4. Končane krivulje lahko preverite\n"+
-            "z uporabo orodja Create curve visualization,\n"+
-            "kjer so prikazane v odvisnosti od Re")
+        navodila = QLabel("Navodila za uporabo:\n" +
+                          "1. Na strani http://airfoiltools.com/\n" +
+                          "izberite poljubni aerodinamični profil.\n" +
+                          "2. Link vnesite zgoraj in pritisnite 'Scrape'.\n" +
+                          "Sedaj so cL/cD krivulje naložene v program.\n" +
+                          "(Ročno jih lahko spremenite s Curve Editor)\n" +
+                          "3. Sedaj je treba nastaviti koef. ekstrapolacije\n" +
+                          "z orodjem Curve Extrapolator (Montgomerie)\n" +
+                          "4. Končane krivulje lahko preverite\n" +
+                          "z uporabo orodja Create curve visualization,\n" +
+                          "kjer so prikazane v odvisnosti od Re")
         self.fbox.addRow(navodila)
 
         self.window = None
@@ -828,27 +823,25 @@ class Airfoils(QWidget):
         """
         Loads the wind turbine data from a file. Also clears the calculation text areas and sets the appropriate title.
         """
-        file_path = QFileDialog.getOpenFileName(self, "Import .dat file","", "dat (*.dat)")[0]
+        file_path = QFileDialog.getOpenFileName(self, "Import .dat file", "", "dat (*.dat)")[0]
         if file_path != "":
-            x,y = import_dat(file_path)
-            self.set_x_y(x,y)
+            x, y = import_dat(file_path)
+            self.set_x_y(x, y)
             self.refresh()
 
     def nrel_dat_importer(self):
         """
         Loads the wind turbine data from a file. Also clears the calculation text areas and sets the appropriate title.
         """
-        file_path = QFileDialog.getOpenFileName(self, "Import .dat file","", "dat (*.dat)")[0]
+        file_path = QFileDialog.getOpenFileName(self, "Import .dat file", "", "dat (*.dat)")[0]
         if file_path != "":
             data = import_nrel_dat(file_path)
             self.populate_curve_list(data)
 
-            
-
     def visualize(self):
         print("Visualizing")
         data = self.gather_curves()
-        data = data[np.in1d(data[:,1],float(self.ncrit_selection.currentText()))] #current Ncrit
+        data = data[np.in1d(data[:, 1], float(self.ncrit_selection.currentText()))]  # current Ncrit
 
         re = data[:, 0]
         alpha = data[:, 2]
@@ -866,7 +859,7 @@ class Airfoils(QWidget):
         self.w = MatplotlibWindow()
         self.w.setWindowTitle("Cl(alpha,Re)")
         self.w.ax = self.w.figure.add_subplot(111, projection="3d")
-        p = self.w.ax.plot_trisurf(xi, yi, z_1, cmap=cm.coolwarm)
+        p = self.w.ax.plot_trisurf(xi, yi, z_1)
         self.w.ax.set_xlabel("Reynolds", fontsize=15, labelpad=20)
         self.w.ax.set_ylabel(r'$\alpha$ [°]', fontsize=15, labelpad=20)
         self.w.ax.set_zlabel("Cl", fontsize=15, labelpad=20)
@@ -889,7 +882,6 @@ class Airfoils(QWidget):
         bar2 = self.w2.figure.colorbar(p)
         bar2.ax.set_xlabel('Cd', fontsize=15, labelpad=20)
 
-
     def open_viewer(self):
         print("opening viewer")
         self.viewer.show()
@@ -903,18 +895,18 @@ class Airfoils(QWidget):
     def generate_curves_xfoil(self):
         print("Generating xfoil curves")
         x, y = self.get_x_y()
-        generate_dat(self.airfoil_name,x,y)
+        generate_dat(self.airfoil_name, x, y)
 
         if self.window != None:
             self.window.close()
         self.window = PrintoutWindow(self)
-        self.thread=XFoilThread(self)
+        self.thread = XFoilThread(self)
         self.thread.set_params(self.airfoil_name + ".dat")
         self.thread.completeSignal.connect(self.xfoil_completion)
         self.thread.start()
         print("Done")
 
-    def xfoil_completion(self,nothing_important):
+    def xfoil_completion(self, nothing_important):
         self.populate_curve_list(self.xfoil_generated_data)
         self.refresh()
 
@@ -923,15 +915,15 @@ class Airfoils(QWidget):
         if self.window != None:
             self.window.close()
         self.window = PrintoutWindow(self)
-        self.thread=ScrapeThread(self)
+        self.thread = ScrapeThread(self)
         self.thread.set_params(self.link)
         self.thread.completeSignal.connect(self.generate_curves_link_completion)
         self.thread.start()
-        
-    def generate_curves_link_completion(self,nothing_important):
+
+    def generate_curves_link_completion(self, nothing_important):
         self.table_dat.clear_table()
         self.populate_curve_list(self.scraping_generated_data[0])
-        self.set_x_y(self.scraping_generated_data[1],self.scraping_generated_data[2])
+        self.set_x_y(self.scraping_generated_data[1], self.scraping_generated_data[2])
         self.refresh()
 
     def populate_curve_list(self, data):
@@ -939,7 +931,7 @@ class Airfoils(QWidget):
         x, y = self.get_x_y()
         ncrit_list = np.unique(data[:, 1])
         for ncrit_selected in ncrit_list:
-            rows_with_ncrit = data[np.in1d(data[:,1],ncrit_selected)]
+            rows_with_ncrit = data[np.in1d(data[:, 1], ncrit_selected)]
             Re_list = np.unique(rows_with_ncrit[:, 0])
             for Re in Re_list:
                 rows_with_Re = rows_with_ncrit[np.in1d(rows_with_ncrit[:, 0], Re)]
@@ -975,13 +967,10 @@ class Airfoils(QWidget):
             self.ax.plot(centroid_x, centroid_y, "r+")
         except:
             msg = ErrorMessageBox()
-            
 
         self.plt.canvas.draw()
 
         self.refresh_ncrits_combobox()
-
-
 
     def get_max_thickness(self):
         x = []
@@ -998,7 +987,7 @@ class Airfoils(QWidget):
             y_min = np.min(y)
             thickness = (abs(y_max) + abs(y_min)) / 1
             return thickness
-        return 0.1 #default value
+        return 0.1  # default value
 
     def get_x_y(self):
         """
@@ -1016,7 +1005,7 @@ class Airfoils(QWidget):
                 y.append(_y)
         return x, y
 
-    def set_x_y(self,x,y):
+    def set_x_y(self, x, y):
         """
         Sets x and y values from input to table.
         """
@@ -1030,14 +1019,14 @@ class Airfoils(QWidget):
     def calculate_centroid(self):
         foil_x, foil_y = self.get_x_y()
         x, y = get_centroid_coordinates(foil_x, foil_y)
-        self.centroid_x_edit.setText(str(round(x,6)))
-        self.centroid_y_edit.setText(str(round(y,6)))
+        self.centroid_x_edit.setText(str(round(x, 6)))
+        self.centroid_y_edit.setText(str(round(y, 6)))
         return x, y
 
     def get_ncrits(self):
         curves = self.gather_curves()
-        if len(curves)>0:
-            ncrit_list = np.unique(curves[:,1])
+        if len(curves) > 0:
+            ncrit_list = np.unique(curves[:, 1])
             return ncrit_list
 
     def refresh_ncrits_combobox(self):
@@ -1057,7 +1046,7 @@ class Airfoils(QWidget):
             centroid_x = float(self.centroid_x_edit.text())
             centroid_y = float(self.centroid_y_edit.text())
         except:
-            centroid_x,centroid_y = 0.0, 0.0
+            centroid_x, centroid_y = 0.0, 0.0
 
         try:
             ncrit_selected = float(self.ncrit_selection.currentText())
@@ -1078,10 +1067,10 @@ class Airfoils(QWidget):
         return out
 
     def set_settings(self, dict_settings):
-        
-        x,y = dict_settings["x"], dict_settings["y"]
 
-        self.set_x_y(x,y)
+        x, y = dict_settings["x"], dict_settings["y"]
+
+        self.set_x_y(x, y)
         self.link.setText(dict_settings["link"])
         self.curves.load_curves(dict_settings["curves"])
         self.extrapolation_bool.setChecked(dict_settings["extrapolation_bool"])
@@ -1112,7 +1101,7 @@ class Curves:
             c.load_curve(data_curve)
             self.curve_list.append(c)
 
-    def gather_curves(self,extrapolation=True):
+    def gather_curves(self, extrapolation=True):
         out = []
         for curve in self.get_curves_sorted():
             if extrapolation:
@@ -1129,12 +1118,12 @@ class Curves:
         out = array(out)
         return out
 
-    def get_curve(self,re_in,ncrit_in):
+    def get_curve(self, re_in, ncrit_in):
         out = []
         for curve in self.curve_list:
             re = curve.Re
             ncrit = curve.ncrit
-            if ncrit == ncrit_in and re==re_in:
+            if ncrit == ncrit_in and re == re_in:
                 out.append(curve)
 
         if len(out) == 0:
@@ -1143,27 +1132,27 @@ class Curves:
             return out[0]
         if len(out) > 1:
             for c in out:
-                print(c.Re,c.ncrit)
-            raise Exception ("DataError: Multiple curves have same Reynolds and Ncrit...")
+                print(c.Re, c.ncrit)
+            raise Exception("DataError: Multiple curves have same Reynolds and Ncrit...")
 
-    def remove_curve(self,re_in,ncrit_in):
+    def remove_curve(self, re_in, ncrit_in):
         out = []
         i = 0
         for curve in self.curve_list:
             re = curve.Re
             ncrit = curve.ncrit
-            if ncrit == ncrit_in and re==re_in:
-                j=i
+            if ncrit == ncrit_in and re == re_in:
+                j = i
                 out.append(curve)
-            i+=1
+            i += 1
 
         if len(out) == 0:
             return None
         if len(out) > 1:
             for c in out:
-                print(c.Re,c.ncrit)
-            raise Exception ("DataError: Multiple curves have same Reynolds and Ncrit...")
-        
+                print(c.Re, c.ncrit)
+            raise Exception("DataError: Multiple curves have same Reynolds and Ncrit...")
+
         del self.curve_list[j]
 
 
@@ -1259,15 +1248,15 @@ class CurveEditor(QWidget):
         self.grid = QGridLayout()
         self.setLayout(self.grid)
 
-        #self.tab_widget = TabWidget(self)
-        #self.grid.addWidget(self.tab_widget, 2, 0)
+        # self.tab_widget = TabWidget(self)
+        # self.grid.addWidget(self.tab_widget, 2, 0)
 
         self.validator = QtGui.QDoubleValidator()
 
         self.table = Table()
-        self.table.createTable([[0,0,0]])
+        self.table.createTable([[0, 0, 0]])
         self.table.set_labels(["alpha [°]", "cL (lift coeff.)", "cD (drag coeff.)"])
-        self.grid.addWidget(self.table,2,0)
+        self.grid.addWidget(self.table, 2, 0)
 
         self.upper_widget = QWidget()
         self.upper_layout = QGridLayout()
@@ -1276,60 +1265,59 @@ class CurveEditor(QWidget):
 
         self.button_remove_curve = QPushButton("Remove curve")
         self.button_remove_curve.clicked.connect(self.remove_curve)
-        self.upper_layout.addWidget(self.button_remove_curve,2,3)
+        self.upper_layout.addWidget(self.button_remove_curve, 2, 3)
         self.button_save_curve = QPushButton("Update curve")
         self.button_save_curve.clicked.connect(self.save_curve)
-        self.upper_layout.addWidget(self.button_save_curve,1,3)
+        self.upper_layout.addWidget(self.button_save_curve, 1, 3)
         self.button_add_curve = QPushButton("Add curve")
         self.button_add_curve.clicked.connect(self.add_curve)
-        self.upper_layout.addWidget(self.button_add_curve,4,3)
+        self.upper_layout.addWidget(self.button_add_curve, 4, 3)
 
         self.ncrit_edit = QLineEdit("Insert ncrit")
-        self.upper_layout.addWidget(self.ncrit_edit,4,1)
+        self.upper_layout.addWidget(self.ncrit_edit, 4, 1)
         self.ncrit_edit.setValidator(self.validator)
         self.ncrit_edit.textChanged.connect(self.check_state)
         self.re_edit = QLineEdit("Insert reynolds")
-        self.upper_layout.addWidget(self.re_edit,4,2)
+        self.upper_layout.addWidget(self.re_edit, 4, 2)
         self.re_edit.setValidator(self.validator)
         self.re_edit.textChanged.connect(self.check_state)
 
-        #self.picker_mach_label = QLabel("Mach number:")
-        #self.picker_mach = QComboBox()
-        #self.picker_mach.setEditable(True)
-        #self.upper_layout.addWidget(self.picker_mach_label,2,1)
-        #self.upper_layout.addWidget(self.picker_mach,3,1)
+        # self.picker_mach_label = QLabel("Mach number:")
+        # self.picker_mach = QComboBox()
+        # self.picker_mach.setEditable(True)
+        # self.upper_layout.addWidget(self.picker_mach_label,2,1)
+        # self.upper_layout.addWidget(self.picker_mach,3,1)
 
         self.picker_ncrit_label = QLabel("NCrit:")
         self.picker_ncrit = QComboBox()
         self.picker_ncrit.setEditable(False)
         #
-        self.upper_layout.addWidget(self.picker_ncrit_label,1,1)
-        self.upper_layout.addWidget(self.picker_ncrit,2,1)
+        self.upper_layout.addWidget(self.picker_ncrit_label, 1, 1)
+        self.upper_layout.addWidget(self.picker_ncrit, 2, 1)
 
         self.picker_reynolds_label = QLabel("Reynolds:")
         self.picker_reynolds = QComboBox()
         self.picker_reynolds.setEditable(False)
         #
-        self.upper_layout.addWidget(self.picker_reynolds_label,1,2)
-        self.upper_layout.addWidget(self.picker_reynolds,2,2)
+        self.upper_layout.addWidget(self.picker_reynolds_label, 1, 2)
+        self.upper_layout.addWidget(self.picker_reynolds, 2, 2)
 
-
-        #self.picker_mach.lineEdit().returnPressed.connect(self.refresh_dropdowns)
-        #self.sig1 = self.picker_reynolds.lineEdit().returnPressed.connect(self.save_curve)
-        #self.sig2 = self.picker_ncrit.lineEdit().returnPressed.connect(self.save_curve)
+        # self.picker_mach.lineEdit().returnPressed.connect(self.refresh_dropdowns)
+        # self.sig1 = self.picker_reynolds.lineEdit().returnPressed.connect(self.save_curve)
+        # self.sig2 = self.picker_ncrit.lineEdit().returnPressed.connect(self.save_curve)
 
         self.connect()
 
-        #self.load_curves()
+        # self.load_curves()
 
     def save_curve(self):
 
         out_chosen_values = self.get_chosen_values_from_dropdowns()
-        re_chosen,ncrit_chosen = out_chosen_values
+        re_chosen, ncrit_chosen = out_chosen_values
 
         data_from_table = self.table.get_values()
-        alpha_table,cl_table,cd_table = transpose(data_from_table)
-        alpha,cl,cd = [],[],[]
+        alpha_table, cl_table, cd_table = transpose(data_from_table)
+        alpha, cl, cd = [], [], []
 
         for i in range(len(alpha_table)):
             if alpha_table[i] != "" and cl_table[i] != "" and cd_table[i] != "":
@@ -1337,14 +1325,16 @@ class CurveEditor(QWidget):
                 cl.append(float(cl_table[i]))
                 cd.append(float(cd_table[i]))
 
-        if self.parent.curves.get_curve(re_in=re_chosen,ncrit_in=ncrit_chosen) == None:
+        if self.parent.curves.get_curve(re_in=re_chosen, ncrit_in=ncrit_chosen) == None:
             msg = MyMessageBox()
             msg.setIcon(QMessageBox.Warning)
             msg.setText("Curve with these Re - ncrit values does not exist yet. Did you mean to add a new curve?")
-            msg.setDetailedText("Curve with Re %s and ncrit %s values does not exist yet. Did you mean to add a new curve?" % (re_chosen,ncrit_chosen))
+            msg.setDetailedText(
+                "Curve with Re %s and ncrit %s values does not exist yet. Did you mean to add a new curve?" % (
+                    re_chosen, ncrit_chosen))
             msg.exec_()
         else:
-            self.current_curve = self.parent.curves.get_curve(re_in=re_chosen,ncrit_in=ncrit_chosen)
+            self.current_curve = self.parent.curves.get_curve(re_in=re_chosen, ncrit_in=ncrit_chosen)
             self.current_curve.alpha = alpha
             self.current_curve.cl = cl
             self.current_curve.cd = cd
@@ -1353,20 +1343,22 @@ class CurveEditor(QWidget):
     def add_curve(self):
         self.disconnect()
 
-        re_chosen,ncrit_chosen = self.re_edit.text(), self.ncrit_edit.text()
+        re_chosen, ncrit_chosen = self.re_edit.text(), self.ncrit_edit.text()
         try:
-            re_chosen,ncrit_chosen = float(re_chosen),float(ncrit_chosen)
+            re_chosen, ncrit_chosen = float(re_chosen), float(ncrit_chosen)
         except:
             msg = MyMessageBox()
             msg.setIcon(QMessageBox.Warning)
             msg.setText("Values of Re and ncrit for new curve do not seem to be valid.")
-            msg.setDetailedText("Values of Re '%s' and ncrit '%s' could not be converted to float. Please double check the numbers." % (re_chosen,ncrit_chosen))
+            msg.setDetailedText(
+                "Values of Re '%s' and ncrit '%s' could not be converted to float. Please double check the numbers." % (
+                    re_chosen, ncrit_chosen))
             msg.exec_()
             return
 
         data_from_table = self.table.get_values()
-        alpha_table,cl_table,cd_table = transpose(data_from_table)
-        alpha,cl,cd = [],[],[]
+        alpha_table, cl_table, cd_table = transpose(data_from_table)
+        alpha, cl, cd = [], [], []
 
         for i in range(len(alpha_table)):
             if alpha_table[i] != "" and cl_table[i] != "" and cd_table[i] != "":
@@ -1374,44 +1366,43 @@ class CurveEditor(QWidget):
                 cl.append(float(cl_table[i]))
                 cd.append(float(cd_table[i]))
 
-        if self.parent.curves.get_curve(re_in=re_chosen,ncrit_in=ncrit_chosen) == None:
+        if self.parent.curves.get_curve(re_in=re_chosen, ncrit_in=ncrit_chosen) == None:
             print("item does not exist,creating new...")
-            x,y = self.parent.get_x_y()
+            x, y = self.parent.get_x_y()
             self.current_curve = Curve()
-            self.current_curve.create(x,y,re_chosen,ncrit_chosen,alpha,cl,cd)
+            self.current_curve.create(x, y, re_chosen, ncrit_chosen, alpha, cl, cd)
             self.parent.curves.add(self.current_curve)
-            print("self.parent.curves.curve_list",self.parent.curves.curve_list)
+            print("self.parent.curves.curve_list", self.parent.curves.curve_list)
             self.load_curves()
         else:
             msg = MyMessageBox()
             msg.setIcon(QMessageBox.Warning)
             msg.setText("Curve with this Re and ncrit already exists!")
-            msg.setDetailedText("Curve with Re %s and ncrit %s values already exists. Did you mean to update the existing curve?" % (re_chosen,ncrit_chosen))
+            msg.setDetailedText(
+                "Curve with Re %s and ncrit %s values already exists. Did you mean to update the existing curve?" % (
+                    re_chosen, ncrit_chosen))
             msg.exec_()
 
         self.connect()
-
-
 
     def remove_curve(self):
         if len(self.parent.curves.curve_list) == 0:
             return
         out_chosen_values = self.get_chosen_values_from_dropdowns()
-        re_chosen,ncrit_chosen = out_chosen_values
-        self.parent.curves.remove_curve(re_chosen,ncrit_chosen)
+        re_chosen, ncrit_chosen = out_chosen_values
+        self.parent.curves.remove_curve(re_chosen, ncrit_chosen)
         self.load_curves()
-
 
     def get_chosen_values_from_dropdowns(self):
         re_chosen = self.picker_reynolds.itemText(self.picker_reynolds.currentIndex())
         ncrit_chosen = self.picker_ncrit.itemText(self.picker_ncrit.currentIndex())
-        return float(re_chosen),float(ncrit_chosen)
+        return float(re_chosen), float(ncrit_chosen)
 
     def load_curves(self):
         try:
-            re_last,ncrit_last = self.get_chosen_values_from_dropdowns()
+            re_last, ncrit_last = self.get_chosen_values_from_dropdowns()
         except ValueError:
-            re_last,ncrit_last = None, None
+            re_last, ncrit_last = None, None
 
         if len(self.parent.curves.curve_list) == 0:
             self.disconnect()
@@ -1426,9 +1417,9 @@ class CurveEditor(QWidget):
 
         self.picker_reynolds.clear()
         self.picker_ncrit.clear()
-        
+
         ncrit_list = []
-        for curve in self.parent.curves.curve_list:      
+        for curve in self.parent.curves.curve_list:
             ncrit = curve.ncrit
             if not ncrit in ncrit_list:
                 ncrit_list.append(ncrit)
@@ -1476,7 +1467,6 @@ class CurveEditor(QWidget):
         except TypeError:
             pass
 
-
     def connect(self):
         self.sig3 = self.picker_reynolds.currentIndexChanged.connect(self.load_curves)
         self.sig4 = self.picker_ncrit.currentIndexChanged.connect(self.load_curves)
@@ -1485,11 +1475,11 @@ class CurveEditor(QWidget):
         out_chosen_values = self.get_chosen_values_from_dropdowns()
         if out_chosen_values == None:
             return
-        re_chosen,ncrit_chosen = out_chosen_values
-        chosen_curve = self.parent.curves.get_curve(re_in=re_chosen,ncrit_in=ncrit_chosen)
+        re_chosen, ncrit_chosen = out_chosen_values
+        chosen_curve = self.parent.curves.get_curve(re_in=re_chosen, ncrit_in=ncrit_chosen)
         if chosen_curve != None:
             self.current_curve = chosen_curve
-            array = [self.current_curve.alpha,self.current_curve.cl,self.current_curve.cd]
+            array = [self.current_curve.alpha, self.current_curve.cl, self.current_curve.cd]
             array = transpose(array)
             self.table.clear_table()
             self.table.createTable(array)
@@ -1562,7 +1552,7 @@ class CurveViewer(QWidget):
         #    self.grid_curves.addWidget(control)
 
         for curve in self.parent.curves.get_curves_sorted():
-            label = QLabel("Re = " + str(round(curve.Re,2)) + ", Ncrit = " + str(round(curve.ncrit,2)) )
+            label = QLabel("Re = " + str(round(curve.Re, 2)) + ", Ncrit = " + str(round(curve.ncrit, 2)))
             control = CurveControl(self, curve)
             control.update()
             self.grid_curves.addWidget(label)
@@ -1680,7 +1670,7 @@ class CurveControl(QWidget):
         self.curve.B = int(self.B.value())
         self.curve.Am = int(self.Am.value())
         self.curve.Bm = int(self.Bm.value())
-        #print("A",self.curve.A,"B",self.curve.B,"A-",self.curve.Am,"B-",self.curve.Bm)
+        # print("A",self.curve.A,"B",self.curve.B,"A-",self.curve.Am,"B-",self.curve.Bm)
         try:
             self.curve.m_CD90 = float(self.m_CD90.text())
             self.curve.slope = float(self.slope.text())
@@ -1703,18 +1693,18 @@ class Analysis(QWidget):
                          "new_hub_loss": False, "cascade_correction": False, "skewed_wake_correction": False,
                          "rotational_augmentation_correction": False, "rotational_augmentation_correction_method": 1,
                          "mach_number_correction": False, "max_iterations": 100, "convergence_limit": 0.001,
-                         "rho": 1.225, "method": 10, 
-                         #"linspace_interp": False, "num_interp": 25,
+                         "rho": 1.225, "method": 10,
+                         # "linspace_interp": False, "num_interp": 25,
                          "variable_selection": 0,
                          "constant_selection": 0,
-                         "constant_speed":5,
-                         "constant_rpm":1500,
+                         "constant_speed": 5,
+                         "constant_rpm": 1500,
                          "pitch": 0.0,
                          "v_min": 3, "v_max": 20, "v_num": 10,
                          "rpm_min": 100, "rpm_max": 3000, "rpm_num": 10,
-                         "tsr_min":1, "tsr_max":10, "tsr_num":10,
-                         "J_min":0.1, "J_max":1.5, "J_num":10,
-                         "pitch_min":-15, "pitch_max":15, "pitch_num":10,
+                         "tsr_min": 1, "tsr_max": 10, "tsr_num": 10,
+                         "J_min": 0.1, "J_max": 1.5, "J_num": 10,
+                         "pitch_min": -15, "pitch_max": 15, "pitch_num": 10,
                          "relaxation_factor": 0.3, "print_all": False, "print_out": False, "reynolds": 50000,
                          "fix_reynolds": False, "yaw_angle": 0}
 
@@ -1724,10 +1714,10 @@ class Analysis(QWidget):
                                  "cascade_correction": "Cascade correction", "max_iterations": "Maximum iterations",
                                  "convergence_limit": "Convergence criteria", "rho": "Air density [kg/m^3]",
                                  "method": "Calculation method",
-                                 "variable_selection" : "Variable parameter",
-                                 "constant_selection" : "Constant variable",
-                                 "constant_speed" : "Wind speed",
-                                 "constant_rpm" : "RPM",
+                                 "variable_selection": "Variable parameter",
+                                 "constant_selection": "Constant variable",
+                                 "constant_speed": "Wind speed",
+                                 "constant_rpm": "RPM",
                                  "pitch": "Pitch",
                                  "v_min": "Min calc. wind speed [m/s]",
                                  "v_max": "Max calc. wind speed [m/s]",
@@ -1735,67 +1725,68 @@ class Analysis(QWidget):
                                  "rpm_min": "Min calc. RPM [RPM]",
                                  "rpm_max": "Max calc. RPM [RPM]",
                                  "rpm_num": "Number of RPM points",
-                                 "tsr_min":"Min TSR",
-                                 "tsr_max":"Max TSR",
-                                 "tsr_num":"Num TSR",
-                                 "J_min":"Min J",
-                                 "J_max":"Max J",
-                                 "J_num":"Num J",
-                                 "pitch_min":"Min pitch",
-                                 "pitch_max":"Max pitch",
-                                 "pitch_num":"Num pitch",
+                                 "tsr_min": "Min TSR",
+                                 "tsr_max": "Max TSR",
+                                 "tsr_num": "Num TSR",
+                                 "J_min": "Min J",
+                                 "J_max": "Max J",
+                                 "J_num": "Num J",
+                                 "pitch_min": "Min pitch",
+                                 "pitch_max": "Max pitch",
+                                 "pitch_num": "Num pitch",
                                  "relaxation_factor": "Relaxation factor",
                                  "print_all": "Print every iteration [debug]",
-                                 #"num_interp": "Number of sections (interp)",
-                                 #"linspace_interp": "Custom number of sections",
+                                 # "num_interp": "Number of sections (interp)",
+                                 # "linspace_interp": "Custom number of sections",
                                  "rotational_augmentation_correction": "Rot. augmentation cor.",
                                  "rotational_augmentation_correction_method": "Rot. augmentation cor. method",
                                  "fix_reynolds": "Fix Reynolds", "reynolds": "Reynolds",
                                  "mach_number_correction": "Mach number correction",
                                  "yaw_angle": "Yaw angle [°]", "skewed_wake_correction": "Skewed Wake Correction"}
 
-        self.settings_to_tooltip = {"propeller_mode": "Ta vrednost mora biti izbrana le v primeru, če preračunavamo propeler.",
-                                 "print_out": "Izpis končnih vrednosti po konvergenci za vsak odsek",
-                                 "tip_loss": "Popravek izgub pri vrhu lopatice (po Prandtlu)",
-                                 "hub_loss": "Popravek izgub pri pestu (po Prandtlu)",
-                                 "new_tip_loss": "Popravek izgub pri vrhu lopatice (po Speri)",
-                                 "new_hub_loss": "Popravek izgub pri pestu (po Speri)",
-                                 "cascade_correction": "Kaskadni popravki",
-                                 "max_iterations": "Maksimalno število iteracij.",
-                                 "convergence_limit": "Konvergenčni kriterij.",
-                                 "rho": "Gostota zraka [kg/m^3]",
-                                 "method": "Metoda za preračun. Privzeta je e) Aerodyn (Buhl).",
-                                 "variable_selection": "Izbira spremenljivega parametra",
-                                 "constant_selection":"Konstantna spremenljivka",
-                                 "constant_speed":"Constant wind speed",
-                                 "constant_rpm":"Constant RPM",
-                                 "pitch": "Nastavni kot lopatice",
-                                 "v_min": "Minimalna hitrost vetra [m/s]",
-                                 "v_max": "Maksimalna hitrost vetra [m/s]",
-                                 "v_num": "Število računskih točk (linearno razporejenih) od min hitrosti vetra do max hitrosti vetra",
-                                 "rpm_min": "Minimalni vrtljaji/min [RPM]",
-                                 "rpm_max": "Maksimalni vrtljaji/min [RPM]",
-                                 "rpm_num": "Število računskih točk (linearno razporejenih) od min RPM do max RPM",
-                                 "tsr_min":"Min TSR",
-                                 "tsr_max":"Max TSR",
-                                 "tsr_num":"Num TSR",
-                                 "J_min":"Min J",
-                                 "J_max":"Max J",
-                                 "J_num":"Num J",
-                                 "pitch_min":"Min pitch",
-                                 "pitch_max":"Max pitch",
-                                 "pitch_num":"Num pitch",
-                                 "relaxation_factor": "Relaksacijski faktor. Privzeta vrednost: 0.3",
-                                 "print_all": "Podroben izpis vrednosti po vsaki iteraciji (upočasni izračun)",
-                                 #"num_interp": "Se uporabi samo v primeru, če izberemo 'Custom number of sections' opcijo",
-                                 #"linspace_interp": "V primeru, da želimo preračunati več/manj odsekov lopatice po radiju (interpolacija geometrije)",
-                                 "rotational_augmentation_correction": "Popravek rotacijske augmentacije",
-                                 "rotational_augmentation_correction_method": "Izbira metode za popravek rotacijske augmentacije",
-                                 "fix_reynolds": "Izračunaj vse odseke pri enem samem Re",
-                                 "reynolds": "Se uporabi samo v primeru, če izberemo 'Fix Reynolds' opcijo",
-                                 "mach_number_correction": "Popravek Mach števila (uporabno pri propelerjih)",
-                                 "yaw_angle": "Kot vetra glede na smer osi rotorja [°]. Če je turbina obrnjena proti vetru, je 0°.",
-                                 "skewed_wake_correction": "Popravek nagnjenega zračnega toka za turbino (Skewed wake)"}
+        self.settings_to_tooltip = {
+            "propeller_mode": "Ta vrednost mora biti izbrana le v primeru, če preračunavamo propeler.",
+            "print_out": "Izpis končnih vrednosti po konvergenci za vsak odsek",
+            "tip_loss": "Popravek izgub pri vrhu lopatice (po Prandtlu)",
+            "hub_loss": "Popravek izgub pri pestu (po Prandtlu)",
+            "new_tip_loss": "Popravek izgub pri vrhu lopatice (po Speri)",
+            "new_hub_loss": "Popravek izgub pri pestu (po Speri)",
+            "cascade_correction": "Kaskadni popravki",
+            "max_iterations": "Maksimalno število iteracij.",
+            "convergence_limit": "Konvergenčni kriterij.",
+            "rho": "Gostota zraka [kg/m^3]",
+            "method": "Metoda za preračun. Privzeta je e) Aerodyn (Buhl).",
+            "variable_selection": "Izbira spremenljivega parametra",
+            "constant_selection": "Konstantna spremenljivka",
+            "constant_speed": "Constant wind speed",
+            "constant_rpm": "Constant RPM",
+            "pitch": "Nastavni kot lopatice",
+            "v_min": "Minimalna hitrost vetra [m/s]",
+            "v_max": "Maksimalna hitrost vetra [m/s]",
+            "v_num": "Število računskih točk (linearno razporejenih) od min hitrosti vetra do max hitrosti vetra",
+            "rpm_min": "Minimalni vrtljaji/min [RPM]",
+            "rpm_max": "Maksimalni vrtljaji/min [RPM]",
+            "rpm_num": "Število računskih točk (linearno razporejenih) od min RPM do max RPM",
+            "tsr_min": "Min TSR",
+            "tsr_max": "Max TSR",
+            "tsr_num": "Num TSR",
+            "J_min": "Min J",
+            "J_max": "Max J",
+            "J_num": "Num J",
+            "pitch_min": "Min pitch",
+            "pitch_max": "Max pitch",
+            "pitch_num": "Num pitch",
+            "relaxation_factor": "Relaksacijski faktor. Privzeta vrednost: 0.3",
+            "print_all": "Podroben izpis vrednosti po vsaki iteraciji (upočasni izračun)",
+            # "num_interp": "Se uporabi samo v primeru, če izberemo 'Custom number of sections' opcijo",
+            # "linspace_interp": "V primeru, da želimo preračunati več/manj odsekov lopatice po radiju (interpolacija geometrije)",
+            "rotational_augmentation_correction": "Popravek rotacijske augmentacije",
+            "rotational_augmentation_correction_method": "Izbira metode za popravek rotacijske augmentacije",
+            "fix_reynolds": "Izračunaj vse odseke pri enem samem Re",
+            "reynolds": "Se uporabi samo v primeru, če izberemo 'Fix Reynolds' opcijo",
+            "mach_number_correction": "Popravek Mach števila (uporabno pri propelerjih)",
+            "yaw_angle": "Kot vetra glede na smer osi rotorja [°]. Če je turbina obrnjena proti vetru, je 0°.",
+            "skewed_wake_correction": "Popravek nagnjenega zračnega toka za turbino (Skewed wake)"}
 
         self.list_settings_for_updating_tsr = ["v_min", "v_max", "v_num", "rpm_min", "rpm_max", "rpm_num"]
 
@@ -1830,7 +1821,9 @@ class Analysis(QWidget):
         self.form_list = []
         self.validator = QtGui.QDoubleValidator()
 
-        hideable_parameters = ["constant_selection","constant_speed","constant_rpm","pitch","v_min","v_max","v_num","rpm_min","rpm_max","rpm_num","tsr_min","tsr_max","tsr_num","J_min","J_max","J_num","pitch_min","pitch_max","pitch_num","reynolds"]
+        hideable_parameters = ["constant_selection", "constant_speed", "constant_rpm", "pitch", "v_min", "v_max",
+                               "v_num", "rpm_min", "rpm_max", "rpm_num", "tsr_min", "tsr_max", "tsr_num", "J_min",
+                               "J_max", "J_num", "pitch_min", "pitch_max", "pitch_num", "reynolds"]
 
         for key, value in self.settings.items():
             if key == "method":
@@ -1842,11 +1835,11 @@ class Analysis(QWidget):
                 form.addItems(["1", "2", "3", "4", "5"])
             elif key == "variable_selection":
                 form = QComboBox()
-                form.addItems(["RPM and v","TSR","J","pitch"])
+                form.addItems(["RPM and v", "TSR", "J", "pitch"])
                 form.currentIndexChanged.connect(self.set_parameter_visibility)
             elif key == "constant_selection":
                 form = QComboBox()
-                form.addItems(["speed","rpm"])
+                form.addItems(["speed", "rpm"])
                 form.currentIndexChanged.connect(self.set_parameter_visibility)
             elif key == "fix_reynolds":
                 form = QCheckBox()
@@ -1866,20 +1859,20 @@ class Analysis(QWidget):
 
             form.setToolTip(self.settings_to_tooltip[key])
             label = self.settings_to_name[key]
-            
+
             self.form_list.append([label, form, key])
-            
+
             if key in hideable_parameters:
                 row = QWidget()
                 row_layout = QFormLayout()
                 row.setLayout(row_layout)
-                row_layout.setContentsMargins(0, 0, 0, 0) # tight layout
-                row_layout.addRow(label,form)
+                row_layout.setContentsMargins(0, 0, 0, 0)  # tight layout
+                row_layout.addRow(label, form)
                 self.fbox.addRow(row)
-                self.forms_dict[key] = [form,label,row]
+                self.forms_dict[key] = [form, label, row]
             else:
                 self.fbox.addRow(label, form)
-                self.forms_dict[key] = [form,label]
+                self.forms_dict[key] = [form, label]
 
         self.emptyLabel = QLabel(" ")
         self.buttonRun.clicked.connect(self.run)
@@ -1903,10 +1896,10 @@ class Analysis(QWidget):
         self.set_parameter_visibility()
 
     def set_parameter_visibility(self):
-        #print("Setting parameter visibility")
-        #print(self.forms_dict)
-        #print("form v_min",self.forms_dict["v_min"])
-        #self.forms_dict["v_min"][2].hide()
+        # print("Setting parameter visibility")
+        # print(self.forms_dict)
+        # print("form v_min",self.forms_dict["v_min"])
+        # self.forms_dict["v_min"][2].hide()
         current_index = self.forms_dict["variable_selection"][0].currentIndex()
         if current_index == 0:
             # RPM / speed
@@ -1956,7 +1949,7 @@ class Analysis(QWidget):
             self.forms_dict["pitch_num"][2].hide()
             pass
         elif current_index == 2:
-            #variable J
+            # variable J
             # J, constant_selection, appropriate constant need to be shown
             self.forms_dict["constant_selection"][2].show()
             self.forms_dict["constant_speed"][2].show()
@@ -2054,7 +2047,7 @@ class Analysis(QWidget):
             color = "#fff79a"  # yellow
         else:
             color = "#f6989d"  # red
-        #sender.setStyleSheet("QLineEdit { background-color: %s; color: #000000 }" % color)
+        # sender.setStyleSheet("QLineEdit { background-color: %s; color: #000000 }" % color)
 
     def get_settings(self):
         out_settings = {}
@@ -2112,7 +2105,7 @@ class Analysis(QWidget):
         if not self.main.running:
             self.main.set_process_running()
             self.main.getter.start()
-            self.p = Process(target=calculate_power_3d, args=[self.runner_input,True])
+            self.p = Process(target=calculate_power_3d, args=[self.runner_input, True])
             self.p.start()
 
     def add_text(self, string):
@@ -2201,7 +2194,8 @@ class Optimization(QWidget):
         self.mut_coeff.textChanged.emit(self.mut_coeff.text())
         self._mut_coeff = QLabel("Mutation coefficient")
         self.form_list.append([self._mut_coeff, self.mut_coeff])
-        self.mut_coeff.setToolTip("Mutacijski koeficient nastavlja jakost naključnih mutacij, ki se zgodijo pri vsaki novi generaciji (iteraciji).")
+        self.mut_coeff.setToolTip(
+            "Mutacijski koeficient nastavlja jakost naključnih mutacij, ki se zgodijo pri vsaki novi generaciji (iteraciji).")
 
         self.population = QLineEdit()
         self.population.setValidator(self.validator)
@@ -2217,14 +2211,18 @@ class Optimization(QWidget):
         self.num_iter.textChanged.emit(self.num_iter.text())
         self._num_iter = QLabel("Number of iterations")
         self.form_list.append([self._num_iter, self.num_iter])
-        self.num_iter.setToolTip("Število generacij (iteracij). Konvergenčni kriterij je pri tovrstnih algoritmih težko določljiv, zato izberemo fiksno vrednost.")
+        self.num_iter.setToolTip(
+            "Število generacij (iteracij). Konvergenčni kriterij je pri tovrstnih algoritmih težko določljiv, zato izberemo fiksno vrednost.")
 
         self._opt_variable = QLabel("Optimization variable")
         self.opt_variable = QComboBox()
-        self.opt_variable.addItems(["max(dQ) (torque->wind turbine)", "max(dT) (thrust->propeller)", "max(weight_dq*dQ-weight_dt*dT)", "max(weight_dt*dT-weight_dq*dQ)"])
+        self.opt_variable.addItems(
+            ["max(dQ) (torque->wind turbine)", "max(dT) (thrust->propeller)", "max(weight_dq*dQ-weight_dt*dT)",
+             "max(weight_dt*dT-weight_dq*dQ)"])
         self.opt_variable.setCurrentIndex(0)
         self.form_list.append([self._opt_variable, self.opt_variable])
-        self.opt_variable.setToolTip("Optimizacija naj poteka za to izbrano spremenljivko. V primeru vetrne turbine max(dQ).")
+        self.opt_variable.setToolTip(
+            "Optimizacija naj poteka za to izbrano spremenljivko. V primeru vetrne turbine max(dQ).")
 
         self.weight_dq = QLineEdit()
         self.weight_dq.setValidator(self.validator)
@@ -2246,7 +2244,8 @@ class Optimization(QWidget):
         self.pitch_optimization.setChecked(False)
         self._pitch_optimization = QLabel("Pitch optimization")
         self.form_list.append([self._pitch_optimization, self.pitch_optimization])
-        self.pitch_optimization.setToolTip("To možnost izberemo samo, kadar nas zanima optimalni nastavni kot lopatice.")
+        self.pitch_optimization.setToolTip(
+            "To možnost izberemo samo, kadar nas zanima optimalni nastavni kot lopatice.")
 
         self.buttonOptimization = QPushButton("Run optimization")
         self.buttonOptimization.clicked.connect(self.run)
@@ -2282,7 +2281,7 @@ class Optimization(QWidget):
         self.win.setWindowTitle("Live Optimization Visualizer")
         self.manager_pyqtgraph = Manager()
         self.queue_pyqtgraph = self.manager_pyqtgraph.list()
-        self.queue_pyqtgraph.append([[0],[0],0,0])
+        self.queue_pyqtgraph.append([[0], [0], 0, 0])
 
         self.tsr_string = QLabel("0")
         self.J_string = QLabel("0")
@@ -2328,7 +2327,7 @@ class Optimization(QWidget):
             color = "#fff79a"  # yellow
         else:
             color = "#f6989d"  # red
-        #sender.setStyleSheet("QLineEdit { background-color: %s; color: #000000 }" % color)
+        # sender.setStyleSheet("QLineEdit { background-color: %s; color: #000000 }" % color)
 
     def validate_inputs(self):
         check = self.check_forms_angles()
@@ -2472,12 +2471,12 @@ class DataCaptureThread(QThread):
             y = item[1]
             best_x = [item[2]]
             best_y = [item[3]]
+            print("x",x,"y",y)
             self.parent().curve.setData(x, y)
             self.parent().curve_red.setData(best_x, best_y)
 
 
 class XFoilThread(QThread):
-
     progressSignal = QtCore.Signal(int)
     completeSignal = QtCore.Signal(str)
 
@@ -2485,7 +2484,7 @@ class XFoilThread(QThread):
         QThread.__init__(self, parent)
         self.parent = parent
 
-    def set_params(self,dat_path):
+    def set_params(self, dat_path):
         self.dat_path = dat_path
 
     def run(self):
@@ -2493,8 +2492,8 @@ class XFoilThread(QThread):
         self.parent.xfoil_generated_data = out
         self.completeSignal.emit("Done")
 
-class ScrapeThread(QThread):
 
+class ScrapeThread(QThread):
     progressSignal = QtCore.Signal(int)
     completeSignal = QtCore.Signal(str)
 
@@ -2502,17 +2501,15 @@ class ScrapeThread(QThread):
         QThread.__init__(self, parent)
         self.parent = parent
 
-    def set_params(self,link):
+    def set_params(self, link):
         self.link = link
 
     def run(self):
         data = scrape_data(self.link.text())
-        x,y=get_x_y_from_link(self.link.text())
-        out = [data,x,y]
+        x, y = get_x_y_from_link(self.link.text())
+        out = [data, x, y]
         self.parent.scraping_generated_data = out
         self.completeSignal.emit("Done")
-
-        
 
 
 class PyQtGraphWindow(QMainWindow):
@@ -2592,10 +2589,10 @@ class PrintoutWindow(QMainWindow):
         self.parent = parent
         sys.stdout = Stream(newText=self.onUpdateText)
         sys.stderr = Stream(newText=self.onUpdateText)
-        self.process  = QtGui.QTextEdit()
+        self.process = QtGui.QTextEdit()
         self.setCentralWidget(self.process)
         self.show()
- 
+
     def onUpdateText(self, text):
         cursor = self.process.textCursor()
         cursor.movePosition(QtGui.QTextCursor.End)
@@ -2625,8 +2622,7 @@ class TabWidget(QTabWidget):
         self.tabs.append([widget, tab_name])
         self.addTab(widget, tab_name)
         if tooltip != None:
-            self.setTabToolTip(len(self.tabs)-1,tooltip)
-
+            self.setTabToolTip(len(self.tabs) - 1, tooltip)
 
     def remove_tab(self, index):
         self.removeTab(index)
@@ -2656,7 +2652,7 @@ def main(quick_results=False):
         ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
 
     app = QApplication([])
-    QLocale.setDefault(QLocale(QLocale.English)) # da je pika decimalno mesto
+    QLocale.setDefault(QLocale(QLocale.English))  # da je pika decimalno mesto
     app_icon = QtGui.QIcon("icon_bem.ico")
     app.setWindowIcon(app_icon)
     app.setStyle("Fusion")

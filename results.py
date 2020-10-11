@@ -1,18 +1,18 @@
 import warnings
 
-from PyQt5 import QtWidgets
-from PyQt5.QtGui import QIcon
-from PyQt5.QtWidgets import (QComboBox, QMainWindow, QPushButton, QTextEdit, QWidget, QFormLayout,
-                             QLabel, QLineEdit, QGridLayout, QCheckBox, QStyleFactory, QMessageBox, QAction, QFileDialog, QSlider)
-from calculation import OUTPUT_VARIABLES_LIST
-from calculation_runner import max_calculate
-from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
-from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
 import matplotlib.cbook
-from matplotlib.figure import Figure
 import matplotlib.pyplot as plt
 import numpy as np
-from utils import sort_xy, dict_to_ar, ErrorMessageBox, MyMessageBox, greek_letters_to_string, transpose, Table
+from PyQt5 import QtWidgets
+from PyQt5.QtGui import QIcon
+from PyQt5.QtWidgets import (QComboBox, QMainWindow, QWidget, QAction)
+from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
+from matplotlib.figure import Figure
+
+from calculation import OUTPUT_VARIABLES_LIST
+from calculation_runner import max_calculate
+from utils import sort_xy, dict_to_ar, greek_letters_to_string, transpose, Table
 
 warnings.filterwarnings("ignore",category=matplotlib.cbook.MatplotlibDeprecationWarning)
 

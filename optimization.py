@@ -1,23 +1,13 @@
-from turbine_data import SET_INIT
-from calculation import Calculator
-from utils import Printer, get_transition_foils
-from numpy import radians, degrees
-import numpy as np
-import numpy
-from math import pi, exp
-import traceback
-from matplotlib import pyplot as plt
-from scipy.signal import argrelextrema
-import traceback
-
-#for display
-from pyqtgraph.Qt import QtGui, QtCore
-import numpy as np
-import pyqtgraph as pg
-from multiprocessing import Process, Manager, Queue
-import sched, time, threading
 import time
+import traceback
+from math import pi
 
+# for display
+import numpy as np
+from numpy import radians
+
+from calculation import Calculator
+from utils import Printer
 
 
 def optimize_angles_genetic(inp_args,queue_pyqtgraph):
@@ -177,7 +167,7 @@ def de2(function, bounds, M=0.8, num_individuals=30, iterations=50, printer=None
     best = population[best_i]
     for i in range(iterations):
         for j in range(num_individuals):
-            other_i = list(set(range(num_individuals))-set([j]))
+            other_i = list(set(range(num_individuals)) - {j})
             a, b, c = population[np.random.choice(other_i, 3,
                                                   replace=False)]
             mutation_vector = a+M*(b-c)
@@ -196,7 +186,7 @@ def de2(function, bounds, M=0.8, num_individuals=30, iterations=50, printer=None
                 if f > fitness[best_i]:
                     best_i = j
                     best = trial
-            queue[0]=[population.flatten(),fitness,population[best_i][0],fitness[best_i]]
+            queue[0]=[population.flatten(),fitness.flatten(),population[best_i][0],fitness[best_i]]
         if len(set(population.flatten())) == 1:
             break
         p.print(best,fitness[best_i])

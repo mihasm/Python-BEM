@@ -1,84 +1,78 @@
-import numbers
-from math import sin, cos, atan, acos, pi, exp, sqrt, radians, atan2, degrees, tan
-import os
-
 import numpy
 import numpy as np
-from scipy import interpolate
+from numpy import radians, degrees
 
-from utils import Printer, generate_dat, sort_data, normalize_angle, get_transition_foils, interp
-from popravki import *
-from xfoil import run_xfoil_analysis, xfoil_runner
 from moment import generate_hollow_foil, calculate_bending_inertia_2
+from popravki import *
+from utils import Printer, generate_dat, sort_data, get_transition_foils, interp
 from visualize import scale_and_normalize, rotate_array
-
-from matplotlib import pyplot as plt
 
 numpy.seterr(all="raise")
 numpy.seterr(invalid="raise")
 
 OUTPUT_VARIABLES_LIST = {
-    "a":{"type":"array","name":"Axial induction factor","symbol":"a","unit":""},
-    "a'":{"type":"array","name":"Tangential induction factor","symbol":"a'","unit":""},
-    "cL":{"type":"array","name":"Lift coefficient","symbol":r"$C_l$","unit":""},
-    "cD":{"type":"array","name":"Drag coefficient","symbol":r"$C_d$","unit":""},
-    "alpha":{"type":"array","name":"Angle of attack","symbol":r"$\alpha$","unit":"°"},
-    "phi":{"type":"array","name":"Relative wind angle","symbol":r"$\phi$","unit":"°"},
-    "F":{"type":"array","name":"Tip loss correction factor","symbol":"F","unit":""},
-    "M":{"type":"array","name":"Torque","symbol":"M","unit":"Nm"},
-    "lambda_r":{"type":"array","name":"Local tip speed ratio","symbol":r"$\lambda_r$","unit":""},
-    "Ct":{"type":"array","name":"Tangential coefficient","symbol":r"$C_t$","unit":""},
+    "a": {"type": "array", "name": "Axial induction factor", "symbol": "a", "unit": ""},
+    "a'": {"type": "array", "name": "Tangential induction factor", "symbol": "a'", "unit": ""},
+    "cL": {"type": "array", "name": "Lift coefficient", "symbol": r"$C_l$", "unit": ""},
+    "cD": {"type": "array", "name": "Drag coefficient", "symbol": r"$C_d$", "unit": ""},
+    "alpha": {"type": "array", "name": "Angle of attack", "symbol": r"$\alpha$", "unit": "°"},
+    "phi": {"type": "array", "name": "Relative wind angle", "symbol": r"$\phi$", "unit": "°"},
+    "F": {"type": "array", "name": "Tip loss correction factor", "symbol": "F", "unit": ""},
+    "M": {"type": "array", "name": "Torque", "symbol": "M", "unit": "Nm"},
+    "lambda_r": {"type": "array", "name": "Local tip speed ratio", "symbol": r"$\lambda_r$", "unit": ""},
+    "Ct": {"type": "array", "name": "Tangential coefficient", "symbol": r"$C_t$", "unit": ""},
 
-    "dFn":{"type":"array","name":"Incremental normal force","symbol":r"$dF_n$","unit":"N"},
-    "dFt":{"type":"array","name":"Incremental tangential force","symbol":r"$dF_t$","unit":"N"},
-    "dFc":{"type":"array","name":"Incremental centrifugal force","symbol":r"$dF_c$","unit":"N"},
-    "dFn/n":{"type":"array","name":"Incremental normal force (per unit length)","symbol":r"$dF_n/n$","unit":"N/m"},
-    "dFt/n":{"type":"array","name":"Incremental tangential force (per unit length)","symbol":r"$dF_t/n$","unit":"N/m"},
+    "dFn": {"type": "array", "name": "Incremental normal force", "symbol": r"$dF_n$", "unit": "N"},
+    "dFt": {"type": "array", "name": "Incremental tangential force", "symbol": r"$dF_t$", "unit": "N"},
+    "dFc": {"type": "array", "name": "Incremental centrifugal force", "symbol": r"$dF_c$", "unit": "N"},
+    "dFn/n": {"type": "array", "name": "Incremental normal force (per unit length)", "symbol": r"$dF_n/n$",
+              "unit": "N/m"},
+    "dFt/n": {"type": "array", "name": "Incremental tangential force (per unit length)", "symbol": r"$dF_t/n$",
+              "unit": "N/m"},
 
-    "foils":{"type":"string_array","name":"Airfoil name","symbol":"airfoil_name","unit":""},
-    "dT":{"type":"array","name":"Incremental thrust","symbol":"dT","unit":"N"},
-    "dQ":{"type":"array","name":"Incremental torque","symbol":"dM","unit":"N"},
-    "Re":{"type":"array","name":"Reynolds number","symbol":"Re","unit":""},
-    "U1":{"type":"array","name":"Far-upwind speed","symbol":"U1","unit":"m/s"},
-    "U2":{"type":"array","name":"Near-upwind speed","symbol":"U2","unit":"m/s"},
-    "U3":{"type":"array","name":"Near-downwind speed","symbol":"U3","unit":"m/s"},
-    "U4":{"type":"array","name":"Far-downwind speed","symbol":"U4","unit":"m/s"},
+    "foils": {"type": "string_array", "name": "Airfoil name", "symbol": "airfoil_name", "unit": ""},
+    "dT": {"type": "array", "name": "Incremental thrust", "symbol": "dT", "unit": "N"},
+    "dQ": {"type": "array", "name": "Incremental torque", "symbol": "dM", "unit": "N"},
+    "Re": {"type": "array", "name": "Reynolds number", "symbol": "Re", "unit": ""},
+    "U1": {"type": "array", "name": "Far-upwind speed", "symbol": "U1", "unit": "m/s"},
+    "U2": {"type": "array", "name": "Near-upwind speed", "symbol": "U2", "unit": "m/s"},
+    "U3": {"type": "array", "name": "Near-downwind speed", "symbol": "U3", "unit": "m/s"},
+    "U4": {"type": "array", "name": "Far-downwind speed", "symbol": "U4", "unit": "m/s"},
 
-    "Ix":{"type":"array","name":"Bending inertia (normal)","symbol":r"$I_x$","unit":r"$mm^4$"},
-    "Iy":{"type":"array","name":"Bending inertia (tangential)","symbol":r"$I_y$","unit":r"$mm^4$"},
-    "Ixy":{"type":"array","name":"Bending inertia (xy)","symbol":r"$I_xy$","unit":r"$mm^4$"},
-    "A":{"type":"array","name":"Airfoil area","symbol":"A","unit":r"$mm^2$"},
+    "Ix": {"type": "array", "name": "Bending inertia (normal)", "symbol": r"$I_x$", "unit": r"$mm^4$"},
+    "Iy": {"type": "array", "name": "Bending inertia (tangential)", "symbol": r"$I_y$", "unit": r"$mm^4$"},
+    "Ixy": {"type": "array", "name": "Bending inertia (xy)", "symbol": r"$I_xy$", "unit": r"$mm^4$"},
+    "A": {"type": "array", "name": "Airfoil area", "symbol": "A", "unit": r"$mm^2$"},
 
-    "Ms_t":{"type":"array","name":"Bending moment (tangential)","symbol":r"$M_{bend,tang.}$","unit":"Nm"},
-    "Ms_n":{"type":"array","name":"Bending moment (normal)","symbol":r"$M_{bend,norm.}$","unit":"Nm"},
-    "stress_norm":{"type":"array","name":"Bending stress (normal)","symbol":r"$\sigma_n$","unit":"MPa"},
-    "stress_tang":{"type":"array","name":"Bending stress (tangential)","symbol":r"$\sigma_t$","unit":"MPa"},
-    "stress_cent":{"type":"array","name":"Axial stress (centrifugal)","symbol":r"$\sigma_c$","unit":"MPa"},
-    "stress_von_mises":{"type":"array","name":"Von Mises stress","symbol":r"$\sigma_y$","unit":"MPa"},
+    "Ms_t": {"type": "array", "name": "Bending moment (tangential)", "symbol": r"$M_{bend,tang.}$", "unit": "Nm"},
+    "Ms_n": {"type": "array", "name": "Bending moment (normal)", "symbol": r"$M_{bend,norm.}$", "unit": "Nm"},
+    "stress_norm": {"type": "array", "name": "Bending stress (normal)", "symbol": r"$\sigma_n$", "unit": "MPa"},
+    "stress_tang": {"type": "array", "name": "Bending stress (tangential)", "symbol": r"$\sigma_t$", "unit": "MPa"},
+    "stress_cent": {"type": "array", "name": "Axial stress (centrifugal)", "symbol": r"$\sigma_c$", "unit": "MPa"},
+    "stress_von_mises": {"type": "array", "name": "Von Mises stress", "symbol": r"$\sigma_y$", "unit": "MPa"},
 
+    "r": {"type": "array", "name": "Section radius", "symbol": "r", "unit": "m"},
+    "dM": {"type": "array", "name": "Section torque", "symbol": "dM", "unit": "Nm"},
+    "dr": {"type": "array", "name": "Section height", "symbol": "dr", "unit": "m"},
+    "c": {"type": "array", "name": "Section chord length", "symbol": "c", "unit": "m"},
+    "theta": {"type": "array", "name": "Section twist angle", "symbol": r"$\Theta$", "unit": "°"},
 
-    "r":{"type":"array","name":"Section radius","symbol":"r","unit":"m"},
-    "M":{"type":"array","name":"Section torque","symbol":"M","unit":"Nm"},
-    "dr":{"type":"array","name":"Section height","symbol":"dr","unit":"m"},
-    "c":{"type":"array","name":"Section chord length","symbol":"c","unit":"m"},
-    "theta":{"type":"array","name":"Section twist angle","symbol":r"$\Theta$","unit":"°"},
-
-    "R":{"type":"float","name":"Turbine radius","symbol":"R","unit":"m"},
-    "rpm":{"type":"float","name":"Turbine rotational velocity","symbol":r"$\Omega$","unit":"RPM"},
-    "v":{"type":"float","name":"Wind speed","symbol":"v","unit":"m/s"},
-    "cp":{"type":"float","name":"Power coefficient","symbol":r"$C_P$","unit":""},
-    "ct":{"type":"float","name":"Thrust coefficient","symbol":r"$C_T$","unit":""},
-    "TSR":{"type":"float","name":"Tip speed ratio","symbol":r"$\lambda$","unit":""},
-    "Ft":{"type":"float","name":"Tangential force","symbol":r"$F_t$","unit":"N"},
-    "omega":{"type":"float","name":"Rotational velocity","symbol":r"$\Omega$","unit":r"$rad^{-1}$"},
-    "Msum":{"type":"float","name":"Torque sum","symbol":r"$M_Sum$","unit":"Nm"},
-    "power":{"type":"float","name":"Power","symbol":"P","unit":"W"},
-    "thrust":{"type":"float","name":"Thrust","symbol":"T","unit":"N"},
-    "Rhub":{"type":"float","name":"Hub radius","symbol":r"$R_hub$","unit":"m"},
-    "B":{"type":"float","name":"Number of blades","symbol":"B","unit":""},
-    "J":{"type":"float","name":"Advance ratio","symbol":"J","unit":""},
-    "eff":{"type":"float","name":"Propeller efficiency","symbol":r"$\eta_p$","unit":""},
-    "pitch":{"type":"float","name":"Pitch","symbol":"p","unit":"°"}
+    "R": {"type": "float", "name": "Turbine radius", "symbol": "R", "unit": "m"},
+    "rpm": {"type": "float", "name": "Turbine rotational velocity", "symbol": r"$\Omega$", "unit": "RPM"},
+    "v": {"type": "float", "name": "Wind speed", "symbol": "v", "unit": "m/s"},
+    "cp": {"type": "float", "name": "Power coefficient", "symbol": r"$C_P$", "unit": ""},
+    "ct": {"type": "float", "name": "Thrust coefficient", "symbol": r"$C_T$", "unit": ""},
+    "TSR": {"type": "float", "name": "Tip speed ratio", "symbol": r"$\lambda$", "unit": ""},
+    "Ft": {"type": "float", "name": "Tangential force", "symbol": r"$F_t$", "unit": "N"},
+    "omega": {"type": "float", "name": "Rotational velocity", "symbol": r"$\Omega$", "unit": r"$rad^{-1}$"},
+    "Msum": {"type": "float", "name": "Torque sum", "symbol": r"$M_Sum$", "unit": "Nm"},
+    "power": {"type": "float", "name": "Power", "symbol": "P", "unit": "W"},
+    "thrust": {"type": "float", "name": "Thrust", "symbol": "T", "unit": "N"},
+    "Rhub": {"type": "float", "name": "Hub radius", "symbol": r"$R_hub$", "unit": "m"},
+    "B": {"type": "float", "name": "Number of blades", "symbol": "B", "unit": ""},
+    "J": {"type": "float", "name": "Advance ratio", "symbol": "J", "unit": ""},
+    "eff": {"type": "float", "name": "Propeller efficiency", "symbol": r"$\eta_p$", "unit": ""},
+    "pitch": {"type": "float", "name": "Pitch", "symbol": "p", "unit": "°"}
 }
 
 
@@ -90,8 +84,8 @@ class Calculator:
     def __init__(self, input_arguments):
         p = Printer(input_arguments["return_print"])
 
-        self.airfoils = input_arguments["airfoils"] # Define airfoil data
-        self.airfoils_list = input_arguments["foils"] # List of airfoils per section
+        self.airfoils = input_arguments["airfoils"]  # Define airfoil data
+        self.airfoils_list = input_arguments["foils"]  # List of airfoils per section
 
         for blade_name in self.airfoils:
             self.airfoils[blade_name]["alpha_zero"] = 0.0  # TODO FIX
@@ -101,7 +95,7 @@ class Calculator:
             ncrit_selected = self.airfoils[blade_name]["ncrit_selected"]
 
             data = self.airfoils[blade_name]["gathered_curves"]
-            data = data[np.in1d(data[:,1],ncrit_selected)]
+            data = data[np.in1d(data[:, 1], ncrit_selected)]
             data = sort_data(data)
 
             re = data[:, 0].flatten()
@@ -119,9 +113,8 @@ class Calculator:
             self.airfoils[blade_name]["interp_function_cd"] = interpolation_function_cd
 
         self.transition_foils = get_transition_foils(self.airfoils_list)
-        self.transition_array = [] #True,False,False, etc.
+        self.transition_array = []  # True,False,False, etc.
         self.max_thickness_array = []
-
 
         for n in range(len(self.airfoils_list)):
             _c = input_arguments["c"][n]
@@ -138,13 +131,12 @@ class Calculator:
             else:
                 transition = False
                 _airfoil = self.airfoils_list[n]
-                _airfoil_prev,_airfoil_next,transition_coefficient = None, None, None
-                
+                _airfoil_prev, _airfoil_next, transition_coefficient = None, None, None
+
                 max_thickness = self.airfoils[_airfoil]["max_thickness"] * _c
                 self.transition_array.append(False)
 
             self.max_thickness_array.append(max_thickness)
-
 
     def printer(self, _locals, p):
         p.print("----Running induction calculation for following parameters----")
@@ -163,7 +155,8 @@ class Calculator:
         p.print("--------------------------------------------------------------")
         return
 
-    def convert_to_array(self, theta, c, r):
+    @staticmethod
+    def convert_to_array(theta, c, r):
         """
         Converts integers or floats into numpy arrays.
         :param theta: int or float
@@ -174,16 +167,20 @@ class Calculator:
         if isinstance(theta, numpy.ndarray) and isinstance(c, numpy.ndarray) and isinstance(r, numpy.ndarray):
             return theta, c, r
         else:
-            if isinstance(theta, numbers.Real) and isinstance(c, numbers.Real) and isinstance(r, numbers.Real):
+            if isinstance(theta, numpy.numbers.Real) and isinstance(c, numpy.numbers.Real) and isinstance(r,
+                                                                                                          numpy.numbers.Real):
                 return numpy.array([theta]), numpy.array([c]), numpy.array([r])
             return None
 
     # noinspection PyUnusedLocal,PyUnusedLocal
-    def run_array(self, theta, B, c, r, foils, dr, R, Rhub, rpm, v, pitch, method, propeller_mode, print_out, tip_loss,mach_number_correction, 
+    def run_array(self, theta, B, c, r, foils, dr, R, Rhub, rpm, v, pitch, method, propeller_mode, print_out, tip_loss,
+                  mach_number_correction,
                   hub_loss, new_tip_loss, new_hub_loss, cascade_correction, max_iterations, convergence_limit, rho,
-                  relaxation_factor, print_all, rotational_augmentation_correction,rotational_augmentation_correction_method,
-                   fix_reynolds, reynolds, yaw_angle, skewed_wake_correction, blade_design, blade_thickness, mass_density,
-                   print_progress=False, return_print=[], return_results=[],*args,**kwargs):
+                  relaxation_factor, print_all, rotational_augmentation_correction,
+                  rotational_augmentation_correction_method,
+                  fix_reynolds, reynolds, yaw_angle, skewed_wake_correction, blade_design, blade_thickness,
+                  mass_density, geometry_scale,
+                  print_progress=False, return_print=[], return_results=[], *args, **kwargs):
         """
         Calculates induction factors using standard iteration methods.
 
@@ -195,6 +192,13 @@ class Calculator:
         phi - angle of relative wind
         beta - theta
 
+        :param print_progress:
+        :param geometry_scale:
+        :param mass_density:
+        :param blade_thickness:
+        :param blade_design:
+        :param skewed_wake_correction:
+        :param yaw_angle:
         :param reynolds: Reynolds number (when forced) [float]
         :param fix_reynolds: Force Reynolds number [bool]
         :param mach_number_correction: use only for propeller [bool]
@@ -231,16 +235,19 @@ class Calculator:
 
         p = Printer(return_print)
 
-        #if print_all:
+        # if print_all:
         #    self.printer(locals(), p=p)
 
         theta, c, r = self.convert_to_array(theta, c, r)
+        R = R * geometry_scale
+        Rhub = Rhub * geometry_scale
 
         # create results array placeholders
         results = {}
         arrays = ["a", "a'", "cL", "alpha", "phi", "F", "dFt", "M", "lambda_r",
-                  "Ct", "dFn", "foils", "dT", "dQ", "Re", "U1", "U2", "U3", "U4","cD", "dFt/n", "dFn/n","Ms_t","Ms_n",
-                  "Ix","Iy","Ixy","A","stress_norm","stress_tang","stress_cent","dFc","stress_von_mises"]
+                  "Ct", "dFn", "foils", "dT", "dQ", "Re", "U1", "U2", "U3", "U4", "cD", "dFt/n", "dFn/n", "Ms_t",
+                  "Ms_n",
+                  "Ix", "Iy", "Ixy", "A", "stress_norm", "stress_tang", "stress_cent", "dFc", "stress_von_mises"]
         for array in arrays:
             results[array] = numpy.array([])
 
@@ -255,9 +262,8 @@ class Calculator:
 
         section_number = 0
 
-        #generate transition airfoil coefficients
+        # generate transition airfoil coefficients
         num_sections = len(theta)
-
 
         ### BEM CALCULATION FOR EVERY SECTION
         for n in range(num_sections):
@@ -274,12 +280,12 @@ class Calculator:
             # Coning angle (PROPX: Definitions,Derivations, Data Flow, p.22)
             psi = 0.0
 
-            transition=self.transition_array[n]
-            _airfoil=foils[n]
-            _airfoil_prev=self.transition_foils[n][0]
-            _airfoil_next=self.transition_foils[n][1]
-            transition_coefficient=self.transition_foils[n][2]
-            max_thickness=self.max_thickness_array[n]
+            transition = self.transition_array[n]
+            _airfoil = foils[n]
+            _airfoil_prev = self.transition_foils[n][0]
+            _airfoil_next = self.transition_foils[n][1]
+            transition_coefficient = self.transition_foils[n][2]
+            max_thickness = self.max_thickness_array[n]
 
             _locals = locals()
             del _locals["self"]
@@ -316,7 +322,6 @@ class Calculator:
             results["U4"] = numpy.append(results["U4"], out_results["U4"])
             results["lambda_r"] = numpy.append(results["lambda_r"], out_results["lambda_r"])
 
-
         blade_mass = 0
         ### STATICAL ANALYSIS
         for i in range(num_sections):
@@ -326,73 +331,78 @@ class Calculator:
             _theta = theta[i]
             _dr = dr[i]
 
-            transition=self.transition_array[i]
-            _airfoil=foils[i]
-            _airfoil_prev=self.transition_foils[i][0]
-            _airfoil_next=self.transition_foils[i][1]
-            transition_coefficient=self.transition_foils[i][2]
-            max_thickness=self.max_thickness_array[i]
+            transition = self.transition_array[i]
+            _airfoil = foils[i]
+            _airfoil_prev = self.transition_foils[i][0]
+            _airfoil_next = self.transition_foils[i][1]
+            transition_coefficient = self.transition_foils[i][2]
+            max_thickness = self.max_thickness_array[i]
 
             if _airfoil != "transition":
-                Ix,Iy,Ixy,A,tang_dist,norm_dist=self.get_crossection_data(_c,_theta,_airfoil,blade_design,blade_thickness)
+                Ix, Iy, Ixy, A, tang_dist, norm_dist = self.get_crossection_data(_c, _theta, _airfoil, blade_design,
+                                                                                 blade_thickness)
                 _centroid_x, _centroid_y = self.airfoils[_airfoil]["centroid_x"], self.airfoils[_airfoil]["centroid_y"]
             else:
-                Ix1,Iy1,Ixy1,A1,tang_dist1,norm_dist1=self.get_crossection_data(_c,_theta,_airfoil_prev,blade_design,blade_thickness)
-                Ix2,Iy2,Ixy2,A2,tang_dist2,norm_dist2=self.get_crossection_data(_c,_theta,_airfoil_next,blade_design,blade_thickness)
-                _centroid_x1, _centroid_y1 = self.airfoils[_airfoil_prev]["centroid_x"], self.airfoils[_airfoil_prev]["centroid_y"]
-                _centroid_x2, _centroid_y2 = self.airfoils[_airfoil_next]["centroid_x"], self.airfoils[_airfoil_next]["centroid_y"]
-                _centroid_x = _centroid_x1*transition_coefficient+_centroid_x2*(1-transition_coefficient)
-                _centroid_y = _centroid_y1*transition_coefficient+_centroid_y2*(1-transition_coefficient)
-                tang_dist=tang_dist1*transition_coefficient+tang_dist2*(1-transition_coefficient)
-                norm_dist=norm_dist1*transition_coefficient+norm_dist2*(1-transition_coefficient)
+                Ix1, Iy1, Ixy1, A1, tang_dist1, norm_dist1 = self.get_crossection_data(_c, _theta, _airfoil_prev,
+                                                                                       blade_design, blade_thickness)
+                Ix2, Iy2, Ixy2, A2, tang_dist2, norm_dist2 = self.get_crossection_data(_c, _theta, _airfoil_next,
+                                                                                       blade_design, blade_thickness)
+                _centroid_x1, _centroid_y1 = self.airfoils[_airfoil_prev]["centroid_x"], self.airfoils[_airfoil_prev][
+                    "centroid_y"]
+                _centroid_x2, _centroid_y2 = self.airfoils[_airfoil_next]["centroid_x"], self.airfoils[_airfoil_next][
+                    "centroid_y"]
+                _centroid_x = _centroid_x1 * transition_coefficient + _centroid_x2 * (1 - transition_coefficient)
+                _centroid_y = _centroid_y1 * transition_coefficient + _centroid_y2 * (1 - transition_coefficient)
+                tang_dist = tang_dist1 * transition_coefficient + tang_dist2 * (1 - transition_coefficient)
+                norm_dist = norm_dist1 * transition_coefficient + norm_dist2 * (1 - transition_coefficient)
 
-                Ix=Ix1*transition_coefficient+Ix2*(1-transition_coefficient)
-                Iy=Iy1*transition_coefficient+Iy2*(1-transition_coefficient)
-                Ixy=Ixy1*transition_coefficient+Ixy2*(1-transition_coefficient)
-                A=A1*transition_coefficient+A2*(1-transition_coefficient)
+                Ix = Ix1 * transition_coefficient + Ix2 * (1 - transition_coefficient)
+                Iy = Iy1 * transition_coefficient + Iy2 * (1 - transition_coefficient)
+                Ixy = Ixy1 * transition_coefficient + Ixy2 * (1 - transition_coefficient)
+                A = A1 * transition_coefficient + A2 * (1 - transition_coefficient)
 
-            section_mass = A*_dr*mass_density
-            blade_mass+=section_mass
+            section_mass = A * _dr * mass_density
+            blade_mass += section_mass
 
             ### BENDING MOMENT CALCULATION
-            Ms_n=0
-            Ms_t=0
-            for j in range(i,num_sections):
-                Ms_n=Ms_n+results["dFn"][j]*\
-                            (r[j]-r[i])
-                Ms_t=Ms_t+results["dFt"][j]*\
-                            (r[j]-r[i])
+            Ms_n = 0
+            Ms_t = 0
+            for j in range(i, num_sections):
+                Ms_n = Ms_n + results["dFn"][j] * \
+                       (r[j] - r[i])
+                Ms_t = Ms_t + results["dFt"][j] * \
+                       (r[j] - r[i])
 
             results["Ms_t"] = numpy.append(results["Ms_t"], Ms_t)
             results["Ms_n"] = numpy.append(results["Ms_n"], Ms_n)
-            results["Ix"] = numpy.append(results["Ix"], Ix*1e12) # to mm4
-            results["Iy"] = numpy.append(results["Iy"], Iy*1e12) # to mm4
-            results["Ixy"] = numpy.append(results["Ixy"], Ixy*1e12) # to mm4
-            results["A"] = numpy.append(results["A"], A*1e6) # to mm2
+            results["Ix"] = numpy.append(results["Ix"], Ix * 1e12)  # to mm4
+            results["Iy"] = numpy.append(results["Iy"], Iy * 1e12)  # to mm4
+            results["Ixy"] = numpy.append(results["Ixy"], Ixy * 1e12)  # to mm4
+            results["A"] = numpy.append(results["A"], A * 1e6)  # to mm2
 
             # STRESS CALCULATION
             max_tang_dist = numpy.max(numpy.abs(tang_dist))
             max_norm_dist = numpy.max(numpy.abs(norm_dist))
-            stress_norm = max_norm_dist*Ms_n/Ix/1e6 #MPa
-            stress_tang = max_tang_dist*Ms_t/Iy/1e6 #MPa
+            stress_norm = max_norm_dist * Ms_n / Ix / 1e6  # MPa
+            stress_tang = max_tang_dist * Ms_t / Iy / 1e6  # MPa
 
             results["stress_norm"] = numpy.append(results["stress_norm"], stress_norm)
             results["stress_tang"] = numpy.append(results["stress_tang"], stress_tang)
 
         ### CENTRIFUGAL FORCE CALCULATION
-        
+
         for i in range(num_sections):
-            F_centrifugal=0
-            _A_section = results["A"][i] #mm2 !
-            for j in range(i,num_sections):
+            F_centrifugal = 0
+            _A_section = results["A"][i]  # mm2 !
+            for j in range(i, num_sections):
                 _dr = dr[j]
                 _r = r[j]
                 _A = results["A"][j]
-                v_tan = _r*omega
-                section_mass1 = _A*_dr*mass_density
-                F_centrifugal_section = section_mass*v_tan**2/_r
-                F_centrifugal+=F_centrifugal_section
-            stress_cent = F_centrifugal/_A_section #MPa
+                v_tan = _r * omega
+                section_mass = _A * _dr * mass_density
+                F_centrifugal_section = section_mass * v_tan ** 2 / _r
+                F_centrifugal += F_centrifugal_section
+            stress_cent = F_centrifugal / _A_section  # MPa
             results["dFc"] = numpy.append(results["dFc"], F_centrifugal)
             results["stress_cent"] = numpy.append(results["stress_cent"], stress_cent)
 
@@ -402,9 +412,9 @@ class Calculator:
             sigma_1 = results["stress_norm"][i]
             sigma_2 = results["stress_tang"][i]
             sigma_3 = results["stress_cent"][i]
-            stress_von_mises = numpy.sqrt(0.5*(sigma_1-sigma_2)**2+(sigma_2-sigma_3)**2+(sigma_3-sigma_1)**2)
+            stress_von_mises = numpy.sqrt(
+                0.5 * (sigma_1 - sigma_2) ** 2 + (sigma_2 - sigma_3) ** 2 + (sigma_3 - sigma_1) ** 2)
             results["stress_von_mises"] = numpy.append(results["stress_von_mises"], stress_von_mises)
-
 
         dFt = results["dFt"]
         Ft = numpy.sum(dFt)
@@ -425,13 +435,13 @@ class Calculator:
         ct_w = T / (0.5 * rho * v ** 2 * pi * R ** 2)
         ct_p = T / (rho * (2 * R) ** 4 * (rpm / 60) ** 2)
 
-        cq_p = Q / (rho * (2*R)**5 * (rpm/60)**2)
-        eff = J/2/pi*ct_p/cq_p
+        cq_p = Q / (rho * (2 * R) ** 5 * (rpm / 60) ** 2)
+        eff = J / 2 / pi * ct_p / cq_p
 
         if propeller_mode and eff > 1.0:
             return None
 
-        #floats
+        # floats
         results["R"] = R
         results["rpm"] = rpm
         results["v"] = v
@@ -441,7 +451,7 @@ class Calculator:
         else:
             results["cp"] = cp_w
             results["ct"] = ct_w
-        
+
         results["TSR"] = TSR
         results["Ft"] = Ft
         results["omega"] = omega
@@ -449,12 +459,12 @@ class Calculator:
         results["power"] = power
         results["thrust"] = T
         results["Rhub"] = Rhub
-        results["B"] = B        
+        results["B"] = B
         results["J"] = J
         results["eff"] = eff
         results["pitch"] = pitch
 
-        #arrays
+        # arrays
         results["r"] = r
         results["M"] = M
         results["dr"] = dr
@@ -463,13 +473,18 @@ class Calculator:
         return results
 
     def calculate_section(self, v, omega, _r, _c, _theta, _dr, B, R, _airfoil, max_thickness, Rhub,
-                          propeller_mode, pitch=0.0, psi=0.0, fix_reynolds=False, reynolds=1e6, tip_loss=False, new_tip_loss=False,
-                          hub_loss=False, new_hub_loss=False, cascade_correction=False, rotational_augmentation_correction=False,
+                          propeller_mode, pitch=0.0, psi=0.0, fix_reynolds=False, reynolds=1e6, tip_loss=False,
+                          new_tip_loss=False,
+                          hub_loss=False, new_hub_loss=False, cascade_correction=False,
+                          rotational_augmentation_correction=False,
                           rotational_augmentation_correction_method=0, mach_number_correction=False, method=5,
-                          kin_viscosity=1.4207E-5, rho=1.225, convergence_limit=0.001, max_iterations=100, relaxation_factor=0.3,
-                          printer=None, print_all=False, print_out=False, yaw_angle=0.0, tilt_angle=0.0, skewed_wake_correction=False,
-                          lambda_r_array = [],
-                          transition=False, _airfoil_prev=None, _airfoil_next=None, transition_coefficient=1.0,num_sections=0,
+                          kin_viscosity=1.4207E-5, rho=1.225, convergence_limit=0.001, max_iterations=100,
+                          relaxation_factor=0.3,
+                          printer=None, print_all=False, print_out=False, yaw_angle=0.0, tilt_angle=0.0,
+                          skewed_wake_correction=False,
+                          lambda_r_array=[],
+                          transition=False, _airfoil_prev=None, _airfoil_next=None, transition_coefficient=1.0,
+                          num_sections=0,
                           *args, **kwargs):
         """
         Function that calculates each section of the blade.
@@ -509,7 +524,6 @@ class Calculator:
         """
 
         p = printer
-        
 
         # local speed ratio
         lambda_r = omega * _r / v
@@ -518,7 +532,7 @@ class Calculator:
         sigma = _c * B / (2 * pi * _r)
 
         # initial guess
-        a = 1/3
+        a = 1 / 3
         aprime = 0.01
 
         # iterations counter
@@ -531,9 +545,9 @@ class Calculator:
         _pitch = radians(pitch)
 
         # convert yaw to radians
-        yaw_angle = radians(yaw_angle) # [Radians]
-        psi = radians(psi) #Coning angle [Radians]
-        tilt_angle = radians(tilt_angle) # [Radians]
+        yaw_angle = radians(yaw_angle)  # [Radians]
+        psi = radians(psi)  # Coning angle [Radians]
+        tilt_angle = radians(tilt_angle)  # [Radians]
         lambda_r_array = np.array(lambda_r_array)
 
         ############ START ITERATION ############
@@ -543,9 +557,10 @@ class Calculator:
 
             # for pretty-printing only
             prepend = ""
-            #Equations for Vx and Vy from https://pdfs.semanticscholar.org/5e7d/9c6408b7dd8841692d950d08bce90c676dc1.pdf
-            Vx = v*((cos(yaw_angle)*sin(tilt_angle)+sin(yaw_angle))*sin(psi)+cos(yaw_angle)*cos(psi)*cos(tilt_angle))
-            Vy = omega*_r*cos(psi)+v*(cos(yaw_angle)*sin(tilt_angle)-sin(yaw_angle))
+            # Equations for Vx and Vy from https://pdfs.semanticscholar.org/5e7d/9c6408b7dd8841692d950d08bce90c676dc1.pdf
+            Vx = v * ((cos(yaw_angle) * sin(tilt_angle) + sin(yaw_angle)) * sin(psi) + cos(yaw_angle) * cos(psi) * cos(
+                tilt_angle))
+            Vy = omega * _r * cos(psi) + v * (cos(yaw_angle) * sin(tilt_angle) - sin(yaw_angle))
 
             # wind components
             if propeller_mode:
@@ -585,40 +600,39 @@ class Calculator:
 
             # angle of attack
             if propeller_mode:
-                alpha = (_theta + _pitch) - phi #radians
+                alpha = (_theta + _pitch) - phi  # radians
             else:
-                alpha = phi - (_theta + _pitch) #radians
+                alpha = phi - (_theta + _pitch)  # radians
 
             # cascade correction
             if cascade_correction:
                 alpha = cascadeEffectsCorrection(alpha=alpha, v=v, omega=omega, r=_r, R=R, c=_c, B=B, a=a,
                                                  aprime=aprime, max_thickness=max_thickness)
 
-            
             if transition:
-                Cl1, Cd1 = self.airfoils[_airfoil_prev]["interp_function_cl"](Re, degrees(alpha)), self.airfoils[_airfoil_prev][
-                    "interp_function_cd"](Re, degrees(alpha))
-                Cl2, Cd2 = self.airfoils[_airfoil_next]["interp_function_cl"](Re, degrees(alpha)), self.airfoils[_airfoil_next][
-                    "interp_function_cd"](Re, degrees(alpha))
+                Cl1, Cd1 = self.airfoils[_airfoil_prev]["interp_function_cl"](Re, degrees(alpha)), \
+                           self.airfoils[_airfoil_prev][
+                               "interp_function_cd"](Re, degrees(alpha))
+                Cl2, Cd2 = self.airfoils[_airfoil_next]["interp_function_cl"](Re, degrees(alpha)), \
+                           self.airfoils[_airfoil_next][
+                               "interp_function_cd"](Re, degrees(alpha))
 
                 if Cl1 == False and Cd1 == False:
                     return None
                 if Cl2 == False and Cd2 == False:
                     return None
-                
-                
-                Cl = Cl1*transition_coefficient + Cl2*(1 - transition_coefficient)
-                Cd = Cd1*transition_coefficient + Cd2*(1 - transition_coefficient)
 
+                Cl = Cl1 * transition_coefficient + Cl2 * (1 - transition_coefficient)
+                Cd = Cd1 * transition_coefficient + Cd2 * (1 - transition_coefficient)
 
                 if print_all:
                     p.print("Transition detected, combining airfoils.")
-                    p.print("Previous airfoil is",_airfoil_prev)
-                    p.print("Next airfoil is",_airfoil_next)
-                    p.print("Cl1",Cl1,"Cd1",Cd1)
-                    p.print("Cl2",Cl2,"Cd2",Cd2)
-                    p.print("Cl=",transition_coefficient,"*Cl1+",(1-transition_coefficient),"*Cl2=",Cl)
-                    p.print("Cd=",transition_coefficient,"*Cd1+",(1-transition_coefficient),"*Cd2=",Cd)
+                    p.print("Previous airfoil is", _airfoil_prev)
+                    p.print("Next airfoil is", _airfoil_next)
+                    p.print("Cl1", Cl1, "Cd1", Cd1)
+                    p.print("Cl2", Cl2, "Cd2", Cd2)
+                    p.print("Cl=", transition_coefficient, "*Cl1+", (1 - transition_coefficient), "*Cl2=", Cl)
+                    p.print("Cd=", transition_coefficient, "*Cd1+", (1 - transition_coefficient), "*Cd2=", Cd)
             else:
                 Cl, Cd = self.airfoils[_airfoil]["interp_function_cl"](Re, degrees(alpha)), self.airfoils[_airfoil][
                     "interp_function_cd"](Re, degrees(alpha))
@@ -645,7 +659,7 @@ class Calculator:
                 Cl = machNumberCorrection(Cl, M)
 
             # circulation gamma
-            Gamma_B =0.5* Vrel_norm*_c*Cl;
+            Gamma_B = 0.5 * Vrel_norm * _c * Cl
 
             # normal and tangential coefficients
             if propeller_mode:
@@ -678,18 +692,16 @@ class Calculator:
             a_last = a
             aprime_last = aprime
 
-            #set new values
+            # set new values
             a, aprime, Ct = coeffs
 
             # wake rotation correction
-            k=omega*Gamma_B/(np.pi*v**2)
-            aprime_vct =k/(4*lambda_r**2)
-            relevant_radiuses = lambda_r_array[np.nonzero(lambda_r_array>=lambda_r)]
-            
+            k = omega * Gamma_B / (np.pi * v ** 2)
+            aprime_vct = k / (4 * lambda_r ** 2)
+            relevant_radiuses = lambda_r_array[np.nonzero(lambda_r_array >= lambda_r)]
 
             if skewed_wake_correction:
-                a_skewed = skewed_wake_correction_calculate(yaw_angle,a,_r,R)
-                a_no_skew = a
+                a_skewed = skewed_wake_correction_calculate(yaw_angle, a, _r, R)
                 a = a_skewed
 
             # force calculation
@@ -698,33 +710,34 @@ class Calculator:
             dFt = dFL * sin(phi) - dFD * cos(phi)  # tangential force
             dFn = dFL * cos(phi) + dFD * sin(phi)  # normal force
 
-            dFn_norm = dFn*num_sections
-            dFt_norm = dFt*num_sections
+            dFn_norm = dFn * num_sections
+            dFt_norm = dFt * num_sections
 
             # thrust and torque - Wiley, WE 2nd, p.124
             dT_MT = F * 4 * pi * _r * rho * v ** 2 * a * (1 - a) * _dr
             dT_BET = 0.5 * rho * B * _c * Vrel_norm ** 2 * \
-                C_norm * _dr
+                     C_norm * _dr
             dQ_MT = F * 4 * aprime * (1 - a) * rho * \
-                v * pi * _r ** 3 * omega * _dr
+                    v * pi * _r ** 3 * omega * _dr
             dQ_BET = B * 0.5 * rho * Vrel_norm ** 2 * \
-                C_tang * _c * _dr * _r
+                     C_tang * _c * _dr * _r
 
             # thrust-propeller
             dT_MT_p = 4 * pi * _r * rho * v ** 2 * (1 + a) * a * _dr
             dQ_MT_p = 4 * pi * _r ** 3 * rho * v * omega * (1 + a) * aprime * _dr
             dT_BET_p = 0.5 * rho * v ** 2 * _c * B * (1 + a) ** 2 / (sin(phi) ** 2) * C_norm * _dr
-            dQ_BET_p = 0.5 * rho * v * _c * B * omega * _r ** 2 * (1 + a) * (1 - aprime) / (sin(phi) * cos(phi)) * C_tang * _dr
+            dQ_BET_p = 0.5 * rho * v * _c * B * omega * _r ** 2 * (1 + a) * (1 - aprime) / (
+                    sin(phi) * cos(phi)) * C_tang * _dr
 
             # from http://www.aerodynamics4students.com/propel.m
-            dT_BET_p_2 = 0.5*rho*Vrel_norm**2*B*_c * C_norm * _dr
-            dQ_BET_p_2 = 0.5*rho*Vrel_norm**2*B*_c * _r * C_tang * _dr
-            dT_MT_p_2 = 4*pi*_r*rho*v**2*(1+a)
-            dQ_MT_p_2 = 4*pi*_r**3*rho*v*(1+a)*omega
+            dT_BET_p_2 = 0.5 * rho * Vrel_norm ** 2 * B * _c * C_norm * _dr
+            dQ_BET_p_2 = 0.5 * rho * Vrel_norm ** 2 * B * _c * _r * C_tang * _dr
+            dT_MT_p_2 = 4 * pi * _r * rho * v ** 2 * (1 + a)
+            dQ_MT_p_2 = 4 * pi * _r ** 3 * rho * v * (1 + a) * omega
 
             # https://apps.dtic.mil/dtic/tr/fulltext/u2/1013408.pdf
-            dT_prop = 0.5 * B * rho * Vrel_norm**2 * _c * _dr * C_norm
-            dQ_prop = 0.5 * B * rho * Vrel_norm**2 *_c * _r * _dr * C_tang
+            dT_prop = 0.5 * B * rho * Vrel_norm ** 2 * _c * _dr * C_norm
+            dQ_prop = 0.5 * B * rho * Vrel_norm ** 2 * _c * _r * _dr * C_tang
 
             if propeller_mode:
                 dT = dT_prop
@@ -737,17 +750,13 @@ class Calculator:
             if propeller_mode:
                 U1 = v
                 U2 = None
-                U3 = U1*(1+a)
-                U4 = U1*(1+2*a)
+                U3 = U1 * (1 + a)
+                U4 = U1 * (1 + 2 * a)
             else:
                 U1 = v
-                U2 = U1*(1-a)
+                U2 = U1 * (1 - a)
                 U3 = None
                 U4 = U1 * (1 - 2 * a)
-
-            if skewed_wake_correction:
-                # replace a with no skew
-                a = a_no_skew
 
             # check convergence
             if abs(a - a_last) < convergence_limit:
@@ -774,7 +783,7 @@ class Calculator:
             p.print(prepend, "        LSR: ", lambda_r)
             p.print(prepend, "        Vrel: ", Vrel_norm)
             p.print(prepend, "        Re:", Re)
-            p.print(prepend, "        foil:",_airfoil)
+            p.print(prepend, "        foil:", _airfoil)
             p.print(prepend, "        Cl:", Cl)
             p.print(prepend, "        Cd:", Cd)
             p.print(prepend, "        U1:", U1)
@@ -789,40 +798,43 @@ class Calculator:
                     (dT_MT_p, dT_BET_p))
             p.print(prepend, "        dQ_MT_p %.5f dQ_BET_p %.5f" %
                     (dQ_MT_p, dQ_BET_p))
-            #p.print(prepend, "        dT_p %.2f dQ_p %.2f" % (dT_p, dQ_p))
+            # p.print(prepend, "        dT_p %.2f dQ_p %.2f" % (dT_p, dQ_p))
             p.print(prepend, "    ----------------------------")
 
-        out = {"a": a, "aprime": aprime, "Cl": Cl, "Cd":Cd, "alpha": degrees(alpha), "phi": degrees(phi), "F": F, "dFt": dFt, "Ct": Ct, "dFn": dFn,
-               "_airfoil": _airfoil, "dT": dT, "dQ": dQ, "Re": Re, 'U1': U1, 'U2': U2, 'U3': U3, 'U4': U4, "lambda_r":lambda_r,"dFt/n":dFt_norm,"dFn/n":dFn_norm}
+        out = {"a": a, "aprime": aprime, "Cl": Cl, "Cd": Cd, "alpha": degrees(alpha), "phi": degrees(phi), "F": F,
+               "dFt": dFt, "Ct": Ct, "dFn": dFn,
+               "_airfoil": _airfoil, "dT": dT, "dQ": dQ, "Re": Re, 'U1': U1, 'U2': U2, 'U3': U3, 'U4': U4,
+               "lambda_r": lambda_r, "dFt/n": dFt_norm, "dFn/n": dFn_norm}
         return out
 
-    def get_crossection_data(self,_c,_theta,_airfoil,blade_design,blade_thickness):
+    def get_crossection_data(self, _c, _theta, _airfoil, blade_design, blade_thickness):
+
         _airfoil_x, _airfoil_y = self.airfoils[_airfoil]["x"], self.airfoils[_airfoil]["y"]
         _centroid_x, _centroid_y = self.airfoils[_airfoil]["centroid_x"], self.airfoils[_airfoil]["centroid_y"]
         _centroid = (_centroid_x, _centroid_y)
-        _airfoil_x, _airfoil_y = scale_and_normalize(_airfoil_x, _airfoil_y, _c, _centroid) #outer foil
-        
+        _airfoil_x, _airfoil_y = scale_and_normalize(_airfoil_x, _airfoil_y, _c, _centroid)  # outer foil
+
         if blade_design == 1:
-            _airfoil_x2, _airfoil_y2 = generate_hollow_foil(_airfoil_x,_airfoil_y,blade_thickness) #inner foil
+            _airfoil_x2, _airfoil_y2 = generate_hollow_foil(_airfoil_x, _airfoil_y, blade_thickness)  # inner foil
 
-            _airfoil_x, _airfoil_y = rotate_array(_airfoil_x, _airfoil_y, (0, 0), _theta) #outer foil
-            _airfoil_x2, _airfoil_y2 = rotate_array(_airfoil_x2, _airfoil_y2, (0, 0), _theta) #inner foil
-            
-            Ix1,Iy1,Ixy1,A1 = calculate_bending_inertia_2(_airfoil_x,_airfoil_y) #outer foil
-            Ix2,Iy2,Ixy2,A2 = calculate_bending_inertia_2(_airfoil_x2,_airfoil_y2) #inner foil
+            _airfoil_x, _airfoil_y = rotate_array(_airfoil_x, _airfoil_y, (0, 0), _theta)  # outer foil
+            _airfoil_x2, _airfoil_y2 = rotate_array(_airfoil_x2, _airfoil_y2, (0, 0), _theta)  # inner foil
 
-            Ix=Ix1-Ix2
-            Iy=Iy1-Iy2
-            Ixy=Ixy1-Ixy2
-            A=A1-A2
+            Ix1, Iy1, Ixy1, A1 = calculate_bending_inertia_2(_airfoil_x, _airfoil_y)  # outer foil
+            Ix2, Iy2, Ixy2, A2 = calculate_bending_inertia_2(_airfoil_x2, _airfoil_y2)  # inner foil
+
+            Ix = Ix1 - Ix2
+            Iy = Iy1 - Iy2
+            Ixy = Ixy1 - Ixy2
+            A = A1 - A2
 
         else:
-            _airfoil_x, _airfoil_y = rotate_array(_airfoil_x, _airfoil_y, (0, 0), _theta) #outer foil
-            Ix,Iy,Ixy,A = calculate_bending_inertia_2(_airfoil_x,_airfoil_y)
+            _airfoil_x, _airfoil_y = rotate_array(_airfoil_x, _airfoil_y, (0, 0), _theta)  # outer foil
+            Ix, Iy, Ixy, A = calculate_bending_inertia_2(_airfoil_x, _airfoil_y)
 
         min_x = numpy.min(_airfoil_x)
         max_x = numpy.max(_airfoil_x)
         min_y = numpy.min(_airfoil_y)
         max_y = numpy.max(_airfoil_y)
 
-        return Ix,Iy,Ixy,A,numpy.abs(numpy.array((min_x,max_x))),numpy.abs(numpy.array((min_y,max_y)))
+        return Ix, Iy, Ixy, A, numpy.abs(numpy.array((min_x, max_x))), numpy.abs(numpy.array((min_y, max_y)))

@@ -1,9 +1,8 @@
-from numpy import *
-from numpy import pi as PI
 import numpy as np
 from matplotlib import pyplot as plt
-from matplotlib.widgets import Slider, Button, RadioButtons
-import os
+from matplotlib.widgets import Slider, Button
+from numpy import *
+from numpy import pi as PI
 
 
 class POLAR_CLASS:

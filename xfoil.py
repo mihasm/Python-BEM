@@ -1,19 +1,17 @@
 #!/usr/bin/env python3
-from math import sin, cos, atan, acos, pi, exp, sqrt, radians, atan2, degrees, tan, isinf
 import os
 import re as regex
-from subprocess import Popen, PIPE, DEVNULL, STDOUT
 import sys
+from math import isinf
+from subprocess import Popen, PIPE
 from threading import Timer
-import time
 
-from matplotlib import pyplot as plt
 import matplotlib.cm as cm
-from mpl_toolkits.mplot3d import Axes3D  # noqa: F401 unused import
 import numpy as np
 import scipy.interpolate
 import scipy.linalg
-
+from matplotlib import pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D  # noqa: F401 unused import
 
 xfoil_path = os.path.join("xfoil_executables", "xfoil.exe")
 if sys.platform.startswith("darwin"):

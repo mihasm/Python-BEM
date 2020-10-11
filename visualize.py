@@ -1,10 +1,9 @@
+import math
+
 import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
 import mpl_toolkits.mplot3d as mp3d
 import numpy as np
-from matplotlib import cm
-import math
-from utils import get_centroid_coordinates
+from mpl_toolkits.mplot3d import Axes3D
 
 
 def create_face(p1, p2, p3, p4, *args, **kwargs):

@@ -1,6 +1,4 @@
-import numbers
-from math import sin, cos, atan, acos, pi, exp, sqrt, radians, atan2, degrees, tan
-from scipy import interpolate
+from math import sin, cos, atan, acos, pi, exp, sqrt, atan2, tan
 
 
 def machNumberCorrection(Cl, M):
