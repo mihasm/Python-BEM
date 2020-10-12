@@ -204,7 +204,7 @@ class WindTurbineProperties(QWidget):
         _foils = out["foils"]
         out["R"] = out["R"]
         out["Rhub"] = out["Rhub"]
-        r, c, theta, foils, dr = interpolate_geom(_r, _c, _theta, _foils, out["num_interp"], out["linspace_interp"],
+        r, c, theta, foils, dr = interpolate_geom(_r, _c, _theta, _foils, out["R"], out["Rhub"], out["num_interp"], out["linspace_interp"],
                                                   out["geometry_scale"])
         out["r"], out["c"], out["theta"], out["foils"], out["dr"] = r, c, theta, foils, dr
         out["r_in"], out["c_in"], out["theta_in"], out["foils_in"] = _r, _c, _theta, _foils
@@ -311,6 +311,8 @@ class WindTurbineProperties(QWidget):
             return
         data = create_3d_blade(settings_fetched, self.flip_turning_direction.isChecked(),
                                self.propeller_geom.isChecked())
+
+        # DRAW MATPLOTLIB ############################
         self.w = MatplotlibWindow()
         self.w.setWindowTitle("Export 3D preview")
         self.w.ax = self.w.figure.add_subplot(111, projection="3d")
@@ -326,26 +328,34 @@ class WindTurbineProperties(QWidget):
         for xb, yb, zb in zip(Xb, Yb, Zb):
             self.w.ax.plot([xb], [yb], [zb], 'w')
         # self.w.ax.set_aspect("equal")
+        ##############################################
 
+        # Create necessary folders
         create_folder(os.path.join(application_path, "export"))
         folder_path = os.path.join(application_path, "export", SET_INIT["turbine_name"])
         create_folder(folder_path)
 
-        filenames = []
+
         print("Exporting... (and converting m to mm)")
+
+        filenames = []
+        data_out = []
         for z, x_data, y_data in data["data"]:
             print("Exporting z=" + str(z), "[m]")
-            z = z * 1e3  # in mm
+            #z = z * 1e3  # in mm
             file_name = os.path.join(folder_path, "z_%s.txt" % z)
             filenames.append(os.path.join(os.getcwd(), file_name))
             # print(file_name)
             f = open(os.path.join(folder_path, "z_%s.txt" % z), "w")
             for x, y in zip(x_data, y_data):
-                x, y = x * 1e3, y * 1e3  # in mm
-                f.write("%s\t%s\t%s\n" % (x, y, z))
+                x_out, y_out, z_out = x * 1e3, y * 1e3, z * 1e3  # in mm
+                f.write("%s\t%s\t%s\n" % (y_out, z_out, x_out)) # Change indexes for SW
             f.close()
+
+            data_out.append([y_data,np.zeros(len(y_data))+z,x_data])
+
         print("Filenames:", filenames)
-        macro_text = create_macro_text(filenames)
+        macro_text = create_macro_text(filenames,data_out)
 
         print("'===============MACRO START==================")
         print(macro_text)

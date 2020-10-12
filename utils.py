@@ -127,12 +127,10 @@ def sort_xy(array_x, array_y):
         )
 
 
-def interpolate_geom(r, c, theta, foils, num=None, linspace_interp=False, geometry_scale=1.0):
+def interpolate_geom(r, c, theta, foils, R, Rhub, num=None, linspace_interp=False, geometry_scale=1.0):
     """
     interpolates c,r,theta with num elements:
     """
-    # print("interpolating")
-    # print("foils before",foils)
     c_interpolator = interpolate.interp1d(r, c)
     theta_interpolator = interpolate.interp1d(r, theta)
     r_orig = r.copy()
@@ -149,13 +147,7 @@ def interpolate_geom(r, c, theta, foils, num=None, linspace_interp=False, geomet
         foils = foils_orig
 
     # calculate dr
-    r_shifted = [r[0]]
-    for _r in r:
-        r_shifted.append(_r)
-    r_shifted = array(r_shifted[:-1])
-    dr = r - r_shifted
-    dr[0] = dr[1]  # TODO: what
-    # print("foils after",foils)
+    dr = calculate_dr(r,R,Rhub)
 
     # scaling
     r = geometry_scale * r
@@ -163,6 +155,23 @@ def interpolate_geom(r, c, theta, foils, num=None, linspace_interp=False, geomet
     c = geometry_scale * c
 
     return r, c, theta, foils, dr
+
+def calculate_dr(r,R,Rhub):
+    # calculate dr
+    dr = np.zeros(len(r))
+    for i in range(len(r)):
+        if i == 0:
+            r_between = (r[i]+r[i+1])/2
+            _dr = r_between-Rhub
+        elif i == len(r)-1:
+            r_between = (r[i]+r[i-1])/2
+            _dr = R - r_between
+        else:
+            r_between_up = (r[i]+r[i+1])/2
+            r_between_down = (r[i]+r[i-1])/2
+            _dr = r_between_up-r_between_down
+        dr[i]=_dr
+    return dr
 
 
 def find_nearest(_array, value):
@@ -732,13 +741,16 @@ def get_interpolation_function(x, y, z, num_x=10, num_y=360):
 
 ### SOLIDWORKS MACRO BUILDER ###
 
-def create_macro_text(list_of_files):
-    template_start = """
+def create_macro_text(list_of_files,data):
+    template1 = """
     Dim swApp As Object
-
+    Dim swModel As SldWorks.ModelDoc2
     Dim part As Object
     Dim boolstatus As Boolean
     Dim longstatus As Long, longwarnings As Long
+    Dim nPtData(%s) As Double
+    Dim vPtData As Variant
+    Dim swSketchSeg As SldWorks.SketchSegment
 
     Sub main()
 
@@ -747,13 +759,42 @@ def create_macro_text(list_of_files):
     template = swApp.GetUserPreferenceStringValue(swDefaultTemplatepart)
     Set part = swApp.NewDocument(template, 0, 0, 0)
 
+    Set swModel = swApp.ActiveDoc
+
     Dim myModelView As Object
+    """ % (len(data)*3-1)
+
+    template2 = ""
+    for f in list_of_files:
+        template2 += 'boolstatus = part.InsertCurveFile("%s")\n' % f
+    i = 0
+    j = 0
+    for row in data:
+        template2+="nPtData(%s) = %s\n" % (j,data[i][0][0])
+        template2+="nPtData(%s) = %s\n" % (j+1,data[i][1][0])
+        template2+="nPtData(%s) = %s\n" % (j+2,data[i][2][0])
+        i+=1
+        j+=3
+
+    template3 = """
+    vPtData = nPtData
+    swModel.Insert3DSketch2 True
+    Set swSketchSeg = swModel.CreateSpline(vPtData)
+    Debug.Assert Not swSketchSeg Is Nothing
+    swModel.Insert3DSketch2 True
     """
 
-    template_end = """
-    End Sub
-    """
-    str_between = ""
-    for f in list_of_files:
-        str_between += 'boolstatus = part.InsertCurveFile("%s")\n' % f
-    return template_start + "\n" + str_between + "\n" + template_end
+    template4 = ''
+
+    for i in range(len(data)):
+        template4 += "Dim myRefPlane%s As Object\n" % i
+
+    for i in range(len(data)):
+        _y = data[i][1][0]
+        template4 += 'swModel.ClearSelection\n'
+        template4 += 'boolstatus = Part.Extension.SelectByID2("Top Plane", "PLANE", 0, 0, 0, True, 0, Nothing, 0)\n'
+        template4 += "Set myRefPlane%s = Part.FeatureManager.InsertRefPlane(8, %s, 0, 0, 0, 0)\n" % (i,_y)
+
+    template5 = "End Sub\n"
+
+    return template1+"\n"+template2+"\n"+template3+"\n"+template4+"\n"+template5+"\n"

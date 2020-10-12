@@ -4,7 +4,10 @@ import matplotlib.pyplot as plt
 import mpl_toolkits.mplot3d as mp3d
 import numpy as np
 from mpl_toolkits.mplot3d import Axes3D
+from scipy import interpolate
 
+from turbine_data import SET_INIT
+from utils import calculate_dr
 
 def create_face(p1, p2, p3, p4, *args, **kwargs):
     coords = [p1, p2, p3, p4]
@@ -44,15 +47,20 @@ def scale_and_normalize(foil_x, foil_y, scale, centroid):
     return foil_x, foil_y
 
 
-def create_3d_blade(SET_INIT, flip_turning_direction=False, propeller_geom=False):
-    theta = SET_INIT["theta"]
-    r = SET_INIT["r"]
-    c = SET_INIT["c"]
-    foil = SET_INIT["foils"]
-    airfoils = SET_INIT["airfoils"]
+def create_3d_blade(input_data, flip_turning_direction=False, propeller_geom=False):
+    theta = input_data["theta"]
+    r = input_data["r"]
+    c = input_data["c"]
+    foil = input_data["foils"]
+    airfoils = input_data["airfoils"]
+    R = input_data["R"]
+    Rhub = input_data["Rhub"]
 
-    fig = plt.figure()
-    ax = fig.add_subplot(111, projection='3d')
+    r = [Rhub]+list(r)+[R]
+    c = [c[0]]+list(c)+[c[-1]]
+    theta = [theta[0]]+list(theta)+[theta[-1]]
+    foil = [foil[0]]+list(foil)+[foil[-1]]
+
     out_x, out_y, out_z = [], [], []
     data = []
     for i in range(len(r)):
@@ -89,6 +97,9 @@ def create_3d_blade(SET_INIT, flip_turning_direction=False, propeller_geom=False
 
             data.append([_r, np.array(list_x), np.array(list_y)])
 
+    # DRAW ########
+    fig = plt.figure()
+    ax = fig.add_subplot(111, projection='3d')
     X, Y, Z = np.array(out_x), np.array(out_y), np.array(out_z)
     max_range = np.array(
         [X.max()-X.min(), Y.max()-Y.min(), Z.max()-Z.min()]).max() / 2.0
@@ -98,12 +109,10 @@ def create_3d_blade(SET_INIT, flip_turning_direction=False, propeller_geom=False
     ax.set_xlim(mid_x - max_range, mid_x + max_range)
     ax.set_ylim(mid_y - max_range, mid_y + max_range)
     ax.set_zlim(mid_z - max_range, mid_z + max_range)
-    # ax.set_aspect("equal")
     Axes3D.mouse_init(ax, rotate_btn=1, zoom_btn=2)
-
     ax.scatter(X, Y, Z)
-
-    # plt.show()
+    #plt.show()
+    ###############
 
     data = np.array(data)
     return {"data": data, "X": X, "Y": Y, "Z": Z}
