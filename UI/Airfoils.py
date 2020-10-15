@@ -392,6 +392,11 @@ class Airfoils(QWidget):
             ncrit_selected = float(self.ncrit_selection.currentText())
         except:
             ncrit_selected = 0.0
+
+        try:
+            extrapolation_bool = self.extrapolation_bool.checkState()
+        except:
+            extrapolation_bool = True
         out = {"x": x,
                "y": y,
                "max_thickness": self.get_max_thickness(),
@@ -403,15 +408,27 @@ class Airfoils(QWidget):
                "centroid_x": centroid_x,
                "centroid_y": centroid_y,
                "ncrit_selected": ncrit_selected,
-               "extrapolation_bool": self.extrapolation_bool.checkState()}
+               "extrapolation_bool": extrapolation_bool}
         return out
 
     def set_settings(self, dict_settings):
 
         x, y = dict_settings["x"], dict_settings["y"]
 
-        self.set_x_y(x, y)
-        self.link.setText(dict_settings["link"])
-        self.curves.load_curves(dict_settings["curves"])
-        self.extrapolation_bool.setChecked(dict_settings["extrapolation_bool"])
+        try:
+            self.set_x_y(x, y)
+        except:
+            pass
+        try:
+            self.link.setText(dict_settings["link"])
+        except:
+            pass
+        try:
+            self.curves.load_curves(dict_settings["curves"])
+        except:
+            pass
+        try:
+            self.extrapolation_bool.setChecked(dict_settings["extrapolation_bool"])
+        except:
+            pass
         self.refresh()

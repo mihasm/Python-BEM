@@ -305,7 +305,6 @@ class WindTurbineProperties(QWidget):
         self.window = PrintoutWindow(self)
         self.window.setWindowTitle("Solidworks Export Macro")
 
-        print("Getting settings...")
         settings_fetched = self.parent().parent().parent().get_all_settings()
         if settings_fetched == None:
             return
@@ -336,12 +335,12 @@ class WindTurbineProperties(QWidget):
         create_folder(folder_path)
 
 
-        print("Exporting... (and converting m to mm)")
+        #print("Exporting... (and converting m to mm)")
 
         filenames = []
         data_out = []
         for z, x_data, y_data in data["data"]:
-            print("Exporting z=" + str(z), "[m]")
+            #print("Exporting z=" + str(z), "[m]")
             #z = z * 1e3  # in mm
             file_name = os.path.join(folder_path, "z_%s.txt" % z)
             filenames.append(os.path.join(os.getcwd(), file_name))
@@ -354,7 +353,7 @@ class WindTurbineProperties(QWidget):
 
             data_out.append([y_data,np.zeros(len(y_data))+z,x_data])
 
-        print("Filenames:", filenames)
+        #print("Filenames:", filenames)
         macro_text = create_macro_text(filenames,data_out)
 
         print("'===============MACRO START==================")

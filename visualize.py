@@ -114,5 +114,5 @@ def create_3d_blade(input_data, flip_turning_direction=False, propeller_geom=Fal
     #plt.show()
     ###############
 
-    data = np.array(data)
+    #data = np.array(data)
     return {"data": data, "X": X, "Y": Y, "Z": Z}
