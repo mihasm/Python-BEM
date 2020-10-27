@@ -427,9 +427,9 @@ class Calculator:
             for j in range(i, num_sections):
                 _dr = dr[j]
                 _r = r[j]
-                _A = results["A"][j]
+                _A = results["A"][j] # mm2 !
                 v_tan = _r * omega
-                section_mass = _A * _dr * mass_density
+                section_mass = _A * 1e-6 * _dr * mass_density
                 F_centrifugal_section = section_mass * v_tan ** 2 / _r
                 F_centrifugal += F_centrifugal_section
             stress_cent = F_centrifugal / _A_section  # MPa
