@@ -375,7 +375,7 @@ def ErrorMessageBox():
     msg.exec_()
 
 
-def generate_v_and_rpm_from_tsr(tsr_list, R, v=None, rpm=None):
+def generate_v_and_rpm_from_tsr(tsr_list, R, geometry_scale, v=None, rpm=None):
     """
     TSR = omega * R / v
 
@@ -387,18 +387,18 @@ def generate_v_and_rpm_from_tsr(tsr_list, R, v=None, rpm=None):
         # rpm is fixed
         out_rpm.append(rpm)
         for tsr in tsr_list:
-            _v = 2 * np.pi * rpm / 60 * R / tsr
+            _v = 2 * np.pi * rpm / 60 * (R*geometry_scale) / tsr
             out_v.append(_v)
     elif rpm == None:
         # v is fixed
         out_v.append(v)
         for tsr in tsr_list:
-            _rpm = tsr * v * 60 / R / 2 / np.pi
+            _rpm = tsr * v * 60 / (R*geometry_scale) / 2 / np.pi
             out_rpm.append(_rpm)
     return out_v, out_rpm
 
 
-def generate_v_and_rpm_from_J(J_list, R, v=None, rpm=None):
+def generate_v_and_rpm_from_J(J_list, R, geometry_scale, v=None, rpm=None):
     """
     J = v / (rpm / 60 * R * 2)
 
@@ -410,13 +410,13 @@ def generate_v_and_rpm_from_J(J_list, R, v=None, rpm=None):
         # rpm is fixed
         out_rpm.append(rpm)
         for J in J_list:
-            _v = J * (rpm / 60 * R * 2)
+            _v = J * (rpm / 60 * (R*geometry_scale) * 2)
             out_v.append(_v)
     elif rpm == None:
         # v is fixed
         out_v.append(v)
         for J in J_list:
-            _rpm = v / J * 60 / R / 2
+            _rpm = v / J * 60 / (R*geometry_scale) / 2
             out_rpm.append(_rpm)
     return out_v, out_rpm
 
@@ -638,7 +638,7 @@ def interp(re_in, alpha_in, re, alpha, cl):
         # print(oo)
         return oo
 
-    re_bottom_index = np.where(re_list < re_in)[0][-1]
+    re_bottom_index = np.where(re_list <= re_in)[0][-1]
     re_bottom = re_list[re_bottom_index]
     re_top = re_list[re_bottom_index + 1]
 

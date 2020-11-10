@@ -18,7 +18,6 @@ OUTPUT_VARIABLES_LIST = {
     "alpha": {"type": "array", "name": "Angle of attack", "symbol": r"$\alpha$", "unit": "°"},
     "phi": {"type": "array", "name": "Relative wind angle", "symbol": r"$\phi$", "unit": "°"},
     "F": {"type": "array", "name": "Tip loss correction factor", "symbol": "F", "unit": ""},
-    "M": {"type": "array", "name": "Torque", "symbol": "M", "unit": "Nm"},
     "lambda_r": {"type": "array", "name": "Local tip speed ratio", "symbol": r"$\lambda_r$", "unit": ""},
     "Ct": {"type": "array", "name": "Tangential coefficient", "symbol": r"$C_t$", "unit": ""},
 
@@ -65,7 +64,7 @@ OUTPUT_VARIABLES_LIST = {
     "TSR": {"type": "float", "name": "Tip speed ratio", "symbol": r"$\lambda$", "unit": ""},
     "Ft": {"type": "float", "name": "Tangential force", "symbol": r"$F_t$", "unit": "N"},
     "omega": {"type": "float", "name": "Rotational velocity", "symbol": r"$\Omega$", "unit": r"$rad^{-1}$"},
-    "Msum": {"type": "float", "name": "Torque sum", "symbol": r"$M_Sum$", "unit": "Nm"},
+    "M": {"type": "float", "name": "Torque sum", "symbol": r"$M_Sum$", "unit": "Nm"},
     "power": {"type": "float", "name": "Power", "symbol": "P", "unit": "W"},
     "thrust": {"type": "float", "name": "Thrust", "symbol": "T", "unit": "N"},
     "Rhub": {"type": "float", "name": "Hub radius", "symbol": r"$R_hub$", "unit": "m"},
@@ -252,11 +251,8 @@ class Calculator:
         J = v / (rpm / 60 * R * 2)
         kin_viscosity = 1.4207E-5  # Kinematic viscosity
 
-        section_number = 0
-
         # BEM CALCULATION FOR EVERY SECTION
         for n in range(num_sections):
-            section_number += 1
 
             _r = r[n]
             _c = c[n]
@@ -264,7 +260,7 @@ class Calculator:
             _dr = dr[n]
 
             if print_out:
-                p.print("    r", _r, "(" + str(section_number) + ")")
+                p.print("    r", _r, "(" + str(n) + ")")
 
             # Coning angle (PROPX: Definitions,Derivations, Data Flow, p.22)
             psi = 0.0
@@ -316,20 +312,27 @@ class Calculator:
 
         dFt = results["dFt"]
         Ft = numpy.sum(dFt)
-        M = B * dFt * r  # momenti po prerezih
+
+        dM = B * dFt * r
+        M = numpy.sum(dM)
+        
         dQ = results["dQ"]
-        Q = numpy.sum(dQ)  # moment for propeller
+        Q = numpy.sum(dQ)
+        
         power_p = Q * omega
-        Msum = numpy.sum(M)
-        power = numpy.sum(M) * omega
+        power = M * omega
+
         Pmax = 0.5 * rho * v ** 3 * pi * R ** 2
+
         cp_w = power / Pmax
         cp_p = power_p / (rho * (rpm / 60) ** 3 * (2 * R) ** 5)
 
         dFn = results["dFn"]
         Fn = numpy.sum(dFn)
+
         dT = results["dT"]
         T = numpy.sum(dT)
+
         ct_w = T / (0.5 * rho * v ** 2 * pi * R ** 2)
         ct_p = T / (rho * (2 * R) ** 4 * (rpm / 60) ** 2)
 
@@ -353,7 +356,7 @@ class Calculator:
         results["TSR"] = TSR
         results["Ft"] = Ft
         results["omega"] = omega
-        results["Msum"] = Msum
+        results["M"] = M
         results["power"] = power
         results["thrust"] = T
         results["Rhub"] = Rhub
@@ -364,7 +367,7 @@ class Calculator:
 
         # arrays
         results["r"] = r
-        results["M"] = M
+        results["dM"] = dM
         results["dr"] = dr
         results["c"] = c
         results["theta"] = theta

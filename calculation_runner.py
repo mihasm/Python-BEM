@@ -61,6 +61,7 @@ def calculate_power_3d(inp_args, print_eof=False, prepend="", print_progress=Tru
     constant_speed, constant_rpm, constant_pitch = inp_args["constant_speed"], inp_args["constant_rpm"], inp_args["pitch"]
     variable_selection = inp_args["variable_selection"]
     constant_selection = inp_args["constant_selection"]
+    geometry_scale = inp_args["geometry_scale"]
     R = inp_args["R"]
 
     if variable_selection == 0:
@@ -75,7 +76,7 @@ def calculate_power_3d(inp_args, print_eof=False, prepend="", print_progress=Tru
             constant_rpm = None
         else:
             constant_speed=None
-        speeds, rpms = generate_v_and_rpm_from_tsr(tsr_list=tsr_list,R=R,v=constant_speed,rpm=constant_rpm)
+        speeds, rpms = generate_v_and_rpm_from_tsr(tsr_list=tsr_list,R=R, geometry_scale=geometry_scale,v=constant_speed,rpm=constant_rpm)
         pitches = [constant_pitch]
 
     elif variable_selection == 2:
@@ -85,7 +86,7 @@ def calculate_power_3d(inp_args, print_eof=False, prepend="", print_progress=Tru
             constant_rpm = None
         else:
             constant_speed=None
-        speeds, rpms = generate_v_and_rpm_from_J(J_list=j_list,R=R,v=constant_speed,rpm=constant_rpm)
+        speeds, rpms = generate_v_and_rpm_from_J(J_list=j_list,R=R,geometry_scale=geometry_scale,v=constant_speed,rpm=constant_rpm)
         pitches = [constant_pitch]
 
     elif variable_selection == 3:
@@ -100,8 +101,8 @@ def calculate_power_3d(inp_args, print_eof=False, prepend="", print_progress=Tru
         for rpm in rpms:
             for pitch in pitches:
                 if print_progress:
-                    _lambda = rpm / 60 * 2 * pi * inp_args["R"] / v
-                    _advance_ratio = v / (rpm / 60 * inp_args["R"] * 2)
+                    _lambda = rpm / 60 * 2 * pi * inp_args["R"] * inp_args["geometry_scale"] / v
+                    _advance_ratio = v / (rpm / 60 * inp_args["R"] * inp_args["geometry_scale"])
                     p.print(prepend + "v=%.1f m/s, n=%.0f RPM, λ=%.2f, J=%.2f" % (v,rpm,_lambda,_advance_ratio))
                 _inp_args = {**inp_args, "v": v, "rpm": rpm, "pitch": pitch}
                 try:
