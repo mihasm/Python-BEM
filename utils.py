@@ -400,23 +400,30 @@ def generate_v_and_rpm_from_tsr(tsr_list, R, geometry_scale, v=None, rpm=None):
 
 def generate_v_and_rpm_from_J(J_list, R, geometry_scale, v=None, rpm=None):
     """
-    J = v / (rpm / 60 * R * 2)
+    J = v / (rpm/60 * D) ...
 
-    J = v / rpm * 60 / R / 2
+    J = v / (rpm/60 * (2*R))
+
+    J = v / (rpm/60) / (2*R)
+
+    (rpm/60)=v/J/(2*R)
+
+    rpm = 60*v/J/(2*R)
     """
+    
     out_v = []
     out_rpm = []
     if v == None:
         # rpm is fixed
         out_rpm.append(rpm)
         for J in J_list:
-            _v = J * (rpm / 60 * (R*geometry_scale) * 2)
+            _v = J * (rpm / 60) * (2*R*geometry_scale)
             out_v.append(_v)
     elif rpm == None:
         # v is fixed
         out_v.append(v)
         for J in J_list:
-            _rpm = v / J * 60 / (R*geometry_scale) / 2
+            _rpm = 60 * v / J / (2*R*geometry_scale)
             out_rpm.append(_rpm)
     return out_v, out_rpm
 
