@@ -6,7 +6,6 @@ import traceback
 
 import numpy
 import numpy as np
-import scipy
 from PyQt5 import QtGui
 from PyQt5.QtGui import QPalette, QColor
 from PyQt5.QtWidgets import (QMessageBox)
@@ -45,6 +44,11 @@ def transpose(a):
 
 
 def dict_to_ar(inp_dict):
+    """
+
+    :param inp_dict:
+    :return:
+    """
     prep = []
     i = 0
 
@@ -87,6 +91,12 @@ def dict_to_csv(inp_dict, delimiter=";"):
 
 
 def array_to_csv(in_ar, delimiter="\t"):
+    """
+
+    :param in_ar:
+    :param delimiter:
+    :return:
+    """
     out = ""
     for r in range(len(in_ar)):
         for c in in_ar[r]:
@@ -157,6 +167,13 @@ def interpolate_geom(r, c, theta, foils, R, Rhub, num=None, linspace_interp=Fals
     return r, c, theta, foils, dr
 
 def calculate_dr(r,R,Rhub):
+    """
+
+    :param r:
+    :param R:
+    :param Rhub:
+    :return:
+    """
     # calculate dr
     dr = np.zeros(len(r))
     for i in range(len(r)):
@@ -175,12 +192,23 @@ def calculate_dr(r,R,Rhub):
 
 
 def find_nearest(_array, value):
+    """
+
+    :param _array:
+    :param value:
+    :return:
+    """
     _array = np.asarray(_array)
     idx = (np.abs(_array - value)).argmin()
     return idx
 
 
 def to_float(inpt):
+    """
+
+    :param inpt:
+    :return:
+    """
     if isinstance(inpt, str):
         inpt = inpt.replace(",", ".")
     return float(inpt)
@@ -191,6 +219,12 @@ class Printer:
         self.out = arr
 
     def print(self, *args, add_newline=True):
+        """
+
+        :param args:
+        :param add_newline:
+        :return:
+        """
         out_str = ""
         i = 0
         for a in args:
@@ -208,6 +242,12 @@ class Printer:
 
 
 def fltr(node, vals):
+    """
+
+    :param node:
+    :param vals:
+    :return:
+    """
     print(node)
     if isinstance(node, dict):
         retVal = {}
@@ -237,6 +277,13 @@ def fltr(node, vals):
 
 
 def generate_dat(name, x, y):
+    """
+
+    :param name:
+    :param x:
+    :param y:
+    :return:
+    """
     out = ""
     out += name + "\n"
     for i in range(len(x)):
@@ -306,6 +353,12 @@ class QDarkPalette(QPalette):
 
 
 def sort_data(data, columns=(0, 2)):
+    """
+
+    :param data:
+    :param columns:
+    :return:
+    """
     if len(columns) == 0:
         raise Exception("Sorting must be done for more than zero columns.")
     first = False
@@ -319,6 +372,11 @@ def sort_data(data, columns=(0, 2)):
 
 
 def normalize_angle(angle):
+    """
+
+    :param angle:
+    :return:
+    """
     # reduce the angle
     angle = angle % 360
     # force it to be the positive remainder, so that 0 <= angle < 360
@@ -331,22 +389,41 @@ def normalize_angle(angle):
 
 
 def create_folder(name_path):
+    """
+
+    :param name_path:
+    """
     if not os.path.exists(name_path):
         os.makedirs(name_path)
 
 
 def get_centroid_coordinates(foil_x, foil_y):
+    """
+
+    :param foil_x:
+    :param foil_y:
+    :return:
+    """
     centroid = (np.sum(foil_x) / len(foil_x),
                 np.sum(foil_y) / len(foil_y))
     return centroid
 
 
 class MyMessageBox(QMessageBox):
+    """
+
+    """
     def __init__(self):
         QtGui.QMessageBox.__init__(self)
+        super().__init__()
         self.setSizeGripEnabled(True)
 
     def event(self, e):
+        """
+
+        :param e:
+        :return:
+        """
         result = QtGui.QMessageBox.event(self, e)
 
         self.setMinimumHeight(0)
@@ -367,6 +444,9 @@ class MyMessageBox(QMessageBox):
 
 
 def ErrorMessageBox():
+    """
+
+    """
     msg = MyMessageBox()
     msg.setIcon(QMessageBox.Warning)
     msg.setText("Error while getting settings")
@@ -429,6 +509,11 @@ def generate_v_and_rpm_from_J(J_list, R, geometry_scale, v=None, rpm=None):
 
 
 def import_dat(file_path):
+    """
+
+    :param file_path:
+    :return:
+    """
     f = open(file_path, "r")
     # f.readlines()
     lines = f.readlines()
@@ -449,6 +534,11 @@ def import_dat(file_path):
 
 
 def import_nrel_dat(file_path):
+    """
+
+    :param file_path:
+    :return:
+    """
     f = open(file_path, "r")
     lines = f.readlines()
     f.close()
@@ -493,6 +583,11 @@ def import_nrel_dat(file_path):
 
 
 def get_transition_foils(foils):
+    """
+
+    :param foils:
+    :return:
+    """
     transition_foils = []
     for j in range(len(foils)):
         if foils[j] == "transition":
@@ -518,6 +613,11 @@ def get_transition_foils(foils):
 
 
 def greek_letters_to_string(string):
+    """
+
+    :param string:
+    :return:
+    """
     dict_letters = {"\\alpha": "α",
                     "\\beta": "β",
                     "\\gamma": "γ",
@@ -749,6 +849,13 @@ def get_interpolation_function(x, y, z, num_x=10, num_y=360):
 ### SOLIDWORKS MACRO BUILDER ###
 
 def create_macro_text(list_of_files,data):
+    """
+
+    :param list_of_files:
+    :param data:
+    :return:
+    """
+
     template1 = """
     Dim swApp As Object
     Dim swModel As SldWorks.ModelDoc2

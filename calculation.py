@@ -375,6 +375,20 @@ class Calculator:
 
     def statical_analysis(self, blade_design, blade_thickness, c, dr, foils, mass_density, num_sections, omega, r,
                           results, theta):
+        """
+
+        :param blade_design:
+        :param blade_thickness:
+        :param c:
+        :param dr:
+        :param foils:
+        :param mass_density:
+        :param num_sections:
+        :param omega:
+        :param r:
+        :param results:
+        :param theta:
+        """
         blade_mass = 0
         ### STATICAL ANALYSIS
         for i in range(num_sections):
@@ -450,6 +464,19 @@ class Calculator:
 
     def get_section_airfoil_data(self, _airfoil, _airfoil_next, _airfoil_prev, _c, _theta, blade_design,
                                  blade_thickness, transition_coefficient):
+        """
+
+        :param _airfoil:
+        :param _airfoil_next:
+        :param _airfoil_prev:
+        :param _c:
+        :param _theta:
+        :param blade_design:
+        :param blade_thickness:
+        :param transition_coefficient:
+        :return:
+        """
+
         if _airfoil != "transition":
             Ix, Iy, Ixy, A, tang_dist, norm_dist = self.get_crossection_data(_c, _theta, _airfoil, blade_design,
                                                                              blade_thickness)
@@ -810,7 +837,15 @@ class Calculator:
         return out
 
     def get_crossection_data(self, _c, _theta, _airfoil, blade_design, blade_thickness):
+        """
 
+        :param _c:
+        :param _theta:
+        :param _airfoil:
+        :param blade_design:
+        :param blade_thickness:
+        :return:
+        """
         _airfoil_x, _airfoil_y = self.airfoils[_airfoil]["x"], self.airfoils[_airfoil]["y"]
         _centroid_x, _centroid_y = self.airfoils[_airfoil]["centroid_x"], self.airfoils[_airfoil]["centroid_y"]
         _centroid = (_centroid_x, _centroid_y)

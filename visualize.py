@@ -10,6 +10,16 @@ from turbine_data import SET_INIT
 from utils import calculate_dr
 
 def create_face(p1, p2, p3, p4, *args, **kwargs):
+    """
+
+    :param p1:
+    :param p2:
+    :param p3:
+    :param p4:
+    :param args:
+    :param kwargs:
+    :return:
+    """
     coords = [p1, p2, p3, p4]
     face = mp3d.art3d.Poly3DCollection(
         [coords], facecolors=facecolors, alpha=.5, linewidth=0.0, *args, **kwargs)
@@ -31,6 +41,14 @@ def rotate(origin, point, angle):
 
 
 def rotate_array(x, y, xy, angle):
+    """
+
+    :param x:
+    :param y:
+    :param xy:
+    :param angle:
+    :return:
+    """
     angle = math.radians(angle)
     x_out, y_out = [], []
     for _x, _y in zip(x, y):
@@ -41,6 +59,14 @@ def rotate_array(x, y, xy, angle):
 
 
 def scale_and_normalize(foil_x, foil_y, scale, centroid):
+    """
+
+    :param foil_x:
+    :param foil_y:
+    :param scale:
+    :param centroid:
+    :return:
+    """
     foil_x, foil_y = np.array(foil_x), np.array(foil_y)
     foil_x = foil_x-centroid[0]
     foil_x, foil_y = foil_x*scale, foil_y*scale
@@ -48,6 +74,13 @@ def scale_and_normalize(foil_x, foil_y, scale, centroid):
 
 
 def create_3d_blade(input_data, flip_turning_direction=False, propeller_geom=False):
+    """
+
+    :param input_data:
+    :param flip_turning_direction:
+    :param propeller_geom:
+    :return:
+    """
     theta = input_data["theta"]
     r = input_data["r"]
     c = input_data["c"]

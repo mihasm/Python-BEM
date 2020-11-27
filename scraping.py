@@ -6,6 +6,11 @@ from bs4 import BeautifulSoup as bs
 
 
 def scrape_data(link):
+    """
+
+    :param link:
+    :return:
+    """
     out = []
     data = get_polars(link)
     for Re, value in data.items():
@@ -18,6 +23,11 @@ def scrape_data(link):
     return out
 
 def get_polars(link):
+    """
+
+    :param link:
+    :return:
+    """
     results = {}
     print("Getting data from",link)
     r = requests.get(link)
@@ -78,6 +88,11 @@ def get_polars(link):
 
 
 def get_x_y_from_link(link):
+    """
+
+    :param link:
+    :return:
+    """
     print("Getting x-y airfoil data from",link)
 
     params = parse_qsl(urlparse(link.strip()).query, keep_blank_values=True)

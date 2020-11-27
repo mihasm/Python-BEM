@@ -10,7 +10,12 @@ from utils import Printer
 
 
 def optimize(inp_args, queue_pyqtgraph):
+    """
 
+    :param inp_args:
+    :param queue_pyqtgraph:
+    :return:
+    """
     p = Printer(inp_args["return_print"])
     try:
         return_results = inp_args["return_results"]

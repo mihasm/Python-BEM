@@ -20,6 +20,9 @@ warnings.filterwarnings("ignore",category=matplotlib.cbook.MatplotlibDeprecation
 
 
 class ResultsWindow(QMainWindow):
+    """
+
+    """
     def __init__(self, parent, width, height, results_3d, input_data):
         super(ResultsWindow, self).__init__(parent)
         self.input_data = input_data
@@ -174,12 +177,19 @@ class ResultsWindow(QMainWindow):
         self.show()
 
     def closeEvent(self, event):
+        """
+
+        :param event:
+        """
         for f in self.tab_widget.figures:
             f.clear()
             plt.close(f)
         event.accept()  # let the window close
 
     def set_menubar(self):
+        """
+
+        """
         mainMenu = self.menuBar()
         fileMenu = mainMenu.addMenu("File")
         exitButton = QAction(QIcon("exit24.png"), "Exit", self)
@@ -190,6 +200,9 @@ class ResultsWindow(QMainWindow):
 
 
 class TabWidget(QtWidgets.QTabWidget):
+    """
+
+    """
     def __init__(self, parent=None):
         super(TabWidget, self).__init__(parent)
         self.tabs = []
@@ -198,6 +211,11 @@ class TabWidget(QtWidgets.QTabWidget):
         self.toolbars = []
 
     def add_tab_figure(self, tab_name):
+        """
+
+        :param tab_name:
+        :return:
+        """
         self.tabs.append(QtWidgets.QWidget())
         self.addTab(self.tabs[-1], tab_name)
         self.figures.append(plt.figure(figsize=(10, 5)))
@@ -211,6 +229,24 @@ class TabWidget(QtWidgets.QTabWidget):
 
     def add_2d_plot_to_figure(self, f, x, y, whi, title=None, x_name=None, y_name=None, x_min=None, x_max=None,
                               y_min=None, y_max=None, look=None, legend=False, **kwargs):
+        """
+
+        :param f:
+        :param x:
+        :param y:
+        :param whi:
+        :param title:
+        :param x_name:
+        :param y_name:
+        :param x_min:
+        :param x_max:
+        :param y_min:
+        :param y_max:
+        :param look:
+        :param legend:
+        :param kwargs:
+        :return:
+        """
         ax = f.add_subplot(whi)
         if look:
             ax.plot(x, y, look, **kwargs)
@@ -233,6 +269,26 @@ class TabWidget(QtWidgets.QTabWidget):
 
     def add_surface_plot(self, f, x, y, z, whi, title=None, x_name=None, y_name=None, z_name=None, x_min=None,
                          x_max=None, y_min=None, y_max=None, z_min=None, z_max=None, legend=False, **kwargs):
+        """
+
+        :param f:
+        :param x:
+        :param y:
+        :param z:
+        :param whi:
+        :param title:
+        :param x_name:
+        :param y_name:
+        :param z_name:
+        :param x_min:
+        :param x_max:
+        :param y_min:
+        :param y_max:
+        :param z_min:
+        :param z_max:
+        :param legend:
+        :param kwargs:
+        """
         ax = f.add_subplot(whi, projection="3d")
         p0 = ax.plot_trisurf(x, y, z, cmap=plt.cm.CMRmap, **kwargs)
         cbar = plt.colorbar(p0)
@@ -256,6 +312,26 @@ class TabWidget(QtWidgets.QTabWidget):
 
     def add_3d_scatter_plot(self, f, x, y, z, whi, title=None, x_name=None, y_name=None, z_name=None, x_min=None,
                             x_max=None, y_min=None, y_max=None, z_min=None, z_max=None, legend=False, label=None):
+        """
+
+        :param f:
+        :param x:
+        :param y:
+        :param z:
+        :param whi:
+        :param title:
+        :param x_name:
+        :param y_name:
+        :param z_name:
+        :param x_min:
+        :param x_max:
+        :param y_min:
+        :param y_max:
+        :param z_min:
+        :param z_max:
+        :param legend:
+        :param label:
+        """
         ax = f.add_subplot(whi, projection="3d")
         p0 = ax.scatter(x, y, z, cmap=plt.cm.CMRmap, label=label)
         # cbar = plt.colorbar(p0)
@@ -277,15 +353,28 @@ class TabWidget(QtWidgets.QTabWidget):
         self.canvas[-1].draw()
 
     def add_tab_widget(self, widget, tab_name):
+        """
+
+        :param widget:
+        :param tab_name:
+        """
         self.tabs.append(widget)
         self.addTab(self.tabs[-1], tab_name)
 
     def add_runner_widget(self, input_data, tab_name="Runner"):
+        """
+
+        :param input_data:
+        :param tab_name:
+        """
         r = RunnerWidget(input_data=input_data)
         self.tabs.append(r)
         self.addTab(self.tabs[-1], tab_name)
 
 class CustomGraphWidget(QWidget):
+    """
+
+    """
     def __init__(self, parent=None):
         super(CustomGraphWidget, self).__init__(parent)
         self.parent = parent
@@ -336,6 +425,9 @@ class CustomGraphWidget(QWidget):
         self.setLayout(self.layout)
 
     def draw_graph(self):
+        """
+
+        """
         self.ax.clear()
 
         # set variable
@@ -438,5 +530,9 @@ class CustomGraphWidget(QWidget):
         self.canvas.draw()
 
     def set_data(self,results):
+        """
+
+        :param results:
+        """
         self.results = results
         self.draw_graph()

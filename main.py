@@ -32,6 +32,10 @@ elif __file__:
 
 
 def main(quick_results=False):
+    """
+
+    :param quick_results:
+    """
     if sys.platform.startswith("win"):
         # On Windows calling this function is necessary for multiprocessing.
         multiprocessing.freeze_support()

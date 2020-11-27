@@ -19,6 +19,15 @@ if sys.platform.startswith("darwin"):
 
 
 def xfoil_runner(airfoil, reynolds, alpha, printer=None, print_all=False):
+    """
+
+    :param airfoil:
+    :param reynolds:
+    :param alpha:
+    :param printer:
+    :param print_all:
+    :return:
+    """
     # alpha = round(degrees(alpha))
     # alpha in degrees
     if print_all:
@@ -32,6 +41,11 @@ def xfoil_runner(airfoil, reynolds, alpha, printer=None, print_all=False):
 
 
 def get_coefficients_from_output(output_str):
+    """
+
+    :param output_str:
+    :return:
+    """
     lines = output_str.splitlines()
     last_lines = "\n".join(lines[-5:])
     if "VISCAL:  Convergence failed" in output_str:
@@ -59,6 +73,16 @@ def get_coefficients_from_output(output_str):
 
 
 def run_xfoil_analysis(airfoil, reynolds, alpha, iterations=70, max_next_angle=2., print_output=False):
+    """
+
+    :param airfoil:
+    :param reynolds:
+    :param alpha:
+    :param iterations:
+    :param max_next_angle:
+    :param print_output:
+    :return:
+    """
     # print("running xfoil for %s,Re=%s,alpha=%s" % (airfoil,reynolds,alpha))
     # alpha in degrees
     with Popen(os.path.abspath(xfoil_path), stdin=PIPE, stdout=PIPE, universal_newlines=True, shell = True) as process:
@@ -111,6 +135,14 @@ def run_xfoil_analysis(airfoil, reynolds, alpha, iterations=70, max_next_angle=2
 
 
 def draw_to_matplotlib(x, y, z, shrani=False, unit='CL'):
+    """
+
+    :param x:
+    :param y:
+    :param z:
+    :param shrani:
+    :param unit:
+    """
     # Ne vem ali je to potrebno. Menda je.
     x = np.array(x)
     y = np.array(y)
@@ -164,6 +196,11 @@ def draw_to_matplotlib(x, y, z, shrani=False, unit='CL'):
 
 
 def generate_polars(foil):
+    """
+
+    :param foil:
+    :return:
+    """
     all_re = []
     all_a = []
     all_cl = []
@@ -190,7 +227,11 @@ def generate_polars(foil):
 
 
 def generate_polars_data(foil):
+    """
 
+    :param foil:
+    :return:
+    """
     all_a, all_re, all_cl, all_cd = generate_polars(foil)
     out = []
     ncrit = 0
@@ -207,6 +248,12 @@ def generate_polars_data(foil):
 
 
 def draw_scatter(x, y, z):
+    """
+
+    :param x:
+    :param y:
+    :param z:
+    """
     fig = plt.figure()
     ax = Axes3D(fig)
     ax.scatter(all_a, all_re, all_cl)

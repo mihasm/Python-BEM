@@ -6,6 +6,9 @@ from numpy import pi as PI
 
 
 class POLAR_CLASS:
+    """
+
+    """
     def __init__(self, x, y, alpha, Cl, Cd):
         self.x = x
         self.y = y
@@ -15,6 +18,9 @@ class POLAR_CLASS:
 
 
 class Montgomerie:
+    """
+
+    """
     def __init__(self, x, y, alpha, Cl, Cd, Re=100000, A=-5, Am=8, B=5, Bm=5, m_CD90=2.0, slope=0.106):
         # coefficient of lift at AoA  == 0
         self.CLzero = np.interp(0, alpha, Cl)
@@ -46,11 +52,23 @@ class Montgomerie:
         self.reynolds = Re
 
     def CD90(self, alpha):
+        """
+
+        :param alpha:
+        :return:
+        """
         res = self.m_CD90 - 1.46 * self.m_fThickness / 2 + \
             1.46 * self.m_fCamber * sin(alpha / 360 * 2 * PI)
         return res
 
     def PlateFlow(self, alphazero, CLzero, alpha):
+        """
+
+        :param alphazero:
+        :param CLzero:
+        :param alpha:
+        :return:
+        """
         # tukaj bi CD90  rala biti funkcija
         # alpha in degrees
         a = (1 + CLzero / sin(PI / 4) * sin(alpha / 360 * 2 * PI)) * self.CD90(alpha) * sin((alpha - 57.6 * 0.08 * sin(
@@ -59,13 +77,29 @@ class Montgomerie:
         return a
 
     def PotFlow(self, CLzero, slope, alpha):
+        """
+
+        :param CLzero:
+        :param slope:
+        :param alpha:
+        :return:
+        """
         return CLzero + slope * alpha
 
     def CDPlate(self, alpha):
+        """
+
+        :param alpha:
+        :return:
+        """
         res = self.CD90(alpha) * sin(alpha / 360 * 2 * PI) ** 2
         return res
 
     def calculate_extrapolation(self):
+        """
+
+        :return:
+        """
         m_Alpha = []
         m_Cl = []
         m_Cd = []
@@ -232,7 +266,7 @@ class Montgomerie:
         alpha = 0
 
         while alpha >= -180:
-            if (alpha > am2 + 70):
+            if alpha > am2 + 70:
                 if alpha > am:
                     delta = 0
                 else:
@@ -263,7 +297,7 @@ class Montgomerie:
                 self.PotFlow(self.CLzero, self.slope, alpha) - f * self.PotFlow(self.CLzero, self.slope, alpha) - (
                     1 - f) * self.PlateFlow(self.alphazero, self.CLzero, alpha))
 
-            if (self.deltaCD <= 0):
+            if self.deltaCD <= 0:
                 self.deltaCD = 0
             m_Cd.append(
                 f * (self.deltaCD + 0.006 + 1.25 * self.m_fThickness ** 2 / 180 * abs(alpha)) + (1 - f) * self.CDPlate(
