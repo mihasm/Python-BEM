@@ -256,7 +256,7 @@ class Calculator:
 
             _r = r[n]
             _c = c[n]
-            _theta = radians(theta[n])
+            _theta = theta[n]
             _dr = dr[n]
 
             if print_out:
@@ -523,7 +523,7 @@ class Calculator:
         omega:float: Rotational velocity [s^-1].
         _r:float: Section radius [m].
         _c:float: Section chord length [m].
-        _theta:float: Section angle [rad].
+        _theta:float: Section angle [deg].
         _dr:float: Section height [m].
         B:int: Number of blades.
         R:float: Wind turbine radius [m].
@@ -573,11 +573,12 @@ class Calculator:
         # convert pitch to radians
         _pitch = radians(pitch)
 
-        # convert yaw to radians
+        # convert to radians
         yaw_angle = radians(yaw_angle)  # [Radians]
         psi = radians(psi)  # Coning angle [Radians]
         tilt_angle = radians(tilt_angle)  # [Radians]
         lambda_r_array = np.array(lambda_r_array)
+        _theta = radians(_theta)
 
         ############ START ITERATION ############
         while True:
@@ -840,7 +841,7 @@ class Calculator:
         """
 
         :param _c:
-        :param _theta:
+        :param _theta: in degrees
         :param _airfoil:
         :param blade_design:
         :param blade_thickness:
