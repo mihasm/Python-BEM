@@ -46,7 +46,7 @@ def rotate_array(x, y, xy, angle):
     :param x:
     :param y:
     :param xy:
-    :param angle:
+    :param angle: in degrees
     :return:
     """
     angle = math.radians(angle)
