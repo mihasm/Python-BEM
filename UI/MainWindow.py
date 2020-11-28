@@ -1,6 +1,7 @@
 import json
 import os
 from multiprocessing import Manager
+from pprint import pprint
 
 import numpy as np
 from PyQt5.QtCore import pyqtSignal
@@ -156,10 +157,10 @@ class MainWindow(QMainWindow):
 
         try:
             out = {**properties, **settings, **opt_settings, **curve_manager_settings}
+            #pprint(out)
             return out
         except:
             msg = ErrorMessageBox()
-            # pprint(out)
             return None
 
     # noinspection PyBroadException

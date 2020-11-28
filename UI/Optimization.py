@@ -39,22 +39,6 @@ class Optimization(QWidget):
         self.form_list.append([self._target_rpm, self.target_rpm])
         self.target_rpm.setToolTip("Ciljni vrtljaji rotorja turbine. Pri teh vrtljajih se bo izvajala BEM analiza.")
 
-        self.min_bound = QLineEdit()
-        self.min_bound.setValidator(self.validator)
-        self.min_bound.textChanged.connect(self.check_state)
-        self.min_bound.textChanged.emit(self.min_bound.text())
-        self._min_bound = QLabel("Minimum boundary")
-        self.form_list.append([self._min_bound, self.min_bound])
-        self.min_bound.setToolTip("Minimalni kot (theta) lopatice.")
-
-        self.max_bound = QLineEdit()
-        self.max_bound.setValidator(self.validator)
-        self.max_bound.textChanged.connect(self.check_state)
-        self.max_bound.textChanged.emit(self.max_bound.text())
-        self._max_bound = QLabel("Maximum boundary")
-        self.form_list.append([self._max_bound, self.max_bound])
-        self.max_bound.setToolTip("Maksimalni kot (theta) lopatice.")
-
         self.mut_coeff = QLineEdit()
         self.mut_coeff.setValidator(self.validator)
         self.mut_coeff.textChanged.connect(self.check_state)
@@ -81,38 +65,24 @@ class Optimization(QWidget):
         self.num_iter.setToolTip(
             "Število generacij (iteracij). Konvergenčni kriterij je pri tovrstnih algoritmih težko določljiv, zato izberemo fiksno vrednost.")
 
-        self._opt_variable = QLabel("Optimization variable")
-        self.opt_variable = QComboBox()
-        self.opt_variable.addItems(
-            ["max(dQ) (torque->wind turbine)", "max(dT) (thrust->propeller)", "max(weight_dq*dQ-weight_dt*dT)",
-             "max(weight_dt*dT-weight_dq*dQ)"])
-        self.opt_variable.setCurrentIndex(0)
-        self.form_list.append([self._opt_variable, self.opt_variable])
-        self.opt_variable.setToolTip(
-            "Optimizacija naj poteka za to izbrano spremenljivko. V primeru vetrne turbine max(dQ).")
+        self.input_variables_widget =QWidget()
+        self.input_variables_layout = QGridLayout()
+        self.input_variables_widget.setLayout(self.input_variables_layout)
+        self.button_add_input_variable = QPushButton("Add input variable")
+        self.button_add_input_variable.clicked.connect(self.add_input_variable)
+        self.input_variable_selection = QComboBox()
+        self.input_variable_selection.addItems(["_theta","_c"])
+        self.list_input_variables = []
 
-        self.weight_dq = QLineEdit()
-        self.weight_dq.setValidator(self.validator)
-        self.weight_dq.textChanged.connect(self.check_state)
-        self.weight_dq.textChanged.emit(self.weight_dq.text())
-        self._weight_dq = QLabel("weight_dq")
-        self.form_list.append([self._weight_dq, self.weight_dq])
-        self.weight_dq.setToolTip("Utež dq v primeru dvojne optimizacije.")
+        self.output_variables_widget =QWidget()
+        self.output_variables_layout = QGridLayout()
+        self.output_variables_widget.setLayout(self.output_variables_layout)
+        self.button_add_output_variable = QPushButton("Add output variable")
+        self.button_add_output_variable.clicked.connect(self.add_output_variable)
+        self.output_variable_selection = QComboBox()
+        self.output_variable_selection.addItems(["dQ","dT","a","a'","cL","cD","dFn","dFt","U4"])
+        self.list_output_variables = []
 
-        self.weight_dt = QLineEdit()
-        self.weight_dt.setValidator(self.validator)
-        self.weight_dt.textChanged.connect(self.check_state)
-        self.weight_dt.textChanged.emit(self.weight_dt.text())
-        self._weight_dt = QLabel("weight_dt")
-        self.form_list.append([self._weight_dt, self.weight_dt])
-        self.weight_dt.setToolTip("Utež dt v primeru dvojne optimizacije.")
-
-        self.pitch_optimization = QCheckBox()
-        self.pitch_optimization.setChecked(False)
-        self._pitch_optimization = QLabel("Pitch optimization")
-        self.form_list.append([self._pitch_optimization, self.pitch_optimization])
-        self.pitch_optimization.setToolTip(
-            "To možnost izberemo samo, kadar nas zanima optimalni nastavni kot lopatice.")
 
         self.buttonOptimization = QPushButton("Run optimization")
         self.buttonOptimization.clicked.connect(self.run)
@@ -138,6 +108,12 @@ class Optimization(QWidget):
         for a, b in self.form_list:
             self.fbox.addRow(a, b)
 
+        self.fbox.addRow(self.button_add_input_variable,self.input_variable_selection)
+        self.fbox.addRow(self.input_variables_widget)
+
+        self.fbox.addRow(self.button_add_output_variable,self.output_variable_selection)
+        self.fbox.addRow(self.output_variables_widget)
+
         self.fbox.addRow(self.buttonOptimization)
         self.fbox.addRow("", QLabel())
 
@@ -154,6 +130,86 @@ class Optimization(QWidget):
         self.J_string = QLabel("0")
         self.fbox.addRow("TSR:", self.tsr_string)
         self.fbox.addRow("J:", self.J_string)
+
+    def refresh_input_variables(self):
+        for i in reversed(range(self.input_variables_layout.count())): 
+            self.input_variables_layout.itemAt(i).widget().setParent(None)
+
+        i=0
+        for var,min_b,max_b in self.list_input_variables:
+            name = QLabel(var)
+            min_bound = QLineEdit(str(min_b))
+            min_bound.textChanged.connect(self.update_input_variables_list)
+            max_bound = QLineEdit(str(max_b))
+            max_bound.textChanged.connect(self.update_input_variables_list)
+            delete_button = QPushButton("X")
+            delete_button.clicked.connect(self.delete_input_variable)
+            self.input_variables_layout.addWidget(name,i,0)
+            self.input_variables_layout.addWidget(min_bound,i,1)
+            self.input_variables_layout.addWidget(max_bound,i,2)
+            self.input_variables_layout.addWidget(delete_button,i,3)
+            i+=1
+
+    def update_input_variables_list(self):
+        for row in range(len(self.list_input_variables)):
+            try:
+                min_b = float(self.input_variables_layout.itemAtPosition(row,1).widget().text())
+                self.list_input_variables[row][1] = min_b
+            except ValueError:
+                pass
+            try:
+                max_b = float(self.input_variables_layout.itemAtPosition(row,2).widget().text())
+                self.list_input_variables[row][2] = max_b
+            except ValueError:
+                pass
+
+    def update_output_variables_list(self):
+        for row in range(len(self.list_output_variables)):
+            try:
+                coeff = float(self.output_variables_layout.itemAtPosition(row,1).widget().text())
+                self.list_output_variables[row][1] = coeff
+            except ValueError:
+                pass
+
+    def delete_input_variable(self):
+        button = self.sender()
+        index = self.input_variables_layout.indexOf(button)
+        row,column,_,_ = self.input_variables_layout.getItemPosition(index)
+        del self.list_input_variables[row]
+        self.refresh_input_variables()
+
+    def add_input_variable(self):
+        variable = str(self.input_variable_selection.currentText())
+        self.list_input_variables.append([variable,0,0])
+        self.refresh_input_variables()
+
+    def refresh_output_variables(self):
+        for i in reversed(range(self.output_variables_layout.count())): 
+            self.output_variables_layout.itemAt(i).widget().setParent(None)
+
+        i=0
+        for var,coefficient in self.list_output_variables:
+            name = QLabel(var)
+            coefficient = QLineEdit(str(coefficient))
+            coefficient.textChanged.connect(self.update_output_variables_list)
+            delete_button = QPushButton("X")
+            delete_button.clicked.connect(self.delete_output_variable)
+            self.output_variables_layout.addWidget(name,i,0)
+            self.output_variables_layout.addWidget(coefficient,i,1)
+            self.output_variables_layout.addWidget(delete_button,i,2)
+            i+=1
+
+    def delete_output_variable(self):
+        button = self.sender()
+        index = self.output_variables_layout.indexOf(button)
+        row,column,_,_ = self.output_variables_layout.getItemPosition(index)
+        del self.list_output_variables[row]
+        self.refresh_output_variables()
+
+    def add_output_variable(self):
+        variable = str(self.output_variable_selection.currentText())
+        self.list_output_variables.append([variable,0])
+        self.refresh_output_variables()
 
     def update_tsr_and_j(self):
         try:
@@ -256,43 +312,35 @@ class Optimization(QWidget):
         out = {}
         out["target_rpm"] = self.target_rpm.text()
         out["target_speed"] = self.target_speed.text()
-        out["pitch_optimization"] = bool(self.pitch_optimization.checkState())
-        out["min_bound"] = self.min_bound.text()
-        out["max_bound"] = self.max_bound.text()
         out["mut_coeff"] = self.mut_coeff.text()
         out["population"] = self.population.text()
         out["num_iter"] = self.num_iter.text()
-        out["weight_dt"] = self.weight_dt.text()
-        out["weight_dq"] = self.weight_dq.text()
-
-        if int(self.opt_variable.currentIndex()) == 0:
-            out["optimization_variable"] = "dQ"
-        elif int(self.opt_variable.currentIndex()) == 1:
-            out["optimization_variable"] = "dT"
-        elif int(self.opt_variable.currentIndex()) == 2:
-            out["optimization_variable"] = "dQ-dT"
-        elif int(self.opt_variable.currentIndex()) == 3:
-            out["optimization_variable"] = "dT-dQ"
-
+        
         for k, v in out.items():
             if v == "":
                 v = None
             elif v == None:
                 pass
             else:
-                if not k == "optimization_variable":
-                    v = to_float(v)
+                v = to_float(v)
             out[k] = v
+
+        self.update_input_variables_list()
+        self.update_output_variables_list()
+        out["optimization_inputs"]=self.list_input_variables
+        out["optimization_outputs"]=self.list_output_variables
         return out
 
     def set_settings(self, inp_dict):
         self.target_rpm.setText(str(inp_dict["target_rpm"]))
         self.target_speed.setText(str(inp_dict["target_speed"]))
-        self.pitch_optimization.setChecked(inp_dict["pitch_optimization"])
-        self.min_bound.setText(str(inp_dict["min_bound"]))
-        self.max_bound.setText(str(inp_dict["max_bound"]))
+        #self.pitch_optimization.setChecked(inp_dict["pitch_optimization"])
         self.mut_coeff.setText(str(inp_dict["mut_coeff"]))
         self.population.setText(str(inp_dict["population"]))
         self.num_iter.setText(str(inp_dict["num_iter"]))
-        self.weight_dt.setText(str(inp_dict["weight_dt"]))
-        self.weight_dq.setText(str(inp_dict["weight_dq"]))
+        self.list_input_variables = inp_dict["optimization_inputs"]
+        self.list_output_variables = inp_dict["optimization_outputs"]
+        self.refresh_output_variables()
+        self.refresh_input_variables()
+        #self.weight_dt.setText(str(inp_dict["weight_dt"]))
+        #self.weight_dq.setText(str(inp_dict["weight_dq"]))
