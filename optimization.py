@@ -24,6 +24,8 @@ def optimize(inp_args, queue_pyqtgraph):
         inp_args["rpm"] = inp_args["target_rpm"]
         inp_args["omega"] = 2 * pi * inp_args["rpm"] / 60
 
+        num_sections = len(inp_args["theta"])
+
         input_variables = inp_args["optimization_inputs"]
         output_variables = inp_args["optimization_outputs"]
         
@@ -39,36 +41,87 @@ def optimize(inp_args, queue_pyqtgraph):
 
         output_list = []
 
-        for n in range(len(inp_args["r"])):
-            p.print("  Section_number is", n)
+        mode = 0
 
-            section_inp_args = {}
+        if mode == 0:
 
-            section_inp_args["_r"] = inp_args["r"][n]
-            section_inp_args["_c"] = inp_args["c"][n]
-            section_inp_args["_theta"] = inp_args["theta"][n]
-            section_inp_args["_dr"] = inp_args["dr"][n]
+            for n in range(len(inp_args["r"])):
+                p.print("  Section_number is", n)
 
-            section_inp_args["transition"] = C.transition_array[n]
-            section_inp_args["_airfoil"] = C.airfoils_list[n]
-            section_inp_args["_airfoil_prev"] = C.transition_foils[n][0]
-            section_inp_args["_airfoil_next"] = C.transition_foils[n][1]
-            section_inp_args["transition_coefficient"] = C.transition_foils[n][2]
-            section_inp_args["max_thickness"] = C.max_thickness_array[n]
+                section_inp_args = {}
 
-            # worst_value = 0.0
+                section_inp_args["_r"] = inp_args["r"][n]
+                section_inp_args["_c"] = inp_args["c"][n]
+                section_inp_args["_theta"] = inp_args["theta"][n]
+                section_inp_args["_dr"] = inp_args["dr"][n]
 
+                section_inp_args["transition"] = C.transition_array[n]
+                section_inp_args["_airfoil"] = C.airfoils_list[n]
+                section_inp_args["_airfoil_prev"] = C.transition_foils[n][0]
+                section_inp_args["_airfoil_next"] = C.transition_foils[n][1]
+                section_inp_args["transition_coefficient"] = C.transition_foils[n][2]
+                section_inp_args["max_thickness"] = C.max_thickness_array[n]
+
+                # worst_value = 0.0
+
+                inputs_list = [i[0] for i in input_variables]
+                bounds_list = [(b[1],b[2]) for b in input_variables]
+                p.print(bounds_list)
+
+
+                def fobj(input_numbers):
+                    for i in range(len(input_numbers)):
+                        section_inp_args[inputs_list[i]]=input_numbers[i]
+
+                    args = {**inp_args,**section_inp_args}
+
+                    d = C.calculate_section(**args,printer=p)
+                    if d == None or d == False:
+                        p.print("d is None or False")
+                        return -1e50
+
+                    fitness = 0
+                    for var, coeff in output_variables:
+                        fitness += d[var]*coeff
+                    return fitness
+
+                it = list(de2(fobj, bounds=bounds_list, iterations=num_iter, M=mut_coeff, num_individuals=population_size, printer=p, queue=queue_pyqtgraph))
+
+                p.print("best combination",it)
+                output_list.append(it)
+
+            p.print("Final output:")
+            p.print([v[0] for v in output_variables])
+            for i in output_list:
+                p.print(i)
+            
+            p.print("Done!")
+            time.sleep(0.5)
+            inp_args["EOF"].value = True
+
+        elif mode == 1:
             inputs_list = [i[0] for i in input_variables]
-            bounds_list = [(b[1],b[2]) for b in input_variables]
+            bounds_list = []
+            for b in input_variables:
+                for i in range(num_sections):
+                    bounds_list.append((b[1],b[2]))
+
+            p.print(bounds_list)
+
+            inputs_list = [["theta",-45,45]]
+            output_variables = [["cp",1.0]]
+
+            def fobj(*input_numbers):
+                input_numbers = input_numbers[0]
+                k = 0
+                for i in range(len(inputs_list)):
+                    for j in range(num_sections):
+                        inp_args[inputs_list[i][0]][j]=input_numbers[k]
+                        k+=1
 
 
-            def fobj(input_numbers):
-                for i in range(len(input_numbers)):
-                    section_inp_args[inputs_list[i]]=input_numbers[i]
+                d = C.run_array(**inp_args,printer=p)
 
-                args = {**inp_args,**section_inp_args}
-
-                d = C.calculate_section(**args,printer=p)
                 if d == None or d == False:
                     p.print("d is None or False")
                     return -1e50
@@ -80,17 +133,7 @@ def optimize(inp_args, queue_pyqtgraph):
 
             it = list(de2(fobj, bounds=bounds_list, iterations=num_iter, M=mut_coeff, num_individuals=population_size, printer=p, queue=queue_pyqtgraph))
 
-            p.print("best combination",it)
-            output_list.append(it)
 
-        p.print("Final output:")
-        p.print([v[0] for v in output_variables])
-        for i in output_list:
-            p.print(i)
-        
-        p.print("Done!")
-        time.sleep(0.5)
-        inp_args["EOF"].value = True
     except Exception as e:
         var = traceback.format_exc()
         p.print("Error in running optimizer: %s \n %s" % (str(e), var))
