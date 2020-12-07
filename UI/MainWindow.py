@@ -5,8 +5,8 @@ from pprint import pprint
 
 import numpy as np
 from PyQt5.QtCore import pyqtSignal
-from PyQt5.QtWidgets import QMainWindow, QAction, QFileDialog
-
+from PyQt5.QtWidgets import QMainWindow, QAction, QFileDialog, QApplication
+from PyQt5 import QtCore, QtWidgets
 
 from UI.AirfoilManager import AirfoilManager
 from UI.Analysis import Analysis
@@ -230,3 +230,17 @@ class MainWindow(QMainWindow):
         self.analysis.buttonStop.setEnabled(False)
         self.optimization.buttonStop.setEnabled(False)
         self.running = False
+
+    def wheelEvent(self,event):
+        modifiers = QtWidgets.QApplication.keyboardModifiers()
+        if modifiers == QtCore.Qt.ControlModifier:
+            font = QApplication.instance().font()
+            size = font.pointSizeF()
+            if event.angleDelta().y() > 0:
+                size = size+1
+            else:
+                size = size-1
+            font.setPointSize(size)
+            QApplication.instance().setFont(font)
+            for w in QApplication.allWidgets():
+                w.setFont(font)

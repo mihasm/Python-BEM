@@ -16,6 +16,9 @@ import numpy as np
 from PyQt5 import QtGui
 from PyQt5.QtCore import QLocale
 from PyQt5.QtWidgets import (QApplication)
+from PyQt5 import QtCore
+import PyQt5
+from PyQt5 import QtWidgets
 
 from UI import MainWindow
 from utils import (QDarkPalette)
@@ -30,6 +33,7 @@ if getattr(sys, 'frozen', False):
 elif __file__:
     application_path = os.path.dirname(__file__)
 
+QtWidgets.QApplication.setAttribute(QtCore.Qt.AA_EnableHighDpiScaling, True)
 
 def main(quick_results=False):
     """
@@ -57,6 +61,9 @@ def main(quick_results=False):
     size = screen.size()
     main_win = MainWindow.MainWindow(size.width(), size.height())
     main_win.setWindowIcon(app_icon)
+    font = main_win.font()
+    font.setPointSize(7)
+    app.instance().setFont(font)
     if quick_results:
         main_win.analysis.run()
     sys.exit(app.exec_())
