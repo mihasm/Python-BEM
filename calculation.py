@@ -6,6 +6,7 @@ from bending_inertia import generate_hollow_foil, calculate_bending_inertia_2
 from popravki import *
 from utils import Printer, generate_dat, sort_data, get_transition_foils, interp
 from visualize import scale_and_normalize, rotate_array
+from scipy import interpolate
 
 numpy.seterr(all="raise")
 numpy.seterr(invalid="raise")
@@ -110,6 +111,22 @@ class Calculator:
 
             self.airfoils[blade_name]["interp_function_cl"] = interpolation_function_cl
             self.airfoils[blade_name]["interp_function_cd"] = interpolation_function_cd
+            
+            re_stall,aoa_min_stall,aoa_max_stall = self.airfoils[blade_name]["stall_angles"]
+
+            if len(re_stall) == 1:
+                #only one curve
+                def interpolation_function_stall_min(re_in):
+                    return aoa_min_stall
+                def interpolation_function_stall_max(re_in):
+                    return aoa_max_stall
+            else:
+                interpolation_function_stall_min = interpolate.interp1d(re_stall,aoa_min_stall)
+                interpolation_function_stall_max = interpolate.interp1d(re_stall,aoa_max_stall)
+
+            self.airfoils[blade_name]["interpolation_function_stall_min"] = interpolation_function_stall_min
+            self.airfoils[blade_name]["interpolation_function_stall_max"] = interpolation_function_stall_max
+
 
         self.transition_foils = get_transition_foils(self.airfoils_list)
         self.transition_array = []  # True,False,False, etc.

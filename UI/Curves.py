@@ -10,6 +10,22 @@ class Curves:
     def add(self, curve):
         self.curve_list.append(curve)
 
+    def get_stall_angles(self):
+        out_re = []
+        out_min_aoa_list = []
+        out_max_aoa_list = []
+
+        for c in self.curve_list:
+            Re = c.Re
+            min_stable_aoa = c.min_stable_aoa
+            max_stable_aoa = c.max_stable_aoa
+
+            out_re.append(Re)
+            out_min_aoa_list.append(min_stable_aoa)
+            out_max_aoa_list.append(max_stable_aoa)
+
+        return out_re,out_min_aoa_list,out_max_aoa_list
+
     def get_curves_sorted(self):
         return sorted(self.curve_list, key=lambda c: (c.ncrit, c.Re))
 

@@ -157,7 +157,7 @@ class MainWindow(QMainWindow):
 
         try:
             out = {**properties, **settings, **opt_settings, **curve_manager_settings}
-            #pprint(out)
+            pprint(out)
             return out
         except:
             msg = ErrorMessageBox()

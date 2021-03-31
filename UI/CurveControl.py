@@ -59,8 +59,15 @@ class CurveControl(QWidget):
 
         self.m_CD90 = QLineEdit(str(self.curve.m_CD90))
         self.m_CD90.textChanged.connect(self.update)
+
         self.slope = QLineEdit(str(self.curve.slope))
         self.slope.textChanged.connect(self.update)
+
+        self.min_stable_aoa = QLineEdit(str(self.curve.min_stable_aoa))
+        self.min_stable_aoa.textChanged.connect(self.update)
+
+        self.max_stable_aoa = QLineEdit(str(self.curve.max_stable_aoa))
+        self.max_stable_aoa.textChanged.connect(self.update)
 
         self.right_layout.addRow("A", self.A)
         self.right_layout.addRow("B", self.B)
@@ -68,6 +75,8 @@ class CurveControl(QWidget):
         self.right_layout.addRow("B-", self.Bm)
         self.right_layout.addRow("CD@90°", self.m_CD90)
         self.right_layout.addRow("Slope", self.slope)
+        self.right_layout.addRow("aoa_min", self.min_stable_aoa)
+        self.right_layout.addRow("aoa_max", self.max_stable_aoa)
 
         self.layout.addWidget(self.right, 1, 2)
 
@@ -109,7 +118,13 @@ class CurveControl(QWidget):
         alpha, cl, cd = self.curve.get_extrapolated_curve()
         self.ax.plot(alpha, cl, "g.")
         self.ax.plot(alpha, cd, "r.")
+        try:
+            self.ax.axvline(x=float(self.min_stable_aoa.text()),color="red")
+            self.ax.axvline(x=float(self.max_stable_aoa.text()),color="red")
+        except:
+            pass
         self.canvas.draw()
+
 
     def update(self):
         self.curve.A = int(self.A.value())
@@ -124,4 +139,9 @@ class CurveControl(QWidget):
                 self.curve.slope = 1.0
         except:
             print("Error in slope or m_CD90")
+        try:
+            self.curve.min_stable_aoa = float(self.min_stable_aoa.text())
+            self.curve.max_stable_aoa = float(self.max_stable_aoa.text())
+        except:
+            print("Error in min or max AoA")
         self.draw_extrapolation()

@@ -18,6 +18,8 @@ class Curve:
         self.Bm = None
         self.m_CD90 = None
         self.slope = None
+        self.min_stable_aoa = None
+        self.max_stable_aoa = None
 
     def create(self, x, y, Re, ncrit, alpha, cl, cd):
         self.x = x
@@ -33,6 +35,8 @@ class Curve:
         self.Bm = 5
         self.m_CD90 = 1.5
         self.slope = 0.106
+        self.max_stable_aoa = 10
+        self.min_stable_aoa = -5
 
     def get_curves(self):
         return self.alpha, self.cl, self.cd
@@ -67,7 +71,7 @@ class Curve:
     def save_curve(self):
         out = {"x": list(self.x), "y": list(self.y), "Re": self.Re, "ncrit": self.ncrit, "alpha": list(self.alpha),
                "cl": list(self.cl), "cd": list(self.cd), "A": self.A, "B": self.B, "Am": self.Am, "Bm": self.Bm,
-               "m_CD90": self.m_CD90, "slope": self.slope}
+               "m_CD90": self.m_CD90, "slope": self.slope, "min_stable_aoa":self.min_stable_aoa, "max_stable_aoa":self.max_stable_aoa}
         return out
 
     def load_curve(self, out):
@@ -84,3 +88,9 @@ class Curve:
         self.Bm = out["Bm"]
         self.m_CD90 = out["m_CD90"]
         self.slope = out["slope"]
+        try:
+            self.min_stable_aoa = out["min_stable_aoa"]
+            self.max_stable_aoa = out["max_stable_aoa"]
+        except:
+            self.max_stable_aoa = 10
+            self.min_stable_aoa = -5

@@ -1,4 +1,4 @@
-from calculation_runner import calculate_power_3d
+from .. calculation_runner import calculate_power_3d
 from turbine_data import SET_INIT
 
 SET_INIT["return_print"] = []

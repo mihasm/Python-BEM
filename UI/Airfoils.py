@@ -408,7 +408,8 @@ class Airfoils(QWidget):
                "centroid_x": centroid_x,
                "centroid_y": centroid_y,
                "ncrit_selected": ncrit_selected,
-               "extrapolation_bool": extrapolation_bool}
+               "extrapolation_bool": extrapolation_bool,
+               "stall_angles":self.curves.get_stall_angles()}
         return out
 
     def set_settings(self, dict_settings):
@@ -418,17 +419,17 @@ class Airfoils(QWidget):
         try:
             self.set_x_y(x, y)
         except:
-            pass
+            raise
         try:
             self.link.setText(dict_settings["link"])
         except:
-            pass
+            raise
         try:
             self.curves.load_curves(dict_settings["curves"])
         except:
-            pass
+            raise
         try:
             self.extrapolation_bool.setChecked(dict_settings["extrapolation_bool"])
         except:
-            pass
+            raise
         self.refresh()
