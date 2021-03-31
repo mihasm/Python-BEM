@@ -36,8 +36,9 @@ def calculate_power(inp_args):
         results = c.run_array(**inp_args)
         return results
     except:
-        inp_args["EOF"].value = True
         traceback.print_exc(file=sys.stdout)
+        p.print("Error in running optimizer: %s \n %s" % (str(e),var))
+        inp_args["EOF"].value = True
         raise
 
 
@@ -54,6 +55,8 @@ def calculate_power_3d(inp_args, print_eof=False, prepend="", print_progress=Tru
     return_results = inp_args["return_results"]
     results_3d = {}
 
+
+
     # get parameters
     pitches = list(numpy.linspace(start=inp_args["pitch_min"], stop=inp_args["pitch_max"], num=int(inp_args["pitch_num"])))
     tsr_list = list(numpy.linspace(start=inp_args["tsr_min"], stop=inp_args["tsr_max"], num=int(inp_args["tsr_num"])))
@@ -64,6 +67,8 @@ def calculate_power_3d(inp_args, print_eof=False, prepend="", print_progress=Tru
     constant_selection = inp_args["constant_selection"]
     geometry_scale = inp_args["geometry_scale"]
     R = inp_args["R"]
+
+
 
     if variable_selection == 0:
         speeds = list(numpy.linspace(start=inp_args["v_min"], stop=inp_args["v_max"], num=int(inp_args["v_num"])))
@@ -93,6 +98,9 @@ def calculate_power_3d(inp_args, print_eof=False, prepend="", print_progress=Tru
     elif variable_selection == 3:
         #pitches mode
         speeds, rpms = [constant_speed],[constant_rpm]
+
+
+
 
     total_iterations = int(len(speeds) * len(rpms))
     i = 0

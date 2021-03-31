@@ -57,6 +57,8 @@ OUTPUT_VARIABLES_LIST = {
     "c": {"type": "array", "name": "Section chord length", "symbol": "c", "unit": "m"},
     "theta": {"type": "array", "name": "Section twist angle", "symbol": r"$\Theta$", "unit": "°"},
 
+    "stall": {"type": "array", "name": "Stall boolean", "symbol":"", "unit":""},
+
     "R": {"type": "float", "name": "Turbine radius", "symbol": "R", "unit": "m"},
     "rpm": {"type": "float", "name": "Turbine rotational velocity", "symbol": r"$\Omega$", "unit": "RPM"},
     "v": {"type": "float", "name": "Wind speed", "symbol": "v", "unit": "m/s"},
@@ -112,21 +114,20 @@ class Calculator:
             self.airfoils[blade_name]["interp_function_cl"] = interpolation_function_cl
             self.airfoils[blade_name]["interp_function_cd"] = interpolation_function_cd
             
-            re_stall,aoa_min_stall,aoa_max_stall = self.airfoils[blade_name]["stall_angles"]
+            re_stall_list,aoa_min_stall_list,aoa_max_stall_list = self.airfoils[blade_name]["stall_angles"]
 
-            if len(re_stall) == 1:
+            if len(re_stall_list) == 1:
                 #only one curve
                 def interpolation_function_stall_min(re_in):
-                    return aoa_min_stall
+                    return aoa_min_stall_list[0]
                 def interpolation_function_stall_max(re_in):
-                    return aoa_max_stall
+                    return aoa_max_stall_list[0]
             else:
-                interpolation_function_stall_min = interpolate.interp1d(re_stall,aoa_min_stall)
-                interpolation_function_stall_max = interpolate.interp1d(re_stall,aoa_max_stall)
+                interpolation_function_stall_min = interpolate.interp1d(re_stall_list,aoa_min_stall_list)
+                interpolation_function_stall_max = interpolate.interp1d(re_stall_list,aoa_max_stall_list)
 
             self.airfoils[blade_name]["interpolation_function_stall_min"] = interpolation_function_stall_min
             self.airfoils[blade_name]["interpolation_function_stall_max"] = interpolation_function_stall_max
-
 
         self.transition_foils = get_transition_foils(self.airfoils_list)
         self.transition_array = []  # True,False,False, etc.
@@ -323,6 +324,8 @@ class Calculator:
             results["U3"] = numpy.append(results["U3"], out_results["U3"])
             results["U4"] = numpy.append(results["U4"], out_results["U4"])
             results["lambda_r"] = numpy.append(results["lambda_r"], out_results["lambda_r"])
+
+            results["stall"] = numpy.append(results["stall"], out_results["stall"])
 
         self.statical_analysis(blade_design, blade_thickness, c, dr, foils, mass_density, num_sections, omega, r,
                                results, theta)
@@ -671,6 +674,16 @@ class Calculator:
 
                 Cl = Cl1 * transition_coefficient + Cl2 * (1 - transition_coefficient)
                 Cd = Cd1 * transition_coefficient + Cd2 * (1 - transition_coefficient)
+                
+                # determine min and max angle of attack for attached region
+                aoa_min_stall_1 = self.airfoils[_airfoil_prev]["interpolation_function_stall_min"](Re)
+                aoa_max_stall_1 = self.airfoils[_airfoil_prev]["interpolation_function_stall_max"](Re)
+
+                aoa_min_stall_2 = self.airfoils[_airfoil_next]["interpolation_function_stall_min"](Re)
+                aoa_max_stall_2 = self.airfoils[_airfoil_next]["interpolation_function_stall_max"](Re)
+
+                aoa_min_stall = aoa_min_stall_1 * transition_coefficient + aoa_min_stall_2 * (1 - transition_coefficient)
+                aoa_max_stall = aoa_max_stall_1 * transition_coefficient + aoa_max_stall_2 * (1 - transition_coefficient)
 
                 if print_all:
                     p.print("Transition detected, combining airfoils.")
@@ -685,6 +698,19 @@ class Calculator:
                     "interp_function_cd"](Re, degrees(alpha))
                 if Cl == False and Cd == False:
                     return None
+
+                # determine min and max angle of attack for attached region
+                aoa_max_stall = self.airfoils[_airfoil]["interpolation_function_stall_max"](Re)
+                aoa_min_stall = self.airfoils[_airfoil]["interpolation_function_stall_min"](Re)
+
+            stall = 0
+
+            # stall region determination
+            if degrees(alpha) > aoa_max_stall:
+                stall = 1
+            # inverse stall region determination
+            if degrees(alpha) < aoa_min_stall:
+                stall = 1
 
             if print_all:
                 p.print("        Cl:", Cl, "Cd:", Cd)
@@ -851,12 +877,11 @@ class Calculator:
         out = {"a": a, "aprime": aprime, "Cl": Cl, "Cd": Cd, "alpha": degrees(alpha), "phi": degrees(phi), "F": F,
                "dFt": dFt, "Ct": Ct, "dFn": dFn, "_airfoil": _airfoil, "dT": dT, "dQ": dQ, "Re": Re,
                'U1': U1, 'U2': U2, 'U3': U3, 'U4': U4,
-               "lambda_r": lambda_r, "dFt/n": dFt_norm, "dFn/n": dFn_norm}
+               "lambda_r": lambda_r, "dFt/n": dFt_norm, "dFn/n": dFn_norm, "stall": stall}
         return out
 
     def get_crossection_data(self, _c, _theta, _airfoil, blade_design, blade_thickness):
         """
-
         :param _c:
         :param _theta: in degrees
         :param _airfoil:
