@@ -49,84 +49,38 @@ class ResultsWindow(QMainWindow):
         elif input_data["variable_selection"] == 3:
             list_of_variable_parameter = np.array(results_3d["pitch"])
             variable_parameter_title = "pitch"
-
-        # get data from results
-        X, Y, Z = results_3d["v"], results_3d["rpm"], results_3d["power"]
-        max_x, max_y, max_z = max_calculate(X, Y, Z)
+        elif input_data["variable_selection"] == 4:
+            list_of_variable_parameter = np.array(results_3d["pitch"])
+            variable_parameter_title = "TSR"
 
         ########### CP(lambda) CURVE ###############
         f2 = self.tab_widget.add_tab_figure("Cp curve")
-        TSR, CP = sort_xy(results_3d["TSR"], results_3d["cp"])
-        ax_cp = self.tab_widget.add_2d_plot_to_figure(
-            f2, TSR, CP, 121, "", r"$\lambda$", r"$C_P$", look="-b", label=r"$C_P$ curve")
-        ax_cp.legend(fontsize=18)
+
+        mat = np.array([results_3d["TSR"],results_3d["cp"],results_3d["pitch"],results_3d["blade_stall_percentage"]])
+        # transpose
+        mat = mat.transpose()
+        # sort by multiple columns
+        r = np.core.records.fromarrays([mat[:,2],mat[:,0]],names='a,b')
+        mat = mat[r.argsort()]
+        # split at different column values
+        dif = np.diff(mat[:,2])
+        ind_split = np.where(dif!=0)[0]
+        splitted = np.split(mat,ind_split+1)
+
+        ax_cp = f2.add_subplot(111)
+        
+        for a in splitted:
+            x = a[:,0]
+            y = a[:,1]
+            label = str(round(a[0,2],2))
+            stall = (1-a[:,3])
+            ax_cp.plot(x,y,label=label)
+            ax_cp.scatter(x,y,c=stall,cmap="RdYlGn")
+
+        if len(splitted) > 1:
+            ax_cp.legend(title="Pitch [°]")
         ############################################
 
-        ########### CT(lambda) CURVE ###############
-        ax_ct = self.tab_widget.add_2d_plot_to_figure(f2, results_3d["TSR"], results_3d["ct"], 122, "", r"$\lambda$", r"$C_T$",
-                                              look="b-", label=r"$C_T$ curve")
-        ax_ct.legend(fontsize=18)
-        ############################################
-
-        ########### Ct(a) curve ####################
-        f3 = self.tab_widget.add_tab_figure("Ct_r(a) curve")
-        ax_ct_r = self.tab_widget.add_2d_plot_to_figure(f3, results_3d["a"], results_3d["Ct"], 111, "", "a", r"$C_{T_r}$",
-                                                        look="o", x_min=0, x_max=1, label="Ct curve")
-        leg = ax_ct_r.legend(
-            np.round(np.array(results_3d["TSR"]), 2), fontsize=20)
-        leg.set_title(r"$\lambda$", prop={'size': 20})
-        ############################################
-
-        ########## 3D Power surface plot ###########
-        # noinspection PyBroadException
-        if len(set(X)) >= 3 and len(set(Y)) >= 3:
-            f4 = self.tab_widget.add_tab_figure("3D power")
-            self.tab_widget.add_surface_plot(
-                f4, X, Y, Z, 111, "Power (windspeed,RPM)", "windspeed[m/s]", "RPM", "Power [W]", label="Power")
-        ############################################
-
-        ########## PROPELLER PLOTS #################
-        if input_data["propeller_mode"] == True:
-            # ct_p(J) curve
-            f5 = self.tab_widget.add_tab_figure("ct(J) curve (propeller)")
-            self.tab_widget.add_2d_plot_to_figure(f5, results_3d["J"], results_3d["ct"], 111, "Propeler curves",
-                                                  "J = 1/lambda", "ct", look="b-", label="Ct (Thrust)")
-
-            # cp_p(J) curve
-            self.tab_widget.add_2d_plot_to_figure(f5, results_3d['J'], results_3d['cp'], 111, None, None,
-                                                  None, look='r-', label="Cp (Power)")
-
-            # eff_p(J) curve
-            ax1 = self.tab_widget.add_2d_plot_to_figure(f5, results_3d['J'], results_3d['eff'], 111, None, None,
-                                                        None, look='g-', label="Eff (Efficiency)")
-            ax1.legend()
-            ########## U3 (r) ##########################
-            f8 = self.tab_widget.add_tab_figure("Windspeed U3 (radius)")
-            for _u in results_3d['U3']:
-                ax2 = self.tab_widget.add_2d_plot_to_figure(
-                    f8, _u, input_data['r'], 111, '', r'$v_4$ [m/s]', 'r [m]', look="-", c=np.random.rand(3,), label="Windspeed close behind"+str(_u))
-
-            leg_hitrosti = ax2.legend(np.round(list_of_variable_parameter, 2))
-            leg_hitrosti.set_title(variable_parameter_title, prop={'size': 20})
-        else:
-            ########## U4 (r) ##########################
-            f9 = self.tab_widget.add_tab_figure("Windspeed U4 (radius)")
-            for _u in results_3d['U4']:
-                ax2 = self.tab_widget.add_2d_plot_to_figure(
-                    f9, _u, input_data['r'], 111, '', r'$v_4$ [m/s]', 'r [m]', look="-", c=np.random.rand(3,), label="Windspeed far away behind"+str(_u))
-            leg_hitrosti = ax2.legend(np.round(list_of_variable_parameter, 2))
-            leg_hitrosti.set_title(variable_parameter_title, prop={'size': 20})
-            ############################################
-
-        ############################################
-
-        ########## CL plot #########################
-        f7 = self.tab_widget.add_tab_figure("check CL")
-        self.tab_widget.add_3d_scatter_plot(f7, np.array(results_3d["Re"]).flatten(),
-                                            np.array(results_3d["alpha"]).flatten(),
-                                            np.array(results_3d["cL"]).flatten(), 111, "Title", "Re", "alpha[deg]",
-            "cL", label="Used lift coefficient")
-        ############################################
 
         ############ geometry check ################
         array_geom = []
@@ -169,11 +123,11 @@ class ResultsWindow(QMainWindow):
         ############################################
 
         ########## CUSTOM GRAPH ####################
-        self.custom_graph = CustomGraphWidget(self)
-        self.custom_graph.set_data(results_3d)
-        self.tab_widget.add_tab_widget(self.custom_graph,"Custom graph")
+        #self.custom_graph = CustomGraphWidget(self)
+        #self.custom_graph.set_data(results_3d)
+        #self.tab_widget.add_tab_widget(self.custom_graph,"Custom graph")
         ############################################
-
+        
         self.show()
 
     def closeEvent(self, event):
@@ -226,131 +180,6 @@ class TabWidget(QtWidgets.QTabWidget):
         layout.addWidget(toolbar)
         self.tabs[-1].setLayout(layout)
         return self.figures[-1]
-
-    def add_2d_plot_to_figure(self, f, x, y, whi, title=None, x_name=None, y_name=None, x_min=None, x_max=None,
-                              y_min=None, y_max=None, look=None, legend=False, **kwargs):
-        """
-
-        :param f:
-        :param x:
-        :param y:
-        :param whi:
-        :param title:
-        :param x_name:
-        :param y_name:
-        :param x_min:
-        :param x_max:
-        :param y_min:
-        :param y_max:
-        :param look:
-        :param legend:
-        :param kwargs:
-        :return:
-        """
-        ax = f.add_subplot(whi)
-        if look:
-            ax.plot(x, y, look, **kwargs)
-        else:
-            ax.plot(x, y, **kwargs)
-        if title:
-            plt.title(title, fontsize=25)
-        if x_name:
-            ax.set_xlabel(x_name, fontsize=20)
-        if y_name:
-            ax.set_ylabel(y_name, fontsize=20)
-        if x_min != None and x_max != None:
-            ax.set_xlim(x_min, x_max)
-        if y_min != None and y_max != None:
-            ax.set_ylim(y_min, y_max)
-        ax.xaxis.set_tick_params(labelsize=15)
-        ax.yaxis.set_tick_params(labelsize=15)
-        self.canvas[-1].draw()
-        return ax
-
-    def add_surface_plot(self, f, x, y, z, whi, title=None, x_name=None, y_name=None, z_name=None, x_min=None,
-                         x_max=None, y_min=None, y_max=None, z_min=None, z_max=None, legend=False, **kwargs):
-        """
-
-        :param f:
-        :param x:
-        :param y:
-        :param z:
-        :param whi:
-        :param title:
-        :param x_name:
-        :param y_name:
-        :param z_name:
-        :param x_min:
-        :param x_max:
-        :param y_min:
-        :param y_max:
-        :param z_min:
-        :param z_max:
-        :param legend:
-        :param kwargs:
-        """
-        ax = f.add_subplot(whi, projection="3d")
-        p0 = ax.plot_trisurf(x, y, z, cmap=plt.cm.CMRmap, **kwargs)
-        cbar = plt.colorbar(p0)
-
-        if title:
-            plt.title(title)
-        if x_name:
-            ax.set_xlabel(x_name)
-        if y_name:
-            ax.set_ylabel(y_name)
-        if z_name:
-            ax.set_zlabel(z_name)
-            cbar.set_label(z_name)
-        if x_min != None and x_max != None:
-            ax.set_xlim(x_min, x_max)
-        if y_min != None and y_max != None:
-            ax.set_ylim(y_min, y_max)
-        if z_min != None and z_max != None:
-            ax.set_zlim(z_min, z_max)
-        self.canvas[-1].draw()
-
-    def add_3d_scatter_plot(self, f, x, y, z, whi, title=None, x_name=None, y_name=None, z_name=None, x_min=None,
-                            x_max=None, y_min=None, y_max=None, z_min=None, z_max=None, legend=False, label=None):
-        """
-
-        :param f:
-        :param x:
-        :param y:
-        :param z:
-        :param whi:
-        :param title:
-        :param x_name:
-        :param y_name:
-        :param z_name:
-        :param x_min:
-        :param x_max:
-        :param y_min:
-        :param y_max:
-        :param z_min:
-        :param z_max:
-        :param legend:
-        :param label:
-        """
-        ax = f.add_subplot(whi, projection="3d")
-        p0 = ax.scatter(x, y, z, cmap=plt.cm.CMRmap, label=label)
-        # cbar = plt.colorbar(p0)
-
-        if title:
-            plt.title(title)
-        if x_name:
-            ax.set_xlabel(x_name)
-        if y_name:
-            ax.set_ylabel(y_name)
-        if z_name:
-            ax.set_zlabel(z_name)  # cbar.set_label(z_name)
-        if x_min != None and x_max != None:
-            ax.set_xlim(x_min, x_max)
-        if y_min != None and y_max != None:
-            ax.set_ylim(y_min, y_max)
-        if z_min != None and z_max != None:
-            ax.set_zlim(z_min, z_max)
-        self.canvas[-1].draw()
 
     def add_tab_widget(self, widget, tab_name):
         """
@@ -432,6 +261,8 @@ class CustomGraphWidget(QWidget):
 
         # set variable
 
+        print("Current variable parameter:",self.parent.input_data["variable_selection"])
+
         if self.parent.input_data["variable_selection"] == 0:
             list_of_variable_parameter = np.array(self.results["TSR"])
             variable_parameter_title = r"$\lambda$"
@@ -444,90 +275,113 @@ class CustomGraphWidget(QWidget):
         elif self.parent.input_data["variable_selection"] == 3:
             list_of_variable_parameter = np.array(self.results["pitch"])
             variable_parameter_title = "pitch"
+        elif self.parent.input_data["variable_selection"] == 4:
+            list_of_variable_parameter_1 = np.array(self.results["pitch"])
+            variable_parameter_title_1 = "pitch"
+            list_of_variable_parameter_2 = np.array(self.results["TSR"])
+            variable_parameter_title_2 = "TSR"
 
-        # get x,y data
+        if self.parent.input_data["variable_selection"] == 4:
+            x_data = self.inverse_list[str(self.comboBox_x.currentText())]
+            y_data = self.inverse_list[str(self.comboBox_y.currentText())]
+            x_ar = np.array(self.results[x_data])
+            y_ar = np.array(self.results[y_data])
+            z_ar = np.array(self.results["pitch"])
 
-        x_data = self.inverse_list[str(self.comboBox_x.currentText())]
-        y_data = self.inverse_list[str(self.comboBox_y.currentText())]
-        x_ar = np.array(self.results[x_data])
-        y_ar = np.array(self.results[y_data])
+            # set labels
+            xlabel = OUTPUT_VARIABLES_LIST[x_data]["symbol"]
+            if OUTPUT_VARIABLES_LIST[x_data]["unit"] != "":
+                xlabel = xlabel+" ["+OUTPUT_VARIABLES_LIST[x_data]["unit"]+"]"
 
-        if not x_data in OUTPUT_VARIABLES_LIST:
-            raise Exception("Variable %s not defined in OUTPUT_VARIABLES_LIST" % x_data)
+            ylabel = OUTPUT_VARIABLES_LIST[y_data]["symbol"]
+            if OUTPUT_VARIABLES_LIST[y_data]["unit"] != "":
+                ylabel = ylabel+" ["+OUTPUT_VARIABLES_LIST[y_data]["unit"]+"]"
 
-        if not y_data in OUTPUT_VARIABLES_LIST:
-            raise Exception("Variable %s not defined in OUTPUT_VARIABLES_LIST" % x_data)
+            zlabel = "Pitch [°]"
 
-        # set labels
+            type_x = OUTPUT_VARIABLES_LIST[x_data]["type"]
+            type_y = OUTPUT_VARIABLES_LIST[y_data]["type"]
 
-        xlabel = OUTPUT_VARIABLES_LIST[x_data]["symbol"]
-        if OUTPUT_VARIABLES_LIST[x_data]["unit"] != "":
-            xlabel = xlabel+" ["+OUTPUT_VARIABLES_LIST[x_data]["unit"]+"]"
+            if type_x == "float" and type_y == "float":
+                pass
 
-        ylabel = OUTPUT_VARIABLES_LIST[y_data]["symbol"]
-        if OUTPUT_VARIABLES_LIST[y_data]["unit"] != "":
-            ylabel = ylabel+" ["+OUTPUT_VARIABLES_LIST[y_data]["unit"]+"]"
+        else:
+            # get x,y,z data
 
-        is_3d = False
+            x_data = self.inverse_list[str(self.comboBox_x.currentText())]
+            y_data = self.inverse_list[str(self.comboBox_y.currentText())]
+            x_ar = np.array(self.results[x_data])
+            y_ar = np.array(self.results[y_data])
 
-        type_x = OUTPUT_VARIABLES_LIST[x_data]["type"]
-        type_y = OUTPUT_VARIABLES_LIST[y_data]["type"]
+            # set labels
+            xlabel = OUTPUT_VARIABLES_LIST[x_data]["symbol"]
+            if OUTPUT_VARIABLES_LIST[x_data]["unit"] != "":
+                xlabel = xlabel+" ["+OUTPUT_VARIABLES_LIST[x_data]["unit"]+"]"
 
-        try:
-            self.figure.delaxes(self.ax)
-        except KeyError:
-            print("Did not find axes, not deleting...")
-            pass
+            ylabel = OUTPUT_VARIABLES_LIST[y_data]["symbol"]
+            if OUTPUT_VARIABLES_LIST[y_data]["unit"] != "":
+                ylabel = ylabel+" ["+OUTPUT_VARIABLES_LIST[y_data]["unit"]+"]"
 
-        if type_x == "array" and type_y == "array":
-            print("case 1")
-            self.ax = self.figure.add_subplot(111)
-            x_ar=np.transpose(x_ar)
-            y_ar=np.transpose(y_ar)
-            self.ax.plot(x_ar,y_ar,label="2d plot")
-            self.ax.legend(np.round(list_of_variable_parameter,2),title=variable_parameter_title)
-            #data_table = np.column_stack((x_ar,y_ar))
-            #data_table=transpose(data_table)
-            #self.table.createTable(data_table)
-            self.table.clear_table()
+            is_3d = False
 
-        elif type_x == "array" and type_y == "float":
-            print("case 2")
-            self.ax = self.figure.add_subplot(111)
-            #x_ar=np.transpose(x_ar)
-            #y_ar=np.transpose(y_ar)
+            type_x = OUTPUT_VARIABLES_LIST[x_data]["type"]
+            type_y = OUTPUT_VARIABLES_LIST[y_data]["type"]
 
-            self.ax.plot(x_ar,y_ar,label="2d plot")
-            self.ax.legend(self.parent.input_data["r"],title="r [m]")
-            data_table = np.column_stack((y_ar,x_ar))
-            self.table.createTable(data_table)
-            
+            try:
+                self.figure.delaxes(self.ax)
+            except KeyError:
+                print("Did not find axes, not deleting...")
+                pass
 
-        elif type_x == "float" and type_y == "array":
-            print("case 3")
-            self.ax = self.figure.add_subplot(111)
-            x_ar=np.transpose(x_ar)
-            self.ax.plot(x_ar,y_ar,label="2d plot")
-            self.ax.legend(self.parent.input_data["r"],title="r [m]")
-            data_table = list(np.column_stack((x_ar,y_ar)))
-            self.table.createTable(data_table)
+            if type_x == "array" and type_y == "array":
+                print("case 1")
+                self.ax = self.figure.add_subplot(111)
+                x_ar=np.transpose(x_ar)
+                y_ar=np.transpose(y_ar)
+                self.ax.plot(x_ar,y_ar,label="2d plot")
+                self.ax.legend(np.round(list_of_variable_parameter,2),title=variable_parameter_title)
+                #data_table = np.column_stack((x_ar,y_ar))
+                #data_table=transpose(data_table)
+                #self.table.createTable(data_table)
+                self.table.clear_table()
 
-        elif type_x == "float" and type_y == "float":
-            print("case 4")
-            self.ax = self.figure.add_subplot(111)
-            self.ax.plot(x_ar,y_ar,label="2d plot")
-            self.ax.legend(self.parent.input_data["r"],title="r [m]")
-            data_table = [x_ar,y_ar]
-            data_table=transpose(data_table)
-            self.table.createTable(data_table)
-            
+            elif type_x == "array" and type_y == "float":
+                print("case 2")
+                self.ax = self.figure.add_subplot(111)
+                #x_ar=np.transpose(x_ar)
+                #y_ar=np.transpose(y_ar)
 
-        self.ax.set_title(OUTPUT_VARIABLES_LIST[y_data]["name"]+" vs. "+OUTPUT_VARIABLES_LIST[x_data]["name"])
-        self.ax.set_xlabel(xlabel)
-        self.ax.set_ylabel(ylabel)
-        
+                self.ax.plot(x_ar,y_ar,label="2d plot")
+                self.ax.legend(self.parent.input_data["r"],title="r [m]")
+                data_table = np.column_stack((y_ar,x_ar))
+                self.table.createTable(data_table)
+                
 
-        self.canvas.draw()
+            elif type_x == "float" and type_y == "array":
+                print("case 3")
+                self.ax = self.figure.add_subplot(111)
+                x_ar=np.transpose(x_ar)
+                self.ax.plot(x_ar,y_ar,label="2d plot")
+                self.ax.legend(self.parent.input_data["r"],title="r [m]")
+                data_table = list(np.column_stack((x_ar,y_ar)))
+                self.table.createTable(data_table)
+
+            elif type_x == "float" and type_y == "float":
+                print("case 4")
+                self.ax = self.figure.add_subplot(111)
+                self.ax.plot(x_ar,y_ar,label="2d plot")
+                self.ax.legend(self.parent.input_data["r"],title="r [m]")
+                data_table = [x_ar,y_ar]
+                data_table=transpose(data_table)
+                self.table.createTable(data_table)
+                
+
+            self.ax.set_title(OUTPUT_VARIABLES_LIST[y_data]["name"]+" vs. "+OUTPUT_VARIABLES_LIST[x_data]["name"])
+            self.ax.set_xlabel(xlabel)
+            self.ax.set_ylabel(ylabel)
+
+            self.canvas.draw()
+
 
     def set_data(self,results):
         """

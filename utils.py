@@ -54,12 +54,13 @@ def dict_to_ar(inp_dict):
 
     list_items = inp_dict.items()
     for k, v in list_items:
-        prep.append([k])
-        for j in v:
-            if isinstance(j, np.ndarray):
-                j = np.array2string(j, max_line_width=10000000)
-            prep[i].append(str(j))
-        i += 1
+        if not k == "pitch_change_list":
+            prep.append([k])
+            for j in v:
+                if isinstance(j, np.ndarray):
+                    j = np.array2string(j, max_line_width=10000000)
+                prep[i].append(str(j))
+            i += 1
     prep = transpose(prep)
     return prep
 

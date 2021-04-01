@@ -24,7 +24,7 @@ class Analysis(QWidget):
                          "mach_number_correction": False, "max_iterations": 100, "convergence_limit": 0.001,
                          "rho": 1.225, "method": 10,
                          # "linspace_interp": False, "num_interp": 25,
-                         "variable_selection": 0,
+                         "variable_selection": 4,
                          "constant_selection": 0,
                          "constant_speed": 5,
                          "constant_rpm": 1500,
@@ -160,7 +160,7 @@ class Analysis(QWidget):
                 form.addItems(["1", "2", "3", "4", "5"])
             elif key == "variable_selection":
                 form = QComboBox()
-                form.addItems(["RPM and v", "TSR", "J", "pitch"])
+                form.addItems(["RPM and v", "TSR", "J", "pitch", "pitch+TSR"])
                 form.currentIndexChanged.connect(self.set_parameter_visibility)
             elif key == "constant_selection":
                 form = QComboBox()
@@ -315,14 +315,37 @@ class Analysis(QWidget):
             self.forms_dict["pitch_max"][2].show()
             self.forms_dict["pitch_num"][2].show()
             pass
+        elif current_index == 4:
+            # variable pitch + TSR
+            self.forms_dict["constant_selection"][2].show()
+            self.forms_dict["constant_speed"][2].show()
+            self.forms_dict["constant_rpm"][2].show()
+            self.forms_dict["pitch"][2].hide()
+            self.forms_dict["v_min"][2].hide()
+            self.forms_dict["v_max"][2].hide()
+            self.forms_dict["v_num"][2].hide()
+            self.forms_dict["rpm_min"][2].hide()
+            self.forms_dict["rpm_max"][2].hide()
+            self.forms_dict["rpm_num"][2].hide()
+            self.forms_dict["tsr_min"][2].show()
+            self.forms_dict["tsr_max"][2].show()
+            self.forms_dict["tsr_num"][2].show()
+            self.forms_dict["J_min"][2].hide()
+            self.forms_dict["J_max"][2].hide()
+            self.forms_dict["J_num"][2].hide()
+            self.forms_dict["pitch_min"][2].show()
+            self.forms_dict["pitch_max"][2].show()
+            self.forms_dict["pitch_num"][2].show()
+            pass
 
         current_index_constant_value = self.forms_dict["constant_selection"][0].currentIndex()
-        if current_index_constant_value == 0:
-            self.forms_dict["constant_speed"][2].show()
-            self.forms_dict["constant_rpm"][2].hide()
-        elif current_index_constant_value == 1:
-            self.forms_dict["constant_speed"][2].hide()
-            self.forms_dict["constant_rpm"][2].show()
+        if current_index != 3:
+            if current_index_constant_value == 0:
+                self.forms_dict["constant_speed"][2].show()
+                self.forms_dict["constant_rpm"][2].hide()
+            elif current_index_constant_value == 1:
+                self.forms_dict["constant_speed"][2].hide()
+                self.forms_dict["constant_rpm"][2].show()
 
         current_state_fix_reynolds = self.forms_dict["fix_reynolds"][0].isChecked()
         if current_state_fix_reynolds == True:

@@ -74,8 +74,10 @@ OUTPUT_VARIABLES_LIST = {
     "B": {"type": "float", "name": "Number of blades", "symbol": "B", "unit": ""},
     "J": {"type": "float", "name": "Advance ratio", "symbol": "J", "unit": ""},
     "eff": {"type": "float", "name": "Propeller efficiency", "symbol": r"$\eta_p$", "unit": ""},
-    "pitch": {"type": "float", "name": "Pitch", "symbol": "p", "unit": "°"}
+    "pitch": {"type": "float", "name": "Pitch", "symbol": "p", "unit": "°"},
+    "blade_stall_percentage" : {"type":"float", "name":"Blade stall percentage", "symbol":r"$s_p$", "unit":""}
 }
+
 
 
 class Calculator:
@@ -123,8 +125,16 @@ class Calculator:
                 def interpolation_function_stall_max(re_in):
                     return aoa_max_stall_list[0]
             else:
-                interpolation_function_stall_min = interpolate.interp1d(re_stall_list,aoa_min_stall_list)
-                interpolation_function_stall_max = interpolate.interp1d(re_stall_list,aoa_max_stall_list)
+                interpolation_function_stall_min = interpolate.interp1d(
+                                                        re_stall_list,
+                                                        aoa_min_stall_list,
+                                                        fill_value=(aoa_min_stall_list[0],aoa_min_stall_list[-1]),
+                                                        bounds_error=False)
+                interpolation_function_stall_max = interpolate.interp1d(
+                                                        re_stall_list,
+                                                        aoa_max_stall_list,
+                                                        fill_value=(aoa_max_stall_list[0],aoa_max_stall_list[-1]),
+                                                        bounds_error=False)
 
             self.airfoils[blade_name]["interpolation_function_stall_min"] = interpolation_function_stall_min
             self.airfoils[blade_name]["interpolation_function_stall_max"] = interpolation_function_stall_max
@@ -362,6 +372,8 @@ class Calculator:
         if propeller_mode and eff > 1.0:
             return None
 
+        blade_stall_percentage = np.sum(results["stall"])/len(results["stall"])
+
         # floats
         results["R"] = R
         results["rpm"] = rpm
@@ -391,6 +403,8 @@ class Calculator:
         results["dr"] = dr
         results["c"] = c
         results["theta"] = theta
+
+        results["blade_stall_percentage"] = blade_stall_percentage
         return results
 
     def statical_analysis(self, blade_design, blade_thickness, c, dr, foils, mass_density, num_sections, omega, r,
