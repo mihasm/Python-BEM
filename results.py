@@ -1,5 +1,6 @@
 import warnings
 
+import matplotlib as mpl
 import matplotlib.cbook
 import matplotlib.pyplot as plt
 import numpy as np
@@ -68,6 +69,10 @@ class ResultsWindow(QMainWindow):
         splitted = np.split(mat,ind_split+1)
 
         ax_cp = f2.add_subplot(111)
+        ax_cp.set_title(r"$C_{P}-\lambda$")
+        ax_cp.set_xlabel(r"$\lambda$")
+        ax_cp.set_ylabel(r"$C_{P}$")
+        ax_cp.grid()
         
         for a in splitted:
             x = a[:,0]
@@ -75,7 +80,15 @@ class ResultsWindow(QMainWindow):
             label = str(round(a[0,2],2))
             stall = (1-a[:,3])
             ax_cp.plot(x,y,label=label)
-            ax_cp.scatter(x,y,c=stall,cmap="RdYlGn")
+            sc = ax_cp.scatter(x,y,c=stall,cmap="RdYlGn")
+        
+        norm = mpl.colors.Normalize(vmin=0,vmax=1)
+        sm = plt.cm.ScalarMappable(cmap="RdYlGn", norm=norm)
+        sm.set_array([])
+
+        cbar = plt.colorbar(sm,ticks=[0,0.5,1])
+        cbar.set_label("Stalled area")
+        cbar.ax.set_yticklabels(["100 %","50 %","0 %"])
 
         if len(splitted) > 1:
             ax_cp.legend(title="Pitch [°]")
