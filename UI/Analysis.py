@@ -18,7 +18,7 @@ class Analysis(QWidget):
 
         self.forms_dict = {}
 
-        self.settings = {"propeller_mode": False, "tip_loss": False, "hub_loss": False, "new_tip_loss": False,
+        self.settings = {"propeller_mode": False, "use_minimization_solver":False, "tip_loss": False, "hub_loss": False, "new_tip_loss": False,
                          "new_hub_loss": False, "cascade_correction": False, "skewed_wake_correction": False,
                          "rotational_augmentation_correction": False, "rotational_augmentation_correction_method": 1,
                          "mach_number_correction": False, "max_iterations": 100, "convergence_limit": 0.001,
@@ -69,7 +69,8 @@ class Analysis(QWidget):
                                  "rotational_augmentation_correction_method": "Rot. augmentation cor. method",
                                  "fix_reynolds": "Fix Reynolds", "reynolds": "Reynolds",
                                  "mach_number_correction": "Mach number correction",
-                                 "yaw_angle": "Yaw angle [°]", "skewed_wake_correction": "Skewed Wake Correction"}
+                                 "yaw_angle": "Yaw angle [°]", "skewed_wake_correction": "Skewed Wake Correction",
+                                 "use_minimization_solver":"Use minimization solver"}
 
         self.settings_to_tooltip = {
             "propeller_mode": "Ta vrednost mora biti izbrana le v primeru, če preračunavamo propeler.",
@@ -111,7 +112,8 @@ class Analysis(QWidget):
             "reynolds": "Se uporabi samo v primeru, če izberemo 'Fix Reynolds' opcijo",
             "mach_number_correction": "Popravek Mach števila (uporabno pri propelerjih)",
             "yaw_angle": "Kot vetra glede na smer osi rotorja [°]. Če je turbina obrnjena proti vetru, je 0°.",
-            "skewed_wake_correction": "Popravek nagnjenega zračnega toka za turbino (Skewed wake)"}
+            "skewed_wake_correction": "Popravek nagnjenega zračnega toka za turbino (Skewed wake)",
+            "use_minimization_solver": "Uporaba minimizacijskega algoritma za iskanje indukcijskih faktorjev"}
 
         self.list_settings_for_updating_tsr = ["v_min", "v_max", "v_num", "rpm_min", "rpm_max", "rpm_num"]
 
