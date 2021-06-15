@@ -181,6 +181,7 @@ class Airfoils(QWidget):
     def visualize(self):
         print("Visualizing")
         data = self.gather_curves()
+        print(data)
         data = data[np.in1d(data[:, 1], float(self.ncrit_selection.currentText()))]  # current Ncrit
 
         re = data[:, 0]
@@ -196,10 +197,11 @@ class Airfoils(QWidget):
         xi, yi = xi.flatten(), yi.flatten()
         z_1 = interp_at(re, alpha, cl, xi, yi)
         z_2 = interp_at(re, alpha, cd, xi, yi)
+        
         self.w = MatplotlibWindow()
         self.w.setWindowTitle("Cl(alpha,Re)")
         self.w.ax = self.w.figure.add_subplot(111, projection="3d")
-        p = self.w.ax.plot_trisurf(xi, yi, z_1)
+        p = self.w.ax.plot_trisurf(xi, yi, z_1, cmap=cm.coolwarm)
         self.w.ax.set_xlabel("Reynolds", fontsize=15, labelpad=20)
         self.w.ax.set_ylabel(r'$\alpha$ [°]', fontsize=15, labelpad=20)
         self.w.ax.set_zlabel("Cl", fontsize=15, labelpad=20)

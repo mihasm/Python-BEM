@@ -132,8 +132,7 @@ def fInductionCoefficients0(F, phi, sigma, C_norm, C_tang, *args, **kwargs):
 
     a = (sigma * C_norm) / (4 * F * sin(phi) ** 2 + sigma * C_norm)
     aprime = (sigma * C_tang) / (4 * F * sin(phi) * cos(phi) - sigma * C_tang)
-    Ct = sigma * (1 - a) ** 2 * C_norm / (sin(phi) ** 2)
-    return a, aprime, Ct
+    return a, aprime
 
 
 # noinspection PyUnusedLocal,PyUnusedLocal
@@ -153,134 +152,37 @@ def fInductionCoefficients1(F, phi, sigma, C_norm, C_tang, *args, **kwargs):
     :return: axial induction factor, tangential induction factor
     """
     a = (sigma * C_norm) / (4 * F * sin(phi) ** 2 + sigma * C_norm)
-    Ct = 4 * a * (1 - a) * F
-
     # Spera's correction
     if a >= 0.2:
         ac = 0.2
         K = (4 * F * sin(phi) ** 2) / (sigma * C_norm)
         to_sqrt = abs((K * (1 - 2 * ac) + 2) ** 2 + 4 * (K * ac ** 2 - 1))
         a = 1 + 0.5 * K * (1 - 2 * ac) - 0.5 * sqrt(to_sqrt)
-        Ct = 4*(ac**2+(1-2*ac)*a)*F
 
     aprime = (sigma * C_tang) / (4 * F * sin(phi) * cos(phi) - sigma * C_tang)
-    return a, aprime, Ct
-
-
-# noinspection PyUnusedLocal,PyUnusedLocal,PyUnusedLocal
-def fInductionCoefficients2(F, phi, sigma, C_norm, Cl, *args, **kwargs):
-    """
-    Calculates induction coefficients using Strip theory/wake rotation method.
-
-    NAME: Strip theory, including wake rotation.
-    SOURCE: Manwell,Wind Energy Explained 2nd. Ed., p.126 (Method 2) == p.128
-
-    Same as original method, without drag.
-
-    :param Cl: lift coefficient
-    :param F: loss factors
-    :param phi: relative wind [rad]
-    :param sigma: solidity
-    :param C_norm: normal coefficient
-    :return: axial induction factor, tangential induction factor
-    """
-    a = 1 / (1 + 4 * F * sin(phi) ** 2 / (sigma * Cl * cos(phi)))
-    aprime = 1 / (4 * cos(phi) / (sigma * Cl) - 1)
-    Ct = 4 * a * (1 - a) * F
-    return a, aprime, Ct
-
-
-# noinspection PyUnusedLocal,PyUnusedLocal,PyUnusedLocal
-def fInductionCoefficients3(lambda_r, phi, sigma, Cl, C_norm, *args, **kwargs):
-    """
-    Calculates induction coefficients using original method.
-
-    NAME: Grant Ingram
-    SOURCE: Wind Turbine Blade Analysis, Grant Ingram, 2011
-
-    Same as original method, without drag or tip/hub loss.
-
-    :param C_norm:
-    :param lambda_r: local speed ratio
-    :param Cl: lift coefficient
-    :param phi: relative wind [rad]
-    :param sigma: solidity
-    :return: axial induction factor, tangential induction factor
-    """
-
-    a = (1 + (4 * cos(phi) ** 2) / (sigma * Cl * sin(phi))) ** -1
-    aprime = ((sigma * Cl) / (4 * lambda_r * cos(phi))) * (1 - a)
-    Ct = 4 * a * (1 - a)
-    return a, aprime, Ct
-
-
-# noinspection PyUnusedLocal,PyUnusedLocal,PyUnusedLocal
-def fInductionCoefficients4(a_last, F, phi, sigma, C_norm, C_tang, Cl, *args, **kwargs):
-    """
-    Calculates induction coefficients using Glauert empirical method.
-
-    NAME: Glauert Empirical
-    SOURCE: Manwell, Wind Energy Explained, Wiley, p.136 (Turbulent Wake State Modeling)
-
-    :param C_tang:
-    :param C_norm: normal coefficient
-    :param F: loss factors
-    :param a_last: axial induction factor
-    :param Cl: lift coefficient
-    :param phi: relative wind [rad]
-    :param sigma: solidity
-    :return: axial induction factor, tangential induction factor
-    """
-
-    Ct = sigma * (1 - a_last) ** 2 * C_norm / (sin(phi) ** 2)
-    if Ct <= 0.96 * F:
-        a = 1 / (1 + (4 * F * sin(phi) ** 2 / (sigma * Cl * cos(phi))))
-    else:
-        a = (1 / F) * (0.143 + sqrt(abs(0.0203 - 0.6427 * (0.889 - C_tang))))
-    aprime = 1 / ((4 * F * cos(phi) / (sigma * Cl)) - 1)
-    return a, aprime, Ct
+    return a, aprime
 
 
 # noinspection PyUnusedLocal,PyUnusedLocal,PyUnusedLocal
 def fInductionCoefficients5(
-        aprime_last, F, lambda_r, phi, sigma, Cl, C_norm, B, c, psi, r, R, v, omega, *args, **kwargs
+        aprime_last, F, lambda_r, phi, sigma, Cl, C_norm, B, c, psi, r, R, v, omega, Ct_r, *args, **kwargs
 ):
     """
     Calculates induction coefficients using Harman method used in PROPX.
 
     NAME: PROPX
     SOURCE: PROPX: Definitions, Derivations and Data Flow, C. Harman, 1994
-
-    TODO:[Something not implemented correctly, method not working...]
-
-    :param C_norm:
-    :param omega: rotational velocity [rad/s]
-    :param v: wind speed [m/s]
-    :param R: tip radius [m]
-    :param r: section radius [m]
-    :param psi: coning angle [rad]
-    :param c: chord length [m]
-    :param B: number of blades
-    :param lambda_r: local speed ratio
-    :param aprime_last: tangential induction factor
-    :param F: loss factors
-    :param Cl: lift coefficient
-    :param phi: relative wind [rad]
-    :param sigma: solidity
-    :return: axial induction factor, tangential induction factor
     """
 
     K = B * c * Cl * cos(phi) * cos(psi) / (8 * pi * r * sin(phi) ** 2)
     a = K / (1 + K)
-
-    CTL = sigma * (1 - a) ** 2 * C_norm / (sin(phi) ** 2)  # Qblade
 
     if a > 0.2:
         ac = 0.2
         acprime = 0.0
         Fc = F
         X = lambda_r
-        CTL = B * c * Cl * X * (1 + aprime_last) * cos(psi) / (2 * pi * R) * sqrt(
+        Ct_r = B * c * Cl * X * (1 + aprime_last) * cos(psi) / (2 * pi * R) * sqrt(
             (1 - a) ** 2 + (1 + aprime_last) ** 2 * X ** 2)
         CTL_ac = 4 * ac * Fc * (1 - ac)
         cpsi = cos(psi)
@@ -290,13 +192,13 @@ def fInductionCoefficients5(
             (cos(phi) ** 2 / sin(phi)) * \
             (1 + (acprime * (1 - 2 * ac)) / ((1 + 2 * acprime) * ac * cos(psi) ** 2)) * \
             (1 - ac)
-        a = ac - (CTL_ac - CTL) / dCTL_da
+        a = ac - (CTL_ac - Ct_r) / dCTL_da
 
     XL = (r * cos(psi) * omega) / v
 
     to_sqrt = abs(1 + (4 * a * (1 - a)) / (XL ** 2))
     aprime = 0.5 * (sqrt(to_sqrt) - 1)
-    return a, aprime, CTL
+    return a, aprime
 
 
 # noinspection PyUnusedLocal,PyUnusedLocal,PyUnusedLocal
@@ -308,18 +210,8 @@ def fInductionCoefficients6(a_last, F, phi, sigma, C_norm, C_tang, Cl, *args, **
     SOURCE: AeroDyn manual - theory.
 
     This method is equal to Advanced brake state model method.
-
-    :param C_tang:
-    :param C_norm: normal coefficient
-    :param a_last: axial induction factor
-    :param F: loss factors
-    :param Cl: lift coefficient
-    :param phi: relative wind [rad]
-    :param sigma: solidity
-    :return: axial induction factor, tangential induction factor
     """
 
-    # CT=(1+(sigma*(1-a_last)**2*C_norm)/(sin(phi)**2))
     CT = ((sigma * (1 - a_last) ** 2 * C_norm) / (sin(phi) ** 2))
     if CT > 0.96 * F:
         # Modified Glauert correction
@@ -327,11 +219,10 @@ def fInductionCoefficients6(a_last, F, phi, sigma, C_norm, C_tang, Cl, *args, **
             18 * F - 20 - 3 * sqrt(CT * (50 - 36 * F) +
                                    12 * F * (3 * F - 4))
         ) / (36 * F - 50)
-        CT = 8 / 9 + (4 * F - 40 / 90) * a + (50 / 9 - 4 * F) * a ** 2
     else:
         a = (1 + 4 * F * sin(phi) ** 2 / (sigma * C_norm)) ** -1
     aprime = (-1 + 4 * F * sin(phi) * cos(phi) / (sigma * C_tang)) ** -1
-    return a, aprime, CT
+    return a, aprime
 
 
 # noinspection PyUnusedLocal,PyUnusedLocal,PyUnusedLocal
@@ -342,14 +233,6 @@ def fInductionCoefficients7(a_last, F, lambda_r, phi, sigma, C_norm, *args, **kw
     NAME: QBLADE (Buhl)
     SOURCE: QBlade/src/XBEM/BData.cpp
     AUTHOR: Buhl
-
-    :param a_last: axial induction factor [float]
-    :param lambda_r: local speed ratio
-    :param C_norm: normal coefficient [float]
-    :param F: loss factors
-    :param phi: relative wind [rad]
-    :param sigma: solidity
-    :return: axial induction factor, tangential induction factor
     """
 
     Ct = sigma * (1 - a_last) ** 2 * C_norm / (sin(phi) ** 2)  # Qblade
@@ -364,7 +247,7 @@ def fInductionCoefficients7(a_last, F, lambda_r, phi, sigma, C_norm, *args, **kw
 
     aprime = 0.5 * (abs(1 + 4 / (lambda_r ** 2) * a * (1 - a)) ** 0.5 - 1)
 
-    return a, aprime, Ct
+    return a, aprime
 
 
 # noinspection PyUnusedLocal,PyUnusedLocal,PyUnusedLocal
@@ -374,21 +257,6 @@ def fInductionCoefficients8(a_last, F, phi, sigma, lambda_r, B, r, R, C_norm, Cl
 
     NAME: SHEN
     SOURCE: Pratumnopharat,2010
-
-    :param a_last: axial induction
-    :param F: tip loss and hub loss corrections
-    :param phi: wind angle from rotation plane
-    :param sigma: solidity
-    :param lambda_r: local speed ratio
-    :param B: blade number
-    :param r: local radius
-    :param R: rotor radius
-    :param C_norm: normal coefficient
-    :param Cl: lift coefficient
-    :param C_tang: tangential coefficient
-    :param args:
-    :param kwargs:
-    :return: a, aprime, Ct
     """
 
     if F == 0:
@@ -411,7 +279,7 @@ def fInductionCoefficients8(a_last, F, phi, sigma, lambda_r, B, r, R, C_norm, Cl
         a = (2 + Y1 - sqrt(4 * Y1 * (1 - F) + Y1 ** 2)) / (2 * (1 + F * Y1))
     aprime = 1 / ((1 - a * F) * Y2 / (1 - a) - 1)
 
-    return a, aprime, Ct
+    return a, aprime
 
 
 def fInductionCoefficients9(a_last, F, phi, Cl, C_norm, C_tang, sigma, *args, **kwargs):
@@ -445,106 +313,63 @@ def fInductionCoefficients9(a_last, F, phi, Cl, C_norm, C_tang, sigma, *args, **
                   92 / 2187) + Ct / (6 * F) - 145 / 729) ** (1 / 3)
         a = Y - 11 / (81 * Y) + 5 / 9
     aprime = (4 * F * sin(phi)**2 / (sigma * Ct) - 1) ** -1
-    return a, aprime, Ct
+    return a, aprime
 
 
-def fInductionCoefficients10(a_last, F, phi, Cl, C_tang, C_norm, sigma, *args, **kwargs):
+def fInductionCoefficients10(a_last, F, phi, Cl, C_tang, C_norm, sigma, Ct_r, *args, **kwargs):
     """
     NAME: Wilson and walker
 
     Method from Pratumnopharat,2010
 
     Wilson and Walker method
-
-    :param C_tang: tangential coefficient
-    :param C_norm: normal coefficient
-    :param a_last: axial induction factor
-    :param F: loss factors
-    :param Cl: lift coefficient
-    :param phi: relative wind [rad]
-    :param sigma: solidity
-    :return: axial induction factor, tangential induction factor
     """
     a = a_last
-
     ac = 0.2
 
-    Ct = sigma * (1 - a_last) ** 2 * C_norm / (sin(phi) ** 2)  # Qblade
-    # if a <= ac:
-    #    Ct = 4*a*F*(1-a)
-    # else:
-    #    Ct = 4*F*(ac**2+(1-2*ac)*a)
     if F == 0:
         F = 1e-6
-    if Ct <= 0.64 * F:
-        a = (1 - sqrt(1 - Ct / F)) / 2
+    if Ct_r <= 0.64 * F:
+        a = (1 - sqrt(1 - Ct_r / F)) / 2
     else:
-        a = (Ct - 4 * F * ac ** 2) / (4 * F * (1 - 2 * ac))
+        a = (Ct_r - 4 * F * ac ** 2) / (4 * F * (1 - 2 * ac))
 
     aprime = (4 * F * sin(phi) * cos(phi) / (sigma * C_tang) - 1) ** -1
 
-    return a, aprime, Ct
+    return a, aprime
 
 
-def fInductionCoefficients11(a_last, F, phi, Cl, C_norm, C_tang, sigma, *args, **kwargs):
+def fInductionCoefficients11(a_last, F, phi, Cl, C_norm, C_tang, sigma, Ct_r, *args, **kwargs):
     """
     NAME: Classical brake state model
     Method from Pratumnopharat,2010
 
     Classical momentum brake state model
-
-    :param C_tang: tangential coefficient
-    :param C_norm: normal coefficient
-    :param a_last: axial induction factor
-    :param F: loss factors
-    :param Cl: lift coefficient
-    :param phi: relative wind [rad]
-    :param sigma: solidity
-    :return: axial induction factor, tangential induction factor
     """
     a = a_last
     Sw = sigma / (8 * sin(phi) ** 2) * C_norm
-    # Ct = Sw*(1-a)**2
-    Ct = sigma * (1 - a_last) ** 2 * C_norm / (sin(phi) ** 2)  # Qblade
     a = (2 * Sw + F - sqrt(F ** 2 + 4 * Sw * F * (1 - F))) / (2 * (Sw + F ** 2))
     aprime = (4 * F * sin(phi) * cos(phi) / (sigma * C_tang) - 1) ** -1
-    return a, aprime, Ct
+    return a, aprime
 
 
-def fInductionCoefficients12(a_last, F, phi, Cl, C_tang, C_norm, sigma, lambda_r, *args, **kwargs):
+def fInductionCoefficients12(a_last, F, phi, Cl, C_tang, C_norm, sigma, lambda_r, Ct_r, *args, **kwargs):
     """
     NAME: Advanced brake state model
 
     Method from Pratumnopharat,2010
 
     Advanced brake state model
-
-    Should be the same result as in Aerodyn or QBlade
-
-    :param lambda_r: Local speed ratio
-    :param C_tang: tangential coefficient
-    :param C_norm: normal coefficient
-    :param a_last: axial induction factor
-    :param F: loss factors
-    :param Cl: lift coefficient
-    :param phi: relative wind [rad]
-    :param sigma: solidity
-    :return: axial induction factor, tangential induction factor
     """
+
     a = a_last
-    # if a <= 0.4:
-    #    Ct = 4*a*F*(1-a)
-    # else:
-    #    Ct=8/9+(4*F-40/9)*a+(50/9-4*F)*a**2
-    Ct = sigma * (1 - a_last) ** 2 * C_norm / (sin(phi) ** 2)  # Qblade
-
     a = (18 * F - 20 - 3 *
-         sqrt(abs(Ct * (50 - 36 * F) + 12 * F * (3 * F - 4)))) / (36 * F - 50)
+         sqrt(abs(Ct_r * (50 - 36 * F) + 12 * F * (3 * F - 4)))) / (36 * F - 50)
     aprime = (4 * F * sin(phi) * cos(phi) / (sigma * C_tang) - 1) ** -1
-    return a, aprime, Ct
+    return a, aprime
 
 
-def fInductionCoefficients13(a_last, F, phi, Cl, C_norm, sigma, lambda_r, *args, **kwargs):
+def fInductionCoefficients13(a_last, F, phi, Cl, C_norm, sigma, lambda_r, Ct_r, *args, **kwargs):
     """
     NAME: Modified ABS model
     Method from Pratumnopharat,2010
@@ -561,22 +386,17 @@ def fInductionCoefficients13(a_last, F, phi, Cl, C_norm, sigma, lambda_r, *args,
     :return: axial induction factor, tangential induction factor
     """
     a = a_last
-    # if a <= 0.4:
-    #    Ct = 4*a*F*(1-a)
-    # else:
-    #    Ct=8/9+(4*F-40/9)*a+(50/9-4*F)*a**2
-    Ct = sigma * (1 - a_last) ** 2 * C_norm / (sin(phi) ** 2)  # Qblade
-    if Ct < 0.96 * F:
-        a = (1 - sqrt(1 - Ct / F)) / 2
+    if Ct_r < 0.96 * F:
+        a = (1 - sqrt(1 - Ct_r / F)) / 2
     else:
-        a = 0.1432 + sqrt(-0.55106 + 0.6427 * Ct / F)
+        a = 0.1432 + sqrt(-0.55106 + 0.6427 * Ct_r / F)
     aprimeprime = (4 * a * F * (1 - a)) / (lambda_r ** 2)
     if (1 + aprimeprime) < 0:
         aprime = 0
     else:
         aprime = (sqrt(1 + aprimeprime) - 1) / 2
 
-    return a, aprime, Ct
+    return a, aprime
 
 
 def fInductionCoefficients14(a_last, phi, sigma, Cl, Cd, F, C_norm, C_tang, *args, **kwargs):
@@ -597,13 +417,9 @@ def fInductionCoefficients14(a_last, phi, sigma, Cl, Cd, F, C_norm, C_tang, *arg
     """
 
     a = a_last
-    #CT = cos(phi) * Cl - sin(phi) * Cd
-    #CQ = sin(phi) * Cl + cos(phi) * Cd
     a = 1 / (F * 4 * sin(phi) ** 2 / (sigma * C_norm) - 1)
     aprime = 1 / (F * 4 * sin(phi) * cos(phi) / (sigma * C_tang) + 1)
-
-    Ct = sigma * (1 - a) ** 2 * C_norm / (sin(phi) ** 2)  # QBlade
-    return a, aprime, Ct
+    return a, aprime
 
 
 def guessInductionFactors(lambda_r, sigma, theta):
@@ -739,37 +555,38 @@ def calculate_coefficients(method, input_arguments):
     if method == 1:
         return fInductionCoefficients1(**input_arguments)
     if method == 2:
-        return fInductionCoefficients2(**input_arguments)
-    if method == 3:
-        return fInductionCoefficients3(**input_arguments)
-    if method == 4:
-        return fInductionCoefficients4(**input_arguments)
-    if method == 5:
         return fInductionCoefficients5(**input_arguments)
-    if method == 6:
+    if method == 3:
         return fInductionCoefficients6(**input_arguments)
-    if method == 7:
+    if method == 4:
         return fInductionCoefficients7(**input_arguments)
-    if method == 8:
+    if method == 5:
         return fInductionCoefficients8(**input_arguments)
-    if method == 9:
+    if method == 6:
         return fInductionCoefficients9(**input_arguments)
-    if method == 10:
+    if method == 7:
         return fInductionCoefficients10(**input_arguments)
-    if method == 11:
+    if method == 8:
         return fInductionCoefficients11(**input_arguments)
-    if method == 12:
+    if method == 9:
         return fInductionCoefficients12(**input_arguments)
-    if method == 13:
+    if method == 10:
         return fInductionCoefficients13(**input_arguments)
-    if method == 14:
+    if method == 11:
         return fInductionCoefficients14(**input_arguments)
     raise Exception("Method " + str(method) + " does not exist.")
 
 
-METHODS_STRINGS = {"0": "Original", "1": "b) Spera", "2": "Wiley: Strip theory, incl. wake rot.",
-                   "3": "Grant Ingram (without Ct corr.)", "4": "f) Glauert empirical", "5": "Propx",
-                   "6": "e) Aerodyn (Buhl)", "7": "QBlade (Buhl)", "8": "d) Shen", "9": "a) Glauert",
-                   "10": "Wilson and Walker", "11": "Classical brake state model", "12": "Advanced brake state model",
-                   "13": "c) Modified ABS model", "14": "Propeller BEM"}
+METHODS_STRINGS = {"0": "Original",
+                   "1": "Spera",
+                   "2": "Propx",
+                   "3": "Aerodyn (Buhl)",
+                   "4": "QBlade (Buhl)",
+                   "5": "Shen",
+                   "6": "Glauert",
+                   "7": "Wilson and Walker",
+                   "8": "Classical brake state model",
+                   "9": "Advanced brake state model",
+                   "10": "Modified ABS model",
+                   "11": "Propeller BEM"}
 

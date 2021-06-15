@@ -14,23 +14,24 @@ numpy.seterr(invalid="raise")
 OUTPUT_VARIABLES_LIST = {
     "a": {"type": "array", "name": "Axial induction factor", "symbol": "a", "unit": ""},
     "a'": {"type": "array", "name": "Tangential induction factor", "symbol": "a'", "unit": ""},
-    "cL": {"type": "array", "name": "Lift coefficient", "symbol": r"$C_l$", "unit": ""},
-    "cD": {"type": "array", "name": "Drag coefficient", "symbol": r"$C_d$", "unit": ""},
+    "Cl": {"type": "array", "name": "Lift coefficient", "symbol": r"$C_l$", "unit": ""},
+    "Cd": {"type": "array", "name": "Drag coefficient", "symbol": r"$C_d$", "unit": ""},
     "alpha": {"type": "array", "name": "Angle of attack", "symbol": r"$\alpha$", "unit": "°"},
     "phi": {"type": "array", "name": "Relative wind angle", "symbol": r"$\phi$", "unit": "°"},
     "F": {"type": "array", "name": "Tip loss correction factor", "symbol": "F", "unit": ""},
     "lambda_r": {"type": "array", "name": "Local tip speed ratio", "symbol": r"$\lambda_r$", "unit": ""},
-    "Ct": {"type": "array", "name": "Tangential coefficient", "symbol": r"$C_t$", "unit": ""},
+    #"Ct": {"type": "array", "name": "Local thrust coefficient", "symbol": r"$C_{T_r}$", "unit": ""},
+    "Ct_r": {"type": "array", "name": "Local thrust coefficient (def.)", "symbol": r"$C_{T_r}$", "unit": ""},
 
     "dFn": {"type": "array", "name": "Incremental normal force", "symbol": r"$dF_n$", "unit": "N"},
     "dFt": {"type": "array", "name": "Incremental tangential force", "symbol": r"$dF_t$", "unit": "N"},
-    "dFc": {"type": "array", "name": "Incremental centrifugal force", "symbol": r"$dF_c$", "unit": "N"},
+    "dFc": {"post_processed":True,"type": "array", "name": "Incremental centrifugal force", "symbol": r"$dF_c$", "unit": "N"},
     "dFn/n": {"type": "array", "name": "Incremental normal force (per unit length)", "symbol": r"$dF_n/n$",
               "unit": "N/m"},
     "dFt/n": {"type": "array", "name": "Incremental tangential force (per unit length)", "symbol": r"$dF_t/n$",
               "unit": "N/m"},
 
-    "foils": {"type": "string_array", "name": "Airfoil name", "symbol": "airfoil_name", "unit": ""},
+    "foils": {"post_processed":True,"type": "string_array", "name": "Airfoil name", "symbol": "airfoil_name", "unit": ""},
     "dT": {"type": "array", "name": "Incremental thrust", "symbol": "dT", "unit": "N"},
     "dQ": {"type": "array", "name": "Incremental torque", "symbol": "dM", "unit": "N"},
     "Re": {"type": "array", "name": "Reynolds number", "symbol": "Re", "unit": ""},
@@ -39,23 +40,22 @@ OUTPUT_VARIABLES_LIST = {
     "U3": {"type": "array", "name": "Near-downwind speed", "symbol": "U3", "unit": "m/s"},
     "U4": {"type": "array", "name": "Far-downwind speed", "symbol": "U4", "unit": "m/s"},
 
-    "Ix": {"type": "array", "name": "Bending inertia (normal)", "symbol": r"$I_x$", "unit": r"$mm^4$"},
-    "Iy": {"type": "array", "name": "Bending inertia (tangential)", "symbol": r"$I_y$", "unit": r"$mm^4$"},
-    "Ixy": {"type": "array", "name": "Bending inertia (xy)", "symbol": r"$I_xy$", "unit": r"$mm^4$"},
-    "A": {"type": "array", "name": "Airfoil area", "symbol": "A", "unit": r"$mm^2$"},
+    "Ix": {"post_processed":True,"type": "array", "name": "Bending inertia (normal)", "symbol": r"$I_x$", "unit": r"$mm^4$"},
+    "Iy": {"post_processed":True,"type": "array", "name": "Bending inertia (tangential)", "symbol": r"$I_y$", "unit": r"$mm^4$"},
+    "Ixy": {"post_processed":True,"type": "array", "name": "Bending inertia (xy)", "symbol": r"$I_xy$", "unit": r"$mm^4$"},
+    "A": {"post_processed":True,"type": "array", "name": "Airfoil area", "symbol": "A", "unit": r"$mm^2$"},
+    "Ms_t": {"post_processed":True,"type": "array", "name": "Bending moment (tangential)", "symbol": r"$M_{bend,tang.}$", "unit": "Nm"},
+    "Ms_n": {"post_processed":True,"type": "array", "name": "Bending moment (normal)", "symbol": r"$M_{bend,norm.}$", "unit": "Nm"},
+    "stress_norm": {"post_processed":True,"type": "array", "name": "Bending stress (normal)", "symbol": r"$\sigma_n$", "unit": "MPa"},
+    "stress_tang": {"post_processed":True,"type": "array", "name": "Bending stress (tangential)", "symbol": r"$\sigma_t$", "unit": "MPa"},
+    "stress_cent": {"post_processed":True,"type": "array", "name": "Axial stress (centrifugal)", "symbol": r"$\sigma_c$", "unit": "MPa"},
+    "stress_von_mises": {"post_processed":True,"type": "array", "name": "Von Mises stress", "symbol": r"$\sigma_y$", "unit": "MPa"},
 
-    "Ms_t": {"type": "array", "name": "Bending moment (tangential)", "symbol": r"$M_{bend,tang.}$", "unit": "Nm"},
-    "Ms_n": {"type": "array", "name": "Bending moment (normal)", "symbol": r"$M_{bend,norm.}$", "unit": "Nm"},
-    "stress_norm": {"type": "array", "name": "Bending stress (normal)", "symbol": r"$\sigma_n$", "unit": "MPa"},
-    "stress_tang": {"type": "array", "name": "Bending stress (tangential)", "symbol": r"$\sigma_t$", "unit": "MPa"},
-    "stress_cent": {"type": "array", "name": "Axial stress (centrifugal)", "symbol": r"$\sigma_c$", "unit": "MPa"},
-    "stress_von_mises": {"type": "array", "name": "Von Mises stress", "symbol": r"$\sigma_y$", "unit": "MPa"},
-
-    "r": {"type": "array", "name": "Section radius", "symbol": "r", "unit": "m"},
-    "dM": {"type": "array", "name": "Section torque", "symbol": "dM", "unit": "Nm"},
-    "dr": {"type": "array", "name": "Section height", "symbol": "dr", "unit": "m"},
-    "c": {"type": "array", "name": "Section chord length", "symbol": "c", "unit": "m"},
-    "theta": {"type": "array", "name": "Section twist angle", "symbol": r"$\Theta$", "unit": "°"},
+    "r": {"post_processed":True,"type": "array", "name": "Section radius", "symbol": "r", "unit": "m"},
+    "dM": {"post_processed":True,"type": "array", "name": "Section torque", "symbol": "dM", "unit": "Nm"},
+    "dr": {"post_processed":True,"type": "array", "name": "Section height", "symbol": "dr", "unit": "m"},
+    "c": {"post_processed":True,"type": "array", "name": "Section chord length", "symbol": "c", "unit": "m"},
+    "theta": {"post_processed":True,"type": "array", "name": "Section twist angle", "symbol": r"$\Theta$", "unit": "°"},
 
     "stall": {"type": "array", "name": "Stall boolean", "symbol":"", "unit":""},
 
@@ -72,10 +72,13 @@ OUTPUT_VARIABLES_LIST = {
     "thrust": {"type": "float", "name": "Thrust", "symbol": "T", "unit": "N"},
     "Rhub": {"type": "float", "name": "Hub radius", "symbol": r"$R_hub$", "unit": "m"},
     "B": {"type": "float", "name": "Number of blades", "symbol": "B", "unit": ""},
+
+    "pitch": {"type": "float", "name": "Pitch", "symbol": "p", "unit": "°"},
+    "blade_stall_percentage" : {"type":"float", "name":"Blade stall percentage", "symbol":r"$s_p$", "unit":""},
+
     "J": {"type": "float", "name": "Advance ratio", "symbol": "J", "unit": ""},
     "eff": {"type": "float", "name": "Propeller efficiency", "symbol": r"$\eta_p$", "unit": ""},
-    "pitch": {"type": "float", "name": "Pitch", "symbol": "p", "unit": "°"},
-    "blade_stall_percentage" : {"type":"float", "name":"Blade stall percentage", "symbol":r"$s_p$", "unit":""}
+    "cq": {"type": "float", "name": "Torque coefficient", "symbol": r"$C_q$", "unit": ""},
 }
 
 
@@ -265,6 +268,7 @@ class Calculator:
         # create results array placeholders
         results = {}
         arrays = [k for k, v in OUTPUT_VARIABLES_LIST.items() if v["type"] == "array" or v["type"] == "string_array"]
+        arrays_no_statics = [k for k, v in OUTPUT_VARIABLES_LIST.items() if (v["type"] == "array" or v["type"] == "string_array") and "post_processed" not in v]
         for array in arrays:
             results[array] = numpy.array([])
 
@@ -311,31 +315,8 @@ class Calculator:
             if out_results == None:
                 return None
 
-            results["a"] = numpy.append(results["a"], out_results["a"])
-            results["a'"] = numpy.append(results["a'"], out_results["aprime"])
-            results["cL"] = numpy.append(results["cL"], out_results["Cl"])
-            results["cD"] = numpy.append(results["cD"], out_results["Cd"])
-            results["alpha"] = numpy.append(results["alpha"], out_results["alpha"])
-            results["phi"] = numpy.append(results["phi"], out_results["phi"])
-            results["F"] = numpy.append(results["F"], out_results["F"])
-            results["Ct"] = numpy.append(results["Ct"], out_results["Ct"])
-
-            results["dFn"] = numpy.append(results["dFn"], out_results["dFn"])
-            results["dFt"] = numpy.append(results["dFt"], out_results["dFt"])
-            results["dFn/n"] = numpy.append(results["dFn/n"], out_results["dFn/n"])
-            results["dFt/n"] = numpy.append(results["dFt/n"], out_results["dFt/n"])
-
-            results["foils"] = numpy.append(results["foils"], out_results["_airfoil"])
-            results["dT"] = numpy.append(results["dT"], out_results["dT"])
-            results["dQ"] = numpy.append(results["dQ"], out_results["dQ"])
-            results["Re"] = numpy.append(results["Re"], out_results["Re"])
-            results["U1"] = numpy.append(results["U1"], out_results["U1"])
-            results["U2"] = numpy.append(results["U2"], out_results["U2"])
-            results["U3"] = numpy.append(results["U3"], out_results["U3"])
-            results["U4"] = numpy.append(results["U4"], out_results["U4"])
-            results["lambda_r"] = numpy.append(results["lambda_r"], out_results["lambda_r"])
-
-            results["stall"] = numpy.append(results["stall"], out_results["stall"])
+            for a in arrays_no_statics:
+                results[a] = numpy.append(results[a],out_results[a])
 
         self.statical_analysis(blade_design, blade_thickness, c, dr, foils, mass_density, num_sections, omega, r,
                                results, theta)
@@ -367,9 +348,10 @@ class Calculator:
         ct_p = T / (rho * (2 * R) ** 4 * (rpm / 60) ** 2)
 
         cq_p = Q / (rho * (2 * R) ** 5 * (rpm / 60) ** 2)
+
         eff = J / 2 / pi * ct_p / cq_p
 
-        if propeller_mode and eff > 1.0:
+        if propeller_mode and cp_p < 0.0:
             return None
 
         blade_stall_percentage = np.sum(results["stall"])/len(results["stall"])
@@ -384,6 +366,7 @@ class Calculator:
         else:
             results["cp"] = cp_w
             results["ct"] = ct_w
+        results["cq"] = cq_p
 
         results["TSR"] = TSR
         results["Ft"] = Ft
@@ -597,6 +580,7 @@ class Calculator:
         # initial guess
         a = 1 / 3
         aprime = 0.01
+        Ct_r = 4*a*(1-a)
 
         # iterations counter
         i = 0
@@ -711,6 +695,9 @@ class Calculator:
                 Cl, Cd = self.airfoils[_airfoil]["interp_function_cl"](Re, degrees(alpha)), self.airfoils[_airfoil][
                     "interp_function_cd"](Re, degrees(alpha))
                 if Cl == False and Cd == False:
+                    p.print("\nNo Cl or CD")
+                    p.print("Re:",Re)
+                    p.print("alpha:",degrees(alpha))
                     return None
 
                 # determine min and max angle of attack for attached region
@@ -758,8 +745,7 @@ class Calculator:
 
             input_arguments = {"F": F, "lambda_r": lambda_r, "phi": phi, "sigma": sigma, "C_norm": C_norm,
                                "C_tang": C_tang, "Cl": Cl, "Cd": Cd, "B": B, "c": _c, "r": _r, "R": R, "psi": psi,
-                               "aprime_last": aprime, "omega": omega, "v": v, "a_last": a,
-                               # "alpha_zero": airfoils[_airfoil]["alpha_zero"],
+                               "aprime_last": aprime, "omega": omega, "v": v, "a_last": a, "Ct_r":Ct_r,
                                "method": method, "alpha": alpha, "alpha_deg": degrees(alpha)}
 
             if print_all:
@@ -780,7 +766,7 @@ class Calculator:
             aprime_last = aprime
 
             # set new values
-            a, aprime, Ct = coeffs
+            a, aprime = coeffs
 
             # wake rotation correction
             k = omega * Gamma_B / (np.pi * v ** 2)
@@ -796,6 +782,8 @@ class Calculator:
             dFD = Cd * 0.5 * rho * Vrel_norm ** 2 * _c * _dr  # drag force
             dFt = dFL * sin(phi) - dFD * cos(phi)  # tangential force
             dFn = dFL * cos(phi) + dFD * sin(phi)  # normal force
+
+            Ct_r = dFn/(0.5*rho*v**2*2*pi*_r*_dr)*B
 
             dFn_norm = dFn * num_sections
             dFt_norm = dFt * num_sections
@@ -827,8 +815,8 @@ class Calculator:
             dQ_prop = 0.5 * B * rho * Vrel_norm ** 2 * _c * _r * _dr * C_tang
 
             if propeller_mode:
-                dT = dT_prop
-                dQ = dQ_prop
+                dT = dT_MT_p
+                dQ = dQ_MT_p
             else:
                 dT = dT_BET
                 dQ = dQ_BET
@@ -858,8 +846,7 @@ class Calculator:
                 return None
 
             # relaxation
-            # aprime=aprime_last+relaxation_factor*(aprime-aprime_last)
-            a = a_last + relaxation_factor * (a - a_last)
+            a = a_last*(1-relaxation_factor)+a*relaxation_factor
 
         ############ END ITERATION ############
 
@@ -888,10 +875,10 @@ class Calculator:
             # p.print(prepend, "        dT_p %.2f dQ_p %.2f" % (dT_p, dQ_p))
             p.print(prepend, "    ----------------------------")
 
-        out = {"a": a, "aprime": aprime, "Cl": Cl, "Cd": Cd, "alpha": degrees(alpha), "phi": degrees(phi), "F": F,
-               "dFt": dFt, "Ct": Ct, "dFn": dFn, "_airfoil": _airfoil, "dT": dT, "dQ": dQ, "Re": Re,
+        out = {"a": a, "a'": aprime, "Cl": Cl, "Cd": Cd, "alpha": degrees(alpha), "phi": degrees(phi), "F": F,
+               "dFt": dFt, "dFn": dFn, "_airfoil": _airfoil, "dT": dT, "dQ": dQ, "Re": Re,
                'U1': U1, 'U2': U2, 'U3': U3, 'U4': U4,
-               "lambda_r": lambda_r, "dFt/n": dFt_norm, "dFn/n": dFn_norm, "stall": stall}
+               "lambda_r": lambda_r, "dFt/n": dFt_norm, "dFn/n": dFn_norm, "stall": stall, "Ct_r":Ct_r}
         return out
 
     def get_crossection_data(self, _c, _theta, _airfoil, blade_design, blade_thickness):

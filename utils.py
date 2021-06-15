@@ -479,7 +479,7 @@ def generate_v_and_rpm_from_tsr(tsr_list, R, geometry_scale, v=None, rpm=None):
     return out_v, out_rpm
 
 
-def generate_v_and_rpm_from_J(J_list, R, geometry_scale, v=None, rpm=None):
+def generate_v_and_rpm_from_J(J_list, R, geometry_scale, v=None, rpm=None, printer=None):
     """
     J = v / (rpm/60 * D) ...
 
