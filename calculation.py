@@ -308,10 +308,7 @@ class Calculator:
             _locals = locals()
             del _locals["self"]
 
-            if use_minimization_solver:
-                out_results = self.calculate_section_minimization(**_locals, printer=p)
-            else:
-                out_results = self.calculate_section(**_locals, printer=p)
+            out_results = self.calculate_section(**_locals, printer=p)
 
             if print_progress:
                 p.print("*", add_newline=False)
@@ -522,7 +519,7 @@ class Calculator:
             A = A1 * transition_coefficient + A2 * (1 - transition_coefficient)
         return A, Ix, Ixy, Iy, norm_dist, tang_dist
 
-    def calculate_section_minimization(self, v, omega, _r, _c, _theta, _dr, B, R, _airfoil, max_thickness, Rhub,
+    def calculate_section(self, v, omega, _r, _c, _theta, _dr, B, R, _airfoil, max_thickness, Rhub,
                           propeller_mode, pitch=0.0, psi=0.0, fix_reynolds=False, reynolds=1e6, tip_loss=False,
                           new_tip_loss=False,
                           hub_loss=False, new_hub_loss=False, cascade_correction=False,
@@ -534,7 +531,7 @@ class Calculator:
                           skewed_wake_correction=False,
                           lambda_r_array=[],
                           transition=False, _airfoil_prev=None, _airfoil_next=None, transition_coefficient=1.0,
-                          num_sections=0,
+                          num_sections=0, use_minimization_solver=False,
                           *args, **kwargs):
         """
         Function that calculates each section of the blade using the optimization function way seen in
@@ -572,7 +569,7 @@ class Calculator:
         _theta = radians(_theta)
 
 
-        def func(inp,output=False):
+        def func(inp,last_iteration=False):
         ############ START ITERATION ############
             # update counter
             #i = i + 1
@@ -682,7 +679,6 @@ class Calculator:
                     p.print("Re:",Re)
                     p.print("alpha:",degrees(alpha))
                     return None
-                    #Cl,Cd = 0,0
 
                 # determine min and max angle of attack for attached region
                 aoa_max_stall = self.airfoils[_airfoil]["interpolation_function_stall_max"](Re)
@@ -727,15 +723,6 @@ class Calculator:
                 C_norm = Cl * cos(phi) + Cd * sin(phi)
                 C_tang = Cl * sin(phi) - Cd * cos(phi)
 
-            # wake rotation correction
-            k = omega * Gamma_B / (np.pi * v ** 2)
-            aprime_vct = k / (4 * lambda_r ** 2)
-            relevant_radiuses = lambda_r_array[np.nonzero(lambda_r_array >= lambda_r)]
-
-            if skewed_wake_correction:
-                a_skewed = skewed_wake_correction_calculate(yaw_angle, a, _r, R)
-                a = a_skewed
-
             # force calculation
             dFL = Cl * 0.5 * rho * Vrel_norm ** 2 * _c * _dr  # lift force
             dFD = Cd * 0.5 * rho * Vrel_norm ** 2 * _c * _dr  # drag force
@@ -746,6 +733,41 @@ class Calculator:
 
             dFn_norm = dFn * num_sections
             dFt_norm = dFt * num_sections
+
+            if not use_minimization_solver:
+                input_arguments = {"F": F, "lambda_r": lambda_r, "phi": phi, "sigma": sigma, "C_norm": C_norm,
+                   "C_tang": C_tang, "Cl": Cl, "Cd": Cd, "B": B, "c": _c, "r": _r, "R": R, "psi": psi,
+                   "aprime_last": aprime, "omega": omega, "v": v, "a_last": a, "Ct_r":Ct_r,
+                   "method": method, "alpha": alpha, "alpha_deg": degrees(alpha)}
+
+                if print_all:
+                    args_to_print = sorted(
+                        [key for key, value in input_arguments.items()])
+                    p.print("            i", i)
+                    for argument in args_to_print:
+                        p.print("            ", argument, input_arguments[argument])
+                    p.print("             --------")
+
+                # calculate new induction coefficients
+                coeffs = calculate_coefficients(method, input_arguments)
+                if coeffs == None:
+                    return None
+
+                # save old values
+                a_last = a
+                aprime_last = aprime
+
+                # set new values
+                a, aprime = coeffs
+
+            # wake rotation correction
+            k = omega * Gamma_B / (np.pi * v ** 2)
+            aprime_vct = k / (4 * lambda_r ** 2)
+            relevant_radiuses = lambda_r_array[np.nonzero(lambda_r_array >= lambda_r)]
+
+            if skewed_wake_correction:
+                a_skewed = skewed_wake_correction_calculate(yaw_angle, a, _r, R)
+                a = a_skewed
 
             # thrust and torque - Wiley, WE 2nd, p.124
             dT_MT = F * 4 * pi * _r * rho * v ** 2 * a * (1 - a) * _dr
@@ -782,392 +804,57 @@ class Calculator:
                 U3 = None
                 U4 = U1 * (1 - 2 * a)
 
-            if propeller_mode:
-                g = (dT_BET_p-dT_MT_p)**2+(dQ_BET_p-dQ_MT_p)**2
-            else:
-                g = (dT_BET-dT_MT)**2+(dQ_BET-dQ_MT)**2
+            out = {"a": a, "a'": aprime, "Cl": Cl, "Cd": Cd, "alpha": degrees(alpha), "phi": degrees(phi), "F": F,
+                   "dFt": dFt, "dFn": dFn, "_airfoil": _airfoil, "dT": dT, "dQ": dQ, "Re": Re,
+                   'U1': U1, 'U2': U2, 'U3': U3, 'U4': U4,
+                   "lambda_r": lambda_r, "dFt/n": dFt_norm, "dFn/n": dFn_norm, "stall": stall, "Ct_r":Ct_r}
 
-            if output:
-                out = {"a": a, "a'": aprime, "Cl": Cl, "Cd": Cd, "alpha": degrees(alpha), "phi": degrees(phi), "F": F,
-               "dFt": dFt, "dFn": dFn, "_airfoil": _airfoil, "dT": dT, "dQ": dQ, "Re": Re,
-               'U1': U1, 'U2': U2, 'U3': U3, 'U4': U4,
-               "lambda_r": lambda_r, "dFt/n": dFt_norm, "dFn/n": dFn_norm, "stall": stall, "Ct_r":Ct_r}
-               
-                return out
+            if use_minimization_solver:
+                if propeller_mode:
+                    g = (dT_BET_p-dT_MT_p)**2+(dQ_BET_p-dQ_MT_p)**2
+                else:
+                    g = (dT_BET-dT_MT)**2+(dQ_BET-dQ_MT)**2
+
+                if last_iteration:
+                    return out
+                else:
+                    return g
             else:
-                return g
+                # check convergence
+                if abs(a - a_last) < convergence_limit:
+                    return True,out
+
+                # relaxation
+                a = a_last*(1-relaxation_factor)+a*relaxation_factor
+                out["a"] = a
+                return False,out
         
-        bounds = [(-0.5,1),(-0.5,1)]
-        initial_guess = [0.3,0.01]
-        
-        result = optimize.minimize(func,initial_guess,method="powell",bounds=bounds,options={'ftol': 1e-10,"xtol":1e-10})
-        
+        if use_minimization_solver:
+            bounds = [(-0.5,1),(-0.5,1)]
+            initial_guess = [0.3,0.01]
+            result = optimize.minimize(func,initial_guess,method="powell",bounds=bounds,options={'ftol': 1e-10,"xtol":1e-10})
+        else:
+            i=0
+            while True:
+                i=i+1
+
+                finished_bool,out = func((a,aprime))
+
+                if finished_bool == True:
+                    return out
+                a,aprime = out["a"], out["a'"]
+
+                # check iterations limit
+                if i >= max_iterations:
+                    if print_out:
+                        p.print("-*-*-*-*-*-*-*-*-*-*-*-*-*-\n", "|max iterations exceeded\n", "|------>a:", a, " aprime",
+                                aprime, )
+                        prepend = "|"
+                    return None
+
         #p.print("result",result)
         ############ END ITERATION ############
         out = func(result.x,True)
-        return out
-
-    def calculate_section(self, v, omega, _r, _c, _theta, _dr, B, R, _airfoil, max_thickness, Rhub,
-                          propeller_mode, pitch=0.0, psi=0.0, fix_reynolds=False, reynolds=1e6, tip_loss=False,
-                          new_tip_loss=False,
-                          hub_loss=False, new_hub_loss=False, cascade_correction=False,
-                          rotational_augmentation_correction=False,
-                          rotational_augmentation_correction_method=0, mach_number_correction=False, method=5,
-                          kin_viscosity=1.4207E-5, rho=1.225, convergence_limit=0.001, max_iterations=100,
-                          relaxation_factor=0.3,
-                          printer=None, print_all=False, print_out=False, yaw_angle=0.0, tilt_angle=0.0,
-                          skewed_wake_correction=False,
-                          lambda_r_array=[],
-                          transition=False, _airfoil_prev=None, _airfoil_next=None, transition_coefficient=1.0,
-                          num_sections=0,
-                          *args, **kwargs):
-        """
-        Function that calculates each section of the blade.
-
-        Inputs:
-        v:float: Wind speed [m/s].
-        omega:float: Rotational velocity [s^-1].
-        _r:float: Section radius [m].
-        _c:float: Section chord length [m].
-        _theta:float: Section angle [deg].
-        _dr:float: Section height [m].
-        B:int: Number of blades.
-        R:float: Wind turbine radius [m].
-        _airfoil:str: Airfoil name.
-        max_thickness:float: Foil thickness in percentage of chord length.
-        propeller_mode:bool: Boolean that turns on propeller calculation mode if True.
-        pitch:float: Pitch in degrees that adds fixed angle to _theta.
-        psi:float: Coning angle.
-        fix_reynolds:bool: True if only data at one Reynolds number is to be used.
-        reynolds:float: Reynolds number if fix_reynolds is True.
-        tip_loss:bool: Prandtl tip loss.
-        hub_loss:bool: Prandtl hub loss.
-        new_tip_loss:bool: Shen tip loss.
-        new_hub_loss:bool: Shen hub loss.
-        cascade_correction:bool: Cascade correction.
-        rotational_augmentation_correction:bool: Rotational augmentation correction.
-        rotational_augmentation_correction_method:int: Rotational augmentation correction method.
-        mach_number_correction:bool: Mach number correction (for propellers).
-        method:int: Method for calculating axial and tangential induction.
-        kin_viscosity:float: Kinematic viscosity.
-        rho:float: Air density [kgm^-3].
-        convergence_limit:float: Convergence limit.
-        max_iterations:int: Maximum iterations.
-        relaxation_factor: Relaxation factor.
-        yaw_angle:float: Yaw angle in degrees.
-        tilt_angle:float: Tilting angle in degrees.
-        """
-
-        p = printer
-
-        # local speed ratio
-        lambda_r = omega * _r / v
-
-        # solidity
-        sigma = _c * B / (2 * pi * _r)
-
-        # initial guess
-        a = 1 / 3
-        aprime = 0.01
-        Ct_r = 4*a*(1-a)
-
-        # iterations counter
-        i = 0
-
-        # tip mach number
-        M = omega * _r / 343
-
-        # convert pitch to radians
-        _pitch = radians(pitch)
-
-        # convert to radians
-        yaw_angle = radians(yaw_angle)  # [Radians]
-        psi = radians(psi)  # Coning angle [Radians]
-        tilt_angle = radians(tilt_angle)  # [Radians]
-        lambda_r_array = np.array(lambda_r_array)
-        _theta = radians(_theta)
-
-        ############ START ITERATION ############
-        while True:
-            # update counter
-            i = i + 1
-
-            # for pretty-printing only
-            prepend = ""
-            # Equations for Vx and Vy from https://pdfs.semanticscholar.org/5e7d/9c6408b7dd8841692d950d08bce90c676dc1.pdf
-            Vx = v * ((cos(yaw_angle) * sin(tilt_angle) + sin(yaw_angle)) * sin(psi) + cos(yaw_angle) * cos(psi) * cos(
-                tilt_angle))
-            Vy = omega * _r * cos(psi) + v * (cos(yaw_angle) * sin(tilt_angle) - sin(yaw_angle))
-
-            # wind components
-            if propeller_mode:
-                Un = Vx * (1 + a)
-                Ut = Vy * (1 - aprime)
-            else:
-                Un = Vx * (1 - a)
-                Ut = Vy * (1 + aprime)
-
-            # relative wind
-            phi = atan2(Un, Ut)
-
-            Vrel_norm = sqrt(Un ** 2 + Ut ** 2)
-
-            if fix_reynolds:
-                Re = reynolds
-            else:
-                Re_next = Vrel_norm * _c / kin_viscosity
-                Re = int(Re_next)
-
-            F = 1
-            # Prandtl tip loss
-            if tip_loss:
-                F = F * fTipLoss(B, _r, R, phi)
-
-            # New tip loss
-            elif new_tip_loss:
-                F = F * newTipLoss(B, _r, R, phi, lambda_r)
-
-            # Prandtl hub loss
-            if hub_loss:
-                F = F * fHubLoss(B, _r, Rhub, phi)
-
-            # New hub loss
-            elif new_hub_loss:
-                F = F * newHubLoss(B, _r, R, phi, lambda_r)
-
-            # angle of attack
-            if propeller_mode:
-                alpha = (_theta + _pitch) - phi  # radians
-            else:
-                alpha = phi - (_theta + _pitch)  # radians
-
-            # cascade correction
-            if cascade_correction:
-                alpha = cascadeEffectsCorrection(alpha=alpha, v=v, omega=omega, r=_r, R=R, c=_c, B=B, a=a,
-                                                 aprime=aprime, max_thickness=max_thickness)
-
-            if transition:
-                Cl1, Cd1 = self.airfoils[_airfoil_prev]["interp_function_cl"](Re, degrees(alpha)), \
-                           self.airfoils[_airfoil_prev][
-                               "interp_function_cd"](Re, degrees(alpha))
-                Cl2, Cd2 = self.airfoils[_airfoil_next]["interp_function_cl"](Re, degrees(alpha)), \
-                           self.airfoils[_airfoil_next][
-                               "interp_function_cd"](Re, degrees(alpha))
-
-                if Cl1 == False and Cd1 == False:
-                    return None
-                if Cl2 == False and Cd2 == False:
-                    return None
-
-                Cl = Cl1 * transition_coefficient + Cl2 * (1 - transition_coefficient)
-                Cd = Cd1 * transition_coefficient + Cd2 * (1 - transition_coefficient)
-                
-                # determine min and max angle of attack for attached region
-                aoa_min_stall_1 = self.airfoils[_airfoil_prev]["interpolation_function_stall_min"](Re)
-                aoa_max_stall_1 = self.airfoils[_airfoil_prev]["interpolation_function_stall_max"](Re)
-
-                aoa_min_stall_2 = self.airfoils[_airfoil_next]["interpolation_function_stall_min"](Re)
-                aoa_max_stall_2 = self.airfoils[_airfoil_next]["interpolation_function_stall_max"](Re)
-
-                aoa_min_stall = aoa_min_stall_1 * transition_coefficient + aoa_min_stall_2 * (1 - transition_coefficient)
-                aoa_max_stall = aoa_max_stall_1 * transition_coefficient + aoa_max_stall_2 * (1 - transition_coefficient)
-
-                if print_all:
-                    p.print("Transition detected, combining airfoils.")
-                    p.print("Previous airfoil is", _airfoil_prev)
-                    p.print("Next airfoil is", _airfoil_next)
-                    p.print("Cl1", Cl1, "Cd1", Cd1)
-                    p.print("Cl2", Cl2, "Cd2", Cd2)
-                    p.print("Cl=", transition_coefficient, "*Cl1+", (1 - transition_coefficient), "*Cl2=", Cl)
-                    p.print("Cd=", transition_coefficient, "*Cd1+", (1 - transition_coefficient), "*Cd2=", Cd)
-            else:
-                Cl, Cd = self.airfoils[_airfoil]["interp_function_cl"](Re, degrees(alpha)), self.airfoils[_airfoil][
-                    "interp_function_cd"](Re, degrees(alpha))
-                if Cl == False and Cd == False:
-                    p.print("\nNo Cl or CD")
-                    p.print("Re:",Re)
-                    p.print("alpha:",degrees(alpha))
-                    return None
-
-                # determine min and max angle of attack for attached region
-                aoa_max_stall = self.airfoils[_airfoil]["interpolation_function_stall_max"](Re)
-                aoa_min_stall = self.airfoils[_airfoil]["interpolation_function_stall_min"](Re)
-
-            stall = 0
-
-            # stall region determination
-            if degrees(alpha) > aoa_max_stall:
-                stall = 1
-            # inverse stall region determination
-            if degrees(alpha) < aoa_min_stall:
-                stall = 1
-
-            if print_all:
-                p.print("        Cl:", Cl, "Cd:", Cd)
-
-            if rotational_augmentation_correction:
-                if print_all:
-                    p.print("--")
-                    p.print("  Cl:", Cl, "Cd:", Cd)
-                Cl, Cd = calc_rotational_augmentation_correction(alpha=alpha, Cl=Cl, Cd=Cd, omega=omega, r=_r, R=R,
-                                                                 c=_c, theta=_theta, v=v, Vrel=Vrel_norm,
-                                                                 method=rotational_augmentation_correction_method,
-                                                                 alpha_zero=radians(-5))
-
-                if print_all:
-                    p.print("  Cl_cor:", Cl, "Cd_cor:", Cd)
-                    p.print("--")
-
-            if mach_number_correction:
-                Cl = machNumberCorrection(Cl, M)
-
-            # circulation gamma
-            Gamma_B = 0.5 * Vrel_norm * _c * Cl
-
-            # normal and tangential coefficients
-            if propeller_mode:
-                C_norm = Cl * cos(phi) - Cd * sin(phi)
-                C_tang = Cl * sin(phi) + Cd * cos(phi)
-            else:
-                C_norm = Cl * cos(phi) + Cd * sin(phi)
-                C_tang = Cl * sin(phi) - Cd * cos(phi)
-
-            input_arguments = {"F": F, "lambda_r": lambda_r, "phi": phi, "sigma": sigma, "C_norm": C_norm,
-                               "C_tang": C_tang, "Cl": Cl, "Cd": Cd, "B": B, "c": _c, "r": _r, "R": R, "psi": psi,
-                               "aprime_last": aprime, "omega": omega, "v": v, "a_last": a, "Ct_r":Ct_r,
-                               "method": method, "alpha": alpha, "alpha_deg": degrees(alpha)}
-
-            if print_all:
-                args_to_print = sorted(
-                    [key for key, value in input_arguments.items()])
-                p.print("            i", i)
-                for argument in args_to_print:
-                    p.print("            ", argument, input_arguments[argument])
-                p.print("             --------")
-
-            # calculate new induction coefficients
-            coeffs = calculate_coefficients(method, input_arguments)
-            if coeffs == None:
-                return None
-
-            # save old values
-            a_last = a
-            aprime_last = aprime
-
-            # set new values
-            a, aprime = coeffs
-
-            # wake rotation correction
-            k = omega * Gamma_B / (np.pi * v ** 2)
-            aprime_vct = k / (4 * lambda_r ** 2)
-            relevant_radiuses = lambda_r_array[np.nonzero(lambda_r_array >= lambda_r)]
-
-            if skewed_wake_correction:
-                a_skewed = skewed_wake_correction_calculate(yaw_angle, a, _r, R)
-                a = a_skewed
-
-            # force calculation
-            dFL = Cl * 0.5 * rho * Vrel_norm ** 2 * _c * _dr  # lift force
-            dFD = Cd * 0.5 * rho * Vrel_norm ** 2 * _c * _dr  # drag force
-            dFt = dFL * sin(phi) - dFD * cos(phi)  # tangential force
-            dFn = dFL * cos(phi) + dFD * sin(phi)  # normal force
-
-            Ct_r = dFn/(0.5*rho*v**2*2*pi*_r*_dr)*B
-
-            dFn_norm = dFn * num_sections
-            dFt_norm = dFt * num_sections
-
-            # thrust and torque - Wiley, WE 2nd, p.124
-            dT_MT = F * 4 * pi * _r * rho * v ** 2 * a * (1 - a) * _dr
-            dT_BET = 0.5 * rho * B * _c * Vrel_norm ** 2 * \
-                     C_norm * _dr
-            dQ_MT = F * 4 * aprime * (1 - a) * rho * \
-                    v * pi * _r ** 3 * omega * _dr
-            dQ_BET = B * 0.5 * rho * Vrel_norm ** 2 * \
-                     C_tang * _c * _dr * _r
-
-            # thrust-propeller
-            dT_MT_p = 4 * pi * _r * rho * v ** 2 * (1 + a) * a * _dr
-            dQ_MT_p = 4 * pi * _r ** 3 * rho * v * omega * (1 + a) * aprime * _dr
-            dT_BET_p = 0.5 * rho * v ** 2 * _c * B * (1 + a) ** 2 / (sin(phi) ** 2) * C_norm * _dr
-            dQ_BET_p = 0.5 * rho * v * _c * B * omega * _r ** 2 * (1 + a) * (1 - aprime) / (
-                    sin(phi) * cos(phi)) * C_tang * _dr
-
-            # from http://www.aerodynamics4students.com/propel.m
-            dT_BET_p_2 = 0.5 * rho * Vrel_norm ** 2 * B * _c * C_norm * _dr
-            dQ_BET_p_2 = 0.5 * rho * Vrel_norm ** 2 * B * _c * _r * C_tang * _dr
-            dT_MT_p_2 = 4 * pi * _r * rho * v ** 2 * (1 + a)
-            dQ_MT_p_2 = 4 * pi * _r ** 3 * rho * v * (1 + a) * omega
-
-            # https://apps.dtic.mil/dtic/tr/fulltext/u2/1013408.pdf
-            dT_prop = 0.5 * B * rho * Vrel_norm ** 2 * _c * _dr * C_norm
-            dQ_prop = 0.5 * B * rho * Vrel_norm ** 2 * _c * _r * _dr * C_tang
-
-            if propeller_mode:
-                dT = dT_MT_p
-                dQ = dQ_MT_p
-            else:
-                dT = dT_BET
-                dQ = dQ_BET
-
-            # wind after
-            if propeller_mode:
-                U1 = v
-                U2 = None
-                U3 = U1 * (1 + a)
-                U4 = U1 * (1 + 2 * a)
-            else:
-                U1 = v
-                U2 = U1 * (1 - a)
-                U3 = None
-                U4 = U1 * (1 - 2 * a)
-
-            # check convergence
-            if abs(a - a_last) < convergence_limit:
-                break
-
-            # check iterations limit
-            if i >= max_iterations:
-                if print_out:
-                    p.print("-*-*-*-*-*-*-*-*-*-*-*-*-*-\n", "|max iterations exceeded\n", "|------>a:", a, " aprime",
-                            aprime, )
-                    prepend = "|"
-                return None
-
-            # relaxation
-            a = a_last*(1-relaxation_factor)+a*relaxation_factor
-
-        ############ END ITERATION ############
-
-        if print_out:
-            p.print(prepend, "        iters: ", i)
-            p.print(prepend, "        alpha: ", degrees(alpha)), "Cl", str(Cl)
-            p.print(prepend, "        a: ", a, "a'", str(aprime))
-            p.print(prepend, "        LSR: ", lambda_r)
-            p.print(prepend, "        Vrel: ", Vrel_norm)
-            p.print(prepend, "        Re:", Re)
-            p.print(prepend, "        foil:", _airfoil)
-            p.print(prepend, "        Cl:", Cl)
-            p.print(prepend, "        Cd:", Cd)
-            p.print(prepend, "        U1:", U1)
-            p.print(prepend, "        U2:", U2)
-            p.print(prepend, "        U3:", U3)
-            p.print(prepend, "        U4:", U4)
-            p.print(prepend, "        dT_MT %.2f dT_BET %.2f" %
-                    (dT_MT, dT_BET))
-            p.print(prepend, "        dQ_MT %.2f dQ_BET %.2f" %
-                    (dQ_MT, dQ_BET))
-            p.print(prepend, "        dT_MT_p %.5f dT_BET_p %.5f" %
-                    (dT_MT_p, dT_BET_p))
-            p.print(prepend, "        dQ_MT_p %.5f dQ_BET_p %.5f" %
-                    (dQ_MT_p, dQ_BET_p))
-            # p.print(prepend, "        dT_p %.2f dQ_p %.2f" % (dT_p, dQ_p))
-            p.print(prepend, "    ----------------------------")
-
-        out = {"a": a, "a'": aprime, "Cl": Cl, "Cd": Cd, "alpha": degrees(alpha), "phi": degrees(phi), "F": F,
-               "dFt": dFt, "dFn": dFn, "_airfoil": _airfoil, "dT": dT, "dQ": dQ, "Re": Re,
-               'U1': U1, 'U2': U2, 'U3': U3, 'U4': U4,
-               "lambda_r": lambda_r, "dFt/n": dFt_norm, "dFn/n": dFn_norm, "stall": stall, "Ct_r":Ct_r}
         return out
 
     def get_crossection_data(self, _c, _theta, _airfoil, blade_design, blade_thickness):
