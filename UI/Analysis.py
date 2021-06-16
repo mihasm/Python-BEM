@@ -159,7 +159,7 @@ class Analysis(QWidget):
                 form.setCurrentIndex(7)
             elif key == "rotational_augmentation_correction_method":
                 form = QComboBox()
-                form.addItems(["1", "2", "3", "4", "5"])
+                form.addItems(["1", "2", "3", "4", "5", "6"])
             elif key == "variable_selection":
                 form = QComboBox()
                 form.addItems(["RPM and v", "TSR", "J", "pitch", "pitch+TSR"])

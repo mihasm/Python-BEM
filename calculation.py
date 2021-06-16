@@ -556,7 +556,10 @@ class Calculator:
         i = 0
 
         # tip mach number
-        M = omega * _r / 343
+        Mach_number = omega * R / 343
+        if Mach_number >= 1.0:
+            p.print("\nTip mach 1.0 exceeded")
+            return None
 
         # convert pitch to radians
         _pitch = radians(pitch)
@@ -667,15 +670,11 @@ class Calculator:
             else:
                 alpha_deg = degrees(alpha)
                 
-                if alpha_deg > 180:
-                    alpha_deg -= 360
-                if alpha_deg < -180:
-                    alpha_deg +=360
-                
                 Cl, Cd = self.airfoils[_airfoil]["interp_function_cl"](Re, degrees(alpha)), self.airfoils[_airfoil][
                     "interp_function_cd"](Re, alpha_deg)
                 if Cl == False and Cd == False:
-                    p.print("\nNo Cl or CD")
+                    p.print("\na:",a,"a':",aprime)
+                    p.print("No Cl or CD")
                     p.print("Re:",Re)
                     p.print("alpha:",degrees(alpha))
                     return None
@@ -701,7 +700,7 @@ class Calculator:
                     p.print("--")
                     p.print("  Cl:", Cl, "Cd:", Cd)
                 Cl, Cd = calc_rotational_augmentation_correction(alpha=alpha, Cl=Cl, Cd=Cd, omega=omega, r=_r, R=R,
-                                                                 c=_c, theta=_theta, v=v, Vrel=Vrel_norm,
+                                                                 c=_c, theta=_theta, v=v, Vrel_norm=Vrel_norm,
                                                                  method=rotational_augmentation_correction_method,
                                                                  alpha_zero=radians(-5))
 
@@ -710,7 +709,7 @@ class Calculator:
                     p.print("--")
 
             if mach_number_correction:
-                Cl = machNumberCorrection(Cl, M)
+                Cl,Cd = machNumberCorrection(Cl, Cd, Mach_number)
 
             # circulation gamma
             Gamma_B = 0.5 * Vrel_norm * _c * Cl
@@ -811,7 +810,7 @@ class Calculator:
 
             if use_minimization_solver:
                 if propeller_mode:
-                    g = (dT_BET_p-dT_MT_p)**2+(dQ_BET_p-dQ_MT_p)**2
+                    g = ((dT_BET_p-dT_MT_p)**2+(dQ_BET_p-dQ_MT_p)**2)
                 else:
                     g = (dT_BET-dT_MT)**2+(dQ_BET-dQ_MT)**2
 
@@ -830,15 +829,19 @@ class Calculator:
                 return False,out
         
         if use_minimization_solver:
-            bounds = [(-0.5,1),(-0.5,1)]
+            bounds = [(0.0001,1),(0.0001,0.5)]
             initial_guess = [0.3,0.01]
-            result = optimize.minimize(func,initial_guess,method="powell",bounds=bounds,options={'ftol': 1e-10,"xtol":1e-10})
+            result = optimize.minimize(func,initial_guess,method="powell",bounds=bounds,options={'ftol': convergence_limit,"xtol":convergence_limit,'maxiter':max_iterations})
         else:
             i=0
             while True:
                 i=i+1
 
-                finished_bool,out = func((a,aprime))
+                out_pack = func((a,aprime))
+                if out_pack == None:
+                    return None
+                else:
+                    finished_bool,out = out_pack
 
                 if finished_bool == True:
                     return out

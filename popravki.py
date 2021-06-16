@@ -1,7 +1,7 @@
 from math import sin, cos, atan, acos, pi, exp, sqrt, atan2, tan
 
 
-def machNumberCorrection(Cl, M):
+def machNumberCorrection(Cl, Cd, M):
     """
 
     :param Cl: Lift coefficient
@@ -9,7 +9,8 @@ def machNumberCorrection(Cl, M):
     :return: Lift coefficient
     """
     Cl = Cl / sqrt(1 - M ** 2)
-    return Cl
+    Cd = Cd / sqrt(1 - M ** 2)
+    return Cl, Cd
 
 
 def fTipLoss(B, r, R, phi):
@@ -478,7 +479,7 @@ def cascadeEffectsCorrection(alpha, v, omega, r, R, c, B, a, aprime, max_thickne
 
 
 def calc_rotational_augmentation_correction(
-        alpha, alpha_zero, Cl, Cd, omega, r, R, c, theta, v, Vrel, method=0
+        alpha, alpha_zero, Cl, Cd, omega, r, R, c, theta, v, Vrel_norm, method=0
 ):
     """
     METHODS FROM http://orbit.dtu.dk/files/86307371/A_Detailed_Study_of_the_Rotational.pdf
@@ -532,15 +533,19 @@ def calc_rotational_augmentation_correction(
         # Lindenburg
         al = 3.1
         h = 2
-        fl = al * (omega * R / Vrel) ** 2 * (c / r) ** h
+        fl = al * (omega * R / Vrel_norm) ** 2 * (c / r) ** h
         fd = 0
     if method == 5:
         # Dumitrescu and Cardos
         gd = 1.25
         fl = 1 - exp(-gd / (r / c - 1))
         fd = 0
+    if method == 6:
+        # method for propellers from http://acoustics.ae.illinois.edu/pdfs/AIAA-Paper-2015-3296.pdf
+        fl = (omega*r/Vrel_norm)**2 * (c/r)**2 * 1.5
+
     Cl_3D = Cl + fl*(2*pi*sin(alpha-alpha_zero)-Cl)
-    Cd_3D = Cd + fd * Cd
+    Cd_3D = Cd
     return Cl_3D, Cd_3D
 
 def skewed_wake_correction_calculate(yaw_angle, a, r, R):
