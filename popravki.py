@@ -1,5 +1,44 @@
-from math import sin, cos, atan, acos, pi, exp, sqrt, atan2, tan
+from math import sin, cos, atan, acos, pi, exp, sqrt, atan2, tan, degrees, radians, tanh
 
+METHODS_STRINGS = {"0": "Original",
+                   "1": "Spera",
+                   "2": "Propx",
+                   "3": "Aerodyn (Buhl)",
+                   "4": "QBlade (Buhl)",
+                   "5": "Shen",
+                   "6": "Glauert",
+                   "7": "Wilson and Walker",
+                   "8": "Classical brake state model",
+                   "9": "Advanced brake state model",
+                   "10": "Modified ABS model",
+                   "11": "Propeller BEM"}
+
+def calculate_coefficients(method, input_arguments):
+    if method == 0:
+        return fInductionCoefficients0(**input_arguments)
+    if method == 1:
+        return fInductionCoefficients1(**input_arguments)
+    if method == 2:
+        return fInductionCoefficients5(**input_arguments)
+    if method == 3:
+        return fInductionCoefficients6(**input_arguments)
+    if method == 4:
+        return fInductionCoefficients7(**input_arguments)
+    if method == 5:
+        return fInductionCoefficients8(**input_arguments)
+    if method == 6:
+        return fInductionCoefficients9(**input_arguments)
+    if method == 7:
+        return fInductionCoefficients10(**input_arguments)
+    if method == 8:
+        return fInductionCoefficients11(**input_arguments)
+    if method == 9:
+        return fInductionCoefficients12(**input_arguments)
+    if method == 10:
+        return fInductionCoefficients13(**input_arguments)
+    if method == 11:
+        return fInductionCoefficients14(**input_arguments)
+    raise Exception("Method " + str(method) + " does not exist.")
 
 def machNumberCorrection(Cl, Cd, M):
     """
@@ -302,7 +341,6 @@ def fInductionCoefficients9(a_last, F, phi, Cl, C_norm, C_tang, sigma, *args, **
     """
 
     a = a_last
-    #a = (sigma * C_norm) / (4 * F * sin(phi) ** 2 + sigma * C_norm)
     if a <= 1/3:
         Ct = 4*a*F*(1-a)
     else:
@@ -422,27 +460,6 @@ def fInductionCoefficients14(a_last, phi, sigma, Cl, Cd, F, C_norm, C_tang, *arg
     aprime = 1 / (F * 4 * sin(phi) * cos(phi) / (sigma * C_tang) + 1)
     return a, aprime
 
-
-def guessInductionFactors(lambda_r, sigma, theta):
-    """
-    Provides initial guess to the function coefficients.
-
-    Method from Wiley, Wind energy explained (2nd ed.). (3.124,3.125,3.126)
-
-    :param lambda_r: local speed ratio
-    :param sigma: solidity
-    :param theta: twist [rad]
-    :return: axial induction factor, tangential induction factor
-    """
-
-    phi = (2 / 3) * atan(1 / lambda_r)
-    # Cl = f_c_L(degrees(theta))
-    Cl = 0.4
-    a = 1 / (1 + (4 * sin(phi) ** 2) / (sigma * Cl * cos(phi)))
-    aprime = (1 - 3 * a) / (4 * a - 1)
-    return a, aprime
-
-
 def cascadeEffectsCorrection(alpha, v, omega, r, R, c, B, a, aprime, max_thickness):
     """
     Calculates cascade effects and corresponding change in angle of attack.
@@ -479,22 +496,24 @@ def cascadeEffectsCorrection(alpha, v, omega, r, R, c, B, a, aprime, max_thickne
 
 
 def calc_rotational_augmentation_correction(
-        alpha, alpha_zero, Cl, Cd, omega, r, R, c, theta, v, Vrel_norm, method=0
-):
+        alpha, alpha_zero, Cl, Cd, omega, r, R, c, theta, v, Vrel_norm, method,
+        printer,print_all):
     """
     METHODS FROM http://orbit.dtu.dk/files/86307371/A_Detailed_Study_of_the_Rotational.pdf
     """
+    p = printer
 
     fl = 0
     fd = 0
 
-    if method == 1:
+    if method == 0:
         # Snel et al.
         a_s = 3
         h = 2
         fl = a_s * (c / r) ** h
         fd = 0
-    if method == 2:
+    
+    if method == 1:
         # Du & Selig
         gama = omega * R / sqrt(abs(v ** 2 - (omega * R) ** 2))
         ad, dd, bd = 1, 1, 1
@@ -522,29 +541,48 @@ def calc_rotational_augmentation_correction(
                 - 1
             )
         )
-    if method == 3:
+    
+    if method == 2:
         # Chaviaropoulos and Hansen
         ah = 2.2
         h = 1.0
         n = 4
         fl = ah * (c / r) ** h * cos(theta) ** n
         fd = fl
-    if method == 4:
+    
+    if method == 3:
         # Lindenburg
         al = 3.1
         h = 2
         fl = al * (omega * R / Vrel_norm) ** 2 * (c / r) ** h
         fd = 0
-    if method == 5:
+    
+    if method == 4:
         # Dumitrescu and Cardos
         gd = 1.25
         fl = 1 - exp(-gd / (r / c - 1))
         fd = 0
-    if method == 6:
+    
+    if method == 5:
         # method for propellers from http://acoustics.ae.illinois.edu/pdfs/AIAA-Paper-2015-3296.pdf
         fl = (omega*r/Vrel_norm)**2 * (c/r)**2 * 1.5
+    
+    if method == 6:
+        # method for propellers from Aviv (2005), Propeller Performance at Low Advance Ratio - JoA vol. 42 No. 2
+        if degrees(alpha) >= 8:
+            fl = tanh(10.73*(c/r))
+        elif degrees(alpha) > degrees(alpha_zero):
+            fl = 0
+        else:
+            fl = -tanh(10.73*(c/r))
 
-    Cl_3D = Cl + fl*(2*pi*sin(alpha-alpha_zero)-Cl)
+    Cl_pot = 2*pi*sin(alpha-alpha_zero)
+    if print_all:
+        p.print("             Rotational augmentation:")
+        p.print("               Cl_pot",Cl_pot)
+        p.print("               fl",fl)
+        p.print("               c/r",c/r)
+    Cl_3D = Cl + fl*(Cl_pot-Cl)
     Cd_3D = Cd
     return Cl_3D, Cd_3D
 
@@ -552,46 +590,4 @@ def skewed_wake_correction_calculate(yaw_angle, a, r, R):
     chi = (0.6*a+1)*yaw_angle
     a_skew = a*(1+15*pi/64*r/R*tan(chi/2))
     return a_skew
-
-
-def calculate_coefficients(method, input_arguments):
-    if method == 0:
-        return fInductionCoefficients0(**input_arguments)
-    if method == 1:
-        return fInductionCoefficients1(**input_arguments)
-    if method == 2:
-        return fInductionCoefficients5(**input_arguments)
-    if method == 3:
-        return fInductionCoefficients6(**input_arguments)
-    if method == 4:
-        return fInductionCoefficients7(**input_arguments)
-    if method == 5:
-        return fInductionCoefficients8(**input_arguments)
-    if method == 6:
-        return fInductionCoefficients9(**input_arguments)
-    if method == 7:
-        return fInductionCoefficients10(**input_arguments)
-    if method == 8:
-        return fInductionCoefficients11(**input_arguments)
-    if method == 9:
-        return fInductionCoefficients12(**input_arguments)
-    if method == 10:
-        return fInductionCoefficients13(**input_arguments)
-    if method == 11:
-        return fInductionCoefficients14(**input_arguments)
-    raise Exception("Method " + str(method) + " does not exist.")
-
-
-METHODS_STRINGS = {"0": "Original",
-                   "1": "Spera",
-                   "2": "Propx",
-                   "3": "Aerodyn (Buhl)",
-                   "4": "QBlade (Buhl)",
-                   "5": "Shen",
-                   "6": "Glauert",
-                   "7": "Wilson and Walker",
-                   "8": "Classical brake state model",
-                   "9": "Advanced brake state model",
-                   "10": "Modified ABS model",
-                   "11": "Propeller BEM"}
 

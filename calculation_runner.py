@@ -167,8 +167,7 @@ def print_progress_message(v,rpm,inp_args,p,prepend,print_progress):
 
 def print_result_message(print_progress,p,prepend,_results):
     if print_progress:
-        p.print(prepend + "    TSR:", _results["TSR"], "J:", _results["J"], "cp:", _results["cp"],
-                "ct:", _results["ct"])
+        p.print(prepend + "    cp:", _results["cp"],"ct:", _results["ct"],"eff:",_results["eff"])
 
 def max_calculate(X, Y, Z):
     """

@@ -18,24 +18,48 @@ class Analysis(QWidget):
 
         self.forms_dict = {}
 
-        self.settings = {"propeller_mode": False, "use_minimization_solver":False, "tip_loss": False, "hub_loss": False, "new_tip_loss": False,
-                         "new_hub_loss": False, "cascade_correction": False, "skewed_wake_correction": False,
-                         "rotational_augmentation_correction": False, "rotational_augmentation_correction_method": 1,
-                         "mach_number_correction": False, "max_iterations": 100, "convergence_limit": 0.001,
-                         "rho": 1.225, "method": 10,
+        self.settings = {"propeller_mode": False,
+                         "use_minimization_solver":False,
+                         "tip_loss": False,
+                         "hub_loss": False,
+                         "new_tip_loss": False,
+                         "new_hub_loss": False,
+                         "cascade_correction": False,
+                         "skewed_wake_correction": False,
+                         "rotational_augmentation_correction": False,
+                         "rotational_augmentation_correction_method": 1,
+                         "mach_number_correction": False,
+                         "max_iterations": 100,
+                         "convergence_limit": 0.001,
+                         "rho": 1.225,
+                         "method": 6,
                          # "linspace_interp": False, "num_interp": 25,
                          "variable_selection": 4,
                          "constant_selection": 0,
                          "constant_speed": 5,
                          "constant_rpm": 1500,
                          "pitch": 0.0,
-                         "v_min": 3, "v_max": 20, "v_num": 10,
-                         "rpm_min": 100, "rpm_max": 3000, "rpm_num": 10,
-                         "tsr_min": 1, "tsr_max": 10, "tsr_num": 10,
-                         "J_min": 0.1, "J_max": 1.5, "J_num": 10,
-                         "pitch_min": -15, "pitch_max": 15, "pitch_num": 10,
-                         "relaxation_factor": 0.3, "print_all": False, "print_out": False, "reynolds": 50000,
-                         "fix_reynolds": False, "yaw_angle": 0}
+                         "v_min": 3,
+                         "v_max": 20,
+                         "v_num": 10,
+                         "rpm_min": 100,
+                         "rpm_max": 3000,
+                         "rpm_num": 10,
+                         "tsr_min": 1,
+                         "tsr_max": 10,
+                         "tsr_num": 10,
+                         "J_min": 0.1,
+                         "J_max": 1.5,
+                         "J_num": 10,
+                         "pitch_min": -15,
+                         "pitch_max": 15,
+                         "pitch_num": 10,
+                         "relaxation_factor": 0.3,
+                         "print_all": False,
+                         "print_out": False,
+                         "reynolds": 50000,
+                         "fix_reynolds": False,
+                         "yaw_angle": 0}
 
         self.settings_to_name = {"propeller_mode": "Propeller mode", "print_out": "Print final iteration data",
                                  "tip_loss": "Prandtl tip loss", "hub_loss": "Prandtl hub loss",
@@ -159,7 +183,7 @@ class Analysis(QWidget):
                 form.setCurrentIndex(7)
             elif key == "rotational_augmentation_correction_method":
                 form = QComboBox()
-                form.addItems(["1", "2", "3", "4", "5", "6"])
+                form.addItems(["1", "2", "3", "4", "5", "6", "7"])
             elif key == "variable_selection":
                 form = QComboBox()
                 form.addItems(["RPM and v", "TSR", "J", "pitch", "pitch+TSR"])

@@ -80,7 +80,7 @@ class Optimization(QWidget):
         self.button_add_output_variable = QPushButton("Add output variable")
         self.button_add_output_variable.clicked.connect(self.add_output_variable)
         self.output_variable_selection = QComboBox()
-        self.output_variable_selection.addItems(["dQ","dT","a","a'","cL","cD","dFn","dFt","U4"])
+        self.output_variable_selection.addItems(["dQ","dT","a","a'","Cl","Cd","dFn","dFt","U4","alpha","phi"])
         self.list_output_variables = []
 
 

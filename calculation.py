@@ -23,6 +23,7 @@ OUTPUT_VARIABLES_LIST = {
     "lambda_r": {"type": "array", "name": "Local tip speed ratio", "symbol": r"$\lambda_r$", "unit": ""},
     #"Ct": {"type": "array", "name": "Local thrust coefficient", "symbol": r"$C_{T_r}$", "unit": ""},
     "Ct_r": {"type": "array", "name": "Local thrust coefficient (def.)", "symbol": r"$C_{T_r}$", "unit": ""},
+    "Vrel_norm": {"type": "array", "name": "Section velocity", "symbol": r"$V_rel$", "unit": "m/s"},
 
     "dFn": {"type": "array", "name": "Incremental normal force", "symbol": r"$dF_n$", "unit": "N"},
     "dFt": {"type": "array", "name": "Incremental tangential force", "symbol": r"$dF_t$", "unit": "N"},
@@ -96,7 +97,6 @@ class Calculator:
         self.airfoils_list = input_arguments["foils"]  # List of airfoils per section
 
         for blade_name in self.airfoils:
-            self.airfoils[blade_name]["alpha_zero"] = 0.0  # TODO FIX
             generate_dat(
                 blade_name, self.airfoils[blade_name]["x"], self.airfoils[blade_name]["y"])
 
@@ -352,9 +352,6 @@ class Calculator:
 
         eff = J / 2 / pi * ct_p / cq_p
 
-        if propeller_mode and cp_p < 0.0:
-            return None
-
         blade_stall_percentage = np.sum(results["stall"])/len(results["stall"])
 
         # floats
@@ -573,6 +570,8 @@ class Calculator:
 
 
         def func(inp,last_iteration=False):
+            if print_all:
+                p.print("             i", i)
         ############ START ITERATION ############
             # update counter
             #i = i + 1
@@ -659,6 +658,17 @@ class Calculator:
                 aoa_min_stall = aoa_min_stall_1 * transition_coefficient + aoa_min_stall_2 * (1 - transition_coefficient)
                 aoa_max_stall = aoa_max_stall_1 * transition_coefficient + aoa_max_stall_2 * (1 - transition_coefficient)
 
+                def zero_finding_function1(alpha):
+                    return self.airfoils[_airfoil_prev]["interp_function_cl"](Re, alpha)
+                alpha_zero_1 = optimize.bisect(zero_finding_function,-10,10,xtol=1e-3,rtol=1e-3)
+
+                def zero_finding_function2(alpha):
+                    return self.airfoils[_airfoil_next]["interp_function_cl"](Re, alpha)
+                alpha_zero_2 = optimize.bisect(zero_finding_function,-10,10,xtol=1e-3,rtol=1e-3)
+
+                alpha_zero = alpha_zero_1*transition_coefficient + alpha_zero_2 * (1-transition_coefficient)
+                alpha_zero = radians(alpha_zero)
+
                 if print_all:
                     p.print("Transition detected, combining airfoils.")
                     p.print("Previous airfoil is", _airfoil_prev)
@@ -669,6 +679,10 @@ class Calculator:
                     p.print("Cd=", transition_coefficient, "*Cd1+", (1 - transition_coefficient), "*Cd2=", Cd)
             else:
                 alpha_deg = degrees(alpha)
+                if alpha_deg > 180:
+                    alpha_deg = 180
+                if alpha_deg < -180:
+                    alpha_deg = -180
                 
                 Cl, Cd = self.airfoils[_airfoil]["interp_function_cl"](Re, degrees(alpha)), self.airfoils[_airfoil][
                     "interp_function_cd"](Re, alpha_deg)
@@ -683,6 +697,12 @@ class Calculator:
                 aoa_max_stall = self.airfoils[_airfoil]["interpolation_function_stall_max"](Re)
                 aoa_min_stall = self.airfoils[_airfoil]["interpolation_function_stall_min"](Re)
 
+                def zero_finding_function(alpha):
+                    return self.airfoils[_airfoil]["interp_function_cl"](Re, alpha)
+                alpha_zero = optimize.bisect(zero_finding_function,-10,10,xtol=1e-3,rtol=1e-3)
+                alpha_zero = radians(alpha_zero)
+
+
             stall = 0
 
             # stall region determination
@@ -693,20 +713,16 @@ class Calculator:
                 stall = 1
 
             if print_all:
-                p.print("        Cl:", Cl, "Cd:", Cd)
+                p.print("             Cl:", Cl, "Cd:", Cd)
 
             if rotational_augmentation_correction:
-                if print_all:
-                    p.print("--")
-                    p.print("  Cl:", Cl, "Cd:", Cd)
                 Cl, Cd = calc_rotational_augmentation_correction(alpha=alpha, Cl=Cl, Cd=Cd, omega=omega, r=_r, R=R,
                                                                  c=_c, theta=_theta, v=v, Vrel_norm=Vrel_norm,
                                                                  method=rotational_augmentation_correction_method,
-                                                                 alpha_zero=radians(-5))
+                                                                 alpha_zero=alpha_zero,printer=printer,print_all=print_all)
 
                 if print_all:
-                    p.print("  Cl_cor:", Cl, "Cd_cor:", Cd)
-                    p.print("--")
+                    p.print("             Cl_cor:", Cl, "Cd_cor:", Cd)
 
             if mach_number_correction:
                 Cl,Cd = machNumberCorrection(Cl, Cd, Mach_number)
@@ -733,20 +749,18 @@ class Calculator:
             dFn_norm = dFn * num_sections
             dFt_norm = dFt * num_sections
 
+            input_arguments = {"F": F, "lambda_r": lambda_r, "phi": phi, "sigma": sigma, "C_norm": C_norm,
+               "C_tang": C_tang, "Cl": Cl, "Cd": Cd, "B": B, "c": _c, "r": _r, "R": R, "psi": psi,
+               "aprime_last": aprime, "omega": omega, "v": v, "a_last": a, "Ct_r":Ct_r,
+               "method": method, "alpha": alpha, "alpha_deg": degrees(alpha)}
+
+            if print_all:
+                args_to_print = ["a_last","aprime_last","alpha_deg","phi"]
+                for argument in args_to_print:
+                    p.print("            ", argument, input_arguments[argument])
+                p.print("             --------")
+
             if not use_minimization_solver:
-                input_arguments = {"F": F, "lambda_r": lambda_r, "phi": phi, "sigma": sigma, "C_norm": C_norm,
-                   "C_tang": C_tang, "Cl": Cl, "Cd": Cd, "B": B, "c": _c, "r": _r, "R": R, "psi": psi,
-                   "aprime_last": aprime, "omega": omega, "v": v, "a_last": a, "Ct_r":Ct_r,
-                   "method": method, "alpha": alpha, "alpha_deg": degrees(alpha)}
-
-                if print_all:
-                    args_to_print = sorted(
-                        [key for key, value in input_arguments.items()])
-                    p.print("            i", i)
-                    for argument in args_to_print:
-                        p.print("            ", argument, input_arguments[argument])
-                    p.print("             --------")
-
                 # calculate new induction coefficients
                 coeffs = calculate_coefficients(method, input_arguments)
                 if coeffs == None:
@@ -806,11 +820,11 @@ class Calculator:
             out = {"a": a, "a'": aprime, "Cl": Cl, "Cd": Cd, "alpha": degrees(alpha), "phi": degrees(phi), "F": F,
                    "dFt": dFt, "dFn": dFn, "_airfoil": _airfoil, "dT": dT, "dQ": dQ, "Re": Re,
                    'U1': U1, 'U2': U2, 'U3': U3, 'U4': U4,
-                   "lambda_r": lambda_r, "dFt/n": dFt_norm, "dFn/n": dFn_norm, "stall": stall, "Ct_r":Ct_r}
+                   "lambda_r": lambda_r, "dFt/n": dFt_norm, "dFn/n": dFn_norm, "stall": stall, "Ct_r":Ct_r, "Vrel_norm":Vrel_norm}
 
             if use_minimization_solver:
                 if propeller_mode:
-                    g = ((dT_BET_p-dT_MT_p)**2+(dQ_BET_p-dQ_MT_p)**2)
+                    g = ((dT_BET_p-dT_MT_p)**2+100*(dQ_BET_p-dQ_MT_p)**2)
                 else:
                     g = (dT_BET-dT_MT)**2+(dQ_BET-dQ_MT)**2
 
@@ -829,9 +843,9 @@ class Calculator:
                 return False,out
         
         if use_minimization_solver:
-            bounds = [(0.0001,1),(0.0001,0.5)]
+            bounds = [(0.0001,1),(0.0001,1)]
             initial_guess = [0.3,0.01]
-            result = optimize.minimize(func,initial_guess,method="powell",bounds=bounds,options={'ftol': convergence_limit,"xtol":convergence_limit,'maxiter':max_iterations})
+            result = optimize.minimize(func,initial_guess,bounds=bounds,method="powell",options={'ftol': convergence_limit,"xtol":convergence_limit,'maxiter':max_iterations})
         else:
             i=0
             while True:
@@ -855,7 +869,6 @@ class Calculator:
                         prepend = "|"
                     return None
 
-        #p.print("result",result)
         ############ END ITERATION ############
         out = func(result.x,True)
         return out
