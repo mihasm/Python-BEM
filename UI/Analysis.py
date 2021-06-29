@@ -186,7 +186,7 @@ class Analysis(QWidget):
                 form.addItems(["1", "2", "3", "4", "5", "6", "7"])
             elif key == "variable_selection":
                 form = QComboBox()
-                form.addItems(["RPM and v", "TSR", "J", "pitch", "pitch+TSR"])
+                form.addItems(["RPM and v", "TSR", "J", "pitch", "pitch+TSR", "pitch+J"])
                 form.currentIndexChanged.connect(self.set_parameter_visibility)
             elif key == "constant_selection":
                 form = QComboBox()
@@ -359,6 +359,28 @@ class Analysis(QWidget):
             self.forms_dict["J_min"][2].hide()
             self.forms_dict["J_max"][2].hide()
             self.forms_dict["J_num"][2].hide()
+            self.forms_dict["pitch_min"][2].show()
+            self.forms_dict["pitch_max"][2].show()
+            self.forms_dict["pitch_num"][2].show()
+            pass
+        elif current_index == 5:
+            # variable pitch + J
+            self.forms_dict["constant_selection"][2].show()
+            self.forms_dict["constant_speed"][2].show()
+            self.forms_dict["constant_rpm"][2].show()
+            self.forms_dict["pitch"][2].hide()
+            self.forms_dict["v_min"][2].hide()
+            self.forms_dict["v_max"][2].hide()
+            self.forms_dict["v_num"][2].hide()
+            self.forms_dict["rpm_min"][2].hide()
+            self.forms_dict["rpm_max"][2].hide()
+            self.forms_dict["rpm_num"][2].hide()
+            self.forms_dict["tsr_min"][2].hide()
+            self.forms_dict["tsr_max"][2].hide()
+            self.forms_dict["tsr_num"][2].hide()
+            self.forms_dict["J_min"][2].show()
+            self.forms_dict["J_max"][2].show()
+            self.forms_dict["J_num"][2].show()
             self.forms_dict["pitch_min"][2].show()
             self.forms_dict["pitch_max"][2].show()
             self.forms_dict["pitch_num"][2].show()

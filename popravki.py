@@ -130,30 +130,6 @@ def newHubLoss(B, r, Rhub, phi, lambda_r):
     return F
 
 
-def newLosses(C_norm, C_tang, B, r, R, phi, lambda_r, Rhub=None):
-    """
-    Combines Prandtl tip and hub losses with corrections.
-    :param C_tang: tangential coefficient [float]
-    :param C_norm: normal coefficient [float]
-    :param B: number of blades [int]
-    :param r: section radius [m]
-    :param R: tip radius [m]
-    :param phi: angle of relative wind [rad]
-    :param lambda_r: local speed ratio [float]
-    :param Rhub: hub radius [m]
-    :return: C_norm,ct with included losses
-    """
-    tiploss = newTipLoss(B, r, R, phi, lambda_r)
-    if Rhub:
-        hubloss = newHubLoss(B, r, Rhub, phi, lambda_r)
-    else:
-        hubloss = 1.0
-    Fl = tiploss * hubloss
-    C_norm = C_norm * Fl
-    C_tang = C_tang * Fl
-    return C_norm, C_tang
-
-
 # noinspection PyUnusedLocal,PyUnusedLocal
 def fInductionCoefficients0(F, phi, sigma, C_norm, C_tang, *args, **kwargs):
     """

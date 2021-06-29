@@ -267,6 +267,12 @@ class WindTurbineProperties(QWidget):
         if "geometry_scale" in dict_settings:
             t = str(dict_settings["geometry_scale"])
             self.geometry_scale.setText(t)
+        if "linspace_interp" in dict_settings:
+            t = dict_settings["linspace_interp"]
+            self.linspace_interp.setChecked(t)
+        if "num_interp" in dict_settings:
+            t = str(dict_settings["num_interp"])
+            self.num_interp.setText(t)
         if "B" in dict_settings:
             t = str(dict_settings["B"])
             self.B.setText(t)

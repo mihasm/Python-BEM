@@ -361,6 +361,12 @@ class Calculator:
         if propeller_mode:
             results["cp"] = cp_p
             results["ct"] = ct_p
+            if results["ct"] < 0.0:
+                p.print("    ct < 0, excluding...")
+                return None
+            if eff > 1.0:
+                p.print("    eff > 1, excluding...")
+                return None
         else:
             results["cp"] = cp_w
             results["ct"] = ct_w
@@ -835,15 +841,17 @@ class Calculator:
             else:
                 # check convergence
                 if abs(a - a_last) < convergence_limit:
-                    return True,out
+                    if abs(aprime - aprime_last) < convergence_limit:
+                        return True,out
 
                 # relaxation
                 a = a_last*(1-relaxation_factor)+a*relaxation_factor
+                aprime = aprime_last*(1-relaxation_factor)+aprime*relaxation_factor
                 out["a"] = a
                 return False,out
         
         if use_minimization_solver:
-            bounds = [(0.0001,1),(0.0001,1)]
+            bounds = [(0.0001,1.0),(0.0001,1.0)]
             initial_guess = [0.3,0.01]
             result = optimize.minimize(func,initial_guess,bounds=bounds,method="powell",options={'ftol': convergence_limit,"xtol":convergence_limit,'maxiter':max_iterations})
         else:

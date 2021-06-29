@@ -97,15 +97,52 @@ class ResultsWindow(QMainWindow):
         ############ Propeller curves ##############
         if input_data["propeller_mode"] == True:
             f3 = self.tab_widget.add_tab_figure("Prop curves")
-            J,eff,ct,cq = results_3d["J"],results_3d["eff"],results_3d["ct"],results_3d["cq"]
+            J,eff,ct,cp,cq = results_3d["J"],results_3d["eff"],results_3d["ct"],results_3d["cp"],results_3d["cq"]
+            
             ax3 = f3.add_subplot(111)
             ax3.set_title("Propeller curves")
             ax3.set_xlabel("J")
+            ax3.set_ylabel(r"$\eta$")
             ax3.grid()
-            ax3.plot(J,eff,"-g")
-            ax3.plot(J,ct,"-r")
-            ax3.plot(J,cq,"-b")
-            ax3.legend(["eff","ct","cq"])
+            ax3.plot(J,eff,"-g",label=r"$\eta$")
+
+            ax3_2 = ax3.twinx()
+            ax3_2.plot(J,ct,"-r",label=r"$C_T$")
+            ax3_2.plot(J,cp,"-b",label=r"$C_P$")
+            ax3_2.plot(J,cq,"-",color="orange",label=r"$C_Q$")
+            ax3_2.set_ylabel(r"$C_T, C_P, C_Q$")
+
+            f3.legend(loc="center right")
+
+
+        if input_data["propeller_mode"] == True:
+            f4 = self.tab_widget.add_tab_figure("Propeller efficency")
+            mat = np.array([results_3d["J"],results_3d["eff"],results_3d["pitch"]])
+            # transpose
+            mat = mat.transpose()
+            # sort by multiple columns
+            r = np.core.records.fromarrays([mat[:,2],mat[:,0]],names='a,b')
+            mat = mat[r.argsort()]
+            # split at different column values
+            dif = np.diff(mat[:,2])
+            ind_split = np.where(dif!=0)[0]
+            splitted = np.split(mat,ind_split+1)
+
+            ax_cp = f4.add_subplot(111)
+            ax_cp.set_title(r"Propeller efficiency")
+            ax_cp.set_xlabel(r"J")
+            ax_cp.set_ylabel(r"$\eta$")
+            ax_cp.grid()
+            
+            for a in splitted:
+                x = a[:,0]
+                y = a[:,1]
+                label = str(round(a[0,2],2)) #label by pitch
+                ax_cp.plot(x,y,label=label)
+            
+            if len(splitted) > 1:
+                ax_cp.legend(title="Pitch [°]")
+        ############################################
 
 
         ############ geometry check ################
@@ -368,7 +405,6 @@ class CustomGraphWidget(QWidget):
             print("case 4")
             self.ax = self.figure.add_subplot(111)
             self.ax.plot(x_ar,y_ar,label="2d plot")
-            self.ax.legend(self.parent.input_data["r"],title="r [m]")
             data_table = [x_ar,y_ar]
             data_table=transpose(data_table)
             self.table.createTable(data_table)

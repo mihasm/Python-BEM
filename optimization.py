@@ -66,8 +66,6 @@ def optimize(inp_args, queue_pyqtgraph):
 
                 inputs_list = [i[0] for i in input_variables]
                 bounds_list = [(b[1],b[2]) for b in input_variables]
-                p.print(bounds_list)
-
 
                 def fobj(input_numbers):
                     for i in range(len(input_numbers)):
@@ -85,6 +83,18 @@ def optimize(inp_args, queue_pyqtgraph):
                         fitness += d[var]*coeff
                     return fitness
 
+                decreasing = {"_theta"}
+
+                if n > 0:
+                    # use previous iteration to set new bound
+                    for _vname in decreasing:
+                        index = inputs_list.index(_vname)
+                        p.print("boundslist",bounds_list[index][1])
+                        p.print("output_list",output_list[n-1][index])
+                        bounds_list[index] = (bounds_list[index][0],output_list[n-1][index]) #construct new tuple
+                
+                p.print("Bounds:",bounds_list)
+
                 it = list(de2(fobj, bounds=bounds_list, iterations=num_iter, M=mut_coeff, num_individuals=population_size, printer=p, queue=queue_pyqtgraph))
 
                 p.print("best combination",it)
@@ -93,7 +103,10 @@ def optimize(inp_args, queue_pyqtgraph):
             p.print("Final output:")
             p.print([v[0] for v in output_variables])
             for i in output_list:
-                p.print(i)
+                if len(i) > 1:
+                    p.print(i)
+                else:
+                    p.print(i[0])
             
             p.print("Done!")
             time.sleep(0.5)

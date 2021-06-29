@@ -78,7 +78,7 @@ def calculate_power_3d(inp_args, print_eof=False, prepend="", print_progress=Tru
                 #constant speed, so change constant rpm to None
                 constant_rpm = None
             else:
-                constant_speed=None
+                constant_speed = None
             speeds, rpms = generate_v_and_rpm_from_tsr(tsr_list=tsr_list,R=R, geometry_scale=geometry_scale,v=constant_speed,rpm=constant_rpm)
             pitches = [constant_pitch]
 
@@ -88,7 +88,7 @@ def calculate_power_3d(inp_args, print_eof=False, prepend="", print_progress=Tru
                 #constant speed, so change constant rpm to None
                 constant_rpm = None
             else:
-                constant_speed=None
+                constant_speed = None
             speeds, rpms = generate_v_and_rpm_from_J(J_list=j_list,R=R,geometry_scale=geometry_scale,v=constant_speed,rpm=constant_rpm,printer=p)
             pitches = [constant_pitch]
 
@@ -102,8 +102,17 @@ def calculate_power_3d(inp_args, print_eof=False, prepend="", print_progress=Tru
                 #constant speed, so change constant rpm to None
                 constant_rpm = None
             else:
-                constant_speed=None
+                constant_speed = None
             speeds, rpms = generate_v_and_rpm_from_tsr(tsr_list=tsr_list,R=R, geometry_scale=geometry_scale,v=constant_speed,rpm=constant_rpm)
+
+        elif variable_selection == 5:
+            #pitch + J
+            if constant_selection == 0:
+                #constant speed, so change constant rpm to None
+                constant_rpm = None
+            else:
+                constant_speed = None
+            speeds, rpms = generate_v_and_rpm_from_J(J_list=j_list,R=R,geometry_scale=geometry_scale,v=constant_speed,rpm=constant_rpm,printer=p)
 
         total_iterations = int(len(speeds) * len(rpms))
         
@@ -113,6 +122,7 @@ def calculate_power_3d(inp_args, print_eof=False, prepend="", print_progress=Tru
 
         time_start = time.time()
         for pitch in pitches:
+            p.print("Pitch:",pitch)
             pitch_change_list.append(i)
             for v in speeds:
                 for rpm in rpms:
@@ -163,6 +173,7 @@ def print_progress_message(v,rpm,inp_args,p,prepend,print_progress):
     if print_progress:
         _lambda = rpm / 60 * 2 * pi * inp_args["R"] * inp_args["geometry_scale"] / v
         _advance_ratio = v / (rpm / 60 * 2 * inp_args["R"] * inp_args["geometry_scale"])
+        #pitch = inp_args["pitch"]
         p.print(prepend + "v=%.1f m/s, n=%.0f RPM, λ=%.2f, J=%.2f" % (v,rpm,_lambda,_advance_ratio))
 
 def print_result_message(print_progress,p,prepend,_results):
