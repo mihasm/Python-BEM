@@ -8,6 +8,8 @@ from numpy import radians
 from calculation import Calculator
 from utils import Printer
 
+import scipy.optimize
+
 
 def optimize(inp_args, queue_pyqtgraph):
     """
@@ -28,6 +30,7 @@ def optimize(inp_args, queue_pyqtgraph):
 
         input_variables = inp_args["optimization_inputs"]
         output_variables = inp_args["optimization_outputs"]
+        target_variables = inp_args["optimization_targets"]
         
         mut_coeff = inp_args["mut_coeff"]
         population_size = int(inp_args["population"])
@@ -35,6 +38,8 @@ def optimize(inp_args, queue_pyqtgraph):
 
         p.print("Input variables:", input_variables)
         p.print("Output variables:", output_variables)
+        p.print("Target_variables:", target_variables)
+
         p.print("Propeller mode:", inp_args["propeller_mode"])
 
         C = Calculator(inp_args)
@@ -47,6 +52,9 @@ def optimize(inp_args, queue_pyqtgraph):
 
             for n in range(len(inp_args["r"])):
                 p.print("  Section_number is", n)
+
+                list_queue_internal_x = []
+                list_queue_internal_y = []
 
                 section_inp_args = {}
 
@@ -75,12 +83,27 @@ def optimize(inp_args, queue_pyqtgraph):
 
                     d = C.calculate_section(**args,printer=p)
                     if d == None or d == False:
-                        p.print("d is None or False")
-                        return -1e50
+                        return 1e10
 
                     fitness = 0
+
                     for var, coeff in output_variables:
-                        fitness += d[var]*coeff
+                        value = d[var]*coeff
+                        fitness -= value
+                    for var, target_value, coeff in target_variables:
+                        comparison = abs(d[var]-target_value)*coeff
+                        fitness += comparison
+
+                    #p.print(queue_pyqtgraph)
+
+                    list_queue_internal_x.append(args["_theta"])
+                    list_queue_internal_y.append(fitness)
+
+                    queue_pyqtgraph[0] = [list_queue_internal_x,list_queue_internal_y,args["_theta"],fitness]
+
+                    #p.print(args["_theta"],fitness)
+                    #p.print(queue_pyqtgraph)
+
                     return fitness
 
                 decreasing = {"_theta"}
@@ -89,13 +112,14 @@ def optimize(inp_args, queue_pyqtgraph):
                     # use previous iteration to set new bound
                     for _vname in decreasing:
                         index = inputs_list.index(_vname)
-                        p.print("boundslist",bounds_list[index][1])
-                        p.print("output_list",output_list[n-1][index])
                         bounds_list[index] = (bounds_list[index][0],output_list[n-1][index]) #construct new tuple
                 
                 p.print("Bounds:",bounds_list)
 
-                it = list(de2(fobj, bounds=bounds_list, iterations=num_iter, M=mut_coeff, num_individuals=population_size, printer=p, queue=queue_pyqtgraph))
+                initial_guess = [top for bottom,top in bounds_list] # guess the top guess
+
+                #it = list(de2(fobj, bounds=bounds_list, iterations=num_iter, M=mut_coeff, num_individuals=population_size, printer=p, queue=queue_pyqtgraph))
+                it = list(scipy.optimize.minimize(fobj,initial_guess,method="powell",bounds=bounds_list).x)
 
                 p.print("best combination",it)
                 output_list.append(it)
@@ -144,69 +168,11 @@ def optimize(inp_args, queue_pyqtgraph):
                     fitness += d[var]*coeff
                 return fitness
 
-            it = list(de2(fobj, bounds=bounds_list, iterations=num_iter, M=mut_coeff, num_individuals=population_size, printer=p, queue=queue_pyqtgraph))
-
+            #it = list(de2(fobj, bounds=bounds_list, iterations=num_iter, M=mut_coeff, num_individuals=population_size, printer=p, queue=queue_pyqtgraph))
+            it = list(scipy.optimize.differential_evolution(fobj,bounds=bounds_list,maxiter=num_iter,popsize=num_individuals))
 
     except Exception as e:
         var = traceback.format_exc()
         p.print("Error in running optimizer: %s \n %s" % (str(e), var))
         inp_args["EOF"].value = True
         raise
-
-
-# https://pablormier.github.io/2017/09/05/a-tutorial-on-differential-evolution-with-python/#
-
-def de2(function, bounds, M=0.8, num_individuals=30, iterations=50, printer=None, queue=None):
-    """
-    Function that uses the DE genetic optimisation algorithm to maximize
-    the fitness function "function".
-
-    Inputs:
-    function:function: Python function that is used to determine
-        the fitness score of each indicidual. Can be one or N-dimensional.
-    bounds:list: List of tuple pairs that correspond to the upper and
-        lower boundary for each dimension information.
-    M:float: Mutation coefficient.
-    num_individuals:int: Number of individuals in the calculation.
-    iterations:int: Maximum number of iterations per calculation.
-
-    Output:
-    return:float:Individual with the highest fitness.
-    """
-
-    p = printer
-    dimensions = len(bounds)
-    min_bound, max_bound = np.asarray(bounds).T
-    population = np.random.uniform(
-        min_bound, max_bound, (num_individuals, dimensions))
-    fitness = np.asarray([function(po) for po in population])
-    best_i = np.argmax(fitness)
-    best = population[best_i]
-    for i in range(iterations):
-        for j in range(num_individuals):
-            other_i = list(set(range(num_individuals)) - {j})
-            a, b, c = population[np.random.choice(other_i, 3, replace=False)]
-            mutation_vector = a + M * (b - c)
-            for k in range(dimensions):
-                if mutation_vector[k] < min_bound[k]:
-                    mutation_vector[k] = min_bound[k]
-                if mutation_vector[k] > max_bound[k]:
-                    mutation_vector[k] = max_bound[k]
-            random_locations = np.random.choice(a=[False, True], size=(1, dimensions))[0]
-            trial = np.where(random_locations, mutation_vector, population[j])
-            f = function(trial)
-            if f > fitness[j]:
-                fitness[j] = f
-                population[j] = trial
-                if f > fitness[best_i]:
-                    best_i = j
-                    best = trial
-            if dimensions == 1:
-                queue[0] = [population.flatten(), fitness.flatten(), population[best_i][0], fitness[best_i]]
-            else:
-                queue[0] = [np.arange(0,len(population)),fitness.flatten(),best_i,fitness[best_i]]
-        if len(set(population.flatten())) == 1:
-            break
-        p.print(best, fitness[best_i])
-
-    return best

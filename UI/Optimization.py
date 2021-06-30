@@ -83,6 +83,14 @@ class Optimization(QWidget):
         self.output_variable_selection.addItems(["dQ","dT","a","a'","Cl","Cd","dFn","dFt","U4","alpha","phi"])
         self.list_output_variables = []
 
+        self.target_variables_widget =QWidget()
+        self.target_variables_layout = QGridLayout()
+        self.target_variables_widget.setLayout(self.target_variables_layout)
+        self.button_add_target_variable = QPushButton("Add target variable")
+        self.button_add_target_variable.clicked.connect(self.add_target_variable)
+        self.target_variable_selection = QComboBox()
+        self.target_variable_selection.addItems(["alpha"])
+        self.list_target_variables = []
 
         self.buttonOptimization = QPushButton("Run optimization")
         self.buttonOptimization.clicked.connect(self.run)
@@ -113,6 +121,9 @@ class Optimization(QWidget):
 
         self.fbox.addRow(self.button_add_output_variable,self.output_variable_selection)
         self.fbox.addRow(self.output_variables_widget)
+
+        self.fbox.addRow(self.button_add_target_variable,self.target_variable_selection)
+        self.fbox.addRow(self.target_variables_widget)
 
         self.fbox.addRow(self.buttonOptimization)
         self.fbox.addRow("", QLabel())
@@ -150,6 +161,46 @@ class Optimization(QWidget):
             self.input_variables_layout.addWidget(delete_button,i,3)
             i+=1
 
+    def refresh_output_variables(self):
+        for i in reversed(range(self.output_variables_layout.count())): 
+            self.output_variables_layout.itemAt(i).widget().setParent(None)
+
+        i=0
+        for var,coefficient in self.list_output_variables:
+            name = QLabel(var)
+            coefficient = QLineEdit(str(coefficient))
+            coefficient.textChanged.connect(self.update_output_variables_list)
+            delete_button = QPushButton("X")
+            delete_button.clicked.connect(self.delete_output_variable)
+            self.output_variables_layout.addWidget(name,i,0)
+            self.output_variables_layout.addWidget(coefficient,i,1)
+            self.output_variables_layout.addWidget(delete_button,i,2)
+            i+=1
+
+    def refresh_target_variables(self):
+        for i in reversed(range(self.target_variables_layout.count())): 
+            self.target_variables_layout.itemAt(i).widget().setParent(None)
+
+        i=0
+        for var,target_value,coefficient in self.list_target_variables:
+            name = QLabel(var)
+
+            target_value = QLineEdit(str(target_value))
+            target_value.textChanged.connect(self.update_target_variables_list)
+
+            coefficient = QLineEdit(str(coefficient))
+            coefficient.textChanged.connect(self.update_target_variables_list)
+
+            delete_button = QPushButton("X")
+            delete_button.clicked.connect(self.delete_target_variable)
+            
+
+            self.target_variables_layout.addWidget(name,i,0)
+            self.target_variables_layout.addWidget(target_value,i,1)
+            self.target_variables_layout.addWidget(coefficient,i,2)
+            self.target_variables_layout.addWidget(delete_button,i,3)
+            i+=1
+
     def update_input_variables_list(self):
         for row in range(len(self.list_input_variables)):
             try:
@@ -171,33 +222,25 @@ class Optimization(QWidget):
             except ValueError:
                 pass
 
+    def update_target_variables_list(self):
+        for row in range(len(self.list_target_variables)):
+            try:
+                target_value = float(self.target_variables_layout.itemAtPosition(row,1).widget().text())
+                self.list_target_variables[row][1] = target_value
+            except ValueError:
+                pass
+            try:
+                coeff = float(self.target_variables_layout.itemAtPosition(row,2).widget().text())
+                self.list_target_variables[row][2] = coeff
+            except ValueError:
+                pass
+
     def delete_input_variable(self):
         button = self.sender()
         index = self.input_variables_layout.indexOf(button)
         row,column,_,_ = self.input_variables_layout.getItemPosition(index)
         del self.list_input_variables[row]
         self.refresh_input_variables()
-
-    def add_input_variable(self):
-        variable = str(self.input_variable_selection.currentText())
-        self.list_input_variables.append([variable,0,0])
-        self.refresh_input_variables()
-
-    def refresh_output_variables(self):
-        for i in reversed(range(self.output_variables_layout.count())): 
-            self.output_variables_layout.itemAt(i).widget().setParent(None)
-
-        i=0
-        for var,coefficient in self.list_output_variables:
-            name = QLabel(var)
-            coefficient = QLineEdit(str(coefficient))
-            coefficient.textChanged.connect(self.update_output_variables_list)
-            delete_button = QPushButton("X")
-            delete_button.clicked.connect(self.delete_output_variable)
-            self.output_variables_layout.addWidget(name,i,0)
-            self.output_variables_layout.addWidget(coefficient,i,1)
-            self.output_variables_layout.addWidget(delete_button,i,2)
-            i+=1
 
     def delete_output_variable(self):
         button = self.sender()
@@ -206,10 +249,27 @@ class Optimization(QWidget):
         del self.list_output_variables[row]
         self.refresh_output_variables()
 
+    def delete_target_variable(self):
+        button = self.sender()
+        index = self.target_variables_layout.indexOf(button)
+        row,column,_,_ = self.target_variables_layout.getItemPosition(index)
+        del self.list_target_variables[row]
+        self.refresh_target_variables()
+
+    def add_input_variable(self):
+        variable = str(self.input_variable_selection.currentText())
+        self.list_input_variables.append([variable,0,0])
+        self.refresh_input_variables()
+
     def add_output_variable(self):
         variable = str(self.output_variable_selection.currentText())
         self.list_output_variables.append([variable,0])
         self.refresh_output_variables()
+
+    def add_target_variable(self):
+        variable = str(self.target_variable_selection.currentText())
+        self.list_target_variables.append([variable,0,1])
+        self.refresh_target_variables()
 
     def update_tsr_and_j(self):
         try:
@@ -327,8 +387,10 @@ class Optimization(QWidget):
 
         self.update_input_variables_list()
         self.update_output_variables_list()
+        self.update_target_variables_list()
         out["optimization_inputs"]=self.list_input_variables
         out["optimization_outputs"]=self.list_output_variables
+        out["optimization_targets"]=self.list_target_variables
         return out
 
     def set_settings(self, inp_dict):
@@ -342,5 +404,6 @@ class Optimization(QWidget):
         self.list_output_variables = inp_dict["optimization_outputs"]
         self.refresh_output_variables()
         self.refresh_input_variables()
+        self.refresh_target_variables()
         #self.weight_dt.setText(str(inp_dict["weight_dt"]))
         #self.weight_dq.setText(str(inp_dict["weight_dq"]))

@@ -705,7 +705,8 @@ class Calculator:
 
                 def zero_finding_function(alpha):
                     return self.airfoils[_airfoil]["interp_function_cl"](Re, alpha)
-                alpha_zero = optimize.bisect(zero_finding_function,-10,10,xtol=1e-3,rtol=1e-3)
+
+                alpha_zero = optimize.bisect(zero_finding_function,-10,10,xtol=1e-2,rtol=1e-3)
                 alpha_zero = radians(alpha_zero)
 
 
