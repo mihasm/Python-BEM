@@ -85,7 +85,9 @@ def run_xfoil_analysis(airfoil, reynolds, alpha, iterations=70, max_next_angle=2
     """
     # print("running xfoil for %s,Re=%s,alpha=%s" % (airfoil,reynolds,alpha))
     # alpha in degrees
+
     with Popen(os.path.abspath(xfoil_path), stdin=PIPE, stdout=PIPE, universal_newlines=True, shell = True) as process:
+
 
         def call(_str, proc=process):
             # print(_str,file=process.stdin)
@@ -207,7 +209,7 @@ def generate_polars(foil):
     all_cd = []
 
     for Re in np.linspace(10e3, 1e6, 10):
-        for a in np.linspace(-10, 20, 31):
+        for a in np.linspace(-10, 15, 26):
             Re = int(Re)
             cl = None
             cd = None

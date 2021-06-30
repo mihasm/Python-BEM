@@ -101,7 +101,6 @@ class MainWindow(QMainWindow):
             d = self.get_all_settings()
             d_to_save = fltr(d, (float, int, list, str, bool, np.ndarray))
             json_d = json.dumps(d_to_save)
-
             file = open(name, 'w')
             file.write(json_d)
             file.close()

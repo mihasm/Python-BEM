@@ -249,7 +249,7 @@ def fltr(node, vals):
     :param vals:
     :return:
     """
-    print(node)
+    #print(node)
     if isinstance(node, dict):
         retVal = {}
         for key, value in node.items():
