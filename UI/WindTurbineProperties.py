@@ -1,7 +1,8 @@
 import os
 
 import numpy as np
-from PyQt5.QtWidgets import QWidget, QGridLayout, QFormLayout, QLabel, QLineEdit, QComboBox, QCheckBox, QPushButton
+from PyQt5.QtWidgets import QWidget, QGridLayout, QFormLayout, QLabel, QLineEdit, QComboBox, QCheckBox, QPushButton, \
+                            QScrollArea, QVBoxLayout
 from numpy.core._multiarray_umath import array
 
 from main import application_path
@@ -25,173 +26,183 @@ class WindTurbineProperties(QWidget):
 
         self.main = self.parent()
 
-        grid = QGridLayout()
-        self.setLayout(grid)
+        self.grid = QGridLayout()
+        self.setLayout(self.grid)
 
-        left = QWidget()
-        fbox = QFormLayout()
-        left.setLayout(fbox)
+        self.left = QWidget()
+        self.fbox = QFormLayout()
+        self.left.setLayout(self.fbox)
+
+        self.scroll_area = QScrollArea()
+        self.scroll_widget = QWidget()
+        self.scroll_widget_layout = QVBoxLayout()
+
+        self.scroll_widget.setLayout(self.scroll_widget_layout)
+        self.scroll_area.setWidget(self.left)
+        self.scroll_area.setWidgetResizable(True)
+
+        self.grid.addWidget(self.scroll_area, 1, 1)
 
         self.table_properties = Table()
         self.table_properties.createEmpty(4, 30)
         self.table_properties.set_labels(["r [m]", "c [m]", "theta [deg]", "airfoil"])
 
-        grid.addWidget(left, 1, 1)
-        grid.addWidget(self.table_properties, 1, 2)
+        #self.grid.addWidget(self.left, 1, 1)
+        self.grid.addWidget(self.table_properties, 1, 2)
 
         _name = QLabel("Turbine Name")
         self.name = QLineEdit()
-        fbox.addRow(_name, self.name)
+        self.fbox.addRow(_name, self.name)
         self.name.textEdited.connect(self.main.set_title)
 
         _Rhub = QLabel("Hub radius [m]")
         self.Rhub = QLineEdit()
         self.Rhub.setText("0.1")
-        fbox.addRow(_Rhub, self.Rhub)
+        self.fbox.addRow(_Rhub, self.Rhub)
         self.Rhub.setToolTip("Radij pesta. Vpliv ima le pri Hub-Loss popravku.")
 
         _R = QLabel("Tip radius [m]")
         self.R = QLineEdit()
         self.R.setText("0.776")
-        fbox.addRow(_R, self.R)
+        self.fbox.addRow(_R, self.R)
         self.R.setToolTip("Radij turbine. Vpliv ima na izračun moči ter pri Tip-Loss popravku.")
 
         _B = QLabel("Number of blades")
         self.B = QLineEdit()
         self.B.setText("5")
-        fbox.addRow(_B, self.B)
+        self.fbox.addRow(_B, self.B)
         self.B.setToolTip("Število lopatic.")
 
         _blade_design = QLabel("Blade design")
         self.blade_design = QComboBox()
         self.blade_design.addItems(["Filled", "Hollow", "Spar"])
-        fbox.addRow(_blade_design, self.blade_design)
+        self.fbox.addRow(_blade_design, self.blade_design)
         self.B.setToolTip("Pomembno za statični izračun.")
 
         _blade_thickness = QLabel("Blade thickness [m]")
         self.blade_thickness = QLineEdit()
         self.blade_thickness.setText("0.001")
-        fbox.addRow(_blade_thickness, self.blade_thickness)
+        self.fbox.addRow(_blade_thickness, self.blade_thickness)
         self.blade_thickness.setToolTip("Debelina lopatice / Spar Cap-a.")
 
         _mass_density = QLabel("Mass density [kg/m^3]")
         self.mass_density = QLineEdit()
         self.mass_density.setText("1060")
-        fbox.addRow(_mass_density, self.mass_density)
+        self.fbox.addRow(_mass_density, self.mass_density)
         self.mass_density.setToolTip("Debelina lopatice / Spar Cap-a.")
 
-        fbox.addRow(QLabel("————— Scale and interpolation —————"))
+        self.fbox.addRow(QLabel("————— Scale and interpolation —————"))
 
         _geometry_scale = QLabel("Scale factor")
         self.geometry_scale = QLineEdit()
         self.geometry_scale.setText("1.0")
-        fbox.addRow(_geometry_scale, self.geometry_scale)
+        self.fbox.addRow(_geometry_scale, self.geometry_scale)
         self.geometry_scale.setToolTip("Scale factor")
 
         _linspace_interp = QLabel("Interpolate geometry")
         self.linspace_interp = QCheckBox()
-        fbox.addRow(_linspace_interp, self.linspace_interp)
+        self.fbox.addRow(_linspace_interp, self.linspace_interp)
         self.linspace_interp.setToolTip("Interpolate_geom")
 
         _num_interp = QLabel("Number of interpolation points")
         self.num_interp = QLineEdit()
         self.num_interp.setText("25")
-        fbox.addRow(_num_interp, self.num_interp)
+        self.fbox.addRow(_num_interp, self.num_interp)
         self.num_interp.setToolTip("Number of interpolation points")
 
-        fbox.addRow(QLabel("————— Generate geometry —————"))
+        self.fbox.addRow(QLabel("————— Generate geometry —————"))
 
         _num_gen_sections = QLabel("Number of gen. sections")
         self.num_gen_sections = QLineEdit()
         self.num_gen_sections.setText("10")
-        fbox.addRow(_num_gen_sections, self.num_gen_sections)
+        self.fbox.addRow(_num_gen_sections, self.num_gen_sections)
         self.num_gen_sections.setToolTip("Število odsekov za generiranje.")
 
         _design_tsr = QLabel("Design TSR")
         self.design_tsr = QLineEdit()
         self.design_tsr.setText("7")
-        fbox.addRow(_design_tsr, self.design_tsr)
+        self.fbox.addRow(_design_tsr, self.design_tsr)
         self.design_tsr.setToolTip("Željeni TSR za generiranje.")
 
         _design_aoa = QLabel("Design AoA [°]")
         self.design_aoa = QLineEdit()
         self.design_aoa.setText("7")
-        fbox.addRow(_design_aoa, self.design_aoa)
+        self.fbox.addRow(_design_aoa, self.design_aoa)
         self.design_aoa.setToolTip("Željeni AoA za generiranje.")
 
         _design_cl = QLabel("Cl @ Design AoA")
         self.design_cl = QLineEdit()
         self.design_cl.setText("1.4")
-        fbox.addRow(_design_cl, self.design_cl)
+        self.fbox.addRow(_design_cl, self.design_cl)
         self.design_cl.setToolTip("Koeficient vzgona pri željenem AoA.")
 
         _design_airfoil = QLabel("Airfoil")
         self.design_airfoil = QLineEdit()
         self.design_airfoil.setText("s826")
-        fbox.addRow(_design_airfoil, self.design_airfoil)
+        self.fbox.addRow(_design_airfoil, self.design_airfoil)
         self.design_airfoil.setToolTip("Tekst za v stolpec airfoil.")
 
         _design_RPM = QLabel("RPM (prop)")
         self.design_RPM = QLineEdit()
         self.design_RPM.setText("5000")
-        fbox.addRow(_design_RPM, self.design_RPM)
+        self.fbox.addRow(_design_RPM, self.design_RPM)
         self.design_RPM.setToolTip("RPM propelerja")
 
         _design_velocity = QLabel("Velocity (prop) [m/s]")
         self.design_velocity = QLineEdit()
         self.design_velocity.setText("15")
-        fbox.addRow(_design_velocity, self.design_velocity)
+        self.fbox.addRow(_design_velocity, self.design_velocity)
         self.design_velocity.setToolTip("Hitrost letala")
 
         _design_thrust = QLabel("Thrust (prop) [N]")
         self.design_thrust = QLineEdit()
         self.design_thrust.setText("50")
-        fbox.addRow(_design_thrust, self.design_thrust)
+        self.fbox.addRow(_design_thrust, self.design_thrust)
         self.design_thrust.setToolTip("Potisk")
 
         _design_drag_lift_ratio = QLabel("Cd/Cl @ Design AoA (prop)")
         self.design_drag_lift_ratio = QLineEdit()
         self.design_drag_lift_ratio.setText("0.02")
-        fbox.addRow(_design_drag_lift_ratio, self.design_drag_lift_ratio)
+        self.fbox.addRow(_design_drag_lift_ratio, self.design_drag_lift_ratio)
         self.design_drag_lift_ratio.setToolTip("Razmerje Drag/Lift")
 
         _design_rho = QLabel("Air density [kg/m3]")
         self.design_rho = QLineEdit()
         self.design_rho.setText("1.225")
-        fbox.addRow(_design_rho, self.design_rho)
+        self.fbox.addRow(_design_rho, self.design_rho)
         self.design_rho.setToolTip("Gostota zraka")
 
         _design_method = QLabel("Design method.")
         self.design_method = QComboBox()
         self.design_method.addItems(["Betz", "Schmitz", "Larrabee (prop)"])
-        fbox.addRow(_design_method, self.design_method)
+        self.fbox.addRow(_design_method, self.design_method)
         self.design_method.setToolTip("Metoda dizajniranja.")
 
         _button_generate_geometry = QLabel("Generate geometry.")
         self.button_generate_geometry = QPushButton("Generate")
-        fbox.addRow(_button_generate_geometry, self.button_generate_geometry)
+        self.fbox.addRow(_button_generate_geometry, self.button_generate_geometry)
         self.button_generate_geometry.clicked.connect(self.generate_geometry)
         self.button_generate_geometry.setToolTip("Generiraj geometrijo (povozi predhodno!).")
 
-        fbox.addRow(QLabel("————— Export to Solidworks —————"))
+        self.fbox.addRow(QLabel("————— Export to Solidworks —————"))
 
         self.export_button = QPushButton("Export curve data")
         self.export_button.clicked.connect(self.export)
-        fbox.addRow("Export:", self.export_button)
+        self.fbox.addRow("Export:", self.export_button)
         self.export_button.setToolTip(
             "Krivulje na vseh radijih lopatice se shranijo v posamezne datoteke. Solidworks makro se nato zgenerira v Python konzoli.")
 
         self.flip_turning_direction = QCheckBox()
-        fbox.addRow("Flip turning direction", self.flip_turning_direction)
+        self.fbox.addRow("Flip turning direction", self.flip_turning_direction)
 
         self.propeller_geom = QCheckBox()
-        fbox.addRow("Propeller", self.propeller_geom)
+        self.fbox.addRow("Propeller", self.propeller_geom)
 
-        fbox.addRow(QLabel("—————————————————————————"))
+        self.fbox.addRow(QLabel("—————————————————————————"))
 
         _button_create_geometry_graph = QLabel("Create R,C,θ graph.")
         self.button_create_geometry_graph = QPushButton("Create R,C,θ graph.")
-        fbox.addRow(_button_create_geometry_graph, self.button_create_geometry_graph)
+        self.fbox.addRow(_button_create_geometry_graph, self.button_create_geometry_graph)
         self.button_create_geometry_graph.clicked.connect(self.create_geometry_graph)
         self.button_create_geometry_graph.setToolTip("Izris grafa R,C,θ.")
 
