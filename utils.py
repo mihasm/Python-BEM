@@ -679,7 +679,7 @@ def generate_chord_lengths_schmitz(radiuses, R, Cl_max, B, TSR):
     return chords
 
 
-def generate_twists_betz(radiuses, R, TSR, alpha_d):
+def generate_twists_betz(radiuses, R, TSR, alpha_d, ):
     """
     Source: http://wflportal.amcplaza.com/Research/DYNAM/Resource%20Documents/WT_Theory_2009.pdf
     """
@@ -694,6 +694,37 @@ def generate_twists_schmitz(radiuses, R, TSR, alpha_d):
     thetas = 2 / 3 * np.rad2deg(np.arctan(R / (radiuses * TSR))) - alpha_d
     return thetas
 
+def generate_propeller_larabee(radiuses, R, B, RPM, drag_lift_ratio, v, T, rho, cl):
+    """
+    Source: Larabee, 1979
+    """
+    try:
+        radiuses = np.array(radiuses)
+        xi = radiuses/R
+        omega = RPM*2*np.pi/60
+        x = omega*radiuses/v
+        TSR = v/omega/R
+        f = B/2*(np.sqrt(TSR**2+1)/TSR)*(1-radiuses/R)
+        F = 2/np.pi*np.arccos(np.exp(-f))
+        G = F*x**2/(1+x**2)
+        _xi = np.insert(xi, 0, 0, axis=0)
+        dxi = np.diff(_xi)
+        y = G*(1-drag_lift_ratio/x)*xi
+        y2 = G*(1-drag_lift_ratio/x)*xi/(x**2+1)
+        I1 = 4*np.trapz(y,x=xi)
+        I2 = 2*np.trapz(y2,x=xi)
+        print("I1",I1,"I2",I2)
+        thrust_coeff = 2*T/(rho*v**2*np.pi*R**2)
+        zeta = I1/(2*I2)*(1-np.sqrt(1-(4*I2*thrust_coeff)/I1**2))
+        vprime = zeta*v
+        c_R = 4*np.pi/B*TSR*G/(np.sqrt(1+x**2))*zeta/cl
+        c = c_R*R
+        theta = np.arctan(TSR/xi*(1+0.5*zeta))
+        theta = np.rad2deg(theta)
+        return c,theta
+    except Exception as e:
+        raise
+   
 
 ### INTERPOLATION ###
 

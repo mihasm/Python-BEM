@@ -8,7 +8,8 @@ from main import application_path
 from UI.helpers import MatplotlibWindow, PrintoutWindow
 from turbine_data import SET_INIT
 from utils import to_float, interpolate_geom, generate_chord_lengths_betz, generate_twists_betz, \
-    generate_chord_lengths_schmitz, generate_twists_schmitz, create_folder, create_macro_text
+    generate_chord_lengths_schmitz, generate_twists_schmitz, create_folder, create_macro_text, \
+    generate_propeller_larabee
 from UI.Table import Table
 from visualize import create_3d_blade
 
@@ -130,9 +131,39 @@ class WindTurbineProperties(QWidget):
         fbox.addRow(_design_airfoil, self.design_airfoil)
         self.design_airfoil.setToolTip("Tekst za v stolpec airfoil.")
 
+        _design_RPM = QLabel("RPM (prop)")
+        self.design_RPM = QLineEdit()
+        self.design_RPM.setText("5000")
+        fbox.addRow(_design_RPM, self.design_RPM)
+        self.design_RPM.setToolTip("RPM propelerja")
+
+        _design_velocity = QLabel("Velocity (prop) [m/s]")
+        self.design_velocity = QLineEdit()
+        self.design_velocity.setText("15")
+        fbox.addRow(_design_velocity, self.design_velocity)
+        self.design_velocity.setToolTip("Hitrost letala")
+
+        _design_thrust = QLabel("Thrust (prop) [N]")
+        self.design_thrust = QLineEdit()
+        self.design_thrust.setText("50")
+        fbox.addRow(_design_thrust, self.design_thrust)
+        self.design_thrust.setToolTip("Potisk")
+
+        _design_drag_lift_ratio = QLabel("Cd/Cl @ Design AoA (prop)")
+        self.design_drag_lift_ratio = QLineEdit()
+        self.design_drag_lift_ratio.setText("0.02")
+        fbox.addRow(_design_drag_lift_ratio, self.design_drag_lift_ratio)
+        self.design_drag_lift_ratio.setToolTip("Razmerje Drag/Lift")
+
+        _design_rho = QLabel("Air density [kg/m3]")
+        self.design_rho = QLineEdit()
+        self.design_rho.setText("1.225")
+        fbox.addRow(_design_rho, self.design_rho)
+        self.design_rho.setToolTip("Gostota zraka")
+
         _design_method = QLabel("Design method.")
         self.design_method = QComboBox()
-        self.design_method.addItems(["Betz", "Schmitz"])
+        self.design_method.addItems(["Betz", "Schmitz", "Larrabee (prop)"])
         fbox.addRow(_design_method, self.design_method)
         self.design_method.setToolTip("Metoda dizajniranja.")
 
@@ -240,6 +271,11 @@ class WindTurbineProperties(QWidget):
         method = self.design_method.currentIndex()
         airfoil = self.design_airfoil.text()
         design_aoa = float(self.design_aoa.text())
+        RPM = float(self.design_RPM.text())
+        v = float(self.design_velocity.text())
+        T = float(self.design_thrust.text())
+        drag_lift_ratio = float(self.design_drag_lift_ratio.text())
+        rho = float(self.design_rho.text())
 
         if method == 0:
             chords = generate_chord_lengths_betz(radiuses=radiuses, R=R, Cl_max=Cl_max, B=B, TSR=TSR)
@@ -248,6 +284,9 @@ class WindTurbineProperties(QWidget):
         elif method == 1:
             chords = generate_chord_lengths_schmitz(radiuses=radiuses, R=R, Cl_max=Cl_max, B=B, TSR=TSR)
             thetas = generate_twists_schmitz(radiuses=radiuses, R=R, TSR=TSR, alpha_d=design_aoa)
+
+        elif method == 2:
+            chords, thetas = generate_propeller_larabee(radiuses=radiuses, R=R, B=B, RPM=RPM, drag_lift_ratio=drag_lift_ratio, v=v, T=T, rho=rho, cl=Cl_max)
 
         for r in range(num_gen_sections):
             array_out.append([round(radiuses[r], 4), round(chords[r], 4), round(thetas[r], 4), airfoil])

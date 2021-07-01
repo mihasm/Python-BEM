@@ -89,7 +89,7 @@ class Optimization(QWidget):
         self.button_add_target_variable = QPushButton("Add target variable")
         self.button_add_target_variable.clicked.connect(self.add_target_variable)
         self.target_variable_selection = QComboBox()
-        self.target_variable_selection.addItems(["alpha"])
+        self.target_variable_selection.addItems(["alpha","a","a'"])
         self.list_target_variables = []
 
         self.buttonOptimization = QPushButton("Run optimization")
