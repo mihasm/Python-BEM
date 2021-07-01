@@ -713,7 +713,6 @@ def generate_propeller_larabee(radiuses, R, B, RPM, drag_lift_ratio, v, T, rho, 
         y2 = G*(1-drag_lift_ratio/x)*xi/(x**2+1)
         I1 = 4*np.trapz(y,x=xi)
         I2 = 2*np.trapz(y2,x=xi)
-        print("I1",I1,"I2",I2)
         thrust_coeff = 2*T/(rho*v**2*np.pi*R**2)
         zeta = I1/(2*I2)*(1-np.sqrt(1-(4*I2*thrust_coeff)/I1**2))
         vprime = zeta*v

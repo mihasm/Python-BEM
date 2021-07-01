@@ -4,6 +4,7 @@ import numpy as np
 from PyQt5.QtWidgets import QWidget, QGridLayout, QFormLayout, QLabel, QLineEdit, QComboBox, QCheckBox, QPushButton, \
                             QScrollArea, QVBoxLayout
 from numpy.core._multiarray_umath import array
+from scipy import interpolate
 
 from main import application_path
 from UI.helpers import MatplotlibWindow, PrintoutWindow
@@ -146,12 +147,14 @@ class WindTurbineProperties(QWidget):
         self.design_RPM = QLineEdit()
         self.design_RPM.setText("5000")
         self.fbox.addRow(_design_RPM, self.design_RPM)
+        self.design_RPM.textChanged.connect(self.update_j)
         self.design_RPM.setToolTip("RPM propelerja")
 
         _design_velocity = QLabel("Velocity (prop) [m/s]")
         self.design_velocity = QLineEdit()
         self.design_velocity.setText("15")
         self.fbox.addRow(_design_velocity, self.design_velocity)
+        self.design_velocity.textChanged.connect(self.update_j)
         self.design_velocity.setToolTip("Hitrost letala")
 
         _design_thrust = QLabel("Thrust (prop) [N]")
@@ -200,11 +203,25 @@ class WindTurbineProperties(QWidget):
 
         self.fbox.addRow(QLabel("—————————————————————————"))
 
+        _button_calculate_pitch = QLabel("Calculate pitch")
+        self.button_calculate_pitch = QPushButton("Calculate pitch")
+        self.fbox.addRow(_button_calculate_pitch, self.button_calculate_pitch)
+        self.button_calculate_pitch.clicked.connect(self.calculate_pitch)
+        self.button_calculate_pitch.setToolTip("Izračun zasuka propelerja v inčih")
+
+        
+
         _button_create_geometry_graph = QLabel("Create R,C,θ graph.")
         self.button_create_geometry_graph = QPushButton("Create R,C,θ graph.")
         self.fbox.addRow(_button_create_geometry_graph, self.button_create_geometry_graph)
         self.button_create_geometry_graph.clicked.connect(self.create_geometry_graph)
         self.button_create_geometry_graph.setToolTip("Izris grafa R,C,θ.")
+
+        self.pitch_inches = QLabel("0")
+        self.fbox.addRow("Pitch @ 0.75R [in.]", self.pitch_inches)
+
+        self.J_string = QLabel("0")
+        self.fbox.addRow("J (prop design):", self.J_string)
 
         self.window = None
 
@@ -227,7 +244,19 @@ class WindTurbineProperties(QWidget):
                "num_interp": int(self.num_interp.text()),
                "blade_thickness": to_float(self.blade_thickness.text()),
                "blade_design": self.blade_design.currentIndex(),
-               "mass_density": to_float(self.mass_density.text())}
+               "mass_density": to_float(self.mass_density.text()),
+               "design_RPM":to_float(self.design_RPM.text()),
+               "design_velocity":to_float(self.design_velocity.text()),
+               "design_thrust":to_float(self.design_thrust.text()),
+               "design_drag_lift_ratio":to_float(self.design_drag_lift_ratio.text()),
+               "design_rho":to_float(self.design_rho.text()),
+               "num_gen_sections":to_float(self.num_gen_sections.text()),
+               "design_tsr":to_float(self.design_tsr.text()),
+               "design_aoa":to_float(self.design_aoa.text()),
+               "design_cl":to_float(self.design_cl.text()),
+               "design_airfoil":self.design_airfoil.text(),
+               "design_method":to_float(self.design_method.currentIndex())}
+        
         geom_array = self.table_properties.get_values()
         r, c, theta, foils = [], [], [], []
         for row in geom_array:
@@ -252,6 +281,26 @@ class WindTurbineProperties(QWidget):
         out["r_in"], out["c_in"], out["theta_in"], out["foils_in"] = _r, _c, _theta, _foils
         return out
 
+    def update_j(self):
+        try:
+            J = float(self.design_velocity.text()) / (float(self.design_RPM.text()) / 60 * 2 * float(self.R.text()))
+            self.J_string.setText("%.2f" % (J))
+        except:
+            print("couldnt update J")
+
+    def calculate_pitch(self):
+        out = self.get_settings()
+        r,theta = np.array(out["r_in"]), np.array(out["theta_in"])
+        R = out["R"]
+        r_R = r/R
+        f = interpolate.interp1d(r_R,theta)
+        beta = np.deg2rad(f(0.75)) # theta at 0.75 R
+        D = 2*R*39.3701 # inches
+        pitch_inches = np.pi*0.75*D*np.tan(beta)
+        self.pitch_inches.setText(str(pitch_inches))
+        return
+
+
     def create_geometry_graph(self):
         out = self.get_settings()
         self.gw = MatplotlibWindow()
@@ -274,7 +323,7 @@ class WindTurbineProperties(QWidget):
         array_out = []
         R = float(self.R.text())
         Rhub = float(self.Rhub.text())
-        num_gen_sections = int(self.num_gen_sections.text())
+        num_gen_sections = int(float(self.num_gen_sections.text()))
         radiuses = np.linspace(Rhub, R, num_gen_sections)
         Cl_max = float(self.design_cl.text())
         B = float(self.B.text())
@@ -302,6 +351,8 @@ class WindTurbineProperties(QWidget):
         for r in range(num_gen_sections):
             array_out.append([round(radiuses[r], 4), round(chords[r], 4), round(thetas[r], 4), airfoil])
         self.table_properties.createTable(array_out)
+
+        self.calculate_pitch()
 
     def set_settings(self, dict_settings):
         """
@@ -348,6 +399,45 @@ class WindTurbineProperties(QWidget):
         if "mass_density" in dict_settings:
             t = str(dict_settings["mass_density"])
             self.mass_density.setText(t)
+        
+        if "num_gen_sections" in dict_settings:
+            t = str(dict_settings["num_gen_sections"])
+            self.num_gen_sections.setText(t)
+        if "design_tsr" in dict_settings:
+            t = str(dict_settings["design_tsr"])
+            self.design_tsr.setText(t)
+        if "design_aoa" in dict_settings:
+            t = str(dict_settings["design_aoa"])
+            self.design_aoa.setText(t)
+        if "design_cl" in dict_settings:
+            t = str(dict_settings["design_cl"])
+            self.design_cl.setText(t)
+        if "design_airfoil" in dict_settings:
+            t = str(dict_settings["design_airfoil"])
+            self.design_airfoil.setText(t)
+        
+        if "design_RPM" in dict_settings:
+            t = str(dict_settings["design_RPM"])
+            self.design_RPM.setText(t)
+        if "design_velocity" in dict_settings:
+            t = str(dict_settings["design_velocity"])
+            self.design_velocity.setText(t)
+        if "design_thrust" in dict_settings:
+            t = str(dict_settings["design_thrust"])
+            self.design_thrust.setText(t)
+        if "design_drag_lift_ratio" in dict_settings:
+            t = str(dict_settings["design_drag_lift_ratio"])
+            self.design_drag_lift_ratio.setText(t)
+        if "design_rho" in dict_settings:
+            t = str(dict_settings["design_rho"])
+            self.design_rho.setText(t)
+
+        if "design_method" in dict_settings:
+            t = dict_settings["design_method"]
+            self.design_method.setCurrentIndex(t)
+
+        self.calculate_pitch()
+        self.update_j()
 
     def export(self):
         """
