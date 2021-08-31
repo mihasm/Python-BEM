@@ -4,7 +4,7 @@ from numpy import radians, degrees
 
 from bending_inertia import generate_hollow_foil, calculate_bending_inertia_2
 from popravki import *
-from utils import Printer, generate_dat, sort_data, get_transition_foils, interp
+from utils import Printer, generate_dat, sort_data, get_transition_foils, interp, get_curves_functions
 from visualize import scale_and_normalize, rotate_array
 from scipy import interpolate
 import scipy.optimize as optimize
@@ -21,7 +21,6 @@ OUTPUT_VARIABLES_LIST = {
     "phi": {"type": "array", "name": "Relative wind angle", "symbol": r"$\phi$", "unit": "°"},
     "F": {"type": "array", "name": "Tip loss correction factor", "symbol": "F", "unit": ""},
     "lambda_r": {"type": "array", "name": "Local tip speed ratio", "symbol": r"$\lambda_r$", "unit": ""},
-    #"Ct": {"type": "array", "name": "Local thrust coefficient", "symbol": r"$C_{T_r}$", "unit": ""},
     "Ct_r": {"type": "array", "name": "Local thrust coefficient (def.)", "symbol": r"$C_{T_r}$", "unit": ""},
     "Vrel_norm": {"type": "array", "name": "Section velocity", "symbol": r"$V_rel$", "unit": "m/s"},
 
@@ -81,8 +80,8 @@ OUTPUT_VARIABLES_LIST = {
     "J": {"type": "float", "name": "Advance ratio", "symbol": "J", "unit": ""},
     "eff": {"type": "float", "name": "Propeller efficiency", "symbol": r"$\eta_p$", "unit": ""},
     "cq": {"type": "float", "name": "Torque coefficient", "symbol": r"$C_q$", "unit": ""},
-}
 
+}
 
 
 class Calculator:
@@ -92,80 +91,9 @@ class Calculator:
 
     def __init__(self, input_arguments):
         p = Printer(input_arguments["return_print"])
-
-        self.airfoils = input_arguments["airfoils"]  # Define airfoil data
-        self.airfoils_list = input_arguments["foils"]  # List of airfoils per section
-
-        for blade_name in self.airfoils:
-            generate_dat(
-                blade_name, self.airfoils[blade_name]["x"], self.airfoils[blade_name]["y"])
-
-            ncrit_selected = self.airfoils[blade_name]["ncrit_selected"]
-
-            data = self.airfoils[blade_name]["gathered_curves"]
-            data = data[np.in1d(data[:, 1], ncrit_selected)]
-            data = sort_data(data)
-
-            re = data[:, 0].flatten()
-            alpha = data[:, 2].flatten()
-            cl = data[:, 3].flatten()
-            cd = data[:, 4].flatten()
-
-            def interpolation_function_cl(re_in, alpha_in, re=re, alpha=alpha, cl=cl):
-                return interp(re_in, alpha_in, re, alpha, cl)
-
-            def interpolation_function_cd(re_in, alpha_in, re=re, alpha=alpha, cd=cd):
-                return interp(re_in, alpha_in, re, alpha, cd)
-
-            self.airfoils[blade_name]["interp_function_cl"] = interpolation_function_cl
-            self.airfoils[blade_name]["interp_function_cd"] = interpolation_function_cd
-            
-            re_stall_list,aoa_min_stall_list,aoa_max_stall_list = self.airfoils[blade_name]["stall_angles"]
-
-            if len(re_stall_list) == 1:
-                #only one curve
-                def interpolation_function_stall_min(re_in):
-                    return aoa_min_stall_list[0]
-                def interpolation_function_stall_max(re_in):
-                    return aoa_max_stall_list[0]
-            else:
-                interpolation_function_stall_min = interpolate.interp1d(
-                                                        re_stall_list,
-                                                        aoa_min_stall_list,
-                                                        fill_value=(aoa_min_stall_list[0],aoa_min_stall_list[-1]),
-                                                        bounds_error=False)
-                interpolation_function_stall_max = interpolate.interp1d(
-                                                        re_stall_list,
-                                                        aoa_max_stall_list,
-                                                        fill_value=(aoa_max_stall_list[0],aoa_max_stall_list[-1]),
-                                                        bounds_error=False)
-
-            self.airfoils[blade_name]["interpolation_function_stall_min"] = interpolation_function_stall_min
-            self.airfoils[blade_name]["interpolation_function_stall_max"] = interpolation_function_stall_max
-
-        self.transition_foils = get_transition_foils(self.airfoils_list)
-        self.transition_array = []  # True,False,False, etc.
-        self.max_thickness_array = []
-
-        for n in range(len(self.airfoils_list)):
-            _c = input_arguments["c"][n]
-            if self.airfoils_list[n] == 'transition':
-                _airfoil_prev = self.transition_foils[n][0]
-                _airfoil_next = self.transition_foils[n][1]
-                transition_coefficient = self.transition_foils[n][2]
-
-                max_thickness = self.airfoils[_airfoil_prev]["max_thickness"] * _c * transition_coefficient + \
-                                self.airfoils[_airfoil_next]["max_thickness"] * _c * (1 - transition_coefficient)
-
-                self.transition_array.append(True)
-            else:
-                _airfoil = self.airfoils_list[n]
-                _airfoil_prev, _airfoil_next, transition_coefficient = None, None, None
-
-                max_thickness = self.airfoils[_airfoil]["max_thickness"] * _c
-                self.transition_array.append(False)
-
-            self.max_thickness_array.append(max_thickness)
+        airfoils,airfoils_list,transition_foils,transition_array,max_thickness_array = get_curves_functions(input_arguments)
+        self.airfoils,self.airfoils_list,self.transition_foils,self.transition_array,self.max_thickness_array = airfoils,airfoils_list,transition_foils,transition_array,max_thickness_array
+        
 
     def printer(self, _locals, p):
         p.print("----Running induction calculation for following parameters----")
@@ -212,6 +140,7 @@ class Calculator:
                   rotational_augmentation_correction_method,
                   fix_reynolds, reynolds, yaw_angle, skewed_wake_correction, blade_design, blade_thickness,
                   mass_density, geometry_scale, use_minimization_solver,
+                  a_initial, aprime_initial,
                   print_progress=False, return_print=[], return_results=[], *args, **kwargs):
         """
         Calculates induction factors using standard iteration methods.
@@ -535,6 +464,7 @@ class Calculator:
                           lambda_r_array=[],
                           transition=False, _airfoil_prev=None, _airfoil_next=None, transition_coefficient=1.0,
                           num_sections=0, use_minimization_solver=False,
+                          a_initial=0.3, aprime_initial=0.01,
                           *args, **kwargs):
         """
         Function that calculates each section of the blade using the optimization function way seen in
@@ -551,9 +481,8 @@ class Calculator:
         sigma = _c * B / (2 * pi * _r)
 
         # initial guess
-        a = 1 / 3
-        aprime = 0.01
-        Ct_r = 4*a*(1-a)
+        a = a_initial
+        aprime = aprime_initial
 
         # iterations counter
         i = 0

@@ -11,7 +11,7 @@ from UI.helpers import MatplotlibWindow, PrintoutWindow
 from turbine_data import SET_INIT
 from utils import to_float, interpolate_geom, generate_chord_lengths_betz, generate_twists_betz, \
     generate_chord_lengths_schmitz, generate_twists_schmitz, create_folder, create_macro_text, \
-    generate_propeller_larabee
+    generate_propeller_larabee, generate_propeller_adkins
 from UI.Table import Table
 from visualize import create_3d_blade
 
@@ -177,7 +177,7 @@ class WindTurbineProperties(QWidget):
 
         _design_method = QLabel("Design method.")
         self.design_method = QComboBox()
-        self.design_method.addItems(["Betz", "Schmitz", "Larrabee (prop)"])
+        self.design_method.addItems(["Betz", "Schmitz", "Larrabee (prop)", "Adkins (prop)"])
         self.fbox.addRow(_design_method, self.design_method)
         self.design_method.setToolTip("Metoda dizajniranja.")
 
@@ -216,6 +216,12 @@ class WindTurbineProperties(QWidget):
         self.fbox.addRow(_button_create_geometry_graph, self.button_create_geometry_graph)
         self.button_create_geometry_graph.clicked.connect(self.create_geometry_graph)
         self.button_create_geometry_graph.setToolTip("Izris grafa R,C,θ.")
+
+        _button_create_pitch_graph = QLabel("Create pitch graph.")
+        self.button_create_pitch_graph = QPushButton("Create pitch graph.")
+        self.fbox.addRow(_button_create_pitch_graph, self.button_create_pitch_graph)
+        self.button_create_pitch_graph.clicked.connect(self.create_pitch_graph)
+        self.button_create_pitch_graph.setToolTip("Izris grafa koraka propelerja.")
 
         self.pitch_inches = QLabel("0")
         self.fbox.addRow("Pitch @ 0.75R [in.]", self.pitch_inches)
@@ -279,6 +285,9 @@ class WindTurbineProperties(QWidget):
                                                   out["geometry_scale"])
         out["r"], out["c"], out["theta"], out["foils"], out["dr"] = r, c, theta, foils, dr
         out["r_in"], out["c_in"], out["theta_in"], out["foils_in"] = _r, _c, _theta, _foils
+
+        out["propeller_pitch"] = 2*np.pi*np.array(out["r"])*np.tan(np.radians(out["theta"]))*39.3701
+
         return out
 
     def update_j(self):
@@ -319,6 +328,18 @@ class WindTurbineProperties(QWidget):
         self.gw.ax.tick_params(axis='y', labelcolor="tab:blue")
         self.gw.ax2.tick_params(axis='y', labelcolor="tab:red")
 
+    def create_pitch_graph(self):
+        out = self.get_settings()
+        self.gw_pitch = MatplotlibWindow()
+        self.gw_pitch.setWindowTitle("Pitch graph")
+
+        self.gw_pitch.ax = self.gw_pitch.figure.add_subplot(111)
+        self.gw_pitch.ax.set_title("p(r)")
+        #print(out["propeller_pitch"])
+        self.gw_pitch.ax.plot(np.array(out["r"])/out["R"], out["propeller_pitch"])
+        self.gw_pitch.ax.set_xlabel("r/R")
+        self.gw_pitch.ax.set_ylabel("Pitch p [in]")
+
     def generate_geometry(self):
         array_out = []
         R = float(self.R.text())
@@ -347,6 +368,10 @@ class WindTurbineProperties(QWidget):
 
         elif method == 2:
             chords, thetas = generate_propeller_larabee(radiuses=radiuses, R=R, B=B, RPM=RPM, drag_lift_ratio=drag_lift_ratio, v=v, T=T, rho=rho, cl=Cl_max)
+
+        elif method == 3:
+            input_data = self.main.get_all_settings()
+            chords, thetas = generate_propeller_adkins(radiuses=radiuses, R=R, B=B, RPM=RPM, drag_lift_ratio=drag_lift_ratio, v=v, T=T, rho=rho, cl=Cl_max, airfoil=airfoil, input_arguments=input_data)
 
         for r in range(num_gen_sections):
             array_out.append([round(radiuses[r], 4), round(chords[r], 4), round(thetas[r], 4), airfoil])

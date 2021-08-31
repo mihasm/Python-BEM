@@ -4,6 +4,7 @@ from PyQt5.QtWidgets import QWidget, QGridLayout, QFormLayout, QScrollArea, QVBo
 from matplotlib import pyplot as plt, cm
 from matplotlib.backends.backend_qt5 import NavigationToolbar2QT as NavigationToolbar
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+from matplotlib import pyplot as plt
 
 from UI.helpers import XFoilThread, ScrapeThread, MatplotlibWindow, PrintoutWindow
 from UI.CurveViewer import CurveViewer
@@ -361,6 +362,7 @@ class Airfoils(QWidget):
     def calculate_centroid(self):
         foil_x, foil_y = self.get_x_y()
         x, y = get_centroid_coordinates(foil_x, foil_y)
+        #print("x:",x,"y:",y)
         self.centroid_x_edit.setText(str(round(x, 6)))
         self.centroid_y_edit.setText(str(round(y, 6)))
         return x, y

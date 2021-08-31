@@ -6,6 +6,7 @@ import traceback
 
 import numpy
 import numpy as np
+import scipy
 from PyQt5 import QtGui
 from PyQt5.QtGui import QPalette, QColor
 from PyQt5.QtWidgets import (QMessageBox)
@@ -381,16 +382,29 @@ def create_folder(name_path):
         os.makedirs(name_path)
 
 
-def get_centroid_coordinates(foil_x, foil_y):
+def get_centroid_coordinates(x, y):
+    """
+    Calculates area of a polygon.
+    :param x:
+    :param y:
+    :return: 
     """
 
-    :param foil_x:
-    :param foil_y:
-    :return:
-    """
-    centroid = (np.sum(foil_x) / len(foil_x),
-                np.sum(foil_y) / len(foil_y))
-    return centroid
+    A = 0
+    for i in range(0,len(x)-1):
+        A = A+(x[i]*y[i+1]-x[i+1]*y[i])
+    A = A*1/2
+
+    Cx = 0
+    Cy = 0
+
+    for i in range(0,len(x)-1):
+        Cx=Cx+(x[i]+x[i+1])*(x[i]*y[i+1]-x[i+1]*y[i])
+        Cy=Cy+(y[i]+y[i+1])*(x[i]*y[i+1]-x[i+1]*y[i])
+
+    Cx=Cx*1/(6*A)
+    Cy=Cy*1/(6*A)
+    return (Cx,Cy)
 
 
 class MyMessageBox(QMessageBox):
@@ -661,6 +675,84 @@ def greek_letters_to_string(string):
     return string
 
 
+def get_curves_functions(input_arguments):
+    airfoils = input_arguments["airfoils"]  # Define airfoil data
+    airfoils_list = input_arguments["foils"]  # List of airfoils per section
+
+    for blade_name in airfoils:
+        generate_dat(
+            blade_name, airfoils[blade_name]["x"], airfoils[blade_name]["y"])
+
+        ncrit_selected = airfoils[blade_name]["ncrit_selected"]
+
+        data = airfoils[blade_name]["gathered_curves"]
+        data = data[np.in1d(data[:, 1], ncrit_selected)]
+        data = sort_data(data)
+
+        re = data[:, 0].flatten()
+        alpha = data[:, 2].flatten()
+        cl = data[:, 3].flatten()
+        cd = data[:, 4].flatten()
+
+        def interpolation_function_cl(re_in, alpha_in, re=re, alpha=alpha, cl=cl):
+            return interp(re_in, alpha_in, re, alpha, cl)
+
+        def interpolation_function_cd(re_in, alpha_in, re=re, alpha=alpha, cd=cd):
+            return interp(re_in, alpha_in, re, alpha, cd)
+
+        airfoils[blade_name]["interp_function_cl"] = interpolation_function_cl
+        airfoils[blade_name]["interp_function_cd"] = interpolation_function_cd
+        
+        re_stall_list,aoa_min_stall_list,aoa_max_stall_list = airfoils[blade_name]["stall_angles"]
+
+        if len(re_stall_list) == 1:
+            #only one curve
+            def interpolation_function_stall_min(re_in):
+                return aoa_min_stall_list[0]
+            def interpolation_function_stall_max(re_in):
+                return aoa_max_stall_list[0]
+        else:
+            interpolation_function_stall_min = interpolate.interp1d(
+                                                    re_stall_list,
+                                                    aoa_min_stall_list,
+                                                    fill_value=(aoa_min_stall_list[0],aoa_min_stall_list[-1]),
+                                                    bounds_error=False)
+            interpolation_function_stall_max = interpolate.interp1d(
+                                                    re_stall_list,
+                                                    aoa_max_stall_list,
+                                                    fill_value=(aoa_max_stall_list[0],aoa_max_stall_list[-1]),
+                                                    bounds_error=False)
+
+        airfoils[blade_name]["interpolation_function_stall_min"] = interpolation_function_stall_min
+        airfoils[blade_name]["interpolation_function_stall_max"] = interpolation_function_stall_max
+
+    transition_foils = get_transition_foils(airfoils_list)
+    transition_array = []  # True,False,False, etc.
+    max_thickness_array = []
+
+    for n in range(len(airfoils_list)):
+        _c = input_arguments["c"][n]
+        if airfoils_list[n] == 'transition':
+            _airfoil_prev = transition_foils[n][0]
+            _airfoil_next = transition_foils[n][1]
+            transition_coefficient = transition_foils[n][2]
+
+            max_thickness = airfoils[_airfoil_prev]["max_thickness"] * _c * transition_coefficient + \
+                            airfoils[_airfoil_next]["max_thickness"] * _c * (1 - transition_coefficient)
+
+            transition_array.append(True)
+        else:
+            _airfoil = airfoils_list[n]
+            _airfoil_prev, _airfoil_next, transition_coefficient = None, None, None
+
+            max_thickness = airfoils[_airfoil]["max_thickness"] * _c
+            transition_array.append(False)
+
+        max_thickness_array.append(max_thickness)
+
+    return airfoils,airfoils_list,transition_foils,transition_array,max_thickness_array
+
+
 ### CHORD TWIST GENERATORS ###
 
 def generate_chord_lengths_betz(radiuses, R, Cl_max, B, TSR):
@@ -698,32 +790,104 @@ def generate_propeller_larabee(radiuses, R, B, RPM, drag_lift_ratio, v, T, rho, 
     """
     Source: Larabee, 1979
     """
-    try:
+    radiuses = np.array(radiuses)
+    xi = radiuses/R
+    omega = RPM*2*np.pi/60
+    x = omega*radiuses/v
+    TSR = v/omega/R
+    f = B/2*(np.sqrt(TSR**2+1)/TSR)*(1-radiuses/R)
+    F = 2/np.pi*np.arccos(np.exp(-f))
+    G = F*x**2/(1+x**2)
+    _xi = np.insert(xi, 0, 0, axis=0)
+    dxi = np.diff(_xi)
+    y = G*(1-drag_lift_ratio/x)*xi
+    y2 = G*(1-drag_lift_ratio/x)*xi/(x**2+1)
+    I1 = 4*np.trapz(y,x=xi)
+    I2 = 2*np.trapz(y2,x=xi)
+    thrust_coeff = 2*T/(rho*v**2*np.pi*R**2)
+    zeta = I1/(2*I2)*(1-np.sqrt(1-(4*I2*thrust_coeff)/I1**2))
+    vprime = zeta*v
+    c_R = 4*np.pi/B*TSR*G/(np.sqrt(1+x**2))*zeta/cl
+    c = c_R*R
+    theta = np.arctan(TSR/xi*(1+0.5*zeta))
+    theta = np.rad2deg(theta)
+    return c,theta
+
+alpha_last = None
+
+def generate_propeller_adkins(radiuses, R, B, RPM, drag_lift_ratio, v, T, rho, cl, airfoil, input_arguments):
+    global alpha_last
+    """https://arc.aiaa.org/doi/pdf/10.2514/3.23779"""
+    airfoils,airfoils_list,transition_foils,transition_array,max_thickness_array = get_curves_functions(input_arguments)
+    zeta=0.0 #initial guess
+    for count in range(10):
+        print("count",count)
+        kin_viscosity = 1.4207E-5
         radiuses = np.array(radiuses)
         xi = radiuses/R
         omega = RPM*2*np.pi/60
         x = omega*radiuses/v
         TSR = v/omega/R
-        f = B/2*(np.sqrt(TSR**2+1)/TSR)*(1-radiuses/R)
+        phi_t=np.arctan(TSR*(1+zeta/2))
+        phi = np.tan(phi_t)/xi
+        f = B/2*(1-xi)/np.sin(phi_t)
         F = 2/np.pi*np.arccos(np.exp(-f))
         G = F*x**2/(1+x**2)
-        _xi = np.insert(xi, 0, 0, axis=0)
-        dxi = np.diff(_xi)
-        y = G*(1-drag_lift_ratio/x)*xi
-        y2 = G*(1-drag_lift_ratio/x)*xi/(x**2+1)
-        I1 = 4*np.trapz(y,x=xi)
-        I2 = 2*np.trapz(y2,x=xi)
-        thrust_coeff = 2*T/(rho*v**2*np.pi*R**2)
-        zeta = I1/(2*I2)*(1-np.sqrt(1-(4*I2*thrust_coeff)/I1**2))
-        vprime = zeta*v
-        c_R = 4*np.pi/B*TSR*G/(np.sqrt(1+x**2))*zeta/cl
-        c = c_R*R
-        theta = np.arctan(TSR/xi*(1+0.5*zeta))
-        theta = np.rad2deg(theta)
-        return c,theta
-    except Exception as e:
-        raise
-   
+        Wc=4*np.pi*TSR*G*v*R*zeta/(cl*B)
+        print("Wc",Wc)
+        Re=Wc/kin_viscosity
+        eps=[]
+        alpha=[]
+        
+        for i in range(len(Wc)):
+            print("section",i)
+            def eps_minimize_function(cl):
+                global alpha_last
+                def angle_finding_function(alpha):
+                    return abs(airfoils[airfoil]["interp_function_cl"](Re[i],alpha) - cl) #so zero finding fins value of cl
+                _alpha = scipy.optimize.minimize(angle_finding_function,8,bounds=[(-10,15)],method="powell").x[0]
+                alpha_last = _alpha
+                cl = airfoils[airfoil]["interp_function_cl"](Re[i],_alpha)
+                cd = airfoils[airfoil]["interp_function_cd"](Re[i],_alpha)
+                _eps = cd/cl
+                return _eps
+            min_eps = scipy.optimize.minimize(eps_minimize_function,1.0,bounds=[(0.000001,5.0)],method="powell").fun
+            eps.append(min_eps)
+            alpha.append(alpha_last) #use last value?
+
+        print("alpha",alpha)
+
+        eps = np.array(eps)
+        print("eps",eps)
+        a=(zeta/2)*np.cos(phi)**2*(1-eps*np.tan(phi))
+        aprime=(zeta/2*x)*np.cos(phi)*np.sin(phi)*(1+eps/np.tan(phi))
+        W = v*(1+a)/np.sin(phi)
+        print("W",W)
+        c = Wc/W
+        beta = np.deg2rad(alpha)+phi
+        I1p=4*xi*G*(1-eps*np.tan(phi))
+        I2p=TSR*(I1p/(2*xi))*(1+eps/np.tan(phi))*np.sin(phi)*np.cos(phi)
+        J1p=4*xi*G*(1+eps/np.tan(phi))
+        J2p=(J1p/2)*(1-eps*np.tan(phi))*np.cos(phi)**2
+        I1 =np.trapz(I1p,x=xi)
+        I2 =np.trapz(I2p,x=xi)
+        J1 =np.trapz(J1p,x=xi)
+        J2 =np.trapz(J2p,x=xi)
+        print("I1",I1,"I2",I2,"J1",J1,"J2",J2)
+        #P_c=J1*zeta+J2*zeta**2
+        #T_c=I1*zeta-I2*zeta**2
+        T_c=2*T/(rho*v**2*np.pi*R**2)
+        zeta_new = (I1/(2*I2))-((I1/(2*I2))**2-T_c/I2)**0.5
+        #zeta_new_2 = -(J1/(2*J2))+((J1/(2*J2))**2+P_c/J2)**0.5
+        print("zeta_new",zeta_new)
+        if abs(zeta-zeta_new)<1e-3:
+            print("converged")
+            return c,np.rad2deg(beta)
+        else:
+            print("not converged")
+            zeta = zeta_new
+    print("Not converged")
+    return None
 
 ### INTERPOLATION ###
 

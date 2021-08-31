@@ -418,9 +418,6 @@ def fInductionCoefficients14(a_last, phi, sigma, Cl, Cd, F, C_norm, C_tang, *arg
     """
     NAME: Propeller
     Method from http://acoustics.ae.illinois.edu/pdfs/AIAA-Paper-2015-3296.pdf
-
-    Modified advanced brake state model
-
     :param Cd: Drag coefficient
     :param C_norm: normal coefficient
     :param a_last: axial induction factor

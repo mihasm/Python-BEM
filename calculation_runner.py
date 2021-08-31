@@ -171,7 +171,10 @@ def process_time(time_start,i,total_iterations):
 
 def print_progress_message(v,rpm,inp_args,p,prepend,print_progress):
     if print_progress:
-        _lambda = rpm / 60 * 2 * pi * inp_args["R"] * inp_args["geometry_scale"] / v
+        if v>0:
+            _lambda = rpm / 60 * 2 * pi * inp_args["R"] * inp_args["geometry_scale"] / v
+        else:
+            _lambda = 0.0
         _advance_ratio = v / (rpm / 60 * 2 * inp_args["R"] * inp_args["geometry_scale"])
         #pitch = inp_args["pitch"]
         p.print(prepend + "v=%.1f m/s, n=%.0f RPM, λ=%.2f, J=%.2f" % (v,rpm,_lambda,_advance_ratio))

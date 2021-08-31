@@ -55,6 +55,8 @@ class Analysis(QWidget):
                          "pitch_max": 15,
                          "pitch_num": 10,
                          "relaxation_factor": 0.3,
+                         "a_initial": 0.3,
+                         "aprime_initial": 0.01,
                          "print_all": False,
                          "print_out": False,
                          "reynolds": 50000,
@@ -88,6 +90,8 @@ class Analysis(QWidget):
                                  "pitch_max": "Max pitch",
                                  "pitch_num": "Num pitch",
                                  "relaxation_factor": "Relaxation factor",
+                                 "a_initial":"Initial a",
+                                 "aprime_initial":"Initial a'",
                                  "print_all": "Print every iteration [debug]",
                                  "rotational_augmentation_correction": "Rot. augmentation cor.",
                                  "rotational_augmentation_correction_method": "Rot. augmentation cor. method",
@@ -137,7 +141,9 @@ class Analysis(QWidget):
             "mach_number_correction": "Popravek Mach števila (uporabno pri propelerjih)",
             "yaw_angle": "Kot vetra glede na smer osi rotorja [°]. Če je turbina obrnjena proti vetru, je 0°.",
             "skewed_wake_correction": "Popravek nagnjenega zračnega toka za turbino (Skewed wake)",
-            "use_minimization_solver": "Uporaba minimizacijskega algoritma za iskanje indukcijskih faktorjev"}
+            "use_minimization_solver": "Uporaba minimizacijskega algoritma za iskanje indukcijskih faktorjev",
+            "a_initial":"Začetna vrednost aksialnega indukcijskega faktorja. Vpliva na konvergenco (propeler)!",
+            "aprime_initial":"Začetna vrednost tangencialnega indukcijskega faktorja. Vpliva na konvergenco."}
 
         self.list_settings_for_updating_tsr = ["v_min", "v_max", "v_num", "rpm_min", "rpm_max", "rpm_num"]
 
