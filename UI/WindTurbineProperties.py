@@ -7,7 +7,7 @@ from numpy.core._multiarray_umath import array
 from scipy import interpolate
 
 from main import application_path
-from UI.helpers import MatplotlibWindow, PrintoutWindow
+from UI.helpers import MatplotlibWindow, PrintoutWindow, AdkinsThread
 from turbine_data import SET_INIT
 from utils import to_float, interpolate_geom, generate_chord_lengths_betz, generate_twists_betz, \
     generate_chord_lengths_schmitz, generate_twists_schmitz, create_folder, create_macro_text, \
@@ -160,6 +160,7 @@ class WindTurbineProperties(QWidget):
         _design_thrust = QLabel("Thrust (prop) [N]")
         self.design_thrust = QLineEdit()
         self.design_thrust.setText("50")
+        self.design_thrust.textChanged.connect(self.update_j)
         self.fbox.addRow(_design_thrust, self.design_thrust)
         self.design_thrust.setToolTip("Potisk")
 
@@ -167,13 +168,25 @@ class WindTurbineProperties(QWidget):
         self.design_drag_lift_ratio = QLineEdit()
         self.design_drag_lift_ratio.setText("0.02")
         self.fbox.addRow(_design_drag_lift_ratio, self.design_drag_lift_ratio)
-        self.design_drag_lift_ratio.setToolTip("Razmerje Drag/Lift")
+        self.design_drag_lift_ratio.setToolTip("Razmerje Drag/Lift (samo pri Larrabee)")
 
         _design_rho = QLabel("Air density [kg/m3]")
         self.design_rho = QLineEdit()
         self.design_rho.setText("1.225")
         self.fbox.addRow(_design_rho, self.design_rho)
         self.design_rho.setToolTip("Gostota zraka")
+
+        _design_iters = QLabel("Num. Iterations")
+        self.design_iters = QLineEdit()
+        self.design_iters.setText("15")
+        self.fbox.addRow(_design_iters, self.design_iters)
+        self.design_iters.setToolTip("St. iteracij (Adkins)")
+
+        _design_relaxation = QLabel("Relax. factor (Adkins)")
+        self.design_relaxation = QLineEdit()
+        self.design_relaxation.setText("0.3")
+        self.fbox.addRow(_design_relaxation, self.design_relaxation)
+        self.design_relaxation.setToolTip("Relaksacijski faktor (Adkins)")
 
         _design_method = QLabel("Design method.")
         self.design_method = QComboBox()
@@ -229,7 +242,11 @@ class WindTurbineProperties(QWidget):
         self.J_string = QLabel("0")
         self.fbox.addRow("J (prop design):", self.J_string)
 
+        self.c_T_string = QLabel("0")
+        self.fbox.addRow("c_T@J (prop design):", self.c_T_string)
+
         self.window = None
+        self.thread = None
 
     def get_settings(self):
         """
@@ -260,6 +277,8 @@ class WindTurbineProperties(QWidget):
                "design_tsr":to_float(self.design_tsr.text()),
                "design_aoa":to_float(self.design_aoa.text()),
                "design_cl":to_float(self.design_cl.text()),
+               "design_iters":to_float(self.design_iters.text()),
+               "design_relaxation":to_float(self.design_relaxation.text()),
                "design_airfoil":self.design_airfoil.text(),
                "design_method":to_float(self.design_method.currentIndex())}
         
@@ -294,8 +313,10 @@ class WindTurbineProperties(QWidget):
         try:
             J = float(self.design_velocity.text()) / (float(self.design_RPM.text()) / 60 * 2 * float(self.R.text()))
             self.J_string.setText("%.2f" % (J))
+            c_T=float(self.design_thrust.text())/(float(self.design_rho.text())*(float(self.design_RPM.text())/60)**2*(float(self.R.text())*2)**4)
+            self.c_T_string.setText("%.2f" % (c_T))
         except:
-            print("couldnt update J")
+            print("couldnt update J/cT")
 
     def calculate_pitch(self):
         out = self.get_settings()
@@ -340,6 +361,21 @@ class WindTurbineProperties(QWidget):
         self.gw_pitch.ax.set_xlabel("r/R")
         self.gw_pitch.ax.set_ylabel("Pitch p [in]")
 
+    def adkins_completion(self):
+        array_out = []
+        chords,thetas = self.adkins_return
+        R = float(self.R.text())
+        Rhub = float(self.Rhub.text())
+        num_gen_sections = int(float(self.num_gen_sections.text()))
+        radiuses = np.linspace(Rhub, R, num_gen_sections)
+        airfoil = self.design_airfoil.text()
+        for r in range(num_gen_sections):
+            array_out.append([round(radiuses[r], 4), round(chords[r], 4), round(thetas[r], 4), airfoil])
+
+        self.table_properties.createTable(array_out)
+
+        self.calculate_pitch()
+
     def generate_geometry(self):
         array_out = []
         R = float(self.R.text())
@@ -371,10 +407,22 @@ class WindTurbineProperties(QWidget):
 
         elif method == 3:
             input_data = self.main.get_all_settings()
-            chords, thetas = generate_propeller_adkins(radiuses=radiuses, R=R, B=B, RPM=RPM, drag_lift_ratio=drag_lift_ratio, v=v, T=T, rho=rho, cl=Cl_max, airfoil=airfoil, input_arguments=input_data)
+            if self.window != None:
+                self.window.close()
+            self.window = PrintoutWindow(self)
+            if self.thread != None:
+                if self.thread.isRunning():
+                    self.thread.terminate()
+            self.thread = AdkinsThread(self)
+            self.thread.set_params(input_data)
+            self.thread.completeSignal.connect(self.adkins_completion)
+            self.thread.start()
+            print("Done")
+            return
 
         for r in range(num_gen_sections):
             array_out.append([round(radiuses[r], 4), round(chords[r], 4), round(thetas[r], 4), airfoil])
+
         self.table_properties.createTable(array_out)
 
         self.calculate_pitch()
@@ -440,7 +488,6 @@ class WindTurbineProperties(QWidget):
         if "design_airfoil" in dict_settings:
             t = str(dict_settings["design_airfoil"])
             self.design_airfoil.setText(t)
-        
         if "design_RPM" in dict_settings:
             t = str(dict_settings["design_RPM"])
             self.design_RPM.setText(t)
@@ -456,6 +503,12 @@ class WindTurbineProperties(QWidget):
         if "design_rho" in dict_settings:
             t = str(dict_settings["design_rho"])
             self.design_rho.setText(t)
+        if "design_iters" in dict_settings:
+            t = str(dict_settings["design_iters"])
+            self.design_iters.setText(t)
+        if "design_relaxation" in dict_settings:
+            t = str(dict_settings["design_relaxation"])
+            self.design_relaxation.setText(t)
 
         if "design_method" in dict_settings:
             t = dict_settings["design_method"]

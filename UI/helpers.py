@@ -11,6 +11,8 @@ from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from scraping import scrape_data, get_x_y_from_link
 from xfoil import generate_polars_data
 
+from utils import generate_propeller_adkins
+
 
 class ThreadGetter(QThread):
     def __init__(self, parent):
@@ -70,6 +72,22 @@ class XFoilThread(QThread):
     def run(self):
         out = generate_polars_data(self.dat_path)
         self.parent.xfoil_generated_data = out
+        self.completeSignal.emit("Done")
+
+class AdkinsThread(QThread):
+    progressSignal = QtCore.Signal(int)
+    completeSignal = QtCore.Signal(str)
+
+    def __init__(self, parent, *args, **kwargs):
+        QThread.__init__(self, parent)
+        self.parent = parent
+
+    def set_params(self, inp):
+        self.inp = inp
+
+    def run(self):
+        out = generate_propeller_adkins(self.inp)
+        self.parent.adkins_return = out
         self.completeSignal.emit("Done")
 
 

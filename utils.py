@@ -815,18 +815,36 @@ def generate_propeller_larabee(radiuses, R, B, RPM, drag_lift_ratio, v, T, rho, 
 
 alpha_last = None
 
-def generate_propeller_adkins(radiuses, R, B, RPM, drag_lift_ratio, v, T, rho, cl, airfoil, input_arguments):
+def generate_propeller_adkins(inp):
+    #radiuses, R, B, RPM, v, T, rho, cl, airfoil, 
+    """METHOD FROM ADKINS: https://arc.aiaa.org/doi/pdf/10.2514/3.23779"""
+    Rhub = inp["Rhub"]
+    R = inp["R"]
+    num_gen_sections = inp["num_gen_sections"]
+    r = np.linspace(Rhub, R, int(num_gen_sections))
+    B = inp["B"]
+    RPM = inp["design_RPM"]
+    v = inp["design_velocity"]
+    T = inp["design_thrust"]
+    rho = inp["design_rho"]
+    cl = inp["design_cl"]
+    airfoil = inp["design_airfoil"]
+    relaxation_factor = inp["design_relaxation"]
+    iters = int(inp["design_iters"])
+
     global alpha_last
-    """https://arc.aiaa.org/doi/pdf/10.2514/3.23779"""
-    airfoils,airfoils_list,transition_foils,transition_array,max_thickness_array = get_curves_functions(input_arguments)
+    
+    airfoils,airfoils_list,transition_foils,transition_array,max_thickness_array = get_curves_functions(inp)
+
     zeta=0.0 #initial guess
-    for count in range(10):
+
+    for count in range(iters):
         print("count",count)
         kin_viscosity = 1.4207E-5
-        radiuses = np.array(radiuses)
-        xi = radiuses/R
+        r = np.array(r)
+        xi = r/R
         omega = RPM*2*np.pi/60
-        x = omega*radiuses/v
+        x = omega*r/v
         TSR = v/omega/R
         phi_t=np.arctan(TSR*(1+zeta/2))
         phi = np.tan(phi_t)/xi
@@ -845,13 +863,13 @@ def generate_propeller_adkins(radiuses, R, B, RPM, drag_lift_ratio, v, T, rho, c
                 global alpha_last
                 def angle_finding_function(alpha):
                     return abs(airfoils[airfoil]["interp_function_cl"](Re[i],alpha) - cl) #so zero finding fins value of cl
-                _alpha = scipy.optimize.minimize(angle_finding_function,8,bounds=[(-10,15)],method="powell").x[0]
+                _alpha = scipy.optimize.minimize(angle_finding_function,8,bounds=[(-10,15)],method="powell",options={'ftol': 0.001,"xtol":0.01,'maxiter':50}).x[0]
                 alpha_last = _alpha
                 cl = airfoils[airfoil]["interp_function_cl"](Re[i],_alpha)
                 cd = airfoils[airfoil]["interp_function_cd"](Re[i],_alpha)
                 _eps = cd/cl
                 return _eps
-            min_eps = scipy.optimize.minimize(eps_minimize_function,1.0,bounds=[(0.000001,5.0)],method="powell").fun
+            min_eps = scipy.optimize.minimize(eps_minimize_function,1.0,bounds=[(0.000001,5.0)],method="powell",options={'ftol': 0.001,"xtol":0.01,'maxiter':50}).fun
             eps.append(min_eps)
             alpha.append(alpha_last) #use last value?
 
@@ -874,18 +892,16 @@ def generate_propeller_adkins(radiuses, R, B, RPM, drag_lift_ratio, v, T, rho, c
         J1 =np.trapz(J1p,x=xi)
         J2 =np.trapz(J2p,x=xi)
         print("I1",I1,"I2",I2,"J1",J1,"J2",J2)
-        #P_c=J1*zeta+J2*zeta**2
-        #T_c=I1*zeta-I2*zeta**2
         T_c=2*T/(rho*v**2*np.pi*R**2)
         zeta_new = (I1/(2*I2))-((I1/(2*I2))**2-T_c/I2)**0.5
         #zeta_new_2 = -(J1/(2*J2))+((J1/(2*J2))**2+P_c/J2)**0.5
         print("zeta_new",zeta_new)
-        if abs(zeta-zeta_new)<1e-3:
+        if abs(abs(zeta-zeta_new)*zeta_new)<1e-2: # one percent error
             print("converged")
             return c,np.rad2deg(beta)
         else:
             print("not converged")
-            zeta = zeta_new
+            zeta = (1-relaxation_factor)*zeta + relaxation_factor*zeta_new #relaxation
     print("Not converged")
     return None
 
