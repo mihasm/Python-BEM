@@ -188,6 +188,12 @@ class WindTurbineProperties(QWidget):
         self.fbox.addRow(_design_relaxation, self.design_relaxation)
         self.design_relaxation.setToolTip("Relaksacijski faktor (Adkins)")
 
+        _convergence_criterion_adkins = QLabel("Convergence crit.")
+        self.convergence_criterion_adkins = QLineEdit()
+        self.convergence_criterion_adkins.setText("0.05")
+        self.fbox.addRow(_convergence_criterion_adkins, self.convergence_criterion_adkins)
+        self.convergence_criterion_adkins.setToolTip("Konvergenčni kriterij")
+
         _design_method = QLabel("Design method.")
         self.design_method = QComboBox()
         self.design_method.addItems(["Betz", "Schmitz", "Larrabee (prop)", "Adkins (prop)"])
@@ -240,7 +246,7 @@ class WindTurbineProperties(QWidget):
         self.fbox.addRow("Pitch @ 0.75R [in.]", self.pitch_inches)
 
         self.J_string = QLabel("0")
-        self.fbox.addRow("J (prop design):", self.J_string)
+        self.fbox.addRow("J (prop sign):", self.J_string)
 
         self.c_T_string = QLabel("0")
         self.fbox.addRow("c_T@J (prop design):", self.c_T_string)
@@ -280,7 +286,8 @@ class WindTurbineProperties(QWidget):
                "design_iters":to_float(self.design_iters.text()),
                "design_relaxation":to_float(self.design_relaxation.text()),
                "design_airfoil":self.design_airfoil.text(),
-               "design_method":to_float(self.design_method.currentIndex())}
+               "design_method":to_float(self.design_method.currentIndex()),
+               "convergence_criterion_adkins":to_float(self.convergence_criterion_adkins.text())}
         
         geom_array = self.table_properties.get_values()
         r, c, theta, foils = [], [], [], []
@@ -509,7 +516,9 @@ class WindTurbineProperties(QWidget):
         if "design_relaxation" in dict_settings:
             t = str(dict_settings["design_relaxation"])
             self.design_relaxation.setText(t)
-
+        if "convergence_criterion_adkins" in dict_settings:
+            t = str(dict_settings["convergence_criterion_adkins"])
+            self.convergence_criterion_adkins.setText(t)
         if "design_method" in dict_settings:
             t = dict_settings["design_method"]
             self.design_method.setCurrentIndex(t)

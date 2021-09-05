@@ -5,6 +5,8 @@ import sys
 from math import isinf
 from subprocess import Popen, PIPE
 from threading import Timer
+import threading
+import time
 
 import matplotlib.cm as cm
 import numpy as np
@@ -18,7 +20,7 @@ if sys.platform.startswith("darwin"):
     xfoil_path = os.path.join("xfoil_executables", "xfoil")
 
 
-def xfoil_runner(airfoil, reynolds, alpha, printer=None, print_all=False):
+def xfoil_runner(airfoil, reynolds, alpha, ncrit, printer=None, print_all=False):
     """
 
     :param airfoil:
@@ -34,10 +36,12 @@ def xfoil_runner(airfoil, reynolds, alpha, printer=None, print_all=False):
         if printer != None:
             printer.print("        xfoil runner, alpha=",
                           alpha, "re=", reynolds)
-    out = run_xfoil_analysis(airfoil, reynolds, alpha)
+    out = run_xfoil_analysis(airfoil, reynolds, alpha, ncrit)
     # if out == False:
     #    return xfoil_runner(airfoil, reynolds * 0.5, radians(alpha), printer, print_all=print_all)
     return out
+
+
 
 
 def get_coefficients_from_output(output_str):
@@ -47,32 +51,33 @@ def get_coefficients_from_output(output_str):
     :return:
     """
     lines = output_str.splitlines()
-    last_lines = "\n".join(lines[-5:])
-    if "VISCAL:  Convergence failed" in output_str:
-        return False
-    if "TRCHEK2: N2 convergence failed." in last_lines:
-        return False
-    _, __, a, CL, Cm, CD, CDf, CDp = [None] * 8
-    for l in lines:
-        a = regex.match('(.+)a =(.+)CL =(.+)', l)
-        _, a, CL = a.groups() if a != None else [_, a, CL]
-        b = regex.match('(.+)Cm =(.+)CD =(.+)=>.+CDf =(.+)CDp =(.+)', l)
-        __, Cm, CD, CDf, CDp = b.groups() if b != None else [
-            __, Cm, CD, CDf, CDp]
-    # Weird cases
-    if CL == None or CD == None:
-        return False
-    if "*" in CL or "*" in CD:
-        return False
-    if isinf(float(CL)) or isinf(float(CD)):
-        return False
+    a, CL, Cm, CD, CDf, CDp = [None] * 6
+    cL_last = None
+    cD_last = None
 
-    out = {"CL": float(CL), "CD": float(CD), "Cm": float(
-        Cm), "CDf": float(CDf), "CDp": float(CDp), "out": output_str}
+    for l in lines:
+        #print(l)
+        cL_find = regex.match(r".+CL =([- \d][- \d][ \d]\.\d\d\d\d)",l)
+        cD_find = regex.match(r".+CD =([- \d][- \d][ \d]\.\d\d\d\d)",l)
+        if cL_find:
+            cL = float(cL_find.groups()[0])
+            if not isinf(cL):
+                cL_last = cL
+        if cD_find:
+            cD = float(cD_find.groups()[0])
+            if not isinf(cD):
+                cD_last = cD
+        if "VISCAL:  Convergence failed" in l:
+            return False
+
+    # Weird cases
+    out = {"CL" : cL_last,
+           "CD" : cD_last,
+           "out": output_str}
     return out
 
 
-def run_xfoil_analysis(airfoil, reynolds, alpha, iterations=70, max_next_angle=2., print_output=False):
+def run_xfoil_analysis(airfoil, reynolds, alpha, ncrit, iterations=100, max_next_angle=2., print_output=False):
     """
 
     :param airfoil:
@@ -86,15 +91,25 @@ def run_xfoil_analysis(airfoil, reynolds, alpha, iterations=70, max_next_angle=2
     # print("running xfoil for %s,Re=%s,alpha=%s" % (airfoil,reynolds,alpha))
     # alpha in degrees
 
-    with Popen(os.path.abspath(xfoil_path), stdin=PIPE, stdout=PIPE, universal_newlines=True, shell = True) as process:
-
+    with Popen(os.path.abspath(xfoil_path), stdin=PIPE, stdout=PIPE, universal_newlines=True, shell = False) as process:
 
         def call(_str, proc=process):
             # print(_str,file=process.stdin)
             proc.stdin.write(_str + "\n")
 
+        def kill():
+            time.sleep(2)
+            process.kill()
+
+
+        thread = threading.Thread(target=kill)
+        thread.start()
+
+        # disables graphical preview
         call("plop")
         call("G F")
+
+        # go back
         call("")
 
         if "naca" in airfoil.lower():
@@ -104,35 +119,47 @@ def run_xfoil_analysis(airfoil, reynolds, alpha, iterations=70, max_next_angle=2
         else:
             # open .dat file
             call("load %s" % os.path.join("foils", airfoil))
+        
+        # create back-design from dat file
         call("mdes")
         call("filt")
         call("exec")
         call("")
+
+        # calculation mode
         call("pane")
         call("oper")
+
+        # input reynolds
         call("re")
-        # rint("settings reynolds")
         call("%s" % reynolds)
+
+        # viscid mode
         call("v")
+
+        # set ncrit
+        call("vpar")
+        call("n")
+        call("%s" % ncrit)
+        call("")
+
+        # num iterations
         call("iteration")
         call("%s" % iterations)
 
+        # alfa
         call("alfa")
         call("%s" % alpha)
-    
+
+        # quit
+        call("")
         call("")
         call("quit")
-        # print(process.stdout.read())
-        timer = Timer(1, process.kill)
-        try:
-            timer.start()
-            output = process.communicate()[0]
-            if print_output:
-                for l in output.splitlines():
-                    print(l)  # print(output)
-        finally:
-            timer.cancel()  # print("")  # return False
 
+        output = process.communicate()[0]
+        if print_output:
+            for l in output.splitlines():
+                print(l)  # print(output)
     return get_coefficients_from_output(output)
 
 
@@ -197,25 +224,26 @@ def draw_to_matplotlib(x, y, z, shrani=False, unit='CL'):
     plt.show()
 
 
-def generate_polars(foil):
+def generate_polars(foil,ncrit):
     """
 
     :param foil:
     :return:
     """
+    all_ncrit = []
     all_re = []
     all_a = []
     all_cl = []
     all_cd = []
 
-    for Re in np.linspace(10e3, 1e6, 10):
-        for a in np.linspace(-10, 15, 26):
+    for Re in [100,1000,10000,100000,1000000,10000000]:
+        for a in np.linspace(-10, 20, 31):
             Re = int(Re)
             cl = None
             cd = None
             print("Re", Re, "Alpha:", a)
             o = None
-            o = xfoil_runner(foil, Re, a)
+            o = xfoil_runner(foil, Re, a, ncrit)
             if o != False:
                 cl = o["CL"]
                 cd = o["CD"]
@@ -225,20 +253,21 @@ def generate_polars(foil):
                 all_a.append(a)
                 all_cl.append(cl)
                 all_cd.append(cd)
-    return all_a, all_re, all_cl, all_cd
+                all_ncrit.append(ncrit)
+    return all_ncrit, all_a, all_re, all_cl, all_cd
 
+#generate_polars("naca4410")
 
-def generate_polars_data(foil):
+def generate_polars_data(foil,ncrit=4):
     """
 
     :param foil:
     :return:
     """
-    all_a, all_re, all_cl, all_cd = generate_polars(foil)
+    all_ncrit, all_a, all_re, all_cl, all_cd = generate_polars(foil,ncrit)
     out = []
-    ncrit = 0
     for i in range(len(all_a)):
-        out.append([all_re[i], ncrit, all_a[i], all_cl[i], all_cd[i]])
+        out.append([all_re[i], all_ncrit[i], all_a[i], all_cl[i], all_cd[i]])
     out = np.array(out)
     return out
 
@@ -275,3 +304,5 @@ def draw_scatter(x, y, z):
 # draw_to_matplotlib(all_a,all_re,all_cl)
 # draw_scatter(all_a,all_re,all_cl)
 #
+
+#print(run_xfoil_analysis("s826.dat",1000000,-14,print_output=True))

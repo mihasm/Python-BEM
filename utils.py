@@ -831,6 +831,7 @@ def generate_propeller_adkins(inp):
     airfoil = inp["design_airfoil"]
     relaxation_factor = inp["design_relaxation"]
     iters = int(inp["design_iters"])
+    convergence_criterion_adkins = inp["convergence_criterion_adkins"]
 
     global alpha_last
     
@@ -896,7 +897,7 @@ def generate_propeller_adkins(inp):
         zeta_new = (I1/(2*I2))-((I1/(2*I2))**2-T_c/I2)**0.5
         #zeta_new_2 = -(J1/(2*J2))+((J1/(2*J2))**2+P_c/J2)**0.5
         print("zeta_new",zeta_new)
-        if abs(abs(zeta-zeta_new)*zeta_new)<1e-2: # one percent error
+        if abs(abs(zeta-zeta_new)*zeta_new)<convergence_criterion_adkins:
             print("converged")
             return c,np.rad2deg(beta)
         else:
