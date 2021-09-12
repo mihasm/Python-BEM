@@ -61,11 +61,8 @@ def fTipLoss(B, r, R, phi):
     :param phi: angle of relative wind [rad]
     :return: returns tip loss factor [float]
     """
-    F = 1
-    f = sin(phi)
-    g = (R - r) / r
-    Ft = 2 / pi * acos(exp(-B / 2 * abs(g / f)))
-    F = F * Ft
+    #F = 1
+    F = 2 / pi * acos(exp(-B / 2 * abs((R - r) / r / sin(phi))))
     return F
 
 
@@ -127,6 +124,17 @@ def newHubLoss(B, r, Rhub, phi, lambda_r):
         * acos(exp(-B / 2 * abs(g / f) * (exp(-0.15 * (B * lambda_r - 21)) + 0.1)))
     )
     F = F * Flt
+    return F
+
+def fAdkinsTipLoss(B, r, R, phi):
+    """
+    :param B: number of blades [int]
+    :param r: section radius [m]
+    :param Rhub: hub radius [m]
+    :param phi: angle of relative wind [rad]
+    :return: returns hub loss factor [float]
+    """
+    F = 2 / pi * acos(exp(-B / 2 * abs((R - r) / r / sin(phi))))
     return F
 
 

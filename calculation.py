@@ -22,7 +22,7 @@ OUTPUT_VARIABLES_LIST = {
     "F": {"type": "array", "name": "Tip loss correction factor", "symbol": "F", "unit": ""},
     "lambda_r": {"type": "array", "name": "Local tip speed ratio", "symbol": r"$\lambda_r$", "unit": ""},
     "Ct_r": {"type": "array", "name": "Local thrust coefficient (def.)", "symbol": r"$C_{T_r}$", "unit": ""},
-    "Vrel_norm": {"type": "array", "name": "Section velocity", "symbol": r"$V_rel$", "unit": "m/s"},
+    "Vrel_norm": {"type": "array", "name": "Relative wind speed", "symbol": "W", "unit": "m/s"},
 
     "dFn": {"type": "array", "name": "Incremental normal force", "symbol": r"$dF_n$", "unit": "N"},
     "dFt": {"type": "array", "name": "Incremental tangential force", "symbol": r"$dF_t$", "unit": "N"},
@@ -135,7 +135,7 @@ class Calculator:
     # noinspection PyUnusedLocal,PyUnusedLocal
     def run_array(self, theta, B, c, r, foils, dr, R, Rhub, rpm, v, pitch, method, propeller_mode, print_out, tip_loss,
                   mach_number_correction,
-                  hub_loss, new_tip_loss, new_hub_loss, cascade_correction, max_iterations, convergence_limit, rho,
+                  hub_loss, new_tip_loss, new_hub_loss, adkins_tip_loss, cascade_correction, max_iterations, convergence_limit, rho,
                   relaxation_factor, print_all, rotational_augmentation_correction,
                   rotational_augmentation_correction_method,
                   fix_reynolds, reynolds, yaw_angle, skewed_wake_correction, blade_design, blade_thickness,
@@ -454,7 +454,7 @@ class Calculator:
     def calculate_section(self, v, omega, _r, _c, _theta, _dr, B, R, _airfoil, max_thickness, Rhub,
                           propeller_mode, pitch=0.0, psi=0.0, fix_reynolds=False, reynolds=1e6, tip_loss=False,
                           new_tip_loss=False,
-                          hub_loss=False, new_hub_loss=False, cascade_correction=False,
+                          hub_loss=False, new_hub_loss=False, adkins_tip_loss=False, cascade_correction=False,
                           rotational_augmentation_correction=False,
                           rotational_augmentation_correction_method=0, mach_number_correction=False, method=5,
                           kin_viscosity=1.4207E-5, rho=1.225, convergence_limit=0.001, max_iterations=100,
@@ -536,8 +536,7 @@ class Calculator:
             if fix_reynolds:
                 Re = reynolds
             else:
-                Re_next = Vrel_norm * _c / kin_viscosity
-                Re = int(Re_next)
+                Re = Vrel_norm * _c / kin_viscosity
 
             F = 1
             # Prandtl tip loss
@@ -547,6 +546,9 @@ class Calculator:
             # New tip loss
             elif new_tip_loss:
                 F = F * newTipLoss(B, _r, R, phi, lambda_r)
+
+            elif adkins_tip_loss:
+                F = F * fAdkinsTipLoss(B, _r, R, phi)
 
             # Prandtl hub loss
             if hub_loss:

@@ -377,7 +377,7 @@ class WindTurbineProperties(QWidget):
         radiuses = np.linspace(Rhub, R, num_gen_sections)
         airfoil = self.design_airfoil.text()
         for r in range(num_gen_sections):
-            array_out.append([round(radiuses[r], 4), round(chords[r], 4), round(thetas[r], 4), airfoil])
+            array_out.append([round(radiuses[r], 8), round(chords[r], 8), round(thetas[r], 8), airfoil])
 
         self.table_properties.createTable(array_out)
 
@@ -428,7 +428,7 @@ class WindTurbineProperties(QWidget):
             return
 
         for r in range(num_gen_sections):
-            array_out.append([round(radiuses[r], 4), round(chords[r], 4), round(thetas[r], 4), airfoil])
+            array_out.append([round(radiuses[r], 8), round(chords[r], 8), round(thetas[r], 8), airfoil])
 
         self.table_properties.createTable(array_out)
 

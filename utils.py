@@ -827,75 +827,159 @@ def generate_propeller_adkins(inp):
     v = inp["design_velocity"]
     T = inp["design_thrust"]
     rho = inp["design_rho"]
-    cl = inp["design_cl"]
+    cl_des = inp["design_cl"]
     airfoil = inp["design_airfoil"]
     relaxation_factor = inp["design_relaxation"]
     iters = int(inp["design_iters"])
     convergence_criterion_adkins = inp["convergence_criterion_adkins"]
-
-    global alpha_last
     
     airfoils,airfoils_list,transition_foils,transition_array,max_thickness_array = get_curves_functions(inp)
 
-    zeta=0.0 #initial guess
+    zeta=0.1 #initial guess
+
+    cl_arr = np.array([cl_des]*len(r))
 
     for count in range(iters):
         print("count",count)
         kin_viscosity = 1.4207E-5
-        r = np.array(r)
         xi = r/R
-        omega = RPM*2*np.pi/60
+        omega = 2*np.pi*RPM/60
+        J=v/(RPM/60*2*R)
+        print("J",J)
         x = omega*r/v
-        TSR = v/omega/R
-        phi_t=np.arctan(TSR*(1+zeta/2))
-        phi = np.tan(phi_t)/xi
+        _lambda = v/(omega*R)
+        print("_lambda",_lambda)
+        phi_t=np.arctan(_lambda*(1+zeta/2))
+        phi = np.arctan(np.tan(phi_t)/xi) #direct from adkins (21)
+        phi2 = np.arctan((1+zeta/2)/x) # adkins (8)
+        phi3 = np.arctan((1+zeta/2)*_lambda/xi) # adkins (8)
+
+        print("phi",np.rad2deg(phi))
+        print("phi2",np.rad2deg(phi2))
+        print("phi3",np.rad2deg(phi3))
         f = B/2*(1-xi)/np.sin(phi_t)
         F = 2/np.pi*np.arccos(np.exp(-f))
+        #F = 2 / np.pi * np.arccos(np.exp(-B / 2 * np.abs((R - r) / r / np.sin(phi)))) # Typical Prandtl implementation
+        print("F",F)
         G = F*x**2/(1+x**2)
-        Wc=4*np.pi*TSR*G*v*R*zeta/(cl*B)
-        print("Wc",Wc)
+        print("G",G)
+        G = F*x*np.cos(phi)*np.sin(phi)
+        print("G2",G)
+        print("cl_arr",cl_arr)
+        Wc=4*np.pi*_lambda*G*v*R*zeta/(cl_arr*B)
+        print("Wc_des",Wc)
         Re=Wc/kin_viscosity
-        eps=[]
-        alpha=[]
+        print("Re_des",Re)
+        eps_arr=[None]*len(r)
+        alpha_arr=[None]*len(r)
+        cl_arr = [None]*len(r)
         
-        for i in range(len(Wc)):
+        for i in range(len(r)):
             print("section",i)
+
+            Re_section = Re[i]
+            #Re_section = 100000
+            #print("Re_section",Re_section)
+
+            min_cl = None
+            max_cl = None
+            for a in range(-45,45):
+                _cl = airfoils[airfoil]["interp_function_cl"](Re_section,a)
+                if min_cl == None:
+                    min_cl = _cl
+                if max_cl == None:
+                    max_cl = _cl
+                if _cl < min_cl:
+                    min_cl = _cl
+                if _cl > max_cl:
+                    max_cl = _cl
+
             def eps_minimize_function(cl):
-                global alpha_last
-                def angle_finding_function(alpha):
-                    return abs(airfoils[airfoil]["interp_function_cl"](Re[i],alpha) - cl) #so zero finding fins value of cl
-                _alpha = scipy.optimize.minimize(angle_finding_function,8,bounds=[(-10,15)],method="powell",options={'ftol': 0.001,"xtol":0.01,'maxiter':50}).x[0]
-                alpha_last = _alpha
-                cl = airfoils[airfoil]["interp_function_cl"](Re[i],_alpha)
-                cd = airfoils[airfoil]["interp_function_cd"](Re[i],_alpha)
+                # finds minimal losses by choosing the right Cl
+                #print("===new eps minimization")
+                def get_dcl(alpha, cl_req=cl):
+                    # returns 0 if alpha produces specified cl, else returns > 0.
+                    # used as the minimization function
+                    
+                    cl_actual = airfoils[airfoil]["interp_function_cl"](Re_section,alpha)
+                    dcl = cl_actual - cl_req
+                    return dcl #so zero finding finds value of cl
+                
+                lower_bound = 45
+                while get_dcl(lower_bound) > 0:
+                    lower_bound -= 1
+                    if lower_bound < -90:
+                        raise Exception ("Too low bound, perhaps too low initial Cl?")
+
+                upper_bound = -45
+                while get_dcl(upper_bound) < 0:
+                    upper_bound += 1
+                    if upper_bound > 90:
+                        raise Exception("Too high bound, perhaps too high initial Cl?")
+
+                _alpha = scipy.optimize.ridder(get_dcl,lower_bound,upper_bound,xtol=1e-2,rtol=1e-4)
+
+                #print("alpha",_alpha,"cl_act",airfoils[airfoil]["interp_function_cl"](Re_section,_alpha),"cl_req",cl)
+                alpha_arr[i] = _alpha
+                cl = airfoils[airfoil]["interp_function_cl"](Re_section,_alpha)
+                cd = airfoils[airfoil]["interp_function_cd"](Re_section,_alpha)
+
+                cl_arr[i] = cl
                 _eps = cd/cl
+                #print("_eps",_eps)
                 return _eps
-            min_eps = scipy.optimize.minimize(eps_minimize_function,1.0,bounds=[(0.000001,5.0)],method="powell",options={'ftol': 0.001,"xtol":0.01,'maxiter':50}).fun
-            eps.append(min_eps)
-            alpha.append(alpha_last) #use last value?
 
-        print("alpha",alpha)
+            min_eps = scipy.optimize.minimize(eps_minimize_function,0.1,bounds=[(0,max_cl)],method="powell",options={'ftol': 0.001,"xtol":0.01,'maxiter':5,'maxfev':5}).fun
+            #min_eps = eps_minimize_function(0.5)
+            eps_arr[i]= min_eps
 
-        eps = np.array(eps)
-        print("eps",eps)
-        a=(zeta/2)*np.cos(phi)**2*(1-eps*np.tan(phi))
-        aprime=(zeta/2*x)*np.cos(phi)*np.sin(phi)*(1+eps/np.tan(phi))
+        alpha_arr = np.array(alpha_arr)
+        print("alpha",alpha_arr)
+        eps_arr = np.array(eps_arr)
+        cl_arr = np.array(cl_arr)
+        print("cl",cl_arr)
+
+        a=(zeta/2)*np.cos(phi)**2*(1-eps_arr*np.tan(phi))
+        print("a",a)
+
+        aprime=(zeta/(2*x))*np.cos(phi)*np.sin(phi)*(1+eps_arr/np.tan(phi))
+        print("aprime",aprime)
+
+        phi4 = np.arctan(v*(1+a)/(omega*r*(1-aprime)))
+        print("phi4",np.rad2deg(phi4))
+
+        phi5 = np.arctan((zeta/2-a)/(x*aprime))
+        print("phi5",np.rad2deg(phi5))
+
         W = v*(1+a)/np.sin(phi)
         print("W",W)
+        W2 = np.sqrt((v*(1+a))**2+(omega*r*(1-aprime))**2)
+        print("W2",W2)
         c = Wc/W
-        beta = np.deg2rad(alpha)+phi
-        I1p=4*xi*G*(1-eps*np.tan(phi))
-        I2p=TSR*(I1p/(2*xi))*(1+eps/np.tan(phi))*np.sin(phi)*np.cos(phi)
-        J1p=4*xi*G*(1+eps/np.tan(phi))
-        J2p=(J1p/2)*(1-eps*np.tan(phi))*np.cos(phi)**2
+        print("c",c)
+
+        beta = np.deg2rad(alpha_arr)+phi
+
+        I1p=4*xi*G*(1-eps_arr*np.tan(phi))
+        I2p=_lambda*(I1p/(2*xi))*(1+eps_arr/np.tan(phi))*np.sin(phi)*np.cos(phi)
+        J1p=4*xi*G*(1+eps_arr/np.tan(phi))
+        J2p=(J1p/2)*(1-eps_arr*np.tan(phi))*np.cos(phi)**2
+
+        print("I1p",I1p)
+        print("I2p",I2p)
+        print("J1p",J1p)
+        print("J2p",J2p)
+
         I1 =np.trapz(I1p,x=xi)
         I2 =np.trapz(I2p,x=xi)
         J1 =np.trapz(J1p,x=xi)
         J2 =np.trapz(J2p,x=xi)
-        print("I1",I1,"I2",I2,"J1",J1,"J2",J2)
+
+        #print("I1",I1,"I2",I2,"J1",J1,"J2",J2)
         T_c=2*T/(rho*v**2*np.pi*R**2)
         zeta_new = (I1/(2*I2))-((I1/(2*I2))**2-T_c/I2)**0.5
         #zeta_new_2 = -(J1/(2*J2))+((J1/(2*J2))**2+P_c/J2)**0.5
+        
         print("zeta_new",zeta_new)
         if abs(abs(zeta-zeta_new)*zeta_new)<convergence_criterion_adkins:
             print("converged")
