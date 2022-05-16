@@ -139,7 +139,7 @@ class Calculator:
                   relaxation_factor, print_all, rotational_augmentation_correction,
                   rotational_augmentation_correction_method,
                   fix_reynolds, reynolds, yaw_angle, skewed_wake_correction, blade_design, blade_thickness,
-                  mass_density, geometry_scale, use_minimization_solver,
+                  mass_density, geometry_scale, use_minimization_solver, invert_alpha,
                   a_initial, aprime_initial,
                   print_progress=False, return_print=[], return_results=[], *args, **kwargs):
         """
@@ -461,7 +461,7 @@ class Calculator:
                           relaxation_factor=0.3,
                           printer=None, print_all=False, print_out=False, yaw_angle=0.0, tilt_angle=0.0,
                           skewed_wake_correction=False,
-                          lambda_r_array=[],
+                          lambda_r_array=[], invert_alpha = False,
                           transition=False, _airfoil_prev=None, _airfoil_next=None, transition_coefficient=1.0,
                           num_sections=0, use_minimization_solver=False,
                           a_initial=0.3, aprime_initial=0.01,
@@ -569,6 +569,9 @@ class Calculator:
                 alpha = cascadeEffectsCorrection(alpha=alpha, v=v, omega=omega, r=_r, R=R, c=_c, B=B, a=a,
                                                  aprime=aprime, max_thickness=max_thickness)
 
+            if invert_alpha:
+                alpha = -alpha
+
             if transition:
                 Cl1, Cd1 = self.airfoils[_airfoil_prev]["interp_function_cl"](Re, degrees(alpha)), \
                            self.airfoils[_airfoil_prev][
@@ -581,6 +584,9 @@ class Calculator:
                     return None
                 if Cl2 == False and Cd2 == False:
                     return None
+
+                if invert_alpha:
+                    Cl1,Cl2 = -Cl1,-Cl2
 
                 Cl = Cl1 * transition_coefficient + Cl2 * (1 - transition_coefficient)
                 Cd = Cd1 * transition_coefficient + Cd2 * (1 - transition_coefficient)
@@ -629,6 +635,9 @@ class Calculator:
                     p.print("Re:",Re)
                     p.print("alpha:",degrees(alpha))
                     return None
+
+                if invert_alpha:
+                    Cl = -Cl
 
                 # determine min and max angle of attack for attached region
                 aoa_max_stall = self.airfoils[_airfoil]["interpolation_function_stall_max"](Re)
@@ -686,6 +695,9 @@ class Calculator:
 
             dFn_norm = dFn * num_sections
             dFt_norm = dFt * num_sections
+
+            if invert_alpha:
+                alpha=-alpha
 
             input_arguments = {"F": F, "lambda_r": lambda_r, "phi": phi, "sigma": sigma, "C_norm": C_norm,
                "C_tang": C_tang, "Cl": Cl, "Cd": Cd, "B": B, "c": _c, "r": _r, "R": R, "psi": psi,

@@ -6,3 +6,4 @@ numpy
 scipy
 matplotlib==3.2.2
 pyqt5
+matplotlib

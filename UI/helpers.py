@@ -103,11 +103,13 @@ class ScrapeThread(QThread):
         self.link = link
 
     def run(self):
+        print("Running scrape")
         data = scrape_data(self.link.text())
         x, y = get_x_y_from_link(self.link.text())
         out = [data, x, y]
         self.parent.scraping_generated_data = out
         self.completeSignal.emit("Done")
+        print("Done scraping thread")
 
 
 class PyQtGraphWindow(QMainWindow):

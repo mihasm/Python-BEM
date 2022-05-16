@@ -116,3 +116,5 @@ def get_x_y_from_link(link):
         y.append(float(y_l))
 
     return x,y
+
+#scrape_data("http://airfoiltools.com/airfoil/details?airfoil=clarky-il")

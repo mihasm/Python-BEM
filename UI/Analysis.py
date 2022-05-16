@@ -19,6 +19,7 @@ class Analysis(QWidget):
         self.forms_dict = {}
 
         self.settings = {"propeller_mode": False,
+                         "invert_alpha":False,
                          "use_minimization_solver":False,
                          "tip_loss": False,
                          "hub_loss": False,
@@ -65,6 +66,7 @@ class Analysis(QWidget):
                          "yaw_angle": 0}
 
         self.settings_to_name = {"propeller_mode": "Propeller mode", "print_out": "Print final iteration data",
+                                 "invert_alpha":"Invert alpha",
                                  "tip_loss": "Prandtl tip loss", "hub_loss": "Prandtl hub loss",
                                  "new_tip_loss": "New tip loss", "new_hub_loss": "New hub loss",
                                  "adkins_tip_loss" : "Adkins tip loss (prop)",
@@ -104,6 +106,7 @@ class Analysis(QWidget):
 
         self.settings_to_tooltip = {
             "propeller_mode": "Ta vrednost mora biti izbrana le v primeru, če preračunavamo propeler.",
+            "invert_alpha":"Uporabimo, kadar računamo propeler v obratovalnem stanju vetrnice.",
             "print_out": "Izpis končnih vrednosti po konvergenci za vsak odsek",
             "tip_loss": "Popravek izgub pri vrhu lopatice (po Prandtlu)",
             "hub_loss": "Popravek izgub pri pestu (po Prandtlu)",

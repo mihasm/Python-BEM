@@ -257,13 +257,19 @@ class Airfoils(QWidget):
         print("Scraping from link...")
         if self.window != None:
             self.window.close()
-        self.window = PrintoutWindow(self)
+        #print("Closing window")
+        #self.window = PrintoutWindow(self)
+        print("Thread")
         self.thread = ScrapeThread(self)
+        print("Params")
         self.thread.set_params(self.link)
+        print("Connecting")
         self.thread.completeSignal.connect(self.generate_curves_link_completion)
+        print("Starting")
         self.thread.start()
 
     def generate_curves_link_completion(self, nothing_important):
+        print("Finished, populating...")
         self.table_dat.clear_table()
         self.populate_curve_list(self.scraping_generated_data[0])
         self.set_x_y(self.scraping_generated_data[1], self.scraping_generated_data[2])
