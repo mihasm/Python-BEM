@@ -1,5 +1,8 @@
 README
 
+## Supported Python version
+3.2<3.9
+
 ## Install
 pip install -r requirements.txt
 
