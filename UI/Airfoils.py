@@ -257,8 +257,8 @@ class Airfoils(QWidget):
         print("Scraping from link...")
         if self.window != None:
             self.window.close()
-        #print("Closing window")
-        #self.window = PrintoutWindow(self)
+        print("Open window")
+        self.window = PrintoutWindow(self)
         print("Thread")
         self.thread = ScrapeThread(self)
         print("Params")

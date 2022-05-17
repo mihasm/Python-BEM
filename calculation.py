@@ -603,11 +603,11 @@ class Calculator:
 
                 def zero_finding_function1(alpha):
                     return self.airfoils[_airfoil_prev]["interp_function_cl"](Re, alpha)
-                alpha_zero_1 = optimize.bisect(zero_finding_function,-10,10,xtol=1e-3,rtol=1e-3)
+                alpha_zero_1 = optimize.bisect(zero_finding_function1,-10,10,xtol=1e-3,rtol=1e-3)
 
                 def zero_finding_function2(alpha):
                     return self.airfoils[_airfoil_next]["interp_function_cl"](Re, alpha)
-                alpha_zero_2 = optimize.bisect(zero_finding_function,-10,10,xtol=1e-3,rtol=1e-3)
+                alpha_zero_2 = optimize.bisect(zero_finding_function2,-10,10,xtol=1e-3,rtol=1e-3)
 
                 alpha_zero = alpha_zero_1*transition_coefficient + alpha_zero_2 * (1-transition_coefficient)
                 alpha_zero = radians(alpha_zero)

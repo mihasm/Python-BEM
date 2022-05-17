@@ -3,7 +3,9 @@ import sys
 import pyqtgraph as pg
 from PyQt5 import QtCore, QtGui
 from PyQt5.QtCore import QThread
-from PyQt5.QtWidgets import QMainWindow, QWidget, QGridLayout, QLabel, QLineEdit, QPushButton, QTabWidget
+from PyQt5.QtWidgets import QMainWindow, QWidget, QGridLayout, QLabel, QLineEdit, QPushButton, QTabWidget, QTextEdit
+from PyQt5.QtGui import QTextCursor
+
 from matplotlib import pyplot as plt
 from matplotlib.backends.backend_qt5 import NavigationToolbar2QT as NavigationToolbar
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
@@ -183,19 +185,28 @@ class MatplotlibWindow(QWidget):
 
 class PrintoutWindow(QMainWindow):
     def __init__(self, parent):
+        print("PrintoutWindow")
         super(PrintoutWindow, self).__init__(parent)
+        print("PrintoutWindow2")
         self.setWindowTitle("Progress")
+        print("PrintoutWindow3")
         self.setGeometry(50, 50, 500, 300)
+        print("PrintoutWindow4")
         self.parent = parent
+        print("PrintoutWindow5")
         sys.stdout = Stream(newText=self.onUpdateText)
         sys.stderr = Stream(newText=self.onUpdateText)
-        self.process = QtGui.QTextEdit()
+        print("PrintoutWindow6")
+        self.process = QTextEdit()
+        print("PrintoutWindow7")
         self.setCentralWidget(self.process)
+        print("PrintoutWindow8")
         self.show()
+        print("PrintoutWindow9")
 
     def onUpdateText(self, text):
         cursor = self.process.textCursor()
-        cursor.movePosition(QtGui.QTextCursor.End)
+        cursor.movePosition(QTextCursor.End)
         cursor.insertText(text)
         self.process.setTextCursor(cursor)
         self.process.ensureCursorVisible()
