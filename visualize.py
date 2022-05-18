@@ -5,9 +5,10 @@ import mpl_toolkits.mplot3d as mp3d
 import numpy as np
 from mpl_toolkits.mplot3d import Axes3D
 from scipy import interpolate
+from UI import helpers
 
 from turbine_data import SET_INIT
-from utils import calculate_dr
+from utils import calculate_dr, get_transition_foils,get_centroid_coordinates
 
 def create_face(p1, p2, p3, p4, *args, **kwargs):
     """
@@ -72,6 +73,62 @@ def scale_and_normalize(foil_x, foil_y, scale, centroid):
     foil_x, foil_y = foil_x*scale, foil_y*scale
     return foil_x, foil_y
 
+def closest_point(x_point,y_point,x_list,y_list):
+    """
+    Find the closest point in zip(x_list,y_list), to the point x_point,y_point.
+    """
+    dist = [0]*len(x_list)
+
+    min_index = None
+    min_distance = None
+
+    for i in range(len(x_list)):
+        dist_v = np.sqrt((x_list[i]-x_point)**2+(y_list[i]-y_point)**2)
+        if min_distance == None or dist_v < min_distance:
+            min_index = i
+            min_distance = dist_v
+        
+    return min_index,x_list[min_index],y_list[min_index]
+
+def point_along_line(x1,y1,x2,y2,t):
+    """
+    if t < 0.5, new point is closer to x1,y1
+    if t = 1.0, new point is == x2,y2
+    if t = 0.0, new point is == x1,y1
+    """
+    x,y=(1-t)*x1+t*x2,(1-t)*y1+t*y2
+    return x,y
+
+
+def interpolate_foils(foil_1_x,foil_1_y,foil_2_x,foil_2_y,t):
+    out_x,out_y=[],[]
+
+    tck,u     = interpolate.splprep( [foil_1_x,foil_1_y] ,s = 0 )
+    xspline,yspline = interpolate.splev( np.linspace( 0, 1, 500 ), tck, der=0)
+    
+    tck2,u2   = interpolate.splprep( [foil_2_x,foil_2_y] ,s = 0 )
+    xspline2,yspline2 = interpolate.splev( np.linspace( 0, 1, 100 ), tck2, der=0)
+
+    #get list of zeros
+    zeros_idx_1 = np.where(np.diff(np.sign(yspline)))[0]
+    zeros_idx_2 = np.where(np.diff(np.sign(yspline2)))[0]
+
+    zero_1_index = zeros_idx_1[np.abs(zeros_idx_1-len(zeros_idx_1)/2).argmin()]
+    zero_2_index = zeros_idx_2[np.abs(zeros_idx_2-len(zeros_idx_2)/2).argmin()]
+
+    for i in range(len(xspline2)):
+        x_point,y_point = xspline2[i],yspline2[i]
+        if i <= zero_2_index:
+            xspline_in,yspline_in = xspline[:zero_1_index],yspline[:zero_1_index]
+        else:
+            xspline_in,yspline_in = xspline[zero_1_index:],yspline[zero_1_index:]
+        index,x_found,y_found = closest_point(x_point,y_point,xspline_in,yspline_in)
+        x_new,y_new = point_along_line(x_found,y_found,x_point,y_point,t)
+        out_x.append(x_new)
+        out_y.append(y_new)
+    
+    return out_x,out_y
+
 
 def create_3d_blade(input_data, flip_turning_direction=False, propeller_geom=False):
     """
@@ -93,6 +150,7 @@ def create_3d_blade(input_data, flip_turning_direction=False, propeller_geom=Fal
     c = [c[0]]+list(c)+[c[-1]]
     theta = [theta[0]]+list(theta)+[theta[-1]]
     foil = [foil[0]]+list(foil)+[foil[-1]]
+    transition_foils = get_transition_foils(foil)
 
     out_x, out_y, out_z = [], [], []
     data = []
@@ -102,33 +160,42 @@ def create_3d_blade(input_data, flip_turning_direction=False, propeller_geom=Fal
         _airfoil = foil[i]
         _theta = theta[i]  # - because of direction
 
-        if _airfoil != "transition": #the only exception
-            if propeller_geom:
-                _theta = -_theta
-
+        if _airfoil == "transition":
+            _prev_foil = transition_foils[i][0]
+            _next_foil = transition_foils[i][1]
+            _transition_coefficient = transition_foils[i][2]
+            _airfoil_x_prev,_airfoil_y_prev = airfoils[_prev_foil]["x"],airfoils[_prev_foil]["y"]
+            _airfoil_x_next,_airfoil_y_next = airfoils[_next_foil]["x"],airfoils[_next_foil]["y"]
+            _airfoil_x,_airfoil_y = interpolate_foils(_airfoil_x_prev,_airfoil_y_prev,_airfoil_x_next,_airfoil_y_next,_transition_coefficient)
+            _centroid_x_prev,_centroid_y_prev = airfoils[_prev_foil]["centroid_x"], airfoils[_prev_foil]["centroid_y"]
+            _centroid_x_next,_centroid_y_next = airfoils[_next_foil]["centroid_x"], airfoils[_next_foil]["centroid_y"]
+            _centroid_x,_centroid_y = point_along_line(_centroid_x_prev,_centroid_y_prev,_centroid_x_next,_centroid_y_next,_transition_coefficient)
+        else:
             _airfoil_x, _airfoil_y = airfoils[_airfoil]["x"], airfoils[_airfoil]["y"]
-
             _centroid_x, _centroid_y = airfoils[_airfoil]["centroid_x"], airfoils[_airfoil]["centroid_y"]
 
-            if flip_turning_direction:
-                _airfoil_x = -np.array(_airfoil_x)
-                _theta = -_theta
-                _centroid_x = -_centroid_x
+        if propeller_geom:
+            _theta = -_theta
 
-            _centroid = (_centroid_x, _centroid_y)
-            
-            _airfoil_x, _airfoil_y = scale_and_normalize(_airfoil_x, _airfoil_y, _c, _centroid)
-            _airfoil_x, _airfoil_y = rotate_array(_airfoil_x, _airfoil_y, (0, 0), _theta)
+        if flip_turning_direction:
+            _airfoil_x = -np.array(_airfoil_x)
+            _theta = -_theta
+            _centroid_x = -_centroid_x
 
-            list_x, list_y = [], []
-            for _x, _y in zip(_airfoil_x, _airfoil_y):
-                out_x.append(_x)
-                out_y.append(_y)
-                out_z.append(_r)
-                list_x.append(_x)
-                list_y.append(_y)
+        _centroid = (_centroid_x, _centroid_y)
+        
+        _airfoil_x, _airfoil_y = scale_and_normalize(_airfoil_x, _airfoil_y, _c, _centroid)
+        _airfoil_x, _airfoil_y = rotate_array(_airfoil_x, _airfoil_y, (0, 0), _theta)
 
-            data.append([_r, np.array(list_x), np.array(list_y)])
+        list_x, list_y = [], []
+        for _x, _y in zip(_airfoil_x, _airfoil_y):
+            out_x.append(_x)
+            out_y.append(_y)
+            out_z.append(_r)
+            list_x.append(_x)
+            list_y.append(_y)
+
+        data.append([_r, np.array(list_x), np.array(list_y)])
 
     # DRAW ########
     fig = plt.figure()

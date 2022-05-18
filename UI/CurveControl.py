@@ -84,9 +84,9 @@ class CurveControl(QWidget):
         self.left_layout = QGridLayout()
         self.left.setLayout(self.left_layout)
 
-        self.figure = plt.figure(figsize=(10, 5))
+        self.figure = plt.figure(figsize=(5, 5))
         self.canvas = FigureCanvas(self.figure)
-        self.canvas.setMinimumSize(500, 500)
+        self.canvas.setMinimumSize(100, 100)
         self.toolbar = NavigationToolbar(self.canvas, self)
         self.ax = self.figure.add_subplot(111)
         self.left_layout.addWidget(self.canvas)
