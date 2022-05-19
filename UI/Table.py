@@ -8,9 +8,10 @@ from utils import array_to_csv
 
 
 class Table(QWidget):
-    def __init__(self):
+    def __init__(self,fixed_columns=False):
         super().__init__()
         self.selected_array = []
+        self.fixed_columns = fixed_columns
         self.tableWidget = QTableWidget()
         self.tableWidget.setTabKeyNavigation(False)
         self.layout = QVBoxLayout()
@@ -121,6 +122,7 @@ class Table(QWidget):
         text = self.clip.text()
         text = text.replace("   ", "\t")
         text = text.replace("  ", "\t")
+        text = text.replace(",", ".")
         if len(text) > 0:
             # change contents to floats
             reader = csv.reader(text.splitlines(), delimiter="\t")
@@ -134,15 +136,17 @@ class Table(QWidget):
                 set(index.column() for index in self.tableWidget.selectedIndexes()))[0]
             if selected_row + numrows >= self.tableWidget.rowCount():
                 self.tableWidget.setRowCount(selected_row + numrows)
-            if selected_column + numcolumns >= self.tableWidget.columnCount():
-                self.tableWidget.setColumnCount(selected_column + numcolumns)
+            if not self.fixed_columns:
+                if selected_column + numcolumns >= self.tableWidget.columnCount():
+                    self.tableWidget.setColumnCount(selected_column + numcolumns)
             currow = selected_row
             for r in results:
                 curcolumn = selected_column
                 for c in r:
-                    self.tableWidget.setItem(
-                        currow, curcolumn, QTableWidgetItem(c))
-                    curcolumn += 1
+                    if curcolumn < self.tableWidget.columnCount():
+                        self.tableWidget.setItem(
+                            currow, curcolumn, QTableWidgetItem(c))
+                        curcolumn += 1
                 currow += 1
         return
 
@@ -192,22 +196,18 @@ class Table(QWidget):
     def contextMenuEvent(self, event):
         menu = QMenu(self)
         item = self.tableWidget.itemAt(event.pos())
-        if item != None:
-            delete_row = menu.addAction("delete row(s)")
-            delete_column = menu.addAction("delete column(s)")
-        else:
-            delete_row = False
-            delete_column = False
 
-        insert_row = menu.addAction("insert row")
-        insert_column = menu.addAction("insert column")
+        if not self.fixed_columns:
+            delete_column = menu.addAction("Delete column(s)")
+            insert_column = menu.addAction("Insert column")
+        
+        delete_row = menu.addAction("Delete row(s)")
+        insert_row = menu.addAction("Insert row")
 
         action = menu.exec_(self.mapToGlobal(event.pos()))
 
-        rows = sorted(set(index.row()
-                          for index in self.tableWidget.selectedIndexes()), reverse=True, )
-        columns = sorted(set(index.column()
-                             for index in self.tableWidget.selectedIndexes()), reverse=True, )
+        rows = sorted(set(index.row() for index in self.tableWidget.selectedIndexes()), reverse=True)
+        columns = sorted(set(index.column() for index in self.tableWidget.selectedIndexes()), reverse=True)
 
         if action == insert_row:
             if len(rows) == 0:
@@ -215,18 +215,19 @@ class Table(QWidget):
             self.tableWidget.insertRow(rows[-1])
             for c in range(self.tableWidget.columnCount()):
                 self.tableWidget.setItem(rows[-1], c, QTableWidgetItem(""))
-        elif action == delete_row:
+        if action == delete_row:
             for r in rows:
                 self.tableWidget.removeRow(r)
-        elif action == insert_column:
-            if len(columns) == 0:
-                columns.append(0)
-            self.tableWidget.insertColumn(columns[-1])
-            for r in range(self.tableWidget.rowCount()):
-                self.tableWidget.setItem(r, columns[-1], QTableWidgetItem(""))
-        elif action == delete_column:
-            for c in columns:
-                self.tableWidget.removeColumn(c)
+        if not self.fixed_columns:
+            if action == insert_column:
+                if len(columns) == 0:
+                    columns.append(0)
+                self.tableWidget.insertColumn(columns[-1])
+                for r in range(self.tableWidget.rowCount()):
+                    self.tableWidget.setItem(r, columns[-1], QTableWidgetItem(""))
+            if action == delete_column:
+                for c in columns:
+                    self.tableWidget.removeColumn(c)
 
     def horizontal_header_popup(self, position):
         pass
