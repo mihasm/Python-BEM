@@ -412,7 +412,7 @@ class MyMessageBox(QMessageBox):
 
     """
     def __init__(self):
-        QtGui.QMessageBox.__init__(self)
+        QMessageBox.__init__(self)
         super().__init__()
         self.setSizeGripEnabled(True)
 
@@ -422,7 +422,7 @@ class MyMessageBox(QMessageBox):
         :param e:
         :return:
         """
-        result = QtGui.QMessageBox.event(self, e)
+        result = QMessageBox.event(self, e)
 
         self.setMinimumHeight(0)
         self.setMaximumHeight(16777215)
