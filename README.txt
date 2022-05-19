@@ -11,3 +11,6 @@ python main.py
 
 ## Create Executable
 pyinstaller main.spec
+
+## On Mac - to run xfoil
+brew install xquartz
