@@ -1,4 +1,5 @@
 import warnings
+import json
 
 import matplotlib as mpl
 import matplotlib.cbook
@@ -6,7 +7,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from PyQt5 import QtWidgets
 from PyQt5.QtGui import QIcon
-from PyQt5.QtWidgets import (QComboBox, QMainWindow, QWidget, QAction)
+from PyQt5.QtWidgets import (QComboBox, QMainWindow, QWidget, QAction, QFileDialog)
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
 from matplotlib.figure import Figure
@@ -14,7 +15,7 @@ from matplotlib.figure import Figure
 from UI.Table import Table
 from calculation import OUTPUT_VARIABLES_LIST
 from calculation_runner import max_calculate
-from utils import sort_xy, dict_to_ar, greek_letters_to_string, transpose
+from utils import sort_xy, dict_to_ar, greek_letters_to_string, transpose, filter_3d_results
 
 warnings.filterwarnings("ignore",category=matplotlib.cbook.MatplotlibDeprecationWarning)
 
@@ -26,8 +27,19 @@ class ResultsWindow(QMainWindow):
     def __init__(self, parent, width, height, results_3d, input_data):
         super(ResultsWindow, self).__init__(parent)
         self.input_data = input_data
-
+        self.results_3d = results_3d
         self.title = "Results"
+
+        self.statusBar()
+        mainMenu = self.menuBar()
+        fileMenu = mainMenu.addMenu('&File')
+
+        saveFile = QAction("&Export to JSON", self)
+        saveFile.setShortcut("Ctrl+S")
+        saveFile.setStatusTip('Export to JSON')
+        saveFile.triggered.connect(self.export)
+        fileMenu.addAction(saveFile)
+
         self.screen_width = width
         self.screen_height = height
         self.setWindowTitle(self.title)
@@ -212,6 +224,17 @@ class ResultsWindow(QMainWindow):
         exitButton.setStatusTip("Exit application")
         exitButton.triggered.connect(exit)
         fileMenu.addAction(exitButton)
+
+    def export(self):
+        name = QFileDialog.getSaveFileName(self, 'Save File', "", "JSON (*.json)")[0]
+        if name != "":
+            d = self.results_3d
+            d_out = filter_3d_results(d)
+            print(d_out)
+            json_d = json.dumps(d_out)
+            file = open(name, 'w')
+            file.write(json_d)
+            file.close()
 
 
 class TabWidget(QtWidgets.QTabWidget):

@@ -2,7 +2,9 @@ from numpy import array
 from pprint import pprint
 
 
-SET_INIT = {'B': 3,
+SET_INIT = {
+'kin_viscosity':1.4207E-5,
+'B': 3,
  'J_max': 5.0,
  'J_min': 0.0,
  'J_num': 10.0,

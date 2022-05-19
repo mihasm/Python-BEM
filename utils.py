@@ -250,7 +250,7 @@ def fltr(node, vals):
     :param vals:
     :return:
     """
-    #print(node)
+
     if isinstance(node, dict):
         retVal = {}
         for key, value in node.items():
@@ -266,6 +266,7 @@ def fltr(node, vals):
             return retVal
         else:
             return None
+    
     elif isinstance(node, list):
         retVal = []
         for entry in node:
@@ -276,6 +277,19 @@ def fltr(node, vals):
             return retVal
         else:
             return None
+
+def filter_3d_results(results_3d):
+    """
+    Input: 3D results from calculation_runner
+    Output: Same, with numpy arrays converted to lists,
+    to ease JSON serialization.
+    """
+    for k,v in results_3d.items():
+        if isinstance(v,list):
+            for i in range(len(v)):
+                if isinstance(results_3d[k][i],np.ndarray):
+                    results_3d[k][i] = list(results_3d[k][i])
+    return results_3d
 
 
 def generate_dat(name, x, y):

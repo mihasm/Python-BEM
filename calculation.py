@@ -135,7 +135,7 @@ class Calculator:
     # noinspection PyUnusedLocal,PyUnusedLocal
     def run_array(self, theta, B, c, r, foils, dr, R, Rhub, rpm, v, pitch, method, propeller_mode, print_out, tip_loss,
                   mach_number_correction,
-                  hub_loss, new_tip_loss, new_hub_loss, adkins_tip_loss, cascade_correction, max_iterations, convergence_limit, rho,
+                  hub_loss, new_tip_loss, new_hub_loss, adkins_tip_loss, cascade_correction, max_iterations, convergence_limit, rho, kin_viscosity,
                   relaxation_factor, print_all, rotational_augmentation_correction,
                   rotational_augmentation_correction_method,
                   fix_reynolds, reynolds, yaw_angle, skewed_wake_correction, blade_design, blade_thickness,
@@ -211,7 +211,6 @@ class Calculator:
         omega = rpm * 2 * pi / 60
         TSR = omega * R / v
         J = v / (rpm / 60 * R * 2)
-        kin_viscosity = 1.4207E-5  # Kinematic viscosity
 
         # BEM CALCULATION FOR EVERY SECTION
         for n in range(num_sections):
