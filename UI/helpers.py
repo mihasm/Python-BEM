@@ -3,7 +3,8 @@ import sys
 import pyqtgraph as pg
 from PyQt5 import QtCore, QtGui
 from PyQt5.QtCore import QThread
-from PyQt5.QtWidgets import QMainWindow, QWidget, QGridLayout, QLabel, QLineEdit, QPushButton, QTabWidget, QTextEdit
+from PyQt5.QtWidgets import QMainWindow, QWidget, QGridLayout, QLabel, QLineEdit, QPushButton, QTabWidget, \
+    QTextEdit, QFormLayout, QScrollArea, QVBoxLayout, QCheckBox, QComboBox, QFileDialog
 from PyQt5.QtGui import QTextCursor
 
 from matplotlib import pyplot as plt
@@ -13,7 +14,7 @@ from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from scraping import scrape_data, get_x_y_from_link
 from xfoil import generate_polars_data
 
-from utils import generate_propeller_adkins
+from utils import generate_propeller_adkins, to_float
 
 
 class ThreadGetter(QThread):
@@ -61,20 +62,90 @@ class DataCaptureThread(QThread):
 
 
 class XFoilThread(QThread):
-    progressSignal = QtCore.Signal(int)
+    startedSignal = QtCore.Signal(int)
     completeSignal = QtCore.Signal(str)
 
     def __init__(self, parent, *args, **kwargs):
         QThread.__init__(self, parent)
         self.parent = parent
 
-    def set_params(self, dat_path):
+    def set_params(self, dat_path,
+            alpha_from,alpha_to,alpha_num,
+            reynolds_from,reynolds_to,reynolds_num,
+            ncrit):
         self.dat_path = dat_path
+        self.alpha_from=alpha_from
+        self.alpha_to=alpha_to
+        self.alpha_num=alpha_num
+        self.reynolds_from=reynolds_from
+        self.reynolds_to=reynolds_to
+        self.reynolds_num=reynolds_num
+        self.ncrit = ncrit
 
     def run(self):
-        out = generate_polars_data(self.dat_path)
+        self.startedSignal.emit("Started")
+        out = generate_polars_data(
+            self.dat_path,
+            self.alpha_from,
+            self.alpha_to,
+            self.alpha_num,
+            self.reynolds_from,
+            self.reynolds_to,
+            self.reynolds_num,
+            self.ncrit
+        )
         self.parent.xfoil_generated_data = out
         self.completeSignal.emit("Done")
+
+class XfoilOptionsWindow(QWidget):
+    def __init__(self,parent):
+        super(XfoilOptionsWindow, self).__init__(None)
+        self.parent = parent
+        self.layout = QFormLayout()
+        self.setLayout(self.layout)
+
+        self.alpha_from_label = QLabel("Alpha from")
+        self.alpha_from = QLineEdit("-10")
+        self.layout.addRow(self.alpha_from_label, self.alpha_from)
+
+        self.alpha_to_label = QLabel("Alpha to")
+        self.alpha_to = QLineEdit("20")
+        self.layout.addRow(self.alpha_to_label, self.alpha_to)
+
+        self.alpha_num_label = QLabel("Alpha number")
+        self.alpha_num = QLineEdit("31")
+        self.layout.addRow(self.alpha_num_label, self.alpha_num)
+
+        self.reynolds_from_label = QLabel("Reynolds from")
+        self.reynolds_from = QLineEdit("50000")
+        self.layout.addRow(self.reynolds_from_label, self.reynolds_from)
+
+        self.reynolds_to_label = QLabel("Reynolds to")
+        self.reynolds_to = QLineEdit("1000000")
+        self.layout.addRow(self.reynolds_to_label, self.reynolds_to)
+
+        self.reynolds_num_label = QLabel("Reynolds number")
+        self.reynolds_num = QLineEdit("5")
+        self.layout.addRow(self.reynolds_num_label, self.reynolds_num)
+
+        self.ncrit_label = QLabel("Ncrit")
+        self.ncrit = QLineEdit("9")
+        self.layout.addRow(self.ncrit_label, self.ncrit)
+
+        self.button_run_xfoil = QPushButton("Run")
+        self.button_run_xfoil.clicked.connect(self.parent.generate_curves_xfoil)
+        self.layout.addRow(self.button_run_xfoil)
+
+        self.button_stop_xfoil = QPushButton("Stop")
+        self.button_stop_xfoil.clicked.connect(self.parent.stop_xfoil)
+        self.layout.addRow(self.button_stop_xfoil)
+        self.button_stop_xfoil.setDisabled(True)
+
+        self.show()
+
+    def closeEvent(self, event):
+        event.accept()  # let the window close
+
 
 class AdkinsThread(QThread):
     progressSignal = QtCore.Signal(int)
@@ -183,26 +254,18 @@ class MatplotlibWindow(QWidget):
         event.accept()  # let the window close
 
 
+
 class PrintoutWindow(QMainWindow):
     def __init__(self, parent):
-        print("PrintoutWindow")
         super(PrintoutWindow, self).__init__(parent)
-        print("PrintoutWindow2")
         self.setWindowTitle("Progress")
-        print("PrintoutWindow3")
         self.setGeometry(50, 50, 500, 300)
-        print("PrintoutWindow4")
         self.parent = parent
-        print("PrintoutWindow5")
         sys.stdout = Stream(newText=self.onUpdateText)
         sys.stderr = Stream(newText=self.onUpdateText)
-        print("PrintoutWindow6")
         self.process = QTextEdit()
-        print("PrintoutWindow7")
         self.setCentralWidget(self.process)
-        print("PrintoutWindow8")
         self.show()
-        print("PrintoutWindow9")
 
     def onUpdateText(self, text):
         cursor = self.process.textCursor()
