@@ -42,8 +42,6 @@ def xfoil_runner(airfoil, reynolds, alpha, ncrit, printer=None, print_all=False)
     return out
 
 
-
-
 def get_coefficients_from_output(output_str):
     """
 
@@ -224,7 +222,7 @@ def draw_to_matplotlib(x, y, z, shrani=False, unit='CL'):
     plt.show()
 
 
-def generate_polars(foil,ncrit):
+def generate_polars(foil,alpha_from,alpha_to,alpha_num,reynolds_from,reynolds_to,reynolds_num,ncrit):
     """
 
     :param foil:
@@ -236,8 +234,8 @@ def generate_polars(foil,ncrit):
     all_cl = []
     all_cd = []
 
-    for Re in [100,1000,10000,100000,1000000,10000000]:
-        for a in np.linspace(-10, 20, 31):
+    for Re in np.linspace(reynolds_from, reynolds_to, reynolds_num):
+        for a in np.linspace(alpha_from, alpha_to, alpha_num):
             Re = int(Re)
             cl = None
             cd = None
@@ -258,13 +256,13 @@ def generate_polars(foil,ncrit):
 
 #generate_polars("naca4410")
 
-def generate_polars_data(foil,ncrit=4):
+def generate_polars_data(foil,alpha_from,alpha_to,alpha_num,reynolds_from,reynolds_to,reynolds_num,ncrit):
     """
 
     :param foil:
     :return:
     """
-    all_ncrit, all_a, all_re, all_cl, all_cd = generate_polars(foil,ncrit)
+    all_ncrit, all_a, all_re, all_cl, all_cd = generate_polars(foil,alpha_from,alpha_to,alpha_num,reynolds_from,reynolds_to,reynolds_num,ncrit)
     out = []
     for i in range(len(all_a)):
         out.append([all_re[i], all_ncrit[i], all_a[i], all_cl[i], all_cd[i]])

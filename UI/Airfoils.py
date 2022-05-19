@@ -6,7 +6,7 @@ from matplotlib.backends.backend_qt5 import NavigationToolbar2QT as NavigationTo
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib import pyplot as plt
 
-from UI.helpers import XFoilThread, ScrapeThread, MatplotlibWindow, PrintoutWindow
+from UI.helpers import XFoilThread, ScrapeThread, MatplotlibWindow, PrintoutWindow, XfoilOptionsWindow
 from UI.CurveViewer import CurveViewer
 from UI.CurveEditor import CurveEditor
 from UI.Curve import Curve
@@ -48,7 +48,7 @@ class Airfoils(QWidget):
         self.interp_function_cl = None
         self.interp_function_cd = None
 
-        self.table_dat = Table()
+        self.table_dat = Table(True)
         self.table_dat.createEmpty(2, 50)
         self.table_dat.set_labels(["x", "y"])
         self.grid.addWidget(self.table_dat, 1, 2)
@@ -64,65 +64,27 @@ class Airfoils(QWidget):
 
         self.buttonRefresh = QPushButton("Refresh curve")
         self.grid.addWidget(self.buttonRefresh, 3, 3)
-        self.buttonRefresh.setToolTip("Osvežitev grafa krivulje profila (na podlagi tabele na levi strani)")
+        self.buttonRefresh.setToolTip("Refresh graph curve based on table data")
         self.buttonRefresh.clicked.connect(self.refresh)
+
+        self.fbox.addRow(QLabel("———— 1. Import or generate ————"))
 
         self.link = QLineEdit("link (airfoiltools.com)")
         self.fbox.addRow(self.link)
         self.link.setToolTip(
-            "Tu lahko downloadamo krivulje cL/cD iz airfoiltools.com. Obliko profila moramo vnesti sami v tabelo (copy-paste iz excela).")
+            "Link to the airfoiltools.com profile web page")
 
         self.button_generate_curves_link = QPushButton("Scrape curves from link")
         self.button_generate_curves_link.clicked.connect(self.generate_curves_link)
         self.fbox.addRow(self.button_generate_curves_link)
         self.button_generate_curves_link.setToolTip(
-            "S pomočjo linka do profila, dostopnega na strani airfoiltools.com, lahko program zdownloada vrednosti, zgenerirane z XFOIL, direktno iz spletne strani")
+            "Download cL/cD/profile from airfoiltools.com")
 
-        self.button_curve_editor = QPushButton("Curve Editor")
-        self.button_curve_editor.clicked.connect(self.open_curve_editor)
-        self.fbox.addRow(self.button_curve_editor)
-        self.button_curve_editor.setToolTip("Ročno spreminjanje/uvažanje/izvažanje cL/cD krivulj")
-
-        self.button_open_viewer = QPushButton("Open Curve Extrapolator (Montgomerie)")
-        self.button_open_viewer.clicked.connect(self.open_viewer)
-        self.fbox.addRow(self.button_open_viewer)
-        self.button_open_viewer.setToolTip(
-            "S pomočjo tega okna prilagajamo parametre ekstrapolacije z Montgomerie metodo za vsak dani Reynolds za cL in cD (alpha) krivulji")
-
-        self.button_generate_curves_xfoil = QPushButton("Generate xfoil curves [debug]")
-        self.button_generate_curves_xfoil.clicked.connect(self.generate_curves_xfoil)
+        self.button_generate_curves_xfoil = QPushButton("Generate XFOIL curves")
+        self.button_generate_curves_xfoil.clicked.connect(self.open_xfoil_options)
         self.fbox.addRow(self.button_generate_curves_xfoil)
-
-        self.button_visualize = QPushButton("Create curve visualization")
-        self.button_visualize.clicked.connect(self.visualize)
-        self.fbox.addRow(self.button_visualize)
-        self.button_visualize.setToolTip(
-            "Prikaz 3D grafa ekstrapoliranih krivulj, za dodatno verifikacijo vhodnih podatkov v analizo")
-
-        self.get_centroid_button = QPushButton("Calculate centroid")
-        self.get_centroid_button.clicked.connect(self.calculate_centroid)
-        self.fbox.addRow(self.get_centroid_button)
-        self.get_centroid_button.setToolTip(
-            "S pomočjo tega gumba izračunamo sredino podanih točk v tabeli (težišče ploskve).")
-
-        self.extrapolation_bool = QCheckBox("Use extrapolation")
-        # self.extrapolation_bool.clicked.connect(self.calculate_centroid)
-        self.fbox.addRow(self.extrapolation_bool)
-
-        self.centroid_widget = QWidget()
-        self.centroid_grid = QGridLayout()
-        self.centroid_widget.setLayout(self.centroid_grid)
-        self.centroid_label = QLabel("Centroid coordinates:")
-        self.fbox.addRow(self.centroid_widget)
-        self.centroid_label.setToolTip(
-            "Okoli te točke se zavrtijo točke pri 3D generaciji geometrije (Solidworks Makro). Na samo analizo nima vpliva.")
-
-        self.centroid_x_edit = QLineEdit()
-        self.centroid_y_edit = QLineEdit()
-
-        self.centroid_grid.addWidget(self.centroid_label, 1, 1)
-        self.centroid_grid.addWidget(self.centroid_x_edit, 1, 2)
-        self.centroid_grid.addWidget(self.centroid_y_edit, 1, 3)
+        self.button_generate_curves_xfoil.setToolTip(
+            "Generate cL/cD using profile xy points with XFOIL")
 
         self.button_import_dat_from_file = QPushButton("Import .dat")
         self.button_import_dat_from_file.clicked.connect(self.dat_importer)
@@ -134,29 +96,66 @@ class Airfoils(QWidget):
         self.fbox.addRow(self.button_import_nrel_dat_from_file)
         self.button_import_nrel_dat_from_file.setToolTip("Import NREL .dat file (cl and cd curves)")
 
-        self.grid.setColumnStretch(1, 1)
-        self.grid.setColumnStretch(2, 1)
-        self.grid.setColumnStretch(3, 2)
+        self.fbox.addRow(QLabel("———— 2. Prepare ————"))
+
+        self.button_open_viewer = QPushButton("Curve Extrapolation Editor")
+        self.button_open_viewer.clicked.connect(self.open_viewer)
+        self.fbox.addRow(self.button_open_viewer)
+        self.button_open_viewer.setToolTip(
+            "Modify extrapolation coefficients for Montgomerie method")
+
+        self.button_curve_editor = QPushButton("Curve Data Editor")
+        self.button_curve_editor.clicked.connect(self.open_curve_editor)
+        self.fbox.addRow(self.button_curve_editor)
+        self.button_curve_editor.setToolTip("Manually edit cL/cD curve data")
+
+        self.fbox.addRow(QLabel("———— 3. Verify ————"))
+
+        self.button_visualize = QPushButton("Show cL/cD(Re,alpha) curves")
+        self.button_visualize.clicked.connect(self.visualize)
+        self.fbox.addRow(self.button_visualize)
+        self.button_visualize.setToolTip(
+            "Show 3D graph of extrapolated curves")
+
+        self.fbox.addRow(QLabel("———— 4. Analysis settings ————"))
+
+        self.extrapolation_bool = QCheckBox("Use extrapolation")
+        self.fbox.addRow(self.extrapolation_bool)
+        self.extrapolation_bool.setToolTip(
+            "Toggle usage of extrapolated curves in the analysis")
 
         self.ncrit_selection = QComboBox()
         self._ncrit_selection = QLabel("Ncrit")
         self.fbox.addRow(self._ncrit_selection, self.ncrit_selection)
         self.ncrit_selection.setToolTip(
-            "Tu nastavimo N vrednost krivulj, ki jih želimo uporabiti. (oblika mejne plasti (e^N) -> XFOIL)")
+            "Use curves with this N value for calculation (e^N transition theory)")
 
-        navodila = QLabel("Navodila za uporabo:\n" +
-                          "1. Na strani http://airfoiltools.com/\n" +
-                          "izberite poljubni aerodinamični profil.\n" +
-                          "2. Link vnesite zgoraj in pritisnite 'Scrape'.\n" +
-                          "Sedaj so cL/cD krivulje naložene v program.\n" +
-                          "(Ročno jih lahko spremenite s Curve Editor)\n" +
-                          "3. Sedaj je treba nastaviti koef. ekstrapolacije\n" +
-                          "z orodjem Curve Extrapolator (Montgomerie)\n" +
-                          "4. Končane krivulje lahko preverite\n" +
-                          "z uporabo orodja Create curve visualization,\n" +
-                          "kjer so prikazane v odvisnosti od Re")
-        self.fbox.addRow(navodila)
+        self.centroid_widget = QWidget()
+        self.centroid_grid = QGridLayout()
+        self.centroid_widget.setLayout(self.centroid_grid)
+        self.centroid_label = QLabel("Center:")
+        self.grid.addWidget(self.centroid_widget,2,2)
+        self.centroid_label.setToolTip(
+            "Center of rotation for 3D export to Solidworks. Doesn't affect analysis.")
 
+        self.centroid_x_edit = QLineEdit()
+        self.centroid_y_edit = QLineEdit()
+
+        self.centroid_grid.addWidget(self.centroid_label, 1, 1)
+        self.centroid_grid.addWidget(self.centroid_x_edit, 1, 2)
+        self.centroid_grid.addWidget(self.centroid_y_edit, 1, 3)
+
+        self.get_centroid_button = QPushButton("Calculate centroid")
+        self.get_centroid_button.clicked.connect(self.calculate_centroid)
+        self.grid.addWidget(self.get_centroid_button,3,2)
+        self.get_centroid_button.setToolTip(
+            "Recalculate the centroid for the profile")
+
+        self.grid.setColumnStretch(1, 1)
+        self.grid.setColumnStretch(2, 1)
+        self.grid.setColumnStretch(3, 2)
+
+        
         self.window = None
         self.curve_editor = CurveEditor(self)
 
@@ -235,23 +234,48 @@ class Airfoils(QWidget):
         self.curve_editor.show()
         self.curve_editor.load_curves()
 
+    def open_xfoil_options(self):
+        self.xfoil_window = XfoilOptionsWindow(self)
+        self.xfoil_window.setWindowTitle("XFOIL runner: "+self.airfoil_name)
+    
     def generate_curves_xfoil(self):
         print("Generating xfoil curves")
         x, y = self.get_x_y()
         generate_dat(self.airfoil_name, x, y)
 
+        dat_path = self.airfoil_name + ".dat"
+        alpha_from = to_float(self.xfoil_window.alpha_from.text())
+        alpha_to = to_float(self.xfoil_window.alpha_to.text())
+        alpha_num = int(self.xfoil_window.alpha_num.text())
+        reynolds_from = to_float(self.xfoil_window.reynolds_from.text())
+        reynolds_to = to_float(self.xfoil_window.reynolds_to.text())
+        reynolds_num = int(self.xfoil_window.reynolds_num.text())
+        ncrit = to_float(self.xfoil_window.ncrit.text())
+
         if self.window != None:
             self.window.close()
         self.window = PrintoutWindow(self)
         self.thread = XFoilThread(self)
-        self.thread.set_params(self.airfoil_name + ".dat")
+        self.thread.set_params(dat_path,
+            alpha_from,alpha_to,alpha_num,
+            reynolds_from,reynolds_to,reynolds_num,
+            ncrit)
+        self.xfoil_window.button_run_xfoil.setDisabled(True)
+        self.xfoil_window.button_stop_xfoil.setEnabled(True)
         self.thread.completeSignal.connect(self.xfoil_completion)
         self.thread.start()
-        print("Done")
+        #print("Done")
+
+    def stop_xfoil(self):
+        self.thread.terminate()
+        self.xfoil_window.button_run_xfoil.setEnabled(True)
+        self.xfoil_window.button_stop_xfoil.setDisabled(True)
 
     def xfoil_completion(self, nothing_important):
         self.populate_curve_list(self.xfoil_generated_data)
         self.refresh()
+        self.xfoil_window.button_run_xfoil.setEnabled(True)
+        self.xfoil_window.button_stop_xfoil.setDisabled(True)
 
     def generate_curves_link(self):
         print("Scraping from link...")
@@ -276,6 +300,7 @@ class Airfoils(QWidget):
         self.refresh()
 
     def populate_curve_list(self, data):
+        print(data)
         self.curves.curve_list = []
         x, y = self.get_x_y()
         ncrit_list = np.unique(data[:, 1])
