@@ -8,6 +8,9 @@ from utils import array_to_csv
 
 
 class Table(QWidget):
+    """
+
+    """
     def __init__(self, fixed_columns=False):
         super().__init__()
         self.selected_array = []
@@ -20,6 +23,9 @@ class Table(QWidget):
         self.set_headers()
 
     def set_headers(self):
+        """
+
+        """
         self.horizontal_headers = self.tableWidget.horizontalHeader()
         self.horizontal_headers.setContextMenuPolicy(
             QtCore.Qt.CustomContextMenu)
@@ -31,9 +37,16 @@ class Table(QWidget):
             self.vertical_header_popup)
 
     def set_labels(self, arr):
+        """
+
+        :param arr:
+        """
         self.tableWidget.setHorizontalHeaderLabels(arr)
 
     def initUI(self):
+        """
+
+        """
         self.createEmpty(4, 4)
 
         # Add box layout, add table to box layout and add box layout to widget
@@ -44,6 +57,10 @@ class Table(QWidget):
         self.show()
 
     def createTable(self, array):
+        """
+
+        :param array:
+        """
         if len(array) > 0:
             # Create table
             self.tableWidget.setRowCount(len(array))
@@ -64,6 +81,11 @@ class Table(QWidget):
             self.tableWidget.clicked.connect(self.on_click)
 
     def createEmpty(self, x, y):
+        """
+
+        :param x:
+        :param y:
+        """
         # Create table
         self.tableWidget.setRowCount(y)
         self.tableWidget.setColumnCount(x)
@@ -75,9 +97,16 @@ class Table(QWidget):
 
     @pyqtSlot()
     def on_click(self):
+        """
+
+        """
         self.get_selected()
 
     def get_selected(self):
+        """
+
+        :return:
+        """
         self.selected_array = []
 
         rows_added = sorted(set(index.row()
@@ -100,6 +129,10 @@ class Table(QWidget):
         return self.selected_array
 
     def keyPressEvent(self, e):
+        """
+
+        :param e:
+        """
         if e.modifiers() & QtCore.Qt.ControlModifier:
             if e.key() == QtCore.Qt.Key_C:  # copy
                 s = array_to_csv(self.get_selected())
@@ -118,6 +151,10 @@ class Table(QWidget):
             self.delete_data()
 
     def paste(self):
+        """
+
+        :return:
+        """
         results = []
         text = self.clip.text()
         text = text.replace("   ", "\t")
@@ -151,6 +188,9 @@ class Table(QWidget):
         return
 
     def delete_data(self):
+        """
+
+        """
         rows = sorted(set(index.row() for index in self.tableWidget.selectedIndexes()))
         columns = sorted(set(index.column() for index in self.tableWidget.selectedIndexes()))
         for r in rows:
@@ -158,6 +198,9 @@ class Table(QWidget):
                 self.tableWidget.setItem(r, c, QTableWidgetItem(""))
 
     def clear_table(self):
+        """
+
+        """
         num_rows = self.tableWidget.rowCount()
         num_columns = self.tableWidget.columnCount()
         row_indexes = range(num_rows)
@@ -167,6 +210,9 @@ class Table(QWidget):
                 self.tableWidget.setItem(r, c, QTableWidgetItem(""))
 
     def select_next_row(self):
+        """
+
+        """
         rows = sorted(set(index.row()
                           for index in self.tableWidget.selectedIndexes()))
         columns = sorted(set(index.column()
@@ -180,6 +226,10 @@ class Table(QWidget):
             last_selected_row + 1, first_selected_column)
 
     def get_values(self):
+        """
+
+        :return:
+        """
         data = []
         for row in range(self.tableWidget.rowCount()):
             data.append([])
@@ -193,6 +243,10 @@ class Table(QWidget):
         return data
 
     def contextMenuEvent(self, event):
+        """
+
+        :param event:
+        """
         menu = QMenu(self)
         item = self.tableWidget.itemAt(event.pos())
 
@@ -229,7 +283,15 @@ class Table(QWidget):
                     self.tableWidget.removeColumn(c)
 
     def horizontal_header_popup(self, position):
+        """
+
+        :param position:
+        """
         pass
 
     def vertical_header_popup(self, position):
+        """
+
+        :param position:
+        """
         pass

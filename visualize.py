@@ -5,10 +5,8 @@ import mpl_toolkits.mplot3d as mp3d
 import numpy as np
 from mpl_toolkits.mplot3d import Axes3D
 from scipy import interpolate
-from UI import helpers
 
-from turbine_data import SET_INIT
-from utils import calculate_dr, get_transition_foils, get_centroid_coordinates
+from utils import get_transition_foils
 
 
 def create_face(p1, p2, p3, p4, *args, **kwargs):
@@ -104,6 +102,15 @@ def point_along_line(x1, y1, x2, y2, t):
 
 
 def interpolate_foils(foil_1_x, foil_1_y, foil_2_x, foil_2_y, t):
+    """
+
+    :param foil_1_x:
+    :param foil_1_y:
+    :param foil_2_x:
+    :param foil_2_y:
+    :param t:
+    :return:
+    """
     out_x, out_y = [], []
 
     tck, u = interpolate.splprep([foil_1_x, foil_1_y], s=0)

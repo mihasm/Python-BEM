@@ -4,6 +4,9 @@ from montgomerie import Montgomerie
 
 
 class Curve:
+    """
+
+    """
     def __init__(self):
         self.x = None
         self.y = None
@@ -22,6 +25,16 @@ class Curve:
         self.max_stable_aoa = None
 
     def create(self, x, y, Re, ncrit, alpha, cl, cd):
+        """
+
+        :param x:
+        :param y:
+        :param Re:
+        :param ncrit:
+        :param alpha:
+        :param cl:
+        :param cd:
+        """
         self.x = x
         self.y = y
         self.Re = Re
@@ -39,15 +52,27 @@ class Curve:
         self.min_stable_aoa = -5
 
     def get_curves(self):
+        """
+
+        :return:
+        """
         return self.alpha, self.cl, self.cd
 
     def get_extrapolated_curve(self):
+        """
+
+        :return:
+        """
         M = Montgomerie(x=self.x, y=self.y, alpha=self.alpha, Cl=self.cl, Cd=self.cd, Re=self.Re, A=self.A, Am=self.Am,
                         B=self.B, Bm=self.Bm, m_CD90=self.m_CD90, slope=self.slope)
         alpha, cl, cd = M.calculate_extrapolation()
         return alpha, cl, cd
 
     def get_combined_curve(self):
+        """
+
+        :return:
+        """
         M = Montgomerie(x=self.x, y=self.y, alpha=self.alpha, Cl=self.cl, Cd=self.cd, Re=self.Re, A=self.A, Am=self.Am,
                         B=self.B, Bm=self.Bm, m_CD90=self.m_CD90, slope=self.slope)
         _alpha, _cl, _cd = M.calculate_extrapolation()
@@ -69,6 +94,10 @@ class Curve:
         return _alpha, cl_out, cd_out
 
     def save_curve(self):
+        """
+
+        :return:
+        """
         out = {"x": list(self.x), "y": list(self.y), "Re": self.Re, "ncrit": self.ncrit, "alpha": list(self.alpha),
                "cl": list(self.cl), "cd": list(self.cd), "A": self.A, "B": self.B, "Am": self.Am, "Bm": self.Bm,
                "m_CD90": self.m_CD90, "slope": self.slope, "min_stable_aoa": self.min_stable_aoa,
@@ -76,6 +105,10 @@ class Curve:
         return out
 
     def load_curve(self, out):
+        """
+
+        :param out:
+        """
         self.x = out["x"]
         self.y = out["y"]
         self.Re = out["Re"]

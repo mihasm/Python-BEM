@@ -141,10 +141,10 @@ class Montgomerie:
         f2plus = (
             (CL2plus - self.PlateFlow(self.alphazero, self.CLzero, a2plus)) / B)
 
-        if (f1plus == 1):
+        if f1plus == 1:
             f1plus += 10e-6
             print("yes")
-        if (f2plus == 1):
+        if f2plus == 1:
             print("yes2")
             f2plus += 10e-6
 
@@ -216,7 +216,7 @@ class Montgomerie:
             f = 1 / (1 + k * delta ** 4)
             self.deltaCD = 0.13 * ((f - 1) * self.PotFlow(self.CLzero, self.slope, alpha) - (1 - f) * self.PlateFlow(
                 self.alphazero, self.CLzero, alpha))
-            if (self.deltaCD <= 0):
+            if self.deltaCD <= 0:
                 self.deltaCD = 0
             # tukaj nisem preprican kaj pomeni self.m_fThickness, je to v procentih tetive ali kaj?
             m_Cd.append(

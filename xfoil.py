@@ -91,10 +91,18 @@ def run_xfoil_analysis(airfoil, reynolds, alpha, ncrit, iterations=100, max_next
     with Popen(os.path.abspath(xfoil_path), stdin=PIPE, stdout=PIPE, universal_newlines=True, shell=False) as process:
 
         def call(_str, proc=process):
+            """
+
+            :param _str:
+            :param proc:
+            """
             # print(_str,file=process.stdin)
             proc.stdin.write(_str + "\n")
 
         def kill():
+            """
+
+            """
             time.sleep(2)
             process.kill()
 

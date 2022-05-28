@@ -4,13 +4,24 @@ from UI.Curve import Curve
 
 
 class Curves:
+    """
+
+    """
     def __init__(self):
         self.curve_list = []
 
     def add(self, curve):
+        """
+
+        :param curve:
+        """
         self.curve_list.append(curve)
 
     def get_stall_angles(self):
+        """
+
+        :return:
+        """
         out_re = []
         out_min_aoa_list = []
         out_max_aoa_list = []
@@ -27,9 +38,17 @@ class Curves:
         return out_re, out_min_aoa_list, out_max_aoa_list
 
     def get_curves_sorted(self):
+        """
+
+        :return:
+        """
         return sorted(self.curve_list, key=lambda c: (c.ncrit, c.Re))
 
     def save_curves(self):
+        """
+
+        :return:
+        """
         out_list = []
         for c in self.curve_list:
             data_curve = c.save_curve()
@@ -37,6 +56,10 @@ class Curves:
         return out_list
 
     def load_curves(self, out):
+        """
+
+        :param out:
+        """
         self.curve_list = []
         for data_curve in out:
             c = Curve()
@@ -44,6 +67,11 @@ class Curves:
             self.curve_list.append(c)
 
     def gather_curves(self, extrapolation=True):
+        """
+
+        :param extrapolation:
+        :return:
+        """
         out = []
         for curve in self.get_curves_sorted():
             if extrapolation:
@@ -61,6 +89,12 @@ class Curves:
         return out
 
     def get_curve(self, re_in, ncrit_in):
+        """
+
+        :param re_in:
+        :param ncrit_in:
+        :return:
+        """
         out = []
         for curve in self.curve_list:
             re = curve.Re
@@ -78,6 +112,12 @@ class Curves:
             raise Exception("DataError: Multiple curves have same Reynolds and Ncrit...")
 
     def remove_curve(self, re_in, ncrit_in):
+        """
+
+        :param re_in:
+        :param ncrit_in:
+        :return:
+        """
         out = []
         i = 0
         for curve in self.curve_list:

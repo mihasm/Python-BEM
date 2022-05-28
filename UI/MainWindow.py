@@ -1,19 +1,18 @@
 import json
 import os
 from multiprocessing import Manager
-from pprint import pprint
 
 import numpy as np
+from PyQt5 import QtCore, QtWidgets
 from PyQt5.QtCore import pyqtSignal
 from PyQt5.QtWidgets import QMainWindow, QAction, QFileDialog, QApplication
-from PyQt5 import QtCore, QtWidgets
 
 from UI.AirfoilManager import AirfoilManager
 from UI.Analysis import Analysis
 from UI.Optimization import Optimization
 from UI.WindTurbineProperties import WindTurbineProperties
-from main import TITLE_STR, application_path
 from UI.helpers import ThreadGetter, TabWidget
+from main import TITLE_STR, application_path
 from turbine_data import SET_INIT
 from utils import create_folder, fltr, ErrorMessageBox
 
@@ -231,6 +230,10 @@ class MainWindow(QMainWindow):
         self.running = False
 
     def wheelEvent(self, event):
+        """
+
+        :param event:
+        """
         modifiers = QtWidgets.QApplication.keyboardModifiers()
         if modifiers == QtCore.Qt.ControlModifier:
             font = QApplication.instance().font()

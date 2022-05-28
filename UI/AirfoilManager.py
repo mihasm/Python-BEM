@@ -6,6 +6,9 @@ from UI.Airfoils import Airfoils
 
 
 class AirfoilManager(QWidget):
+    """
+
+    """
     emitter = pyqtSignal(str)
 
     def __init__(self, parent=None):
@@ -36,26 +39,44 @@ class AirfoilManager(QWidget):
         self.upper_layout.addWidget(self.button_rename_foil, 0, 3)
 
     def add_foil_popup(self):
+        """
+
+        """
         self.emitter.connect(self.add_foil)
         self.p = PopupText("foil name", "airfoil_name", self.emitter)
         self.p.setGeometry(QRect(100, 100, 400, 200))
         self.p.show()
 
     def add_foil(self, string):
+        """
+
+        :param string:
+        """
         c = Airfoils(string, self)
         self.tab_widget.add_tab(c, string)
         self.tab_widget.setCurrentIndex(len(self.tab_widget.tabs) - 1)
 
     def rename_foil_popup(self):
+        """
+
+        """
         self.emitter.connect(self.rename_foil)
         self.p = PopupText("foil name", self.tab_widget.current_tab_name(), self.emitter)
         self.p.setGeometry(QRect(100, 100, 400, 200))
         self.p.show()
 
     def rename_foil(self, string):
+        """
+
+        :param string:
+        """
         self.tab_widget.rename_current_tab(string)  # self.tab_widget.tabs
 
     def get_settings(self):
+        """
+
+        :return:
+        """
         out = {}
         i = 0
 
@@ -67,6 +88,10 @@ class AirfoilManager(QWidget):
         return {"airfoils": out}
 
     def set_settings(self, dict_settings):
+        """
+
+        :param dict_settings:
+        """
         self.tab_widget.remove_all_tabs()
         if "airfoils" in dict_settings:
             if len(dict_settings["airfoils"]) > 0:

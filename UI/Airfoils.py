@@ -1,23 +1,24 @@
 import numpy as np
+import pyqtgraph as pg
 from PyQt5.QtWidgets import QWidget, QGridLayout, QFormLayout, QScrollArea, QVBoxLayout, QPushButton, QLineEdit, \
     QCheckBox, QLabel, QComboBox, QFileDialog
-from matplotlib import pyplot as plt, cm
-from matplotlib.backends.backend_qt5 import NavigationToolbar2QT as NavigationToolbar
-from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+from matplotlib import cm
 from matplotlib import pyplot as plt
-import pyqtgraph as pg
 
-from UI.helpers import XFoilThread, ScrapeThread, MatplotlibWindow, PrintoutWindow, XfoilOptionsWindow
-from UI.CurveViewer import CurveViewer
-from UI.CurveEditor import CurveEditor
 from UI.Curve import Curve
+from UI.CurveEditor import CurveEditor
+from UI.CurveViewer import CurveViewer
 from UI.Curves import Curves
+from UI.Table import Table
+from UI.helpers import XFoilThread, ScrapeThread, MatplotlibWindow, PrintoutWindow, XfoilOptionsWindow
 from utils import import_dat, import_nrel_dat, interp_at, generate_dat, to_float, ErrorMessageBox, \
     get_centroid_coordinates
-from UI.Table import Table
 
 
 class Airfoils(QWidget):
+    """
+
+    """
     def __init__(self, airfoil_name, parent=None):
         super(Airfoils, self).__init__(parent)
 
@@ -177,6 +178,9 @@ class Airfoils(QWidget):
             self.populate_curve_list(data)
 
     def visualize(self):
+        """
+
+        """
         print("Visualizing")
         data = self.gather_curves()
         print(data)
@@ -223,20 +227,32 @@ class Airfoils(QWidget):
         bar2.ax.set_xlabel('Cd', fontsize=15, labelpad=20)
 
     def open_viewer(self):
+        """
+
+        """
         print("opening viewer")
         self.viewer.show()
         self.viewer.generate_views()
 
     def open_curve_editor(self):
+        """
+
+        """
         print("opening curve editor")
         self.curve_editor.show()
         self.curve_editor.load_curves()
 
     def open_xfoil_options(self):
+        """
+
+        """
         self.xfoil_window = XfoilOptionsWindow(self)
         self.xfoil_window.setWindowTitle("XFOIL runner: " + self.airfoil_name)
 
     def generate_curves_xfoil(self):
+        """
+
+        """
         print("Generating xfoil curves")
         x, y = self.get_x_y()
         generate_dat(self.airfoil_name, x, y)
@@ -265,17 +281,27 @@ class Airfoils(QWidget):
         # print("Done")
 
     def stop_xfoil(self):
+        """
+
+        """
         self.thread.terminate()
         self.xfoil_window.button_run_xfoil.setEnabled(True)
         self.xfoil_window.button_stop_xfoil.setDisabled(True)
 
     def xfoil_completion(self, nothing_important):
+        """
+
+        :param nothing_important:
+        """
         self.populate_curve_list(self.xfoil_generated_data)
         self.refresh()
         self.xfoil_window.button_run_xfoil.setEnabled(True)
         self.xfoil_window.button_stop_xfoil.setDisabled(True)
 
     def generate_curves_link(self):
+        """
+
+        """
         print("Scraping from link...")
         if self.window != None:
             self.window.close()
@@ -291,6 +317,10 @@ class Airfoils(QWidget):
         self.thread.start()
 
     def generate_curves_link_completion(self, nothing_important):
+        """
+
+        :param nothing_important:
+        """
         print("Finished, populating...")
         self.table_dat.clear_table()
         self.populate_curve_list(self.scraping_generated_data[0])
@@ -298,6 +328,10 @@ class Airfoils(QWidget):
         self.refresh()
 
     def populate_curve_list(self, data):
+        """
+
+        :param data:
+        """
         print(data)
         self.curves.curve_list = []
         x, y = self.get_x_y()
@@ -315,6 +349,10 @@ class Airfoils(QWidget):
                 self.curves.add(c)
 
     def refresh(self):
+        """
+
+        :return:
+        """
         x_values = []
         y_values = []
         array_dat = self.table_dat.get_values()
@@ -342,6 +380,10 @@ class Airfoils(QWidget):
         self.refresh_ncrits_combobox()
 
     def get_max_thickness(self):
+        """
+
+        :return:
+        """
         x = []
         y = []
         array_dat = self.table_dat.get_values()
@@ -386,6 +428,10 @@ class Airfoils(QWidget):
             self.calculate_centroid()
 
     def calculate_centroid(self):
+        """
+
+        :return:
+        """
         foil_x, foil_y = self.get_x_y()
         x, y = get_centroid_coordinates(foil_x, foil_y)
         # print("x:",x,"y:",y)
@@ -394,21 +440,36 @@ class Airfoils(QWidget):
         return x, y
 
     def get_ncrits(self):
+        """
+
+        :return:
+        """
         curves = self.gather_curves()
         if len(curves) > 0:
             ncrit_list = np.unique(curves[:, 1])
             return ncrit_list
 
     def refresh_ncrits_combobox(self):
+        """
+
+        """
         self.ncrit_selection.clear()
         ncrits = self.get_ncrits()
         if ncrits is not None:
             self.ncrit_selection.addItems([str(n) for n in list(ncrits)])
 
     def gather_curves(self):
+        """
+
+        :return:
+        """
         return self.curves.gather_curves(self.extrapolation_bool.checkState())
 
     def get_settings(self):
+        """
+
+        :return:
+        """
         out = {}
 
         x, y = self.get_x_y()
@@ -443,7 +504,10 @@ class Airfoils(QWidget):
         return out
 
     def set_settings(self, dict_settings):
+        """
 
+        :param dict_settings:
+        """
         x, y = dict_settings["x"], dict_settings["y"]
 
         try:

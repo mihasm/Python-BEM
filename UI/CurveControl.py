@@ -6,6 +6,9 @@ from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 
 
 class CurveControl(QWidget):
+    """
+
+    """
     def __init__(self, parent=None, curve=None):
         super(CurveControl, self).__init__(parent)
         # self.setMinimumSize(300,400)
@@ -103,14 +106,23 @@ class CurveControl(QWidget):
         self.show()
 
     def clear(self):
+        """
+
+        """
         self.ax.cla()
 
     def draw_base(self):
+        """
+
+        """
         self.ax.plot(self.curve.alpha, self.curve.cl)
         self.ax.plot(self.curve.alpha, self.curve.cd, "o-")
         self.canvas.draw()
 
     def draw_extrapolation(self):
+        """
+
+        """
         self.clear()
 
         self.draw_base()
@@ -126,6 +138,9 @@ class CurveControl(QWidget):
         self.canvas.draw()
 
     def update(self):
+        """
+
+        """
         self.curve.A = int(self.A.value())
         self.curve.B = int(self.B.value())
         self.curve.Am = int(self.Am.value())

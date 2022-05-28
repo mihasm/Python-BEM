@@ -1,4 +1,4 @@
-from math import sin, cos, atan, acos, pi, exp, sqrt, atan2, tan, degrees, radians, tanh
+from math import sin, cos, acos, pi, exp, sqrt, atan2, tan, degrees, tanh
 
 METHODS_STRINGS = {"0": "Original",
                    "1": "Spera",
@@ -15,6 +15,12 @@ METHODS_STRINGS = {"0": "Original",
 
 
 def calculate_coefficients(method, input_arguments):
+    """
+
+    :param method:
+    :param input_arguments:
+    :return:
+    """
     if method == 0:
         return fInductionCoefficients0(**input_arguments)
     if method == 1:
@@ -573,6 +579,14 @@ def calc_rotational_augmentation_correction(
 
 
 def skewed_wake_correction_calculate(yaw_angle, a, r, R):
+    """
+
+    :param yaw_angle:
+    :param a:
+    :param r:
+    :param R:
+    :return:
+    """
     chi = (0.6 * a + 1) * yaw_angle
     a_skew = a * (1 + 15 * pi / 64 * r / R * tan(chi / 2))
     return a_skew

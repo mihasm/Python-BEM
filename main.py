@@ -13,12 +13,11 @@ import os
 import sys
 
 import numpy as np
+from PyQt5 import QtCore
 from PyQt5 import QtGui
+from PyQt5 import QtWidgets
 from PyQt5.QtCore import QLocale
 from PyQt5.QtWidgets import (QApplication)
-from PyQt5 import QtCore
-import PyQt5
-from PyQt5 import QtWidgets
 
 from UI import MainWindow
 from utils import (QDarkPalette)
@@ -37,6 +36,10 @@ QtWidgets.QApplication.setAttribute(QtCore.Qt.AA_EnableHighDpiScaling, True)
 
 
 def main(quick_results=False):
+    """
+
+    :param quick_results:
+    """
     if sys.platform.startswith("win"):
         # On Windows calling this function is necessary for multiprocessing.
         multiprocessing.freeze_support()

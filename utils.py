@@ -10,7 +10,6 @@ import scipy
 from PyQt5 import QtGui
 from PyQt5.QtGui import QPalette, QColor
 from PyQt5.QtWidgets import (QMessageBox)
-from numpy import array
 from scipy import interpolate
 
 # determine if application is a script file or frozen exe
@@ -218,6 +217,9 @@ def to_float(inpt):
 
 
 class Printer:
+    """
+
+    """
     def __init__(self, arr):
         self.out = arr
 
@@ -420,7 +422,7 @@ def get_centroid_coordinates(x, y):
 
     Cx = Cx * 1 / (6 * A)
     Cy = Cy * 1 / (6 * A)
-    return (Cx, Cy)
+    return Cx, Cy
 
 
 class MyMessageBox(QMessageBox):
@@ -563,7 +565,7 @@ def import_nrel_dat(file_path):
     Re = 0.0
     ncrit = 0.0
     startline = 0
-    while (i < len(lines)):
+    while i < len(lines):
         if "Table of aerodynamics coefficients" in lines[i]:
             found = True
             startline = i + 4
@@ -693,6 +695,11 @@ def greek_letters_to_string(string):
 
 
 def get_curves_functions(input_arguments):
+    """
+
+    :param input_arguments:
+    :return:
+    """
     airfoils = input_arguments["airfoils"]  # Define airfoil data
     airfoils_list = input_arguments["foils"]  # List of airfoils per section
 
@@ -712,9 +719,27 @@ def get_curves_functions(input_arguments):
         cd = data[:, 4].flatten()
 
         def interpolation_function_cl(re_in, alpha_in, re=re, alpha=alpha, cl=cl):
+            """
+
+            :param re_in:
+            :param alpha_in:
+            :param re:
+            :param alpha:
+            :param cl:
+            :return:
+            """
             return interp(re_in, alpha_in, re, alpha, cl)
 
         def interpolation_function_cd(re_in, alpha_in, re=re, alpha=alpha, cd=cd):
+            """
+
+            :param re_in:
+            :param alpha_in:
+            :param re:
+            :param alpha:
+            :param cd:
+            :return:
+            """
             return interp(re_in, alpha_in, re, alpha, cd)
 
         airfoils[blade_name]["interp_function_cl"] = interpolation_function_cl
@@ -725,9 +750,19 @@ def get_curves_functions(input_arguments):
         if len(re_stall_list) == 1:
             # only one curve
             def interpolation_function_stall_min(re_in):
+                """
+
+                :param re_in:
+                :return:
+                """
                 return aoa_min_stall_list[0]
 
             def interpolation_function_stall_max(re_in):
+                """
+
+                :param re_in:
+                :return:
+                """
                 return aoa_max_stall_list[0]
         else:
             interpolation_function_stall_min = interpolate.interp1d(
@@ -919,9 +954,20 @@ def generate_propeller_adkins(inp):
             if minimize_losses:
 
                 def eps_minimize_function(cl):
+                    """
+
+                    :param cl:
+                    :return:
+                    """
                     # finds minimal losses by choosing the right Cl
 
                     def get_dcl(alpha, cl_req=cl):
+                        """
+
+                        :param alpha:
+                        :param cl_req:
+                        :return:
+                        """
                         # returns 0 if alpha produces specified cl, else returns > 0.
                         # used as the zero-finding function
 
@@ -956,6 +1002,12 @@ def generate_propeller_adkins(inp):
                 eps_arr[i] = min_eps
             else:
                 def get_dcl(alpha, cl_req=cl_des):
+                    """
+
+                    :param alpha:
+                    :param cl_req:
+                    :return:
+                    """
                     # returns 0 if alpha produces specified cl, else returns > 0.
                     # used as the zero-finding function
                     cl_actual = airfoils[airfoil]["interp_function_cl"](Re_section, alpha)
@@ -1170,6 +1222,15 @@ def extrapolate_nans(x, y, v):
 
 
 def get_interpolation_function(x, y, z, num_x=10, num_y=360):
+    """
+
+    :param x:
+    :param y:
+    :param z:
+    :param num_x:
+    :param num_y:
+    :return:
+    """
     x, y, z = np.array(x), np.array(y), np.array(z)
     xi, yi = np.linspace(x.min(), x.max(), num_x), np.linspace(
         y.min(), y.max(), num_y)

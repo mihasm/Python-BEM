@@ -11,6 +11,9 @@ from utils import to_float, MyMessageBox
 
 
 class Analysis(QWidget):
+    """
+
+    """
     def __init__(self, parent=None):
         super(Analysis, self).__init__(parent)
 
@@ -245,6 +248,9 @@ class Analysis(QWidget):
         self.set_parameter_visibility()
 
     def set_parameter_visibility(self):
+        """
+
+        """
         current_index = self.forms_dict["variable_selection"][0].currentIndex()
         if current_index == 0:
             # RPM / speed
@@ -400,6 +406,9 @@ class Analysis(QWidget):
             self.forms_dict["reynolds"][2].hide()
 
     def update_tsr_and_j(self):
+        """
+
+        """
         try:
             s = self.get_settings()
             R = float(self.main.wind_turbine_properties.R.text())
@@ -413,6 +422,10 @@ class Analysis(QWidget):
             print("couldnt update tsr min/max or J min/max")
 
     def check_forms(self):
+        """
+
+        :return:
+        """
         out = ""
         for n, f, n_short in self.form_list:
             if isinstance(f, QLineEdit):
@@ -428,6 +441,11 @@ class Analysis(QWidget):
         return out
 
     def check_state(self, *args, **kwargs):
+        """
+
+        :param args:
+        :param kwargs:
+        """
         sender = self.sender()
         validator = sender.validator()
         state = validator.validate(sender.text(), 0)[0]
@@ -440,6 +458,10 @@ class Analysis(QWidget):
         # sender.setStyleSheet("QLineEdit { background-color: %s; color: #000000 }" % color)
 
     def get_settings(self):
+        """
+
+        :return:
+        """
         out_settings = {}
         for name, value, name_short in self.form_list:
             name = self.name_to_settings[name]
@@ -453,6 +475,10 @@ class Analysis(QWidget):
         return out_settings
 
     def set_settings(self, inp_dict):
+        """
+
+        :param inp_dict:
+        """
         for name_long, item, name in self.form_list:
             if name in inp_dict:
                 if isinstance(item, QComboBox):
@@ -468,6 +494,10 @@ class Analysis(QWidget):
                     item.setChecked(inp_dict[name])
 
     def validate_inputs(self):
+        """
+
+        :return:
+        """
         check = self.check_forms()
         if check != True:
             msg = MyMessageBox()
@@ -478,6 +508,10 @@ class Analysis(QWidget):
         return check
 
     def run(self):
+        """
+
+        :return:
+        """
         self.clear()
 
         if not self.validate_inputs():
@@ -499,14 +533,24 @@ class Analysis(QWidget):
             self.p.start()
 
     def add_text(self, string):
+        """
+
+        :param string:
+        """
         if self.buttonEOF.checkState() == 2:
             self.right_output_text_area.moveCursor(QtGui.QTextCursor.End)
         self.right_output_text_area.insertPlainText(string)
 
     def clear(self):
+        """
+
+        """
         self.right_output_text_area.clear()
 
     def terminate(self):
+        """
+
+        """
         try:
             self.p.terminate()
         except:
@@ -521,6 +565,9 @@ class Analysis(QWidget):
         self.show_results()
 
     def show_results(self):
+        """
+
+        """
         if len(self.main.return_results) > 0:
             results = self.main.return_results[-1]
             if "v" in results:

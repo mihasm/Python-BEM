@@ -76,6 +76,11 @@ def optimize(inp_args, queue_pyqtgraph):
                 bounds_list = [(b[1], b[2]) for b in input_variables]
 
                 def fobj(input_numbers):
+                    """
+
+                    :param input_numbers:
+                    :return:
+                    """
                     for i in range(len(input_numbers)):
                         section_inp_args[inputs_list[i]] = input_numbers[i]
 
@@ -149,6 +154,11 @@ def optimize(inp_args, queue_pyqtgraph):
             output_variables = [["cp", 1.0]]
 
             def fobj(*input_numbers):
+                """
+
+                :param input_numbers:
+                :return:
+                """
                 input_numbers = input_numbers[0]
                 k = 0
                 for i in range(len(inputs_list)):

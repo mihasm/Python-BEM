@@ -1,14 +1,12 @@
 import numpy
 import numpy as np
+import scipy.optimize as optimize
 from numpy import radians, degrees
 
 from bending_inertia import generate_hollow_foil, calculate_bending_inertia_2
 from popravki import *
-from utils import Printer, generate_dat, sort_data, get_transition_foils, interp, get_curves_functions
+from utils import Printer, get_curves_functions
 from visualize import scale_and_normalize, rotate_array
-from scipy import interpolate
-import scipy.optimize as optimize
-import warnings
 
 numpy.seterr(all="raise")
 numpy.seterr(invalid="raise")
@@ -110,6 +108,12 @@ class Calculator:
         self.airfoils, self.airfoils_list, self.transition_foils, self.transition_array, self.max_thickness_array = airfoils, airfoils_list, transition_foils, transition_array, max_thickness_array
 
     def printer(self, _locals, p):
+        """
+
+        :param _locals:
+        :param p:
+        :return:
+        """
         p.print("----Running induction calculation for following parameters----")
         for k, v in _locals.items():
             if isinstance(v, dict):
@@ -155,7 +159,7 @@ class Calculator:
                   fix_reynolds, reynolds, yaw_angle, skewed_wake_correction, blade_design, blade_thickness,
                   mass_density, geometry_scale, use_minimization_solver, invert_alpha,
                   a_initial, aprime_initial,
-                  print_progress=False, return_print=[], return_results=[], *args, **kwargs):
+                  print_progress=False, return_print=None, return_results=None, *args, **kwargs):
         """
         Calculates induction factors using standard iteration methods.
 
@@ -203,6 +207,10 @@ class Calculator:
         :return: dictionary with results
         """
 
+        if return_print is None:
+            return_print = []
+        if return_results is None:
+            return_results = []
         p = Printer(return_print)
 
         # create results array placeholders
@@ -254,6 +262,11 @@ class Calculator:
                 # Doesn't work that well. For now, I left it in.
                 if out_results["finished"] == False:
                     def func(inp):
+                        """
+
+                        :param inp:
+                        :return:
+                        """
                         p.print(inp)
                         a_initial, aprime_initial, relaxation_factor = inp
                         _locals_in = dict(_locals)
@@ -518,7 +531,7 @@ class Calculator:
                           relaxation_factor=0.3,
                           printer=None, print_all=False, print_out=False, yaw_angle=0.0, tilt_angle=0.0,
                           skewed_wake_correction=False,
-                          lambda_r_array=[], invert_alpha=False,
+                          lambda_r_array=None, invert_alpha=False,
                           transition=False, _airfoil_prev=None, _airfoil_next=None, transition_coefficient=1.0,
                           num_sections=0, use_minimization_solver=False,
                           a_initial=0.3, aprime_initial=0.01,
@@ -529,6 +542,8 @@ class Calculator:
         https://github.com/kegiljarhus/pyBEMT/blob/master/pybemt/rotor.py
         """
 
+        if lambda_r_array is None:
+            lambda_r_array = []
         p = printer
 
         # local speed ratio
@@ -560,6 +575,12 @@ class Calculator:
         _theta = radians(_theta)
 
         def func(inp, last_iteration=False):
+            """
+
+            :param inp:
+            :param last_iteration:
+            :return:
+            """
             if print_all:
                 p.print("             i", i)
             ############ START ITERATION ############
@@ -658,11 +679,21 @@ class Calculator:
                         1 - transition_coefficient)
 
                 def zero_finding_function1(alpha):
+                    """
+
+                    :param alpha:
+                    :return:
+                    """
                     return self.airfoils[_airfoil_prev]["interp_function_cl"](Re, alpha)
 
                 alpha_zero_1 = optimize.bisect(zero_finding_function1, -10, 10, xtol=1e-3, rtol=1e-3)
 
                 def zero_finding_function2(alpha):
+                    """
+
+                    :param alpha:
+                    :return:
+                    """
                     return self.airfoils[_airfoil_next]["interp_function_cl"](Re, alpha)
 
                 alpha_zero_2 = optimize.bisect(zero_finding_function2, -10, 10, xtol=1e-3, rtol=1e-3)
@@ -702,6 +733,11 @@ class Calculator:
                 aoa_min_stall = self.airfoils[_airfoil]["interpolation_function_stall_min"](Re)
 
                 def zero_finding_function(alpha):
+                    """
+
+                    :param alpha:
+                    :return:
+                    """
                     return self.airfoils[_airfoil]["interp_function_cl"](Re, alpha)
 
                 alpha_zero = optimize.bisect(zero_finding_function, -10, 10, xtol=1e-2, rtol=1e-3)

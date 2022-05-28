@@ -12,6 +12,9 @@ from utils import MyMessageBox, to_float
 
 
 class Optimization(QWidget):
+    """
+
+    """
     def __init__(self, parent=None):
         super(Optimization, self).__init__(parent)
         self.main = self.parent()
@@ -153,6 +156,9 @@ class Optimization(QWidget):
         self.fbox.addRow("J:", self.J_string)
 
     def refresh_input_variables(self):
+        """
+
+        """
         for i in reversed(range(self.input_variables_layout.count())):
             self.input_variables_layout.itemAt(i).widget().setParent(None)
 
@@ -172,6 +178,9 @@ class Optimization(QWidget):
             i += 1
 
     def refresh_output_variables(self):
+        """
+
+        """
         for i in reversed(range(self.output_variables_layout.count())):
             self.output_variables_layout.itemAt(i).widget().setParent(None)
 
@@ -188,6 +197,9 @@ class Optimization(QWidget):
             i += 1
 
     def refresh_target_variables(self):
+        """
+
+        """
         for i in reversed(range(self.target_variables_layout.count())):
             self.target_variables_layout.itemAt(i).widget().setParent(None)
 
@@ -211,6 +223,9 @@ class Optimization(QWidget):
             i += 1
 
     def update_input_variables_list(self):
+        """
+
+        """
         for row in range(len(self.list_input_variables)):
             try:
                 min_b = float(self.input_variables_layout.itemAtPosition(row, 1).widget().text())
@@ -224,6 +239,9 @@ class Optimization(QWidget):
                 pass
 
     def update_output_variables_list(self):
+        """
+
+        """
         for row in range(len(self.list_output_variables)):
             try:
                 coeff = float(self.output_variables_layout.itemAtPosition(row, 1).widget().text())
@@ -232,6 +250,9 @@ class Optimization(QWidget):
                 pass
 
     def update_target_variables_list(self):
+        """
+
+        """
         for row in range(len(self.list_target_variables)):
             try:
                 target_value = float(self.target_variables_layout.itemAtPosition(row, 1).widget().text())
@@ -245,6 +266,9 @@ class Optimization(QWidget):
                 pass
 
     def delete_input_variable(self):
+        """
+
+        """
         button = self.sender()
         index = self.input_variables_layout.indexOf(button)
         row, column, _, _ = self.input_variables_layout.getItemPosition(index)
@@ -252,6 +276,9 @@ class Optimization(QWidget):
         self.refresh_input_variables()
 
     def delete_output_variable(self):
+        """
+
+        """
         button = self.sender()
         index = self.output_variables_layout.indexOf(button)
         row, column, _, _ = self.output_variables_layout.getItemPosition(index)
@@ -259,6 +286,9 @@ class Optimization(QWidget):
         self.refresh_output_variables()
 
     def delete_target_variable(self):
+        """
+
+        """
         button = self.sender()
         index = self.target_variables_layout.indexOf(button)
         row, column, _, _ = self.target_variables_layout.getItemPosition(index)
@@ -266,32 +296,48 @@ class Optimization(QWidget):
         self.refresh_target_variables()
 
     def add_input_variable(self):
+        """
+
+        """
         variable = str(self.input_variable_selection.currentText())
         self.list_input_variables.append([variable, 0, 0])
         self.refresh_input_variables()
 
     def add_output_variable(self):
+        """
+
+        """
         variable = str(self.output_variable_selection.currentText())
         self.list_output_variables.append([variable, 0])
         self.refresh_output_variables()
 
     def add_target_variable(self):
+        """
+
+        """
         variable = str(self.target_variable_selection.currentText())
         self.list_target_variables.append([variable, 0, 1])
         self.refresh_target_variables()
 
     def update_tsr_and_j(self):
+        """
+
+        """
         try:
             s = self.get_settings()
             R = float(self.main.wind_turbine_properties.R.text())
             tsr = 2 * np.pi * float(s["target_rpm"]) * R / 60 / float(s["target_speed"])
-            self.tsr_string.setText("%.2f" % (tsr))
+            self.tsr_string.setText("%.2f" % tsr)
             J = float(s["target_speed"]) / (float(s["target_rpm"]) / 60 * 2 * R)
-            self.J_string.setText("%.2f" % (J))
+            self.J_string.setText("%.2f" % J)
         except:
             pass
 
     def check_forms_angles(self):
+        """
+
+        :return:
+        """
         out = ""
         _needed_vars = [[self._target_speed, self.target_speed], [self._target_rpm, self.target_rpm], ]
         for n, f in _needed_vars:
@@ -308,6 +354,11 @@ class Optimization(QWidget):
         return out
 
     def check_state(self, *args, **kwargs):
+        """
+
+        :param args:
+        :param kwargs:
+        """
         self.update_tsr_and_j()
 
         sender = self.sender()
@@ -322,6 +373,10 @@ class Optimization(QWidget):
         # sender.setStyleSheet("QLineEdit { background-color: %s; color: #000000 }" % color)
 
     def validate_inputs(self):
+        """
+
+        :return:
+        """
         check = self.check_forms_angles()
         check_analysis = self.main.analysis.check_forms()
         if check != True or check_analysis != True:
@@ -339,14 +394,25 @@ class Optimization(QWidget):
         return True
 
     def clear(self):
+        """
+
+        """
         self.right_output_text_area.clear()
 
     def add_text(self, string):
+        """
+
+        :param string:
+        """
         self.right_output_text_area.insertPlainText(string)
         if self.buttonEOF.checkState() == 2:
             self.right_output_text_area.moveCursor(QtGui.QTextCursor.End)
 
     def run(self):
+        """
+
+        :return:
+        """
         self.clear()
 
         if not self.validate_inputs():
@@ -365,6 +431,9 @@ class Optimization(QWidget):
             self.win.start_update()
 
     def terminate(self):
+        """
+
+        """
         self.main.set_process_stopped()
         try:
             self.p.terminate()
@@ -378,6 +447,10 @@ class Optimization(QWidget):
         self.win.stop_update()
 
     def get_settings(self):
+        """
+
+        :return:
+        """
         out = {}
         out["target_rpm"] = self.target_rpm.text()
         out["target_speed"] = self.target_speed.text()
@@ -403,6 +476,10 @@ class Optimization(QWidget):
         return out
 
     def set_settings(self, inp_dict):
+        """
+
+        :param inp_dict:
+        """
         self.target_rpm.setText(str(inp_dict["target_rpm"]))
         self.target_speed.setText(str(inp_dict["target_speed"]))
         # self.pitch_optimization.setChecked(inp_dict["pitch_optimization"])

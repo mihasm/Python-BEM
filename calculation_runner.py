@@ -1,5 +1,4 @@
 import datetime
-import sys
 import time
 import traceback
 from math import pi
@@ -171,6 +170,12 @@ def calculate_power_3d(inp_args, print_eof=False, prepend="", print_progress=Tru
 
 
 def process_time(time_start, i, total_iterations):
+    """
+
+    :param time_start:
+    :param i:
+    :param total_iterations:
+    """
     t_now = int(time.time() - time_start)
     t_left = int((total_iterations / i - 1) * t_now)
     t_left_str = str(datetime.timedelta(seconds=t_left))
@@ -179,6 +184,15 @@ def process_time(time_start, i, total_iterations):
 
 
 def print_progress_message(v, rpm, inp_args, p, prepend, print_progress):
+    """
+
+    :param v:
+    :param rpm:
+    :param inp_args:
+    :param p:
+    :param prepend:
+    :param print_progress:
+    """
     if print_progress:
         if v > 0:
             _lambda = rpm / 60 * 2 * pi * inp_args["R"] * inp_args["geometry_scale"] / v
@@ -190,6 +204,13 @@ def print_progress_message(v, rpm, inp_args, p, prepend, print_progress):
 
 
 def print_result_message(print_progress, p, prepend, _results):
+    """
+
+    :param print_progress:
+    :param p:
+    :param prepend:
+    :param _results:
+    """
     if print_progress:
         p.print(prepend + "    cp:", _results["cp"], "ct:", _results["ct"], "eff:", _results["eff"])
 

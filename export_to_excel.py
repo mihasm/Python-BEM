@@ -1,18 +1,21 @@
-from test_results import res as RESULTS
-from turbine_data import SET_INIT
-from utils import transpose
-from matplotlib import pyplot as plt
-
 from openpyxl import Workbook
 from openpyxl.chart import (
     ScatterChart,
     Reference,
     Series,
 )
-from openpyxl.drawing.image import Image
+
+from test_results import res
+from turbine_data import SET_INIT
+from utils import transpose
 
 
 def generate_excel(settings, results):
+    """
+
+    :param settings:
+    :param results:
+    """
     wb = Workbook()
     ws = wb.active
     ws.title = "Turbine info"
@@ -98,4 +101,4 @@ def generate_excel(settings, results):
     wb.save('test.xlsx')
 
 
-generate_excel(SET_INIT, RESULTS)
+generate_excel(SET_INIT, res)

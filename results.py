@@ -1,5 +1,5 @@
-import warnings
 import json
+import warnings
 
 import matplotlib as mpl
 import matplotlib.cbook
@@ -14,7 +14,7 @@ from matplotlib.figure import Figure
 
 from UI.Table import Table
 from calculation import OUTPUT_VARIABLES_LIST
-from utils import sort_xy, dict_to_ar, greek_letters_to_string, transpose, filter_3d_results
+from utils import dict_to_ar, greek_letters_to_string, transpose, filter_3d_results
 
 warnings.filterwarnings("ignore", category=matplotlib.cbook.MatplotlibDeprecationWarning)
 
@@ -226,6 +226,9 @@ class ResultsWindow(QMainWindow):
         fileMenu.addAction(exitButton)
 
     def export(self):
+        """
+
+        """
         name = QFileDialog.getSaveFileName(self, 'Save File', "", "JSON (*.json)")[0]
         if name != "":
             d = self.results_3d

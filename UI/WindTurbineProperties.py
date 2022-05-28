@@ -6,13 +6,13 @@ from PyQt5.QtWidgets import QWidget, QGridLayout, QFormLayout, QLabel, QLineEdit
 from numpy.core._multiarray_umath import array
 from scipy import interpolate
 
-from main import application_path
+from UI.Table import Table
 from UI.helpers import MatplotlibWindow, PrintoutWindow, AdkinsThread
+from main import application_path
 from turbine_data import SET_INIT
 from utils import to_float, interpolate_geom, generate_chord_lengths_betz, generate_twists_betz, \
     generate_chord_lengths_schmitz, generate_twists_schmitz, create_folder, create_macro_text, \
-    generate_propeller_larabee, generate_propeller_adkins
-from UI.Table import Table
+    generate_propeller_larabee
 from visualize import create_3d_blade
 
 
@@ -341,6 +341,9 @@ class WindTurbineProperties(QWidget):
         self.set_parameter_visibility()
 
     def set_parameter_visibility(self):
+        """
+
+        """
         if self.design_method.currentIndex() == 0:
             for item1, item2, methods in self.hideable_widgets:
                 if "Betz" in methods:
@@ -467,17 +470,24 @@ class WindTurbineProperties(QWidget):
         return out
 
     def update_j(self):
+        """
+
+        """
         try:
             J = float(self.design_velocity.text()) / (float(self.design_RPM.text()) / 60 * 2 * float(self.R.text()))
-            self.J_string.setText("%.2f" % (J))
+            self.J_string.setText("%.2f" % J)
             c_T = float(self.design_thrust.text()) / (
                     float(self.design_rho.text()) * (float(self.design_RPM.text()) / 60) ** 2 * (
                     float(self.R.text()) * 2) ** 4)
-            self.c_T_string.setText("%.2f" % (c_T))
+            self.c_T_string.setText("%.2f" % c_T)
         except:
             print("couldnt update J/cT")
 
     def calculate_pitch(self):
+        """
+
+        :return:
+        """
         out = self.get_settings()
         r, theta = np.array(out["r_in"]), np.array(out["theta_in"])
         R = out["R"]
@@ -490,6 +500,9 @@ class WindTurbineProperties(QWidget):
         return
 
     def create_geometry_graph(self):
+        """
+
+        """
         out = self.get_settings()
         self.gw = MatplotlibWindow()
         self.gw.setWindowTitle("r,c,θ graph")
@@ -508,6 +521,9 @@ class WindTurbineProperties(QWidget):
         self.gw.ax2.tick_params(axis='y', labelcolor="tab:red")
 
     def create_pitch_graph(self):
+        """
+
+        """
         out = self.get_settings()
         self.gw_pitch = MatplotlibWindow()
         self.gw_pitch.setWindowTitle("Pitch graph")
@@ -519,6 +535,9 @@ class WindTurbineProperties(QWidget):
         self.gw_pitch.ax.set_ylabel("Pitch p [in]")
 
     def adkins_completion(self):
+        """
+
+        """
         array_out = []
         chords, thetas = self.adkins_return
         R = float(self.R.text())
@@ -534,6 +553,10 @@ class WindTurbineProperties(QWidget):
         self.calculate_pitch()
 
     def generate_geometry(self):
+        """
+
+        :return:
+        """
         array_out = []
         R = float(self.R.text())
         Rhub = float(self.Rhub.text())

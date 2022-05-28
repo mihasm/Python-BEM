@@ -4,6 +4,9 @@ from UI.CurveControl import CurveControl
 
 
 class CurveViewer(QWidget):
+    """
+
+    """
     def __init__(self, parent=None):
         super(CurveViewer, self).__init__(None)
         self.resize(1600, 768)
@@ -33,7 +36,9 @@ class CurveViewer(QWidget):
         # self.generate_views()
 
     def generate_views(self):
+        """
 
+        """
         # delete stuff already here
         for i in reversed(range(self.grid_curves.count())):
             self.grid_curves.itemAt(i).widget().setParent(None)

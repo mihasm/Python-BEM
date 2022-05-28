@@ -7,6 +7,9 @@ from UI.Table import Table
 
 
 class CurveEditor(QWidget):
+    """
+
+    """
     def __init__(self, parent=None):
         super(CurveEditor, self).__init__(None)
         self.resize(1600, 768)
@@ -78,7 +81,9 @@ class CurveEditor(QWidget):
         # self.load_curves()
 
     def save_curve(self):
+        """
 
+        """
         out_chosen_values = self.get_chosen_values_from_dropdowns()
         re_chosen, ncrit_chosen = out_chosen_values
 
@@ -108,6 +113,10 @@ class CurveEditor(QWidget):
             self.load_curves()
 
     def add_curve(self):
+        """
+
+        :return:
+        """
         self.disconnect()
 
         re_chosen, ncrit_chosen = self.re_edit.text(), self.ncrit_edit.text()
@@ -153,6 +162,10 @@ class CurveEditor(QWidget):
         self.connect()
 
     def remove_curve(self):
+        """
+
+        :return:
+        """
         if len(self.parent.curves.curve_list) == 0:
             return
         out_chosen_values = self.get_chosen_values_from_dropdowns()
@@ -161,11 +174,19 @@ class CurveEditor(QWidget):
         self.load_curves()
 
     def get_chosen_values_from_dropdowns(self):
+        """
+
+        :return:
+        """
         re_chosen = self.picker_reynolds.itemText(self.picker_reynolds.currentIndex())
         ncrit_chosen = self.picker_ncrit.itemText(self.picker_ncrit.currentIndex())
         return float(re_chosen), float(ncrit_chosen)
 
     def load_curves(self):
+        """
+
+        :return:
+        """
         try:
             re_last, ncrit_last = self.get_chosen_values_from_dropdowns()
         except ValueError:
@@ -228,6 +249,9 @@ class CurveEditor(QWidget):
         self.load_values_into_table()
 
     def disconnect(self):
+        """
+
+        """
         try:
             self.picker_reynolds.currentIndexChanged.disconnect()
             self.picker_ncrit.currentIndexChanged.disconnect()
@@ -235,10 +259,17 @@ class CurveEditor(QWidget):
             pass
 
     def connect(self):
+        """
+
+        """
         self.sig3 = self.picker_reynolds.currentIndexChanged.connect(self.load_curves)
         self.sig4 = self.picker_ncrit.currentIndexChanged.connect(self.load_curves)
 
     def load_values_into_table(self):
+        """
+
+        :return:
+        """
         out_chosen_values = self.get_chosen_values_from_dropdowns()
         if out_chosen_values == None:
             return
@@ -252,6 +283,10 @@ class CurveEditor(QWidget):
             self.table.createTable(array)
 
     def check_forms_angles(self):
+        """
+
+        :return:
+        """
         out = ""
         _needed_vars = [[self._target_speed, self.target_speed], [self._target_rpm, self.target_rpm], ]
         for n, f in _needed_vars:
@@ -268,6 +303,11 @@ class CurveEditor(QWidget):
         return out
 
     def check_state(self, *args, **kwargs):
+        """
+
+        :param args:
+        :param kwargs:
+        """
         sender = self.sender()
         validator = sender.validator()
         state = validator.validate(sender.text(), 0)[0]
