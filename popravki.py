@@ -13,6 +13,7 @@ METHODS_STRINGS = {"0": "Original",
                    "10": "Modified ABS model",
                    "11": "Propeller BEM"}
 
+
 def calculate_coefficients(method, input_arguments):
     if method == 0:
         return fInductionCoefficients0(**input_arguments)
@@ -40,6 +41,7 @@ def calculate_coefficients(method, input_arguments):
         return fInductionCoefficients14(**input_arguments)
     raise Exception("Method " + str(method) + " does not exist.")
 
+
 def machNumberCorrection(Cl, Cd, M):
     """
 
@@ -61,7 +63,7 @@ def fTipLoss(B, r, R, phi):
     :param phi: angle of relative wind [rad]
     :return: returns tip loss factor [float]
     """
-    #F = 1
+    # F = 1
     F = 2 / pi * acos(exp(-B / 2 * abs((R - r) / r / sin(phi))))
     return F
 
@@ -97,9 +99,9 @@ def newTipLoss(B, r, R, phi, lambda_r):
     f = sin(phi)
     g = (R - r) / r
     Flt = (
-        2
-        / pi
-        * acos(exp(-B / 2 * abs(g / f) * (exp(-0.15 * (B * lambda_r - 21)) + 0.1)))
+            2
+            / pi
+            * acos(exp(-B / 2 * abs(g / f) * (exp(-0.15 * (B * lambda_r - 21)) + 0.1)))
     )
     F = F * Flt
     return F
@@ -119,12 +121,13 @@ def newHubLoss(B, r, Rhub, phi, lambda_r):
     f = sin(phi)
     g = (Rhub - r) / r
     Flt = (
-        2
-        / pi
-        * acos(exp(-B / 2 * abs(g / f) * (exp(-0.15 * (B * lambda_r - 21)) + 0.1)))
+            2
+            / pi
+            * acos(exp(-B / 2 * abs(g / f) * (exp(-0.15 * (B * lambda_r - 21)) + 0.1)))
     )
     F = F * Flt
     return F
+
 
 def fAdkinsTipLoss(B, r, R, phi):
     """
@@ -211,11 +214,11 @@ def fInductionCoefficients5(
         CTL_ac = 4 * ac * Fc * (1 - ac)
         cpsi = cos(psi)
         dCTL_da = 4 * Fc * (1 - 2 * ac) + \
-            4 * ac * B / pi * 1 / tan(pi * Fc / 2) * \
-            ((R * cpsi - r * cpsi) / (R * cpsi)) * \
-            (cos(phi) ** 2 / sin(phi)) * \
-            (1 + (acprime * (1 - 2 * ac)) / ((1 + 2 * acprime) * ac * cos(psi) ** 2)) * \
-            (1 - ac)
+                  4 * ac * B / pi * 1 / tan(pi * Fc / 2) * \
+                  ((R * cpsi - r * cpsi) / (R * cpsi)) * \
+                  (cos(phi) ** 2 / sin(phi)) * \
+                  (1 + (acprime * (1 - 2 * ac)) / ((1 + 2 * acprime) * ac * cos(psi) ** 2)) * \
+                  (1 - ac)
         a = ac - (CTL_ac - Ct_r) / dCTL_da
 
     XL = (r * cos(psi) * omega) / v
@@ -240,9 +243,9 @@ def fInductionCoefficients6(a_last, F, phi, sigma, C_norm, C_tang, Cl, *args, **
     if CT > 0.96 * F:
         # Modified Glauert correction
         a = (
-            18 * F - 20 - 3 * sqrt(CT * (50 - 36 * F) +
-                                   12 * F * (3 * F - 4))
-        ) / (36 * F - 50)
+                    18 * F - 20 - 3 * sqrt(CT * (50 - 36 * F) +
+                                           12 * F * (3 * F - 4))
+            ) / (36 * F - 50)
     else:
         a = (1 + 4 * F * sin(phi) ** 2 / (sigma * C_norm)) ** -1
     aprime = (-1 + 4 * F * sin(phi) * cos(phi) / (sigma * C_tang)) ** -1
@@ -265,9 +268,9 @@ def fInductionCoefficients7(a_last, F, lambda_r, phi, sigma, C_norm, *args, **kw
         a = 1 / (4 * F * sin(phi) ** 2 / (sigma * C_norm) + 1)
     else:
         a = (
-            18 * F - 20 - 3 * abs(Ct * (50 - 36 * F) +
-                                  12 * F * (3 * F - 4)) ** 0.5
-        ) / (36 * F - 50)
+                    18 * F - 20 - 3 * abs(Ct * (50 - 36 * F) +
+                                          12 * F * (3 * F - 4)) ** 0.5
+            ) / (36 * F - 50)
 
     aprime = 0.5 * (abs(1 + 4 / (lambda_r ** 2) * a * (1 - a)) ** 0.5 - 1)
 
@@ -325,17 +328,17 @@ def fInductionCoefficients9(a_last, F, phi, Cl, C_norm, C_tang, sigma, *args, **
     """
 
     a = a_last
-    if a <= 1/3:
-        Ct = 4*a*F*(1-a)
+    if a <= 1 / 3:
+        Ct = 4 * a * F * (1 - a)
     else:
-        Ct = 4*a*F*(1-1/4*(5-3*a))*a
+        Ct = 4 * a * F * (1 - 1 / 4 * (5 - 3 * a)) * a
     if Ct <= 0.888 * F:
         a = (1 - sqrt(1 - Ct / F)) / 2
     else:
         Y = (sqrt(1 / 36 * (Ct / F) ** 2 - 145 / 2187 * Ct / F +
                   92 / 2187) + Ct / (6 * F) - 145 / 729) ** (1 / 3)
         a = Y - 11 / (81 * Y) + 5 / 9
-    aprime = (4 * F * sin(phi)**2 / (sigma * Ct) - 1) ** -1
+    aprime = (4 * F * sin(phi) ** 2 / (sigma * Ct) - 1) ** -1
     return a, aprime
 
 
@@ -441,6 +444,7 @@ def fInductionCoefficients14(a_last, phi, sigma, Cl, Cd, F, C_norm, C_tang, *arg
     aprime = 1 / (F * 4 * sin(phi) * cos(phi) / (sigma * C_tang) + 1)
     return a, aprime
 
+
 def cascadeEffectsCorrection(alpha, v, omega, r, R, c, B, a, aprime, max_thickness):
     """
     Calculates cascade effects and corresponding change in angle of attack.
@@ -459,16 +463,16 @@ def cascadeEffectsCorrection(alpha, v, omega, r, R, c, B, a, aprime, max_thickne
     """
 
     delta_alpha_1 = (
-        1 / 4
-        * (
-            atan2((1 - a) * v, ((1 + 2 * aprime) * r * omega))
-            - atan2(((1 - a) * v), (r * omega))
-        )
+            1 / 4
+            * (
+                    atan2((1 - a) * v, ((1 + 2 * aprime) * r * omega))
+                    - atan2(((1 - a) * v), (r * omega))
+            )
     )
     delta_alpha_2 = (
-        0.109
-        * (B * c * max_thickness * R * omega / v)
-        / (R * c * sqrt((1 - a) ** 2 + (r*R*omega/v/R) ** 2))
+            0.109
+            * (B * c * max_thickness * R * omega / v)
+            / (R * c * sqrt((1 - a) ** 2 + (r * R * omega / v / R) ** 2))
     )
 
     out = alpha + delta_alpha_1 + delta_alpha_2
@@ -478,7 +482,7 @@ def cascadeEffectsCorrection(alpha, v, omega, r, R, c, B, a, aprime, max_thickne
 
 def calc_rotational_augmentation_correction(
         alpha, alpha_zero, Cl, Cd, omega, r, R, c, theta, v, Vrel_norm, method,
-        printer,print_all):
+        printer, print_all):
     """
     METHODS FROM http://orbit.dtu.dk/files/86307371/A_Detailed_Study_of_the_Rotational.pdf
     """
@@ -493,36 +497,36 @@ def calc_rotational_augmentation_correction(
         h = 2
         fl = a_s * (c / r) ** h
         fd = 0
-    
+
     if method == 1:
         # Du & Selig
         gama = omega * R / sqrt(abs(v ** 2 - (omega * R) ** 2))
         ad, dd, bd = 1, 1, 1
         fl = (
-            1
-            / (2 * pi)
-            * (
-                1.6
-                * (c / r)
-                / 0.1267
-                * (ad - (c / r) ** (dd * R / gama / r))
-                / (bd + (c / r) ** (dd * R / gama / r))
-                - 1
-            )
+                1
+                / (2 * pi)
+                * (
+                        1.6
+                        * (c / r)
+                        / 0.1267
+                        * (ad - (c / r) ** (dd * R / gama / r))
+                        / (bd + (c / r) ** (dd * R / gama / r))
+                        - 1
+                )
         )
         fd = (
-            -1
-            / (2 * pi)
-            * (
-                1.6
-                * (c / r)
-                / 0.1267
-                * (ad - (c / r) ** (dd * R / gama / r / 2))
-                / (bd + (c / r) ** (dd * R / gama / r / 2))
-                - 1
-            )
+                -1
+                / (2 * pi)
+                * (
+                        1.6
+                        * (c / r)
+                        / 0.1267
+                        * (ad - (c / r) ** (dd * R / gama / r / 2))
+                        / (bd + (c / r) ** (dd * R / gama / r / 2))
+                        - 1
+                )
         )
-    
+
     if method == 2:
         # Chaviaropoulos and Hansen
         ah = 2.2
@@ -530,45 +534,45 @@ def calc_rotational_augmentation_correction(
         n = 4
         fl = ah * (c / r) ** h * cos(theta) ** n
         fd = fl
-    
+
     if method == 3:
         # Lindenburg
         al = 3.1
         h = 2
         fl = al * (omega * R / Vrel_norm) ** 2 * (c / r) ** h
         fd = 0
-    
+
     if method == 4:
         # Dumitrescu and Cardos
         gd = 1.25
         fl = 1 - exp(-gd / (r / c - 1))
         fd = 0
-    
+
     if method == 5:
         # method for propellers from http://acoustics.ae.illinois.edu/pdfs/AIAA-Paper-2015-3296.pdf
-        fl = (omega*r/Vrel_norm)**2 * (c/r)**2 * 1.5
-    
+        fl = (omega * r / Vrel_norm) ** 2 * (c / r) ** 2 * 1.5
+
     if method == 6:
         # method for propellers from Aviv (2005), Propeller Performance at Low Advance Ratio - JoA vol. 42 No. 2
         if degrees(alpha) >= 8:
-            fl = tanh(10.73*(c/r))
+            fl = tanh(10.73 * (c / r))
         elif degrees(alpha) > degrees(alpha_zero):
             fl = 0
         else:
-            fl = -tanh(10.73*(c/r))
+            fl = -tanh(10.73 * (c / r))
 
-    Cl_pot = 2*pi*sin(alpha-alpha_zero)
+    Cl_pot = 2 * pi * sin(alpha - alpha_zero)
     if print_all:
         p.print("             Rotational augmentation:")
-        p.print("               Cl_pot",Cl_pot)
-        p.print("               fl",fl)
-        p.print("               c/r",c/r)
-    Cl_3D = Cl + fl*(Cl_pot-Cl)
+        p.print("               Cl_pot", Cl_pot)
+        p.print("               fl", fl)
+        p.print("               c/r", c / r)
+    Cl_3D = Cl + fl * (Cl_pot - Cl)
     Cd_3D = Cd
     return Cl_3D, Cd_3D
 
-def skewed_wake_correction_calculate(yaw_angle, a, r, R):
-    chi = (0.6*a+1)*yaw_angle
-    a_skew = a*(1+15*pi/64*r/R*tan(chi/2))
-    return a_skew
 
+def skewed_wake_correction_calculate(yaw_angle, a, r, R):
+    chi = (0.6 * a + 1) * yaw_angle
+    a_skew = a * (1 + 15 * pi / 64 * r / R * tan(chi / 2))
+    return a_skew

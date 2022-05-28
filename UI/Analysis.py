@@ -18,10 +18,10 @@ class Analysis(QWidget):
 
         self.forms_dict = {}
 
-        self.settings = {"invert_alpha":False,
-                         "use_minimization_solver":False,
-                         "tip_loss_mode":["None","Prandtl","Shen","Adkins"],
-                         "hub_loss_mode":["None","Prandtl","Shen"],
+        self.settings = {"invert_alpha": False,
+                         "use_minimization_solver": False,
+                         "tip_loss_mode": ["None", "Prandtl", "Shen", "Adkins"],
+                         "hub_loss_mode": ["None", "Prandtl", "Shen"],
                          "cascade_correction": False,
                          "skewed_wake_correction": False,
                          "rotational_augmentation_correction": False,
@@ -31,7 +31,7 @@ class Analysis(QWidget):
                          "kin_viscosity": 1.4207E-5,
                          "method": 6,
                          "variable_selection": ["RPM and v", "TSR", "J", "pitch", "pitch+TSR", "pitch+J"],
-                         "constant_selection": ["speed","rpm"],
+                         "constant_selection": ["speed", "rpm"],
                          "constant_speed": 5,
                          "constant_rpm": 1500,
                          "pitch": 0.0,
@@ -62,9 +62,9 @@ class Analysis(QWidget):
                          "yaw_angle": 0}
 
         self.settings_to_name = {"print_out": "Print final iteration data",
-                                 "invert_alpha":"Invert alpha",
-                                 "tip_loss_mode":"Tip loss",
-                                 "hub_loss_mode":"Hub loss",
+                                 "invert_alpha": "Invert alpha",
+                                 "tip_loss_mode": "Tip loss",
+                                 "hub_loss_mode": "Hub loss",
                                  "cascade_correction": "Cascade correction",
                                  "rho": "Air density [kg/m^3]",
                                  "kin_viscosity": "Kinematic viscosity [m^2/s]",
@@ -92,24 +92,24 @@ class Analysis(QWidget):
                                  "max_iterations": "Maximum iterations",
                                  "convergence_limit": "Convergence criteria",
                                  "relaxation_factor": "Relaxation factor",
-                                 "a_initial":"Initial a",
-                                 "aprime_initial":"Initial a'",
+                                 "a_initial": "Initial a",
+                                 "aprime_initial": "Initial a'",
                                  "print_all": "Print every iteration [debug]",
                                  "rotational_augmentation_correction": "Rot. augmentation cor.",
                                  "rotational_augmentation_correction_method": "Rot. augmentation cor. method",
                                  "fix_reynolds": "Fix Reynolds", "reynolds": "Reynolds",
                                  "mach_number_correction": "Mach number correction",
                                  "yaw_angle": "Yaw angle [°]", "skewed_wake_correction": "Skewed Wake Correction",
-                                 "use_minimization_solver":"Use minimization solver"}
+                                 "use_minimization_solver": "Use minimization solver"}
 
         self.settings_to_tooltip = {
-            "invert_alpha":"Uporabimo, kadar računamo propeler v obratovalnem stanju vetrnice.",
+            "invert_alpha": "Uporabimo, kadar računamo propeler v obratovalnem stanju vetrnice.",
             "print_out": "Izpis končnih vrednosti po konvergenci za vsak odsek",
-            "tip_loss_mode":"Popravek izgub pri vrhu lopatice",
-            "hub_loss_mode":"Popravek izgub pri pestu",
+            "tip_loss_mode": "Popravek izgub pri vrhu lopatice",
+            "hub_loss_mode": "Popravek izgub pri pestu",
             "cascade_correction": "Kaskadni popravki",
             "rho": "Gostota fluida [kg/m^3]",
-            "kin_viscosity":"Kinematična viskoznost fluida [m^2/s]",
+            "kin_viscosity": "Kinematična viskoznost fluida [m^2/s]",
             "method": "Metoda za preračun. Privzeta je e) Aerodyn (Buhl).",
             "variable_selection": "Izbira spremenljivega parametra",
             "constant_selection": "Konstantna spremenljivka",
@@ -143,8 +143,8 @@ class Analysis(QWidget):
             "yaw_angle": "Kot fluida glede na smer osi rotorja [°]. Če je turbina obrnjena proti fluidu, je 0°.",
             "skewed_wake_correction": "Popravek nagnjenega zračnega toka za turbino (Skewed wake)",
             "use_minimization_solver": "Uporaba minimizacijskega algoritma za iskanje indukcijskih faktorjev",
-            "a_initial":"Začetna vrednost aksialnega indukcijskega faktorja. Vpliva na konvergenco (propeler)!",
-            "aprime_initial":"Začetna vrednost tangencialnega indukcijskega faktorja. Vpliva na konvergenco."}
+            "a_initial": "Začetna vrednost aksialnega indukcijskega faktorja. Vpliva na konvergenco (propeler)!",
+            "aprime_initial": "Začetna vrednost tangencialnega indukcijskega faktorja. Vpliva na konvergenco."}
 
         self.list_settings_for_updating_tsr = ["v_min", "v_max", "v_num", "rpm_min", "rpm_max", "rpm_num"]
 
@@ -189,7 +189,7 @@ class Analysis(QWidget):
                 form = QComboBox()
                 form.addItems([self.methods_to_names[k] for k, v in self.methods_to_names.items()])
                 form.setCurrentIndex(7)
-            elif isinstance(value,list):
+            elif isinstance(value, list):
                 form = QComboBox()
                 form.addItems([l for l in value])
                 form.currentIndexChanged.connect(self.set_parameter_visibility)

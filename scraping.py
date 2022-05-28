@@ -22,6 +22,7 @@ def scrape_data(link):
     out = np.array(out)
     return out
 
+
 def get_polars(link):
     """
 
@@ -29,7 +30,7 @@ def get_polars(link):
     :return:
     """
     results = {}
-    print("Getting data from",link)
+    print("Getting data from", link)
     r = requests.get(link)
     txt = r.text
     soup = bs(txt, features='html.parser')
@@ -41,15 +42,15 @@ def get_polars(link):
         checkbox, name, reynolds, ncrit, maxclcd, description, source, details = [
             d for d in data]
         details_link = "http://airfoiltools.com" + \
-            details.find_all("a")[0].get('href')
+                       details.find_all("a")[0].get('href')
         links.append(details_link)
 
-    print("List of links:",links)
+    print("List of links:", links)
 
     csv_links = []
 
     for l in links:
-        print("getting csv links from",l)
+        print("getting csv links from", l)
         r = requests.get(l)
         txt = r.text
         soup = bs(txt, features='html.parser')
@@ -60,11 +61,11 @@ def get_polars(link):
             if "csv?polar" in _l.get("href"):
                 csv_links.append("http://airfoiltools.com" + _l.get("href"))
                 break
-    
-    print("CSV links:",csv_links)
+
+    print("CSV links:", csv_links)
 
     for l in csv_links:
-        print("getting data from csv link",l)
+        print("getting data from csv link", l)
         lines = None
         r = requests.get(l)
         text = r.text
@@ -93,10 +94,10 @@ def get_x_y_from_link(link):
     :param link:
     :return:
     """
-    print("Getting x-y airfoil data from",link)
+    print("Getting x-y airfoil data from", link)
 
     params = parse_qsl(urlparse(link.strip()).query, keep_blank_values=True)
-    selig_link = "http://airfoiltools.com/airfoil/seligdatfile?airfoil="+params[0][1]
+    selig_link = "http://airfoiltools.com/airfoil/seligdatfile?airfoil=" + params[0][1]
     print("Presumed Selig dat link:")
     print(selig_link)
 
@@ -107,14 +108,14 @@ def get_x_y_from_link(link):
     print("Parsing...")
     lines = text.splitlines()
 
-    x,y=[],[]
+    x, y = [], []
 
     for l in lines[1:]:
-        stripped_line = l.strip().replace("  "," ")
-        x_l,y_l = stripped_line.split(" ")
+        stripped_line = l.strip().replace("  ", " ")
+        x_l, y_l = stripped_line.split(" ")
         x.append(float(x_l))
         y.append(float(y_l))
 
-    return x,y
+    return x, y
 
-#scrape_data("http://airfoiltools.com/airfoil/details?airfoil=clarky-il")
+# scrape_data("http://airfoiltools.com/airfoil/details?airfoil=clarky-il")

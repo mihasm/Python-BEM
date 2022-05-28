@@ -2,7 +2,7 @@ import os
 
 import numpy as np
 from PyQt5.QtWidgets import QWidget, QGridLayout, QFormLayout, QLabel, QLineEdit, QComboBox, QCheckBox, QPushButton, \
-                            QScrollArea, QVBoxLayout
+    QScrollArea, QVBoxLayout
 from numpy.core._multiarray_umath import array
 from scipy import interpolate
 
@@ -48,7 +48,7 @@ class WindTurbineProperties(QWidget):
         self.table_properties.createEmpty(4, 30)
         self.table_properties.set_labels(["r [m]", "c [m]", "theta [deg]", "airfoil"])
 
-        #self.grid.addWidget(self.left, 1, 1)
+        # self.grid.addWidget(self.left, 1, 1)
         self.grid.addWidget(self.table_properties, 1, 2)
         self.hideable_widgets = []
 
@@ -59,7 +59,7 @@ class WindTurbineProperties(QWidget):
 
         self._turbine_type = QLabel("Turbine type.")
         self.turbine_type = QComboBox()
-        self.turbine_type.addItems(["Wind turbine","Propeller",])
+        self.turbine_type.addItems(["Wind turbine", "Propeller", ])
         self.fbox.addRow(self._turbine_type, self.turbine_type)
         self.turbine_type.setToolTip("Vrsta turbine.")
         self.turbine_type.currentIndexChanged.connect(self.set_parameter_visibility)
@@ -151,8 +151,8 @@ class WindTurbineProperties(QWidget):
         self.fbox.addRow(self._design_tsr, self.design_tsr)
         self.design_tsr.setToolTip("Željeni TSR za generiranje.")
         self.hideable_widgets.append([
-            self.fbox.itemAt(self.fbox.rowCount()-1,0),
-            self.fbox.itemAt(self.fbox.rowCount()-1,1),
+            self.fbox.itemAt(self.fbox.rowCount() - 1, 0),
+            self.fbox.itemAt(self.fbox.rowCount() - 1, 1),
             ["Betz", "Schmitz"]])
 
         self._design_aoa = QLabel("Design AoA [°]")
@@ -161,8 +161,8 @@ class WindTurbineProperties(QWidget):
         self.fbox.addRow(self._design_aoa, self.design_aoa)
         self.design_aoa.setToolTip("Željeni AoA za generiranje.")
         self.hideable_widgets.append([
-            self.fbox.itemAt(self.fbox.rowCount()-1,0),
-            self.fbox.itemAt(self.fbox.rowCount()-1,1),
+            self.fbox.itemAt(self.fbox.rowCount() - 1, 0),
+            self.fbox.itemAt(self.fbox.rowCount() - 1, 1),
             ["Betz", "Schmitz"]])
 
         self._design_cl = QLabel("Design Cl")
@@ -171,8 +171,8 @@ class WindTurbineProperties(QWidget):
         self.fbox.addRow(self._design_cl, self.design_cl)
         self.design_cl.setToolTip("Koeficient vzgona.")
         self.hideable_widgets.append([
-            self.fbox.itemAt(self.fbox.rowCount()-1,0),
-            self.fbox.itemAt(self.fbox.rowCount()-1,1),
+            self.fbox.itemAt(self.fbox.rowCount() - 1, 0),
+            self.fbox.itemAt(self.fbox.rowCount() - 1, 1),
             ["Betz", "Schmitz", "Adkins", "design_minimize_losses"]])
 
         self._design_RPM = QLabel("RPM (prop)")
@@ -182,8 +182,8 @@ class WindTurbineProperties(QWidget):
         self.design_RPM.textChanged.connect(self.update_j)
         self.design_RPM.setToolTip("RPM propelerja")
         self.hideable_widgets.append([
-            self.fbox.itemAt(self.fbox.rowCount()-1,0),
-            self.fbox.itemAt(self.fbox.rowCount()-1,1),
+            self.fbox.itemAt(self.fbox.rowCount() - 1, 0),
+            self.fbox.itemAt(self.fbox.rowCount() - 1, 1),
             ["Larrabee", "Adkins"]])
 
         self._design_velocity = QLabel("Velocity (prop) [m/s]")
@@ -193,8 +193,8 @@ class WindTurbineProperties(QWidget):
         self.design_velocity.textChanged.connect(self.update_j)
         self.design_velocity.setToolTip("Hitrost letala/ladje")
         self.hideable_widgets.append([
-            self.fbox.itemAt(self.fbox.rowCount()-1,0),
-            self.fbox.itemAt(self.fbox.rowCount()-1,1),
+            self.fbox.itemAt(self.fbox.rowCount() - 1, 0),
+            self.fbox.itemAt(self.fbox.rowCount() - 1, 1),
             ["Larrabee", "Adkins"]])
 
         self._design_thrust = QLabel("Thrust (prop) [N]")
@@ -204,8 +204,8 @@ class WindTurbineProperties(QWidget):
         self.fbox.addRow(self._design_thrust, self.design_thrust)
         self.design_thrust.setToolTip("Željeni potisk propelerja")
         self.hideable_widgets.append([
-            self.fbox.itemAt(self.fbox.rowCount()-1,0),
-            self.fbox.itemAt(self.fbox.rowCount()-1,1),
+            self.fbox.itemAt(self.fbox.rowCount() - 1, 0),
+            self.fbox.itemAt(self.fbox.rowCount() - 1, 1),
             ["Larrabee", "Adkins"]])
 
         self._design_power = QLabel("Power (prop) [W]")
@@ -215,8 +215,8 @@ class WindTurbineProperties(QWidget):
         self.fbox.addRow(self._design_power, self.design_power)
         self.design_power.setToolTip("Željena moč na gredi propelerja")
         self.hideable_widgets.append([
-            self.fbox.itemAt(self.fbox.rowCount()-1,0),
-            self.fbox.itemAt(self.fbox.rowCount()-1,1),
+            self.fbox.itemAt(self.fbox.rowCount() - 1, 0),
+            self.fbox.itemAt(self.fbox.rowCount() - 1, 1),
             ["Adkins"]])
 
         self._design_use_power_constraint = QLabel("Use power constraint")
@@ -224,8 +224,8 @@ class WindTurbineProperties(QWidget):
         self.fbox.addRow(self._design_use_power_constraint, self.design_use_power_constraint)
         self.design_power.setToolTip("Uporabi moč namesto potiska pri Adkins metodi")
         self.hideable_widgets.append([
-            self.fbox.itemAt(self.fbox.rowCount()-1,0),
-            self.fbox.itemAt(self.fbox.rowCount()-1,1),
+            self.fbox.itemAt(self.fbox.rowCount() - 1, 0),
+            self.fbox.itemAt(self.fbox.rowCount() - 1, 1),
             ["Adkins"]])
         self.design_use_power_constraint.stateChanged.connect(self.set_parameter_visibility)
 
@@ -234,8 +234,8 @@ class WindTurbineProperties(QWidget):
         self.fbox.addRow(self._design_minimize_losses, self.design_minimize_losses)
         self.design_power.setToolTip("Pri analizi izbere najmanjši Cd/Cl(Re)")
         self.hideable_widgets.append([
-            self.fbox.itemAt(self.fbox.rowCount()-1,0),
-            self.fbox.itemAt(self.fbox.rowCount()-1,1),
+            self.fbox.itemAt(self.fbox.rowCount() - 1, 0),
+            self.fbox.itemAt(self.fbox.rowCount() - 1, 1),
             ["Adkins"]])
         self.design_minimize_losses.stateChanged.connect(self.set_parameter_visibility)
 
@@ -245,8 +245,8 @@ class WindTurbineProperties(QWidget):
         self.fbox.addRow(self._design_drag_lift_ratio, self.design_drag_lift_ratio)
         self.design_drag_lift_ratio.setToolTip("Razmerje Drag/Lift (samo pri Larrabee)")
         self.hideable_widgets.append([
-            self.fbox.itemAt(self.fbox.rowCount()-1,0),
-            self.fbox.itemAt(self.fbox.rowCount()-1,1),
+            self.fbox.itemAt(self.fbox.rowCount() - 1, 0),
+            self.fbox.itemAt(self.fbox.rowCount() - 1, 1),
             ["Larrabee"]])
 
         self._design_iters = QLabel("Num. Iterations")
@@ -255,8 +255,8 @@ class WindTurbineProperties(QWidget):
         self.fbox.addRow(self._design_iters, self.design_iters)
         self.design_iters.setToolTip("St. iteracij (Adkins)")
         self.hideable_widgets.append([
-            self.fbox.itemAt(self.fbox.rowCount()-1,0),
-            self.fbox.itemAt(self.fbox.rowCount()-1,1),
+            self.fbox.itemAt(self.fbox.rowCount() - 1, 0),
+            self.fbox.itemAt(self.fbox.rowCount() - 1, 1),
             ["Adkins"]])
 
         self._design_relaxation = QLabel("Relax. factor (Adkins)")
@@ -265,8 +265,8 @@ class WindTurbineProperties(QWidget):
         self.fbox.addRow(self._design_relaxation, self.design_relaxation)
         self.design_relaxation.setToolTip("Relaksacijski faktor (Adkins)")
         self.hideable_widgets.append([
-            self.fbox.itemAt(self.fbox.rowCount()-1,0),
-            self.fbox.itemAt(self.fbox.rowCount()-1,1),
+            self.fbox.itemAt(self.fbox.rowCount() - 1, 0),
+            self.fbox.itemAt(self.fbox.rowCount() - 1, 1),
             ["Adkins"]])
 
         self._convergence_criterion_adkins = QLabel("Convergence crit.")
@@ -275,8 +275,8 @@ class WindTurbineProperties(QWidget):
         self.fbox.addRow(self._convergence_criterion_adkins, self.convergence_criterion_adkins)
         self.convergence_criterion_adkins.setToolTip("Konvergenčni kriterij")
         self.hideable_widgets.append([
-            self.fbox.itemAt(self.fbox.rowCount()-1,0),
-            self.fbox.itemAt(self.fbox.rowCount()-1,1),
+            self.fbox.itemAt(self.fbox.rowCount() - 1, 0),
+            self.fbox.itemAt(self.fbox.rowCount() - 1, 1),
             ["Adkins"]])
 
         self._design_method = QLabel("Design method.")
@@ -342,7 +342,7 @@ class WindTurbineProperties(QWidget):
 
     def set_parameter_visibility(self):
         if self.design_method.currentIndex() == 0:
-            for item1,item2,methods in self.hideable_widgets:
+            for item1, item2, methods in self.hideable_widgets:
                 if "Betz" in methods:
                     item1.widget().show()
                     item2.widget().show()
@@ -350,7 +350,7 @@ class WindTurbineProperties(QWidget):
                     item1.widget().hide()
                     item2.widget().hide()
         if self.design_method.currentIndex() == 1:
-            for item1,item2,methods in self.hideable_widgets:
+            for item1, item2, methods in self.hideable_widgets:
                 if "Schmitz" in methods:
                     item1.widget().show()
                     item2.widget().show()
@@ -358,7 +358,7 @@ class WindTurbineProperties(QWidget):
                     item1.widget().hide()
                     item2.widget().hide()
         if self.design_method.currentIndex() == 2:
-            for item1,item2,methods in self.hideable_widgets:
+            for item1, item2, methods in self.hideable_widgets:
                 if "Larrabee" in methods:
                     item1.widget().show()
                     item2.widget().show()
@@ -366,7 +366,7 @@ class WindTurbineProperties(QWidget):
                     item1.widget().hide()
                     item2.widget().hide()
         if self.design_method.currentIndex() == 3:
-            for item1,item2,methods in self.hideable_widgets:
+            for item1, item2, methods in self.hideable_widgets:
                 if "Adkins" in methods:
                     item1.widget().show()
                     item2.widget().show()
@@ -382,7 +382,7 @@ class WindTurbineProperties(QWidget):
                         item2.widget().show()
         if self.design_use_power_constraint.isChecked():
             if self.design_method.currentIndex() == 3:
-                #adkins
+                # adkins
                 self.design_power.show()
                 self._design_power.show()
                 self.design_thrust.hide()
@@ -397,7 +397,6 @@ class WindTurbineProperties(QWidget):
             self._design_power.hide()
             self.design_thrust.show()
             self._design_thrust.show()
-
 
     def get_settings(self):
         """
@@ -419,26 +418,26 @@ class WindTurbineProperties(QWidget):
                "blade_thickness": to_float(self.blade_thickness.text()),
                "blade_design": self.blade_design.currentIndex(),
                "mass_density": to_float(self.mass_density.text()),
-               "design_RPM":to_float(self.design_RPM.text()),
-               "design_velocity":to_float(self.design_velocity.text()),
-               "design_thrust":to_float(self.design_thrust.text()),
-               "design_power":to_float(self.design_power.text()),
+               "design_RPM": to_float(self.design_RPM.text()),
+               "design_velocity": to_float(self.design_velocity.text()),
+               "design_thrust": to_float(self.design_thrust.text()),
+               "design_power": to_float(self.design_power.text()),
                "design_use_power_constraint": self.design_use_power_constraint.isChecked(),
                "design_minimize_losses": self.design_minimize_losses.isChecked(),
-               "design_drag_lift_ratio":to_float(self.design_drag_lift_ratio.text()),
-               "design_rho":to_float(self.design_rho.text()),
-               "design_kin_viscosity":to_float(self.design_kin_viscosity.text()),
-               "num_gen_sections":to_float(self.num_gen_sections.text()),
-               "design_tsr":to_float(self.design_tsr.text()),
-               "design_aoa":to_float(self.design_aoa.text()),
-               "design_cl":to_float(self.design_cl.text()),
-               "design_iters":to_float(self.design_iters.text()),
-               "design_relaxation":to_float(self.design_relaxation.text()),
-               "design_airfoil":self.design_airfoil.text(),
-               "design_method":to_float(self.design_method.currentIndex()),
-               "convergence_criterion_adkins":to_float(self.convergence_criterion_adkins.text()),
-               "turbine_type":self.turbine_type.currentIndex()}
-        
+               "design_drag_lift_ratio": to_float(self.design_drag_lift_ratio.text()),
+               "design_rho": to_float(self.design_rho.text()),
+               "design_kin_viscosity": to_float(self.design_kin_viscosity.text()),
+               "num_gen_sections": to_float(self.num_gen_sections.text()),
+               "design_tsr": to_float(self.design_tsr.text()),
+               "design_aoa": to_float(self.design_aoa.text()),
+               "design_cl": to_float(self.design_cl.text()),
+               "design_iters": to_float(self.design_iters.text()),
+               "design_relaxation": to_float(self.design_relaxation.text()),
+               "design_airfoil": self.design_airfoil.text(),
+               "design_method": to_float(self.design_method.currentIndex()),
+               "convergence_criterion_adkins": to_float(self.convergence_criterion_adkins.text()),
+               "turbine_type": self.turbine_type.currentIndex()}
+
         geom_array = self.table_properties.get_values()
         r, c, theta, foils = [], [], [], []
         for row in geom_array:
@@ -457,12 +456,13 @@ class WindTurbineProperties(QWidget):
         _foils = out["foils"]
         out["R"] = out["R"]
         out["Rhub"] = out["Rhub"]
-        r, c, theta, foils, dr = interpolate_geom(_r, _c, _theta, _foils, out["R"], out["Rhub"], out["num_interp"], out["linspace_interp"],
+        r, c, theta, foils, dr = interpolate_geom(_r, _c, _theta, _foils, out["R"], out["Rhub"], out["num_interp"],
+                                                  out["linspace_interp"],
                                                   out["geometry_scale"])
         out["r"], out["c"], out["theta"], out["foils"], out["dr"] = r, c, theta, foils, dr
         out["r_in"], out["c_in"], out["theta_in"], out["foils_in"] = _r, _c, _theta, _foils
 
-        out["propeller_pitch"] = 2*np.pi*np.array(out["r"])*np.tan(np.radians(out["theta"]))*39.3701
+        out["propeller_pitch"] = 2 * np.pi * np.array(out["r"]) * np.tan(np.radians(out["theta"])) * 39.3701
 
         return out
 
@@ -470,23 +470,24 @@ class WindTurbineProperties(QWidget):
         try:
             J = float(self.design_velocity.text()) / (float(self.design_RPM.text()) / 60 * 2 * float(self.R.text()))
             self.J_string.setText("%.2f" % (J))
-            c_T=float(self.design_thrust.text())/(float(self.design_rho.text())*(float(self.design_RPM.text())/60)**2*(float(self.R.text())*2)**4)
+            c_T = float(self.design_thrust.text()) / (
+                    float(self.design_rho.text()) * (float(self.design_RPM.text()) / 60) ** 2 * (
+                    float(self.R.text()) * 2) ** 4)
             self.c_T_string.setText("%.2f" % (c_T))
         except:
             print("couldnt update J/cT")
 
     def calculate_pitch(self):
         out = self.get_settings()
-        r,theta = np.array(out["r_in"]), np.array(out["theta_in"])
+        r, theta = np.array(out["r_in"]), np.array(out["theta_in"])
         R = out["R"]
-        r_R = r/R
-        f = interpolate.interp1d(r_R,theta)
-        beta = np.deg2rad(f(0.75)) # theta at 0.75 R
-        D = 2*R*39.3701 # inches
-        pitch_inches = np.pi*0.75*D*np.tan(beta)
+        r_R = r / R
+        f = interpolate.interp1d(r_R, theta)
+        beta = np.deg2rad(f(0.75))  # theta at 0.75 R
+        D = 2 * R * 39.3701  # inches
+        pitch_inches = np.pi * 0.75 * D * np.tan(beta)
         self.pitch_inches.setText(str(pitch_inches))
         return
-
 
     def create_geometry_graph(self):
         out = self.get_settings()
@@ -513,13 +514,13 @@ class WindTurbineProperties(QWidget):
 
         self.gw_pitch.ax = self.gw_pitch.figure.add_subplot(111)
         self.gw_pitch.ax.set_title("p(r)")
-        self.gw_pitch.ax.plot(np.array(out["r"])/out["R"], out["propeller_pitch"])
+        self.gw_pitch.ax.plot(np.array(out["r"]) / out["R"], out["propeller_pitch"])
         self.gw_pitch.ax.set_xlabel("r/R")
         self.gw_pitch.ax.set_ylabel("Pitch p [in]")
 
     def adkins_completion(self):
         array_out = []
-        chords,thetas = self.adkins_return
+        chords, thetas = self.adkins_return
         R = float(self.R.text())
         Rhub = float(self.Rhub.text())
         num_gen_sections = int(float(self.num_gen_sections.text()))
@@ -559,7 +560,8 @@ class WindTurbineProperties(QWidget):
             thetas = generate_twists_schmitz(radiuses=radiuses, R=R, TSR=TSR, alpha_d=design_aoa)
 
         elif method == 2:
-            chords, thetas = generate_propeller_larabee(radiuses=radiuses, R=R, B=B, RPM=RPM, drag_lift_ratio=drag_lift_ratio, v=v, T=T, rho=rho, cl=Cl_max)
+            chords, thetas = generate_propeller_larabee(radiuses=radiuses, R=R, B=B, RPM=RPM,
+                                                        drag_lift_ratio=drag_lift_ratio, v=v, T=T, rho=rho, cl=Cl_max)
 
         elif method == 3:
             input_data = self.main.get_all_settings()
@@ -730,27 +732,26 @@ class WindTurbineProperties(QWidget):
         folder_path = os.path.join(application_path, "export", SET_INIT["turbine_name"])
         create_folder(folder_path)
 
-
-        #print("Exporting... (and converting m to mm)")
+        # print("Exporting... (and converting m to mm)")
 
         filenames = []
         data_out = []
         for z, x_data, y_data in data["data"]:
-            #print("Exporting z=" + str(z), "[m]")
-            #z = z * 1e3  # in mm
+            # print("Exporting z=" + str(z), "[m]")
+            # z = z * 1e3  # in mm
             file_name = os.path.join(folder_path, "z_%s.txt" % z)
             filenames.append(os.path.join(os.getcwd(), file_name))
             # print(file_name)
             f = open(os.path.join(folder_path, "z_%s.txt" % z), "w")
             for x, y in zip(x_data, y_data):
                 x_out, y_out, z_out = x * 1e3, y * 1e3, z * 1e3  # in mm
-                f.write("%s\t%s\t%s\n" % (y_out, z_out, x_out)) # Change indexes for SW
+                f.write("%s\t%s\t%s\n" % (y_out, z_out, x_out))  # Change indexes for SW
             f.close()
 
-            data_out.append([y_data,np.zeros(len(y_data))+z,x_data])
+            data_out.append([y_data, np.zeros(len(y_data)) + z, x_data])
 
-        #print("Filenames:", filenames)
-        macro_text = create_macro_text(filenames,data_out)
+        # print("Filenames:", filenames)
+        macro_text = create_macro_text(filenames, data_out)
 
         print("'===============MACRO START==================")
         print(macro_text)

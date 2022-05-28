@@ -71,7 +71,8 @@ class Curve:
     def save_curve(self):
         out = {"x": list(self.x), "y": list(self.y), "Re": self.Re, "ncrit": self.ncrit, "alpha": list(self.alpha),
                "cl": list(self.cl), "cd": list(self.cd), "A": self.A, "B": self.B, "Am": self.Am, "Bm": self.Bm,
-               "m_CD90": self.m_CD90, "slope": self.slope, "min_stable_aoa":self.min_stable_aoa, "max_stable_aoa":self.max_stable_aoa}
+               "m_CD90": self.m_CD90, "slope": self.slope, "min_stable_aoa": self.min_stable_aoa,
+               "max_stable_aoa": self.max_stable_aoa}
         return out
 
     def load_curve(self, out):

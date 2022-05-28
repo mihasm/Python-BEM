@@ -653,9 +653,9 @@ class Calculator:
                 aoa_max_stall_2 = self.airfoils[_airfoil_next]["interpolation_function_stall_max"](Re)
 
                 aoa_min_stall = aoa_min_stall_1 * transition_coefficient + aoa_min_stall_2 * (
-                            1 - transition_coefficient)
+                        1 - transition_coefficient)
                 aoa_max_stall = aoa_max_stall_1 * transition_coefficient + aoa_max_stall_2 * (
-                            1 - transition_coefficient)
+                        1 - transition_coefficient)
 
                 def zero_finding_function1(alpha):
                     return self.airfoils[_airfoil_prev]["interp_function_cl"](Re, alpha)
@@ -769,14 +769,14 @@ class Calculator:
                 p.print("             --------")
 
             if not use_minimization_solver:
+                # save old values
+                a_last = a
+                aprime_last = aprime
+
                 # calculate new induction coefficients
                 coeffs = calculate_coefficients(method, input_arguments)
                 if coeffs == None:
                     return {"finished": False, "iterations": i, "criterion_value": abs(a - a_last)}
-
-                # save old values
-                a_last = a
-                aprime_last = aprime
 
                 # set new values
                 a, aprime = coeffs

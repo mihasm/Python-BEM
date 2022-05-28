@@ -8,7 +8,7 @@ from utils import array_to_csv
 
 
 class Table(QWidget):
-    def __init__(self,fixed_columns=False):
+    def __init__(self, fixed_columns=False):
         super().__init__()
         self.selected_array = []
         self.fixed_columns = fixed_columns
@@ -166,7 +166,6 @@ class Table(QWidget):
             for c in column_indexes:
                 self.tableWidget.setItem(r, c, QTableWidgetItem(""))
 
-
     def select_next_row(self):
         rows = sorted(set(index.row()
                           for index in self.tableWidget.selectedIndexes()))
@@ -200,7 +199,7 @@ class Table(QWidget):
         if not self.fixed_columns:
             delete_column = menu.addAction("Delete column(s)")
             insert_column = menu.addAction("Insert column")
-        
+
         delete_row = menu.addAction("Delete row(s)")
         insert_row = menu.addAction("Insert row")
 

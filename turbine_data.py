@@ -1,7 +1,7 @@
 from numpy import array
 from pprint import pprint
 
-
+# noinspection PyPep8
 SET_INIT = {
 'kin_viscosity':1.4207E-5,
 'B': 3,

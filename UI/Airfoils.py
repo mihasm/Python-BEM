@@ -59,7 +59,7 @@ class Airfoils(QWidget):
 
         self.airfoil_graph = pg.PlotWidget()
         self.grid.addWidget(self.airfoil_graph, 1, 3)
-        self.airfoil_graph.getViewBox().setAspectLocked(lock=True,ratio=1)
+        self.airfoil_graph.getViewBox().setAspectLocked(lock=True, ratio=1)
 
         self.buttonRefresh = QPushButton("Refresh curve")
         self.grid.addWidget(self.buttonRefresh, 3, 3)
@@ -133,7 +133,7 @@ class Airfoils(QWidget):
         self.centroid_grid = QGridLayout()
         self.centroid_widget.setLayout(self.centroid_grid)
         self.centroid_label = QLabel("Center:")
-        self.grid.addWidget(self.centroid_widget,2,2)
+        self.grid.addWidget(self.centroid_widget, 2, 2)
         self.centroid_label.setToolTip(
             "Center of rotation for 3D export to Solidworks. Doesn't affect analysis.")
 
@@ -146,7 +146,7 @@ class Airfoils(QWidget):
 
         self.get_centroid_button = QPushButton("Calculate centroid")
         self.get_centroid_button.clicked.connect(self.calculate_centroid)
-        self.grid.addWidget(self.get_centroid_button,3,2)
+        self.grid.addWidget(self.get_centroid_button, 3, 2)
         self.get_centroid_button.setToolTip(
             "Recalculate the centroid for the profile")
 
@@ -154,7 +154,6 @@ class Airfoils(QWidget):
         self.grid.setColumnStretch(2, 1)
         self.grid.setColumnStretch(3, 2)
 
-        
         self.window = None
         self.curve_editor = CurveEditor(self)
 
@@ -196,7 +195,7 @@ class Airfoils(QWidget):
         xi, yi = xi.flatten(), yi.flatten()
         z_1 = interp_at(re, alpha, cl, xi, yi)
         z_2 = interp_at(re, alpha, cd, xi, yi)
-        
+
         self.w = MatplotlibWindow()
         self.w.setWindowTitle("Cl(alpha,Re)")
         self.w.ax = self.w.figure.add_subplot(111, projection="3d")
@@ -235,8 +234,8 @@ class Airfoils(QWidget):
 
     def open_xfoil_options(self):
         self.xfoil_window = XfoilOptionsWindow(self)
-        self.xfoil_window.setWindowTitle("XFOIL runner: "+self.airfoil_name)
-    
+        self.xfoil_window.setWindowTitle("XFOIL runner: " + self.airfoil_name)
+
     def generate_curves_xfoil(self):
         print("Generating xfoil curves")
         x, y = self.get_x_y()
@@ -256,14 +255,14 @@ class Airfoils(QWidget):
         self.window = PrintoutWindow(self)
         self.thread = XFoilThread(self)
         self.thread.set_params(dat_path,
-            alpha_from,alpha_to,alpha_num,
-            reynolds_from,reynolds_to,reynolds_num,
-            ncrit)
+                               alpha_from, alpha_to, alpha_num,
+                               reynolds_from, reynolds_to, reynolds_num,
+                               ncrit)
         self.xfoil_window.button_run_xfoil.setDisabled(True)
         self.xfoil_window.button_stop_xfoil.setEnabled(True)
         self.thread.completeSignal.connect(self.xfoil_completion)
         self.thread.start()
-        #print("Done")
+        # print("Done")
 
     def stop_xfoil(self):
         self.thread.terminate()
@@ -315,7 +314,7 @@ class Airfoils(QWidget):
                 c.create(x=x, y=y, Re=Re, ncrit=ncrit_selected, alpha=_alpha, cl=_cl, cd=_cd)
                 self.curves.add(c)
 
-    def refresh(self):        
+    def refresh(self):
         x_values = []
         y_values = []
         array_dat = self.table_dat.get_values()
@@ -331,8 +330,8 @@ class Airfoils(QWidget):
                 x_values.append(_x)
                 y_values.append(_y)
 
-        self.airfoil_graph.plot(x_values,y_values)
-        
+        self.airfoil_graph.plot(x_values, y_values)
+
         try:
             centroid_x = float(self.centroid_x_edit.text())
             centroid_y = float(self.centroid_y_edit.text())
@@ -389,7 +388,7 @@ class Airfoils(QWidget):
     def calculate_centroid(self):
         foil_x, foil_y = self.get_x_y()
         x, y = get_centroid_coordinates(foil_x, foil_y)
-        #print("x:",x,"y:",y)
+        # print("x:",x,"y:",y)
         self.centroid_x_edit.setText(str(round(x, 6)))
         self.centroid_y_edit.setText(str(round(y, 6)))
         return x, y
@@ -440,7 +439,7 @@ class Airfoils(QWidget):
                "centroid_y": centroid_y,
                "ncrit_selected": ncrit_selected,
                "extrapolation_bool": extrapolation_bool,
-               "stall_angles":self.curves.get_stall_angles()}
+               "stall_angles": self.curves.get_stall_angles()}
         return out
 
     def set_settings(self, dict_settings):

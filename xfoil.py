@@ -4,7 +4,6 @@ import re as regex
 import sys
 from math import isinf
 from subprocess import Popen, PIPE
-from threading import Timer
 import threading
 import time
 
@@ -54,9 +53,9 @@ def get_coefficients_from_output(output_str):
     cD_last = None
 
     for l in lines:
-        #print(l)
-        cL_find = regex.match(r".+CL =([- \d][- \d][ \d]\.\d\d\d\d)",l)
-        cD_find = regex.match(r".+CD =([- \d][- \d][ \d]\.\d\d\d\d)",l)
+        # print(l)
+        cL_find = regex.match(r".+CL =([- \d][- \d][ \d]\.\d\d\d\d)", l)
+        cD_find = regex.match(r".+CD =([- \d][- \d][ \d]\.\d\d\d\d)", l)
         if cL_find:
             cL = float(cL_find.groups()[0])
             if not isinf(cL):
@@ -69,8 +68,8 @@ def get_coefficients_from_output(output_str):
             return False
 
     # Weird cases
-    out = {"CL" : cL_last,
-           "CD" : cD_last,
+    out = {"CL": cL_last,
+           "CD": cD_last,
            "out": output_str}
     return out
 
@@ -89,7 +88,7 @@ def run_xfoil_analysis(airfoil, reynolds, alpha, ncrit, iterations=100, max_next
     # print("running xfoil for %s,Re=%s,alpha=%s" % (airfoil,reynolds,alpha))
     # alpha in degrees
 
-    with Popen(os.path.abspath(xfoil_path), stdin=PIPE, stdout=PIPE, universal_newlines=True, shell = False) as process:
+    with Popen(os.path.abspath(xfoil_path), stdin=PIPE, stdout=PIPE, universal_newlines=True, shell=False) as process:
 
         def call(_str, proc=process):
             # print(_str,file=process.stdin)
@@ -98,7 +97,6 @@ def run_xfoil_analysis(airfoil, reynolds, alpha, ncrit, iterations=100, max_next
         def kill():
             time.sleep(2)
             process.kill()
-
 
         thread = threading.Thread(target=kill)
         thread.start()
@@ -117,7 +115,7 @@ def run_xfoil_analysis(airfoil, reynolds, alpha, ncrit, iterations=100, max_next
         else:
             # open .dat file
             call("load %s" % os.path.join("foils", airfoil))
-        
+
         # create back-design from dat file
         call("mdes")
         call("filt")
@@ -222,7 +220,7 @@ def draw_to_matplotlib(x, y, z, shrani=False, unit='CL'):
     plt.show()
 
 
-def generate_polars(foil,alpha_from,alpha_to,alpha_num,reynolds_from,reynolds_to,reynolds_num,ncrit):
+def generate_polars(foil, alpha_from, alpha_to, alpha_num, reynolds_from, reynolds_to, reynolds_num, ncrit):
     """
 
     :param foil:
@@ -254,53 +252,17 @@ def generate_polars(foil,alpha_from,alpha_to,alpha_num,reynolds_from,reynolds_to
                 all_ncrit.append(ncrit)
     return all_ncrit, all_a, all_re, all_cl, all_cd
 
-#generate_polars("naca4410")
 
-def generate_polars_data(foil,alpha_from,alpha_to,alpha_num,reynolds_from,reynolds_to,reynolds_num,ncrit):
+def generate_polars_data(foil, alpha_from, alpha_to, alpha_num, reynolds_from, reynolds_to, reynolds_num, ncrit):
     """
 
     :param foil:
     :return:
     """
-    all_ncrit, all_a, all_re, all_cl, all_cd = generate_polars(foil,alpha_from,alpha_to,alpha_num,reynolds_from,reynolds_to,reynolds_num,ncrit)
+    all_ncrit, all_a, all_re, all_cl, all_cd = generate_polars(foil, alpha_from, alpha_to, alpha_num, reynolds_from,
+                                                               reynolds_to, reynolds_num, ncrit)
     out = []
     for i in range(len(all_a)):
         out.append([all_re[i], all_ncrit[i], all_a[i], all_cl[i], all_cd[i]])
     out = np.array(out)
     return out
-
-
-# all_a,all_re,all_cl,all_cd = generate_polars()
-# data = generate_polars_data("s826.dat")
-# print(data)
-# from s826 import all_re,all_a,all_cl,all_cd
-
-
-def draw_scatter(x, y, z):
-    """
-
-    :param x:
-    :param y:
-    :param z:
-    """
-    fig = plt.figure()
-    ax = Axes3D(fig)
-    ax.scatter(all_a, all_re, all_cl)
-    ax.set_xlabel('alpha')
-    ax.set_ylabel('reynolds')
-    ax.set_zlabel('lift')
-    plt.show()
-
-# X,Y,Z = create_approximation_plane(all_a,all_re,all_cl)
-# surf = ax.plot_surface(X, Y, Z, rstride=1, cstride=1, alpha=0.2,label="interp")
-
-# print("all_a",all_a)
-# print("all_re",all_re)
-# print("all_cl",all_cl)
-# print("all_cd",all_cd)
-
-# draw_to_matplotlib(all_a,all_re,all_cl)
-# draw_scatter(all_a,all_re,all_cl)
-#
-
-#print(run_xfoil_analysis("s826.dat",1000000,-14,print_output=True))

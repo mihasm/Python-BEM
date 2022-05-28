@@ -159,7 +159,7 @@ def interpolate_geom(r, c, theta, foils, R, Rhub, num=None, linspace_interp=Fals
         foils = foils_orig
 
     # calculate dr
-    dr = calculate_dr(r,R,Rhub)
+    dr = calculate_dr(r, R, Rhub)
 
     # scaling
     r = geometry_scale * r
@@ -168,7 +168,8 @@ def interpolate_geom(r, c, theta, foils, R, Rhub, num=None, linspace_interp=Fals
 
     return r, c, theta, foils, dr
 
-def calculate_dr(r,R,Rhub):
+
+def calculate_dr(r, R, Rhub):
     """
 
     :param r:
@@ -180,16 +181,16 @@ def calculate_dr(r,R,Rhub):
     dr = np.zeros(len(r))
     for i in range(len(r)):
         if i == 0:
-            r_between = (r[i]+r[i+1])/2
-            _dr = r_between-Rhub
-        elif i == len(r)-1:
-            r_between = (r[i]+r[i-1])/2
+            r_between = (r[i] + r[i + 1]) / 2
+            _dr = r_between - Rhub
+        elif i == len(r) - 1:
+            r_between = (r[i] + r[i - 1]) / 2
             _dr = R - r_between
         else:
-            r_between_up = (r[i]+r[i+1])/2
-            r_between_down = (r[i]+r[i-1])/2
-            _dr = r_between_up-r_between_down
-        dr[i]=_dr
+            r_between_up = (r[i] + r[i + 1]) / 2
+            r_between_down = (r[i] + r[i - 1]) / 2
+            _dr = r_between_up - r_between_down
+        dr[i] = _dr
     return dr
 
 
@@ -266,7 +267,7 @@ def fltr(node, vals):
             return retVal
         else:
             return None
-    
+
     elif isinstance(node, list):
         retVal = []
         for entry in node:
@@ -278,16 +279,17 @@ def fltr(node, vals):
         else:
             return None
 
+
 def filter_3d_results(results_3d):
     """
     Input: 3D results from calculation_runner
     Output: Same, with numpy arrays converted to lists,
     to ease JSON serialization.
     """
-    for k,v in results_3d.items():
-        if isinstance(v,list):
+    for k, v in results_3d.items():
+        if isinstance(v, list):
             for i in range(len(v)):
-                if isinstance(results_3d[k][i],np.ndarray):
+                if isinstance(results_3d[k][i], np.ndarray):
                     results_3d[k][i] = list(results_3d[k][i])
     return results_3d
 
@@ -405,26 +407,27 @@ def get_centroid_coordinates(x, y):
     """
 
     A = 0
-    for i in range(0,len(x)-1):
-        A = A+(x[i]*y[i+1]-x[i+1]*y[i])
-    A = A*1/2
+    for i in range(0, len(x) - 1):
+        A = A + (x[i] * y[i + 1] - x[i + 1] * y[i])
+    A = A * 1 / 2
 
     Cx = 0
     Cy = 0
 
-    for i in range(0,len(x)-1):
-        Cx=Cx+(x[i]+x[i+1])*(x[i]*y[i+1]-x[i+1]*y[i])
-        Cy=Cy+(y[i]+y[i+1])*(x[i]*y[i+1]-x[i+1]*y[i])
+    for i in range(0, len(x) - 1):
+        Cx = Cx + (x[i] + x[i + 1]) * (x[i] * y[i + 1] - x[i + 1] * y[i])
+        Cy = Cy + (y[i] + y[i + 1]) * (x[i] * y[i + 1] - x[i + 1] * y[i])
 
-    Cx=Cx*1/(6*A)
-    Cy=Cy*1/(6*A)
-    return (Cx,Cy)
+    Cx = Cx * 1 / (6 * A)
+    Cy = Cy * 1 / (6 * A)
+    return (Cx, Cy)
 
 
 class MyMessageBox(QMessageBox):
     """
 
     """
+
     def __init__(self):
         QMessageBox.__init__(self)
         super().__init__()
@@ -479,13 +482,13 @@ def generate_v_and_rpm_from_tsr(tsr_list, R, geometry_scale, v=None, rpm=None):
         # rpm is fixed
         out_rpm.append(rpm)
         for tsr in tsr_list:
-            _v = 2 * np.pi * rpm / 60 * (R*geometry_scale) / tsr
+            _v = 2 * np.pi * rpm / 60 * (R * geometry_scale) / tsr
             out_v.append(_v)
     elif rpm == None:
         # v is fixed
         out_v.append(v)
         for tsr in tsr_list:
-            _rpm = tsr * v * 60 / (R*geometry_scale) / 2 / np.pi
+            _rpm = tsr * v * 60 / (R * geometry_scale) / 2 / np.pi
             out_rpm.append(_rpm)
     return out_v, out_rpm
 
@@ -502,20 +505,20 @@ def generate_v_and_rpm_from_J(J_list, R, geometry_scale, v=None, rpm=None, print
 
     rpm = 60*v/J/(2*R)
     """
-    
+
     out_v = []
     out_rpm = []
     if v == None:
         # rpm is fixed
         out_rpm.append(rpm)
         for J in J_list:
-            _v = J * (rpm / 60) * (2*R*geometry_scale)
+            _v = J * (rpm / 60) * (2 * R * geometry_scale)
             out_v.append(_v)
     elif rpm == None:
         # v is fixed
         out_v.append(v)
         for J in J_list:
-            _rpm = 60 * v / J / (2*R*geometry_scale)
+            _rpm = 60 * v / J / (2 * R * geometry_scale)
             out_rpm.append(_rpm)
     return out_v, out_rpm
 
@@ -716,26 +719,27 @@ def get_curves_functions(input_arguments):
 
         airfoils[blade_name]["interp_function_cl"] = interpolation_function_cl
         airfoils[blade_name]["interp_function_cd"] = interpolation_function_cd
-        
-        re_stall_list,aoa_min_stall_list,aoa_max_stall_list = airfoils[blade_name]["stall_angles"]
+
+        re_stall_list, aoa_min_stall_list, aoa_max_stall_list = airfoils[blade_name]["stall_angles"]
 
         if len(re_stall_list) == 1:
-            #only one curve
+            # only one curve
             def interpolation_function_stall_min(re_in):
                 return aoa_min_stall_list[0]
+
             def interpolation_function_stall_max(re_in):
                 return aoa_max_stall_list[0]
         else:
             interpolation_function_stall_min = interpolate.interp1d(
-                                                    re_stall_list,
-                                                    aoa_min_stall_list,
-                                                    fill_value=(aoa_min_stall_list[0],aoa_min_stall_list[-1]),
-                                                    bounds_error=False)
+                re_stall_list,
+                aoa_min_stall_list,
+                fill_value=(aoa_min_stall_list[0], aoa_min_stall_list[-1]),
+                bounds_error=False)
             interpolation_function_stall_max = interpolate.interp1d(
-                                                    re_stall_list,
-                                                    aoa_max_stall_list,
-                                                    fill_value=(aoa_max_stall_list[0],aoa_max_stall_list[-1]),
-                                                    bounds_error=False)
+                re_stall_list,
+                aoa_max_stall_list,
+                fill_value=(aoa_max_stall_list[0], aoa_max_stall_list[-1]),
+                bounds_error=False)
 
         airfoils[blade_name]["interpolation_function_stall_min"] = interpolation_function_stall_min
         airfoils[blade_name]["interpolation_function_stall_max"] = interpolation_function_stall_max
@@ -764,7 +768,7 @@ def get_curves_functions(input_arguments):
 
         max_thickness_array.append(max_thickness)
 
-    return airfoils,airfoils_list,transition_foils,transition_array,max_thickness_array
+    return airfoils, airfoils_list, transition_foils, transition_array, max_thickness_array
 
 
 ### CHORD TWIST GENERATORS ###
@@ -800,37 +804,40 @@ def generate_twists_schmitz(radiuses, R, TSR, alpha_d):
     thetas = 2 / 3 * np.rad2deg(np.arctan(R / (radiuses * TSR))) - alpha_d
     return thetas
 
+
 def generate_propeller_larabee(radiuses, R, B, RPM, drag_lift_ratio, v, T, rho, cl):
     """
     Source: Larabee, 1979
     """
     radiuses = np.array(radiuses)
-    xi = radiuses/R
-    omega = RPM*2*np.pi/60
-    x = omega*radiuses/v
-    TSR = v/omega/R
-    f = B/2*(np.sqrt(TSR**2+1)/TSR)*(1-radiuses/R)
-    F = 2/np.pi*np.arccos(np.exp(-f))
-    G = F*x**2/(1+x**2)
+    xi = radiuses / R
+    omega = RPM * 2 * np.pi / 60
+    x = omega * radiuses / v
+    TSR = v / omega / R
+    f = B / 2 * (np.sqrt(TSR ** 2 + 1) / TSR) * (1 - radiuses / R)
+    F = 2 / np.pi * np.arccos(np.exp(-f))
+    G = F * x ** 2 / (1 + x ** 2)
     _xi = np.insert(xi, 0, 0, axis=0)
     dxi = np.diff(_xi)
-    y = G*(1-drag_lift_ratio/x)*xi
-    y2 = G*(1-drag_lift_ratio/x)*xi/(x**2+1)
-    I1 = 4*np.trapz(y,x=xi)
-    I2 = 2*np.trapz(y2,x=xi)
-    thrust_coeff = 2*T/(rho*v**2*np.pi*R**2)
-    zeta = I1/(2*I2)*(1-np.sqrt(1-(4*I2*thrust_coeff)/I1**2))
-    vprime = zeta*v
-    c_R = 4*np.pi/B*TSR*G/(np.sqrt(1+x**2))*zeta/cl
-    c = c_R*R
-    theta = np.arctan(TSR/xi*(1+0.5*zeta))
+    y = G * (1 - drag_lift_ratio / x) * xi
+    y2 = G * (1 - drag_lift_ratio / x) * xi / (x ** 2 + 1)
+    I1 = 4 * np.trapz(y, x=xi)
+    I2 = 2 * np.trapz(y2, x=xi)
+    thrust_coeff = 2 * T / (rho * v ** 2 * np.pi * R ** 2)
+    zeta = I1 / (2 * I2) * (1 - np.sqrt(1 - (4 * I2 * thrust_coeff) / I1 ** 2))
+    vprime = zeta * v
+    c_R = 4 * np.pi / B * TSR * G / (np.sqrt(1 + x ** 2)) * zeta / cl
+    c = c_R * R
+    theta = np.arctan(TSR / xi * (1 + 0.5 * zeta))
     theta = np.rad2deg(theta)
-    return c,theta
+    return c, theta
+
 
 alpha_last = None
 
+
 def generate_propeller_adkins(inp):
-    #radiuses, R, B, RPM, v, T, rho, cl, airfoil, 
+    # radiuses, R, B, RPM, v, T, rho, cl, airfoil,
     """METHOD FROM ADKINS: https://arc.aiaa.org/doi/pdf/10.2514/3.23779"""
     Rhub = inp["Rhub"]
     R = inp["R"]
@@ -850,56 +857,56 @@ def generate_propeller_adkins(inp):
     iters = int(inp["design_iters"])
     convergence_criterion_adkins = inp["convergence_criterion_adkins"]
     minimize_losses = inp["design_minimize_losses"]
-    
-    airfoils,airfoils_list,transition_foils,transition_array,max_thickness_array = get_curves_functions(inp)
 
-    zeta=0.1 #initial guess
+    airfoils, airfoils_list, transition_foils, transition_array, max_thickness_array = get_curves_functions(inp)
 
-    cl_arr = np.array([cl_des]*len(r))
+    zeta = 0.1  # initial guess
+
+    cl_arr = np.array([cl_des] * len(r))
 
     for count in range(iters):
-        print("count",count)
-        xi = r/R
-        omega = 2*np.pi*RPM/60
-        J=v/(RPM/60*2*R)
-        print("J",J)
-        x = omega*r/v
-        _lambda = v/(omega*R)
-        print("_lambda",_lambda)
-        phi_t=np.arctan(_lambda*(1+zeta/2))
-        phi = np.arctan(np.tan(phi_t)/xi) #direct from adkins (21)
-        phi2 = np.arctan((1+zeta/2)/x) # adkins (8)
-        phi3 = np.arctan((1+zeta/2)*_lambda/xi) # adkins (8)
+        print("count", count)
+        xi = r / R
+        omega = 2 * np.pi * RPM / 60
+        J = v / (RPM / 60 * 2 * R)
+        print("J", J)
+        x = omega * r / v
+        _lambda = v / (omega * R)
+        print("_lambda", _lambda)
+        phi_t = np.arctan(_lambda * (1 + zeta / 2))
+        phi = np.arctan(np.tan(phi_t) / xi)  # direct from adkins (21)
+        phi2 = np.arctan((1 + zeta / 2) / x)  # adkins (8)
+        phi3 = np.arctan((1 + zeta / 2) * _lambda / xi)  # adkins (8)
 
-        print("phi",np.rad2deg(phi))
-        print("phi2",np.rad2deg(phi2))
-        print("phi3",np.rad2deg(phi3))
-        f = B/2*(1-xi)/np.sin(phi_t)
-        F = 2/np.pi*np.arccos(np.exp(-f))
-        #F = 2 / np.pi * np.arccos(np.exp(-B / 2 * np.abs((R - r) / r / np.sin(phi)))) # Typical Prandtl implementation
-        print("F",F)
-        G = F*x**2/(1+x**2)
-        print("G",G)
-        G = F*x*np.cos(phi)*np.sin(phi)
-        print("G2",G)
-        print("cl_arr",cl_arr)
-        Wc=4*np.pi*_lambda*G*v*R*zeta/(cl_arr*B)
-        print("Wc_des",Wc)
-        Re=Wc/kin_viscosity
-        print("Re_des",Re)
-        eps_arr=[None]*len(r)
-        alpha_arr=[None]*len(r)
-        cl_arr = [None]*len(r)
-        
+        print("phi", np.rad2deg(phi))
+        print("phi2", np.rad2deg(phi2))
+        print("phi3", np.rad2deg(phi3))
+        f = B / 2 * (1 - xi) / np.sin(phi_t)
+        F = 2 / np.pi * np.arccos(np.exp(-f))
+        # F = 2 / np.pi * np.arccos(np.exp(-B / 2 * np.abs((R - r) / r / np.sin(phi)))) # Typical Prandtl implementation
+        print("F", F)
+        G = F * x ** 2 / (1 + x ** 2)
+        print("G", G)
+        G = F * x * np.cos(phi) * np.sin(phi)
+        print("G2", G)
+        print("cl_arr", cl_arr)
+        Wc = 4 * np.pi * _lambda * G * v * R * zeta / (cl_arr * B)
+        print("Wc_des", Wc)
+        Re = Wc / kin_viscosity
+        print("Re_des", Re)
+        eps_arr = [None] * len(r)
+        alpha_arr = [None] * len(r)
+        cl_arr = [None] * len(r)
+
         for i in range(len(r)):
-            print("section",i)
+            print("section", i)
 
             Re_section = Re[i]
 
             min_cl = None
             max_cl = None
-            for a in range(-45,45):
-                _cl = airfoils[airfoil]["interp_function_cl"](Re_section,a)
+            for a in range(-45, 45):
+                _cl = airfoils[airfoil]["interp_function_cl"](Re_section, a)
                 if min_cl == None:
                     min_cl = _cl
                 if max_cl == None:
@@ -917,16 +924,16 @@ def generate_propeller_adkins(inp):
                     def get_dcl(alpha, cl_req=cl):
                         # returns 0 if alpha produces specified cl, else returns > 0.
                         # used as the zero-finding function
-                        
-                        cl_actual = airfoils[airfoil]["interp_function_cl"](Re_section,alpha)
+
+                        cl_actual = airfoils[airfoil]["interp_function_cl"](Re_section, alpha)
                         dcl = cl_actual - cl_req
-                        return dcl #so zero finding finds value of cl
-                    
+                        return dcl  # so zero finding finds value of cl
+
                     lower_bound = 45
                     while get_dcl(lower_bound) > 0:
                         lower_bound -= 1
                         if lower_bound < -90:
-                            raise Exception ("Too low bound, perhaps too low initial Cl?")
+                            raise Exception("Too low bound, perhaps too low initial Cl?")
 
                     upper_bound = -45
                     while get_dcl(upper_bound) < 0:
@@ -934,31 +941,32 @@ def generate_propeller_adkins(inp):
                         if upper_bound > 90:
                             raise Exception("Too high bound, perhaps too high initial Cl?")
 
-                    _alpha = scipy.optimize.ridder(get_dcl,lower_bound,upper_bound,xtol=1e-2,rtol=1e-4)
+                    _alpha = scipy.optimize.ridder(get_dcl, lower_bound, upper_bound, xtol=1e-2, rtol=1e-4)
 
                     alpha_arr[i] = _alpha
-                    cl = airfoils[airfoil]["interp_function_cl"](Re_section,_alpha)
-                    cd = airfoils[airfoil]["interp_function_cd"](Re_section,_alpha)
+                    cl = airfoils[airfoil]["interp_function_cl"](Re_section, _alpha)
+                    cd = airfoils[airfoil]["interp_function_cd"](Re_section, _alpha)
 
                     cl_arr[i] = cl
-                    _eps = cd/cl
+                    _eps = cd / cl
                     return _eps
-            
-                min_eps = scipy.optimize.minimize(eps_minimize_function,0.1,bounds=[(0,max_cl)],method="powell",options={'ftol': 0.001,"xtol":0.01,'maxiter':5,'maxfev':5}).fun
-                eps_arr[i]= min_eps
+
+                min_eps = scipy.optimize.minimize(eps_minimize_function, 0.1, bounds=[(0, max_cl)], method="powell",
+                                                  options={'ftol': 0.001, "xtol": 0.01, 'maxiter': 5, 'maxfev': 5}).fun
+                eps_arr[i] = min_eps
             else:
                 def get_dcl(alpha, cl_req=cl_des):
                     # returns 0 if alpha produces specified cl, else returns > 0.
                     # used as the zero-finding function
-                    cl_actual = airfoils[airfoil]["interp_function_cl"](Re_section,alpha)
+                    cl_actual = airfoils[airfoil]["interp_function_cl"](Re_section, alpha)
                     dcl = cl_actual - cl_req
-                    return dcl #so zero finding finds value of cl
+                    return dcl  # so zero finding finds value of cl
 
                 lower_bound = 45
                 while get_dcl(lower_bound) > 0:
                     lower_bound -= 1
                     if lower_bound < -90:
-                        raise Exception ("Too low bound, perhaps too low initial Cl?")
+                        raise Exception("Too low bound, perhaps too low initial Cl?")
 
                 upper_bound = -45
                 while get_dcl(upper_bound) < 0:
@@ -966,75 +974,76 @@ def generate_propeller_adkins(inp):
                     if upper_bound > 90:
                         raise Exception("Too high bound, perhaps too high initial Cl?")
 
-                _alpha = scipy.optimize.ridder(get_dcl,lower_bound,upper_bound,xtol=1e-2,rtol=1e-4)
+                _alpha = scipy.optimize.ridder(get_dcl, lower_bound, upper_bound, xtol=1e-2, rtol=1e-4)
                 alpha_arr[i] = _alpha
-                cl = airfoils[airfoil]["interp_function_cl"](Re_section,_alpha)
-                cd = airfoils[airfoil]["interp_function_cd"](Re_section,_alpha)
-                _eps = cd/cl
+                cl = airfoils[airfoil]["interp_function_cl"](Re_section, _alpha)
+                cd = airfoils[airfoil]["interp_function_cd"](Re_section, _alpha)
+                _eps = cd / cl
                 cl_arr[i] = cl
                 eps_arr[i] = _eps
 
         alpha_arr = np.array(alpha_arr)
-        print("alpha",alpha_arr)
+        print("alpha", alpha_arr)
         eps_arr = np.array(eps_arr)
         cl_arr = np.array(cl_arr)
-        print("cl",cl_arr)
+        print("cl", cl_arr)
 
-        a=(zeta/2)*np.cos(phi)**2*(1-eps_arr*np.tan(phi))
-        print("a",a)
+        a = (zeta / 2) * np.cos(phi) ** 2 * (1 - eps_arr * np.tan(phi))
+        print("a", a)
 
-        aprime=(zeta/(2*x))*np.cos(phi)*np.sin(phi)*(1+eps_arr/np.tan(phi))
-        print("aprime",aprime)
+        aprime = (zeta / (2 * x)) * np.cos(phi) * np.sin(phi) * (1 + eps_arr / np.tan(phi))
+        print("aprime", aprime)
 
-        phi4 = np.arctan(v*(1+a)/(omega*r*(1-aprime)))
-        print("phi4",np.rad2deg(phi4))
+        phi4 = np.arctan(v * (1 + a) / (omega * r * (1 - aprime)))
+        print("phi4", np.rad2deg(phi4))
 
-        phi5 = np.arctan((zeta/2-a)/(x*aprime))
-        print("phi5",np.rad2deg(phi5))
+        phi5 = np.arctan((zeta / 2 - a) / (x * aprime))
+        print("phi5", np.rad2deg(phi5))
 
-        W = v*(1+a)/np.sin(phi)
-        print("W",W)
-        W2 = np.sqrt((v*(1+a))**2+(omega*r*(1-aprime))**2)
-        print("W2",W2)
-        c = Wc/W
-        print("c",c)
+        W = v * (1 + a) / np.sin(phi)
+        print("W", W)
+        W2 = np.sqrt((v * (1 + a)) ** 2 + (omega * r * (1 - aprime)) ** 2)
+        print("W2", W2)
+        c = Wc / W
+        print("c", c)
 
-        beta = np.deg2rad(alpha_arr)+phi
+        beta = np.deg2rad(alpha_arr) + phi
 
-        I1p=4*xi*G*(1-eps_arr*np.tan(phi))
-        I2p=_lambda*(I1p/(2*xi))*(1+eps_arr/np.tan(phi))*np.sin(phi)*np.cos(phi)
-        J1p=4*xi*G*(1+eps_arr/np.tan(phi))
-        J2p=(J1p/2)*(1-eps_arr*np.tan(phi))*np.cos(phi)**2
+        I1p = 4 * xi * G * (1 - eps_arr * np.tan(phi))
+        I2p = _lambda * (I1p / (2 * xi)) * (1 + eps_arr / np.tan(phi)) * np.sin(phi) * np.cos(phi)
+        J1p = 4 * xi * G * (1 + eps_arr / np.tan(phi))
+        J2p = (J1p / 2) * (1 - eps_arr * np.tan(phi)) * np.cos(phi) ** 2
 
-        print("I1p",I1p)
-        print("I2p",I2p)
-        print("J1p",J1p)
-        print("J2p",J2p)
+        print("I1p", I1p)
+        print("I2p", I2p)
+        print("J1p", J1p)
+        print("J2p", J2p)
 
-        I1 =np.trapz(I1p,x=xi)
-        I2 =np.trapz(I2p,x=xi)
-        J1 =np.trapz(J1p,x=xi)
-        J2 =np.trapz(J2p,x=xi)
+        I1 = np.trapz(I1p, x=xi)
+        I2 = np.trapz(I2p, x=xi)
+        J1 = np.trapz(J1p, x=xi)
+        J2 = np.trapz(J2p, x=xi)
 
         if use_power_constraint:
             print("Power")
-            P_c=2*P/(rho*v**3*np.pi*R**2)
-            zeta_new = -(J1/(2*J2))+((J1/(2*J2))**2+P_c/J2)**0.5
+            P_c = 2 * P / (rho * v ** 3 * np.pi * R ** 2)
+            zeta_new = -(J1 / (2 * J2)) + ((J1 / (2 * J2)) ** 2 + P_c / J2) ** 0.5
         else:
             print("Thrust")
-            T_c=2*T/(rho*v**2*np.pi*R**2)
-            zeta_new = (I1/(2*I2))-((I1/(2*I2))**2-T_c/I2)**0.5
-        
-        print("zeta_new",zeta_new)
-        if abs(abs(zeta-zeta_new)*zeta_new)<convergence_criterion_adkins:
+            T_c = 2 * T / (rho * v ** 2 * np.pi * R ** 2)
+            zeta_new = (I1 / (2 * I2)) - ((I1 / (2 * I2)) ** 2 - T_c / I2) ** 0.5
+
+        print("zeta_new", zeta_new)
+        if abs(abs(zeta - zeta_new) * zeta_new) < convergence_criterion_adkins:
             print("converged")
-            print(c,np.rad2deg(beta))
-            return c,np.rad2deg(beta)
+            print(c, np.rad2deg(beta))
+            return c, np.rad2deg(beta)
         else:
             print("not converged")
-            zeta = (1-relaxation_factor)*zeta + relaxation_factor*zeta_new #relaxation
+            zeta = (1 - relaxation_factor) * zeta + relaxation_factor * zeta_new  # relaxation
     print("Not converged")
     return None
+
 
 ### INTERPOLATION ###
 
@@ -1173,7 +1182,7 @@ def get_interpolation_function(x, y, z, num_x=10, num_y=360):
 
 ### SOLIDWORKS MACRO BUILDER ###
 
-def create_macro_text(list_of_files,data):
+def create_macro_text(list_of_files, data):
     """
 
     :param list_of_files:
@@ -1201,7 +1210,7 @@ def create_macro_text(list_of_files,data):
     Set swModel = swApp.ActiveDoc
 
     Dim myModelView As Object
-    """ % (len(data)*3-1)
+    """ % (len(data) * 3 - 1)
 
     template2 = ""
     for f in list_of_files:
@@ -1209,11 +1218,11 @@ def create_macro_text(list_of_files,data):
     i = 0
     j = 0
     for row in data:
-        template2+="nPtData(%s) = %s\n" % (j,data[i][0][0])
-        template2+="nPtData(%s) = %s\n" % (j+1,data[i][1][0])
-        template2+="nPtData(%s) = %s\n" % (j+2,data[i][2][0])
-        i+=1
-        j+=3
+        template2 += "nPtData(%s) = %s\n" % (j, data[i][0][0])
+        template2 += "nPtData(%s) = %s\n" % (j + 1, data[i][1][0])
+        template2 += "nPtData(%s) = %s\n" % (j + 2, data[i][2][0])
+        i += 1
+        j += 3
 
     template3 = """
     vPtData = nPtData
@@ -1232,8 +1241,8 @@ def create_macro_text(list_of_files,data):
         _y = data[i][1][0]
         template4 += 'swModel.ClearSelection\n'
         template4 += 'boolstatus = Part.Extension.SelectByID2("Top Plane", "PLANE", 0, 0, 0, True, 0, Nothing, 0)\n'
-        template4 += "Set myRefPlane%s = Part.FeatureManager.InsertRefPlane(8, %s, 0, 0, 0, 0)\n" % (i,_y)
+        template4 += "Set myRefPlane%s = Part.FeatureManager.InsertRefPlane(8, %s, 0, 0, 0, 0)\n" % (i, _y)
 
     template5 = "End Sub\n"
 
-    return template1+"\n"+template2+"\n"+template3+"\n"+template4+"\n"+template5+"\n"
+    return template1 + "\n" + template2 + "\n" + template3 + "\n" + template4 + "\n" + template5 + "\n"

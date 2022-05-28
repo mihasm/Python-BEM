@@ -24,7 +24,7 @@ class Curves:
             out_min_aoa_list.append(min_stable_aoa)
             out_max_aoa_list.append(max_stable_aoa)
 
-        return out_re,out_min_aoa_list,out_max_aoa_list
+        return out_re, out_min_aoa_list, out_max_aoa_list
 
     def get_curves_sorted(self):
         return sorted(self.curve_list, key=lambda c: (c.ncrit, c.Re))

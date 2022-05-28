@@ -70,16 +70,16 @@ class XFoilThread(QThread):
         self.parent = parent
 
     def set_params(self, dat_path,
-            alpha_from,alpha_to,alpha_num,
-            reynolds_from,reynolds_to,reynolds_num,
-            ncrit):
+                   alpha_from, alpha_to, alpha_num,
+                   reynolds_from, reynolds_to, reynolds_num,
+                   ncrit):
         self.dat_path = dat_path
-        self.alpha_from=alpha_from
-        self.alpha_to=alpha_to
-        self.alpha_num=alpha_num
-        self.reynolds_from=reynolds_from
-        self.reynolds_to=reynolds_to
-        self.reynolds_num=reynolds_num
+        self.alpha_from = alpha_from
+        self.alpha_to = alpha_to
+        self.alpha_num = alpha_num
+        self.reynolds_from = reynolds_from
+        self.reynolds_to = reynolds_to
+        self.reynolds_num = reynolds_num
         self.ncrit = ncrit
 
     def run(self):
@@ -97,8 +97,9 @@ class XFoilThread(QThread):
         self.parent.xfoil_generated_data = out
         self.completeSignal.emit("Done")
 
+
 class XfoilOptionsWindow(QWidget):
-    def __init__(self,parent):
+    def __init__(self, parent):
         super(XfoilOptionsWindow, self).__init__(None)
         self.parent = parent
         self.layout = QFormLayout()
@@ -252,7 +253,6 @@ class MatplotlibWindow(QWidget):
         self.figure.clear()
         plt.close(self.figure)
         event.accept()  # let the window close
-
 
 
 class PrintoutWindow(QMainWindow):

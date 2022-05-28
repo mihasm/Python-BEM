@@ -44,6 +44,7 @@
       <option name="ignoredIdentifiers">
         <list>
           <option value="matplotlib.cm.CMRmap" />
+          <option value="visualize.facecolors" />
         </list>
       </option>
     </inspection_tool>

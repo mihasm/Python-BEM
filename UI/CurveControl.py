@@ -119,12 +119,11 @@ class CurveControl(QWidget):
         self.ax.plot(alpha, cl, "g.")
         self.ax.plot(alpha, cd, "r.")
         try:
-            self.ax.axvline(x=float(self.min_stable_aoa.text()),color="red")
-            self.ax.axvline(x=float(self.max_stable_aoa.text()),color="red")
+            self.ax.axvline(x=float(self.min_stable_aoa.text()), color="red")
+            self.ax.axvline(x=float(self.max_stable_aoa.text()), color="red")
         except:
             pass
         self.canvas.draw()
-
 
     def update(self):
         self.curve.A = int(self.A.value())

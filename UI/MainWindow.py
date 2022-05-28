@@ -52,7 +52,7 @@ class MainWindow(QMainWindow):
         fileMenu.addAction(loadFile)
         fileMenu.addAction(getSettings)
 
-        #self.setGeometry(width * 0.125, height * 0.125, width * 0.75, height * 0.75)
+        # self.setGeometry(width * 0.125, height * 0.125, width * 0.75, height * 0.75)
         self.setWindowTitle(TITLE_STR)
         self.tab_widget = TabWidget(self)
         self.setCentralWidget(self.tab_widget)
@@ -156,7 +156,7 @@ class MainWindow(QMainWindow):
 
         try:
             out = {**properties, **settings, **opt_settings, **curve_manager_settings}
-            #pprint(out)
+            # pprint(out)
             return out
         except:
             msg = ErrorMessageBox()
@@ -230,15 +230,15 @@ class MainWindow(QMainWindow):
         self.optimization.buttonStop.setEnabled(False)
         self.running = False
 
-    def wheelEvent(self,event):
+    def wheelEvent(self, event):
         modifiers = QtWidgets.QApplication.keyboardModifiers()
         if modifiers == QtCore.Qt.ControlModifier:
             font = QApplication.instance().font()
             size = font.pointSizeF()
             if event.angleDelta().y() > 0:
-                size = size+1
+                size = size + 1
             else:
-                size = size-1
+                size = size - 1
             font.setPointSize(size)
             QApplication.instance().setFont(font)
             for w in QApplication.allWidgets():
