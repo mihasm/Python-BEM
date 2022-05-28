@@ -33,6 +33,9 @@ class MainWindow(QMainWindow):
     def __init__(self, width, height):
         super().__init__()
 
+        self.screen_width = width
+        self.screen_height = height
+
         mainMenu = self.menuBar()
         fileMenu = mainMenu.addMenu('&File')
         saveFile = QAction("&Save File", self)
