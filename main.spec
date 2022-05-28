@@ -6,7 +6,9 @@ block_cipher = None
 a = Analysis(['main.py'],
              pathex=[],
              binaries=[],
-             datas=[],
+             datas=[("icon_bem.ico","."),
+                    ("xfoil_executables/xfoil.exe","xfoil_executables"),
+                    ("xfoil_executables/xfoil","xfoil_executables")],
              hiddenimports=['scipy._lib.messagestream','scipy.special.cython_special'],
              hookspath=[],
              runtime_hooks=[],
@@ -15,11 +17,11 @@ a = Analysis(['main.py'],
              win_private_assemblies=False,
              cipher=block_cipher,
              noarchive=False)
+
 pyz = PYZ(a.pure, a.zipped_data,
              cipher=block_cipher)
 
 Key = ['mkl']
-#Key = []
 
 def remove_from_list(input, keys):
     outlist = []
@@ -27,11 +29,16 @@ def remove_from_list(input, keys):
         name, _, _ = item
         flag = 0
         for key_word in keys:
-            if name.find(key_word) > -1:
+            if key_word in name:
                 flag = 1
+                break
         if flag != 1:
             outlist.append(item)
     return outlist
+
+print("List of binaries:")
+for _name,_path,_type in a.binaries:
+    print(_name,_path,_type)
 
 a.binaries = remove_from_list(a.binaries, Key)
 

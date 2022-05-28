@@ -13,7 +13,7 @@ from UI.Table import Table
 from UI.helpers import XFoilThread, ScrapeThread, MatplotlibWindow, PrintoutWindow, XfoilOptionsWindow
 from utils import import_dat, import_nrel_dat, interp_at, generate_dat, to_float, ErrorMessageBox, \
     get_centroid_coordinates
-
+from utils import MyMessageBox
 
 class Airfoils(QWidget):
     """
@@ -21,6 +21,9 @@ class Airfoils(QWidget):
     """
     def __init__(self, airfoil_name, parent=None):
         super(Airfoils, self).__init__(parent)
+
+        self.thread = None
+        self.xfoil_window = None
 
         self.parent = parent
 
@@ -246,8 +249,12 @@ class Airfoils(QWidget):
         """
 
         """
-        self.xfoil_window = XfoilOptionsWindow(self)
-        self.xfoil_window.setWindowTitle("XFOIL runner: " + self.airfoil_name)
+        if self.xfoil_window == None:
+            self.xfoil_window = XfoilOptionsWindow(self)
+            self.xfoil_window.setWindowTitle("XFOIL runner: " + self.airfoil_name)
+        else:
+            self.xfoil_window.show()
+            self.xfoil_window.activateWindow()
 
     def generate_curves_xfoil(self):
         """
@@ -266,19 +273,30 @@ class Airfoils(QWidget):
         reynolds_num = int(self.xfoil_window.reynolds_num.text())
         ncrit = to_float(self.xfoil_window.ncrit.text())
 
+        if self.thread != None:
+            self.xfoil_window.button_run_xfoil.setDisabled(True)
+            self.xfoil_window.button_stop_xfoil.setEnabled(True)
+            msg = MyMessageBox()
+            msg.setIcon(QMessageBox.Warning)
+            msg.setText("XFoil thread still running! Press Stop again.")
+            msg.setDetailedText("XFoil thread was started and was not set back to None. Try pressing Stop or saving and restarting.")
+            msg.exec_()
+            return
+
         if self.window != None:
             self.window.close()
+
         self.window = PrintoutWindow(self)
         self.thread = XFoilThread(self)
         self.thread.set_params(dat_path,
                                alpha_from, alpha_to, alpha_num,
                                reynolds_from, reynolds_to, reynolds_num,
                                ncrit)
+
         self.xfoil_window.button_run_xfoil.setDisabled(True)
         self.xfoil_window.button_stop_xfoil.setEnabled(True)
         self.thread.completeSignal.connect(self.xfoil_completion)
         self.thread.start()
-        # print("Done")
 
     def stop_xfoil(self):
         """
@@ -287,6 +305,7 @@ class Airfoils(QWidget):
         self.thread.terminate()
         self.xfoil_window.button_run_xfoil.setEnabled(True)
         self.xfoil_window.button_stop_xfoil.setDisabled(True)
+        self.thread = None
 
     def xfoil_completion(self, nothing_important):
         """
@@ -297,6 +316,7 @@ class Airfoils(QWidget):
         self.refresh()
         self.xfoil_window.button_run_xfoil.setEnabled(True)
         self.xfoil_window.button_stop_xfoil.setDisabled(True)
+        self.thread = None
 
     def generate_curves_link(self):
         """

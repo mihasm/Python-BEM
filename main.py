@@ -32,6 +32,14 @@ if getattr(sys, 'frozen', False):
 elif __file__:
     application_path = os.path.dirname(__file__)
 
+# determine if application is a one-file exe
+if hasattr(sys,"_MEIPASS"):
+    # yes, resources are stored in temporary folder C:\TEMP or wherever it is
+    data_path = sys._MEIPASS
+else:
+    # else, resources are stored in same folder as executable
+    data_path = application_path
+
 QtWidgets.QApplication.setAttribute(QtCore.Qt.AA_EnableHighDpiScaling, True)
 
 
@@ -49,7 +57,7 @@ def main(quick_results=False):
 
     app = QApplication([])
     QLocale.setDefault(QLocale(QLocale.English))  # da je pika decimalno mesto
-    app_icon = QtGui.QIcon("icon_bem.ico")
+    app_icon = QtGui.QIcon(os.path.join(data_path,"icon_bem.ico"))
     app.setWindowIcon(app_icon)
     app.setStyle("Fusion")
     if sys.platform.startswith("darwin") or True:

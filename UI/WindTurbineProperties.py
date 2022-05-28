@@ -173,7 +173,7 @@ class WindTurbineProperties(QWidget):
         self.hideable_widgets.append([
             self.fbox.itemAt(self.fbox.rowCount() - 1, 0),
             self.fbox.itemAt(self.fbox.rowCount() - 1, 1),
-            ["Betz", "Schmitz", "Adkins", "design_minimize_losses"]])
+            ["Betz", "Schmitz", "Larrabee", "Adkins", "design_minimize_losses"]])
 
         self._design_RPM = QLabel("RPM (prop)")
         self.design_RPM = QLineEdit()
@@ -562,7 +562,7 @@ class WindTurbineProperties(QWidget):
         Rhub = float(self.Rhub.text())
         num_gen_sections = int(float(self.num_gen_sections.text()))
         radiuses = np.linspace(Rhub, R, num_gen_sections)
-        Cl_max = float(self.design_cl.text())
+        cl_des = float(self.design_cl.text())
         B = float(self.B.text())
         TSR = float(self.design_tsr.text())
         method = self.design_method.currentIndex()
@@ -575,16 +575,16 @@ class WindTurbineProperties(QWidget):
         rho = float(self.design_rho.text())
 
         if method == 0:
-            chords = generate_chord_lengths_betz(radiuses=radiuses, R=R, Cl_max=Cl_max, B=B, TSR=TSR)
+            chords = generate_chord_lengths_betz(radiuses=radiuses, R=R, Cl_max=cl_des, B=B, TSR=TSR)
             thetas = generate_twists_betz(radiuses=radiuses, R=R, TSR=TSR, alpha_d=design_aoa)
 
         elif method == 1:
-            chords = generate_chord_lengths_schmitz(radiuses=radiuses, R=R, Cl_max=Cl_max, B=B, TSR=TSR)
+            chords = generate_chord_lengths_schmitz(radiuses=radiuses, R=R, Cl_max=cl_des, B=B, TSR=TSR)
             thetas = generate_twists_schmitz(radiuses=radiuses, R=R, TSR=TSR, alpha_d=design_aoa)
 
         elif method == 2:
             chords, thetas = generate_propeller_larabee(radiuses=radiuses, R=R, B=B, RPM=RPM,
-                                                        drag_lift_ratio=drag_lift_ratio, v=v, T=T, rho=rho, cl=Cl_max)
+                                                        drag_lift_ratio=drag_lift_ratio, v=v, T=T, rho=rho, cl=cl_des)
 
         elif method == 3:
             input_data = self.main.get_all_settings()

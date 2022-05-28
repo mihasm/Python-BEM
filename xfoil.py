@@ -14,9 +14,11 @@ import scipy.linalg
 from matplotlib import pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D  # noqa: F401 unused import
 
-xfoil_path = os.path.join("xfoil_executables", "xfoil.exe")
+from main import data_path
+
+xfoil_path = os.path.join(data_path,"xfoil_executables", "xfoil.exe")
 if sys.platform.startswith("darwin"):
-    xfoil_path = os.path.join("xfoil_executables", "xfoil")
+    xfoil_path = os.path.join(data_path,"xfoil_executables", "xfoil")
 
 
 def xfoil_runner(airfoil, reynolds, alpha, ncrit, printer=None, print_all=False):
