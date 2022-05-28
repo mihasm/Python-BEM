@@ -43,8 +43,7 @@ class AirfoilManager(QWidget):
 
         """
         self.emitter.connect(self.add_foil)
-        self.p = PopupText("foil name", "airfoil_name", self.emitter)
-        self.p.setGeometry(QRect(100, 100, 400, 200))
+        self.p = PopupText("Add airfoil", "airfoil_name", self.emitter,"Airfoil name")
         self.p.show()
 
     def add_foil(self, string):
@@ -61,8 +60,7 @@ class AirfoilManager(QWidget):
 
         """
         self.emitter.connect(self.rename_foil)
-        self.p = PopupText("foil name", self.tab_widget.current_tab_name(), self.emitter)
-        self.p.setGeometry(QRect(100, 100, 400, 200))
+        self.p = PopupText("Rename airfoil", self.tab_widget.current_tab_name(), self.emitter, "Rename airfoil")
         self.p.show()
 
     def rename_foil(self, string):

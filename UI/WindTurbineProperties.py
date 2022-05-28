@@ -25,6 +25,8 @@ class WindTurbineProperties(QWidget):
     def __init__(self, parent=None):
         super(WindTurbineProperties, self).__init__(parent)
 
+        self.settings = {}
+
         self.main = self.parent()
 
         self.grid = QGridLayout()
@@ -53,9 +55,10 @@ class WindTurbineProperties(QWidget):
         self.hideable_widgets = []
 
         self._name = QLabel("Turbine Name")
-        self.name = QLineEdit()
-        self.fbox.addRow(self._name, self.name)
-        self.name.textEdited.connect(self.main.set_title)
+        self.turbine_name = QLineEdit()
+        self.fbox.addRow(self._name, self.turbine_name)
+        self.turbine_name.textEdited.connect(self.main.set_title)
+        self.settings["turbine_name"] = self.turbine_name
 
         self._turbine_type = QLabel("Turbine type.")
         self.turbine_type = QComboBox()
@@ -63,42 +66,49 @@ class WindTurbineProperties(QWidget):
         self.fbox.addRow(self._turbine_type, self.turbine_type)
         self.turbine_type.setToolTip("Vrsta turbine.")
         self.turbine_type.currentIndexChanged.connect(self.set_parameter_visibility)
+        self.settings["turbine_type"] = self.turbine_type
 
         self._Rhub = QLabel("Hub radius [m]")
         self.Rhub = QLineEdit()
         self.Rhub.setText("0.1")
         self.fbox.addRow(self._Rhub, self.Rhub)
         self.Rhub.setToolTip("Radij pesta. Vpliv ima le pri Hub-Loss popravku.")
+        self.settings["Rhub"] = self.Rhub
 
         self._R = QLabel("Tip radius [m]")
         self.R = QLineEdit()
         self.R.setText("0.776")
         self.fbox.addRow(self._R, self.R)
         self.R.setToolTip("Radij turbine. Vpliv ima na izračun moči ter pri Tip-Loss popravku.")
+        self.settings["R"] = self.R
 
         self._B = QLabel("Number of blades")
         self.B = QLineEdit()
         self.B.setText("5")
         self.fbox.addRow(self._B, self.B)
         self.B.setToolTip("Število lopatic.")
+        self.settings["B"] = self.B
 
         self._blade_design = QLabel("Blade design")
         self.blade_design = QComboBox()
         self.blade_design.addItems(["Filled", "Hollow", "Spar"])
         self.fbox.addRow(self._blade_design, self.blade_design)
         self.B.setToolTip("Pomembno za statični izračun.")
+        self.settings["blade_design"] = self.blade_design
 
         self._blade_thickness = QLabel("Blade thickness [m]")
         self.blade_thickness = QLineEdit()
         self.blade_thickness.setText("0.001")
         self.fbox.addRow(self._blade_thickness, self.blade_thickness)
         self.blade_thickness.setToolTip("Debelina lopatice / Spar Cap-a.")
+        self.settings["blade_thickness"] = self.blade_thickness
 
         self._mass_density = QLabel("Mass density [kg/m^3]")
         self.mass_density = QLineEdit()
         self.mass_density.setText("1060")
         self.fbox.addRow(self._mass_density, self.mass_density)
         self.mass_density.setToolTip("Debelina lopatice / Spar Cap-a.")
+        self.settings["mass_density"] = self.mass_density
 
         self.fbox.addRow(QLabel("————— Scale and interpolation —————"))
 
@@ -107,17 +117,20 @@ class WindTurbineProperties(QWidget):
         self.geometry_scale.setText("1.0")
         self.fbox.addRow(self._geometry_scale, self.geometry_scale)
         self.geometry_scale.setToolTip("Scale factor")
+        self.settings["geometry_scale"] = self.geometry_scale
 
         self._linspace_interp = QLabel("Interpolate geometry")
         self.linspace_interp = QCheckBox()
         self.fbox.addRow(self._linspace_interp, self.linspace_interp)
         self.linspace_interp.setToolTip("Interpolate_geom")
+        self.settings["linspace_interp"] = self.linspace_interp
 
         self._num_interp = QLabel("Number of interpolation points")
         self.num_interp = QLineEdit()
         self.num_interp.setText("25")
         self.fbox.addRow(self._num_interp, self.num_interp)
         self.num_interp.setToolTip("Number of interpolation points")
+        self.settings["num_interp"] = self.num_interp
 
         self.fbox.addRow(QLabel("————— Generate geometry —————"))
 
@@ -126,24 +139,28 @@ class WindTurbineProperties(QWidget):
         self.num_gen_sections.setText("10")
         self.fbox.addRow(self._num_gen_sections, self.num_gen_sections)
         self.num_gen_sections.setToolTip("Število odsekov za generiranje.")
+        self.settings["num_gen_sections"] = self.num_gen_sections
 
         self._design_airfoil = QLabel("Airfoil")
         self.design_airfoil = QLineEdit()
         self.design_airfoil.setText("s826")
         self.fbox.addRow(self._design_airfoil, self.design_airfoil)
         self.design_airfoil.setToolTip("Tekst za v stolpec airfoil.")
+        self.settings["design_airfoil"] = self.design_airfoil
 
         self._design_rho = QLabel("Fluid density [kg/m3]")
         self.design_rho = QLineEdit()
         self.design_rho.setText("1.225")
         self.fbox.addRow(self._design_rho, self.design_rho)
         self.design_rho.setToolTip("Gostota zraka")
+        self.settings["design_rho"] = self.design_rho
 
         self._design_kin_viscosity = QLabel("Kin. viscosity [m2/s]")
         self.design_kin_viscosity = QLineEdit()
         self.design_kin_viscosity.setText("1.4207e-5")
         self.fbox.addRow(self._design_kin_viscosity, self.design_kin_viscosity)
         self.design_kin_viscosity.setToolTip("Kinematična viskoznost")
+        self.settings["design_kin_viscosity"] = self.design_kin_viscosity
 
         self._design_tsr = QLabel("Design TSR")
         self.design_tsr = QLineEdit()
@@ -154,6 +171,7 @@ class WindTurbineProperties(QWidget):
             self.fbox.itemAt(self.fbox.rowCount() - 1, 0),
             self.fbox.itemAt(self.fbox.rowCount() - 1, 1),
             ["Betz", "Schmitz"]])
+        self.settings["design_tsr"] = self.design_tsr
 
         self._design_aoa = QLabel("Design AoA [°]")
         self.design_aoa = QLineEdit()
@@ -164,6 +182,7 @@ class WindTurbineProperties(QWidget):
             self.fbox.itemAt(self.fbox.rowCount() - 1, 0),
             self.fbox.itemAt(self.fbox.rowCount() - 1, 1),
             ["Betz", "Schmitz"]])
+        self.settings["design_aoa"] = self.design_aoa
 
         self._design_cl = QLabel("Design Cl")
         self.design_cl = QLineEdit()
@@ -174,6 +193,7 @@ class WindTurbineProperties(QWidget):
             self.fbox.itemAt(self.fbox.rowCount() - 1, 0),
             self.fbox.itemAt(self.fbox.rowCount() - 1, 1),
             ["Betz", "Schmitz", "Larrabee", "Adkins", "design_minimize_losses"]])
+        self.settings["design_cl"] = self.design_cl
 
         self._design_RPM = QLabel("RPM (prop)")
         self.design_RPM = QLineEdit()
@@ -185,6 +205,7 @@ class WindTurbineProperties(QWidget):
             self.fbox.itemAt(self.fbox.rowCount() - 1, 0),
             self.fbox.itemAt(self.fbox.rowCount() - 1, 1),
             ["Larrabee", "Adkins"]])
+        self.settings["design_RPM"] = self.design_RPM
 
         self._design_velocity = QLabel("Velocity (prop) [m/s]")
         self.design_velocity = QLineEdit()
@@ -196,6 +217,7 @@ class WindTurbineProperties(QWidget):
             self.fbox.itemAt(self.fbox.rowCount() - 1, 0),
             self.fbox.itemAt(self.fbox.rowCount() - 1, 1),
             ["Larrabee", "Adkins"]])
+        self.settings["design_velocity"] = self.design_velocity
 
         self._design_thrust = QLabel("Thrust (prop) [N]")
         self.design_thrust = QLineEdit()
@@ -207,6 +229,7 @@ class WindTurbineProperties(QWidget):
             self.fbox.itemAt(self.fbox.rowCount() - 1, 0),
             self.fbox.itemAt(self.fbox.rowCount() - 1, 1),
             ["Larrabee", "Adkins"]])
+        self.settings["design_thrust"] = self.design_thrust
 
         self._design_power = QLabel("Power (prop) [W]")
         self.design_power = QLineEdit()
@@ -218,6 +241,7 @@ class WindTurbineProperties(QWidget):
             self.fbox.itemAt(self.fbox.rowCount() - 1, 0),
             self.fbox.itemAt(self.fbox.rowCount() - 1, 1),
             ["Adkins"]])
+        self.settings["design_power"] = self.design_power
 
         self._design_use_power_constraint = QLabel("Use power constraint")
         self.design_use_power_constraint = QCheckBox()
@@ -228,6 +252,7 @@ class WindTurbineProperties(QWidget):
             self.fbox.itemAt(self.fbox.rowCount() - 1, 1),
             ["Adkins"]])
         self.design_use_power_constraint.stateChanged.connect(self.set_parameter_visibility)
+        self.settings["design_use_power_constraint"] = self.design_use_power_constraint
 
         self._design_minimize_losses = QLabel("Minimize losses")
         self.design_minimize_losses = QCheckBox()
@@ -238,6 +263,7 @@ class WindTurbineProperties(QWidget):
             self.fbox.itemAt(self.fbox.rowCount() - 1, 1),
             ["Adkins"]])
         self.design_minimize_losses.stateChanged.connect(self.set_parameter_visibility)
+        self.settings["design_minimize_losses"] = self.design_minimize_losses
 
         self._design_drag_lift_ratio = QLabel("Cd/Cl @ Design AoA (prop)")
         self.design_drag_lift_ratio = QLineEdit()
@@ -248,6 +274,7 @@ class WindTurbineProperties(QWidget):
             self.fbox.itemAt(self.fbox.rowCount() - 1, 0),
             self.fbox.itemAt(self.fbox.rowCount() - 1, 1),
             ["Larrabee"]])
+        self.settings["design_drag_lift_ratio"] = self.design_drag_lift_ratio
 
         self._design_iters = QLabel("Num. Iterations")
         self.design_iters = QLineEdit()
@@ -258,6 +285,7 @@ class WindTurbineProperties(QWidget):
             self.fbox.itemAt(self.fbox.rowCount() - 1, 0),
             self.fbox.itemAt(self.fbox.rowCount() - 1, 1),
             ["Adkins"]])
+        self.settings["design_iters"] = self.design_iters
 
         self._design_relaxation = QLabel("Relax. factor (Adkins)")
         self.design_relaxation = QLineEdit()
@@ -268,6 +296,7 @@ class WindTurbineProperties(QWidget):
             self.fbox.itemAt(self.fbox.rowCount() - 1, 0),
             self.fbox.itemAt(self.fbox.rowCount() - 1, 1),
             ["Adkins"]])
+        self.settings["design_relaxation"] = self.design_relaxation
 
         self._convergence_criterion_adkins = QLabel("Convergence crit.")
         self.convergence_criterion_adkins = QLineEdit()
@@ -278,6 +307,7 @@ class WindTurbineProperties(QWidget):
             self.fbox.itemAt(self.fbox.rowCount() - 1, 0),
             self.fbox.itemAt(self.fbox.rowCount() - 1, 1),
             ["Adkins"]])
+        self.settings["convergence_criterion_adkins"] = self.convergence_criterion_adkins
 
         self._design_method = QLabel("Design method.")
         self.design_method = QComboBox()
@@ -285,6 +315,7 @@ class WindTurbineProperties(QWidget):
         self.fbox.addRow(self._design_method, self.design_method)
         self.design_method.setToolTip("Metoda dizajniranja.")
         self.design_method.currentIndexChanged.connect(self.set_parameter_visibility)
+        self.settings["design_method"] = self.design_method
 
         self._button_generate_geometry = QLabel("Generate geometry.")
         self.button_generate_geometry = QPushButton("Generate")
@@ -302,9 +333,11 @@ class WindTurbineProperties(QWidget):
 
         self.flip_turning_direction = QCheckBox()
         self.fbox.addRow("Flip turning direction", self.flip_turning_direction)
+        self.settings["flip_turning_direction"] = self.flip_turning_direction
 
-        self.propeller_geom = QCheckBox()
-        self.fbox.addRow("Propeller", self.propeller_geom)
+        self.export_propeller_geom = QCheckBox()
+        self.fbox.addRow("Propeller", self.export_propeller_geom)
+        self.settings["export_propeller_geom"] = self.export_propeller_geom
 
         self.fbox.addRow(QLabel("—————————————————————————"))
 
@@ -401,73 +434,6 @@ class WindTurbineProperties(QWidget):
             self.design_thrust.show()
             self._design_thrust.show()
 
-    def get_settings(self):
-        """
-        Used to get the basic wind turbine settings in a dictionary format, namely the:
-        -hub radius (Rhub)
-        -tip radius (R)
-        -number of blades (B)
-        -turbine name (turbine_name)
-        -geometry (r,c,theta,foils) as four separate list objects
-        :return: dict: Settings dictionary (Basic wind turbine information)
-        """
-        out = {"Rhub": to_float(self.Rhub.text()),
-               "R": to_float(self.R.text()),
-               "B": int(self.B.text()),
-               "turbine_name": self.name.text(),
-               "geometry_scale": to_float(self.geometry_scale.text()),
-               "linspace_interp": self.linspace_interp.isChecked(),
-               "num_interp": int(self.num_interp.text()),
-               "blade_thickness": to_float(self.blade_thickness.text()),
-               "blade_design": self.blade_design.currentIndex(),
-               "mass_density": to_float(self.mass_density.text()),
-               "design_RPM": to_float(self.design_RPM.text()),
-               "design_velocity": to_float(self.design_velocity.text()),
-               "design_thrust": to_float(self.design_thrust.text()),
-               "design_power": to_float(self.design_power.text()),
-               "design_use_power_constraint": self.design_use_power_constraint.isChecked(),
-               "design_minimize_losses": self.design_minimize_losses.isChecked(),
-               "design_drag_lift_ratio": to_float(self.design_drag_lift_ratio.text()),
-               "design_rho": to_float(self.design_rho.text()),
-               "design_kin_viscosity": to_float(self.design_kin_viscosity.text()),
-               "num_gen_sections": to_float(self.num_gen_sections.text()),
-               "design_tsr": to_float(self.design_tsr.text()),
-               "design_aoa": to_float(self.design_aoa.text()),
-               "design_cl": to_float(self.design_cl.text()),
-               "design_iters": to_float(self.design_iters.text()),
-               "design_relaxation": to_float(self.design_relaxation.text()),
-               "design_airfoil": self.design_airfoil.text(),
-               "design_method": to_float(self.design_method.currentIndex()),
-               "convergence_criterion_adkins": to_float(self.convergence_criterion_adkins.text()),
-               "turbine_type": self.turbine_type.currentIndex()}
-
-        geom_array = self.table_properties.get_values()
-        r, c, theta, foils = [], [], [], []
-        for row in geom_array:
-            if row[0] != "" and row[1] != "" and row[2] != "":
-                r.append(to_float(row[0]))
-                c.append(to_float(row[1]))
-                theta.append(to_float(row[2]))
-                foils.append(row[3])
-        out["r"] = array(r)
-        out["c"] = array(c)
-        out["theta"] = array(theta)
-        out["foils"] = foils
-        _r = out["r"]
-        _c = out["c"]
-        _theta = out["theta"]
-        _foils = out["foils"]
-        out["R"] = out["R"]
-        out["Rhub"] = out["Rhub"]
-        r, c, theta, foils, dr = interpolate_geom(_r, _c, _theta, _foils, out["R"], out["Rhub"], out["num_interp"],
-                                                  out["linspace_interp"],
-                                                  out["geometry_scale"])
-        out["r"], out["c"], out["theta"], out["foils"], out["dr"] = r, c, theta, foils, dr
-        out["r_in"], out["c_in"], out["theta_in"], out["foils_in"] = _r, _c, _theta, _foils
-
-        out["propeller_pitch"] = 2 * np.pi * np.array(out["r"]) * np.tan(np.radians(out["theta"])) * 39.3701
-
-        return out
 
     def update_j(self):
         """
@@ -608,29 +574,74 @@ class WindTurbineProperties(QWidget):
 
         self.calculate_pitch()
 
+
+    def get_settings(self):
+        """
+        Used to get the basic wind turbine settings in a dictionary format, namely the:
+        :return: dict: Settings dictionary (Basic wind turbine information)
+        """
+        out = {}
+
+        for key,item in self.settings.items():
+            if isinstance(item,QComboBox):
+                value = int(item.currentIndex())
+            if isinstance(item, QCheckBox):
+                value = bool(item.checkState())
+            if isinstance(item, QLineEdit):
+                try:
+                    value = to_float(item.text())
+                except:
+                    try:
+                        value = item.text()
+                    except:
+                        raise
+            out[key]=value
+
+        geom_array = self.table_properties.get_values()
+        r, c, theta, foils = [], [], [], []
+        for row in geom_array:
+            if row[0] != "" and row[1] != "" and row[2] != "":
+                r.append(to_float(row[0]))
+                c.append(to_float(row[1]))
+                theta.append(to_float(row[2]))
+                foils.append(row[3])
+        out["r"] = array(r)
+        out["c"] = array(c)
+        out["theta"] = array(theta)
+        out["foils"] = foils
+        _r = out["r"]
+        _c = out["c"]
+        _theta = out["theta"]
+        _foils = out["foils"]
+        out["R"] = out["R"]
+        out["Rhub"] = out["Rhub"]
+        r, c, theta, foils, dr = interpolate_geom(_r, _c, _theta, _foils, out["R"], out["Rhub"], out["num_interp"],
+                                                  out["linspace_interp"],
+                                                  out["geometry_scale"])
+        out["r"], out["c"], out["theta"], out["foils"], out["dr"] = r, c, theta, foils, dr
+        out["r_in"], out["c_in"], out["theta_in"], out["foils_in"] = _r, _c, _theta, _foils
+
+        out["propeller_pitch"] = 2 * np.pi * np.array(out["r"]) * np.tan(np.radians(out["theta"])) * 39.3701
+
+        return out
+
+
     def set_settings(self, dict_settings):
         """
         Reads the settings from the input dictionary and sets the values in the UI.
         :param dict_settings: dict: Settings dictionary.
         """
-        if "Rhub" in dict_settings:
-            t = str(dict_settings["Rhub"])
-            self.Rhub.setText(t)
-        if "R" in dict_settings:
-            t = str(dict_settings["R"])
-            self.R.setText(t)
-        if "geometry_scale" in dict_settings:
-            t = str(dict_settings["geometry_scale"])
-            self.geometry_scale.setText(t)
-        if "linspace_interp" in dict_settings:
-            t = dict_settings["linspace_interp"]
-            self.linspace_interp.setChecked(t)
-        if "num_interp" in dict_settings:
-            t = str(dict_settings["num_interp"])
-            self.num_interp.setText(t)
-        if "B" in dict_settings:
-            t = str(dict_settings["B"])
-            self.B.setText(t)
+        for key, item in self.settings.items():
+            if key in dict_settings:
+                if isinstance(item, QComboBox):
+                    _index = dict_settings[key]
+                    index = _index if _index >= 0 else 0
+                    item.setCurrentIndex(index)
+                elif isinstance(item, QLineEdit):
+                    item.setText(str(dict_settings[key]))
+                elif isinstance(item, QCheckBox):
+                    item.setChecked(dict_settings[key])
+
         if "r_in" in dict_settings and "c_in" in dict_settings and "theta_in" in dict_settings and "foils_in" in dict_settings:
             _array = []
             for r in range(len(dict_settings["r_in"])):
@@ -640,79 +651,10 @@ class WindTurbineProperties(QWidget):
                 _f = dict_settings["foils_in"][r]
                 _array.append([_r, _c, _theta, _f])
             self.table_properties.createTable(_array)
-        if "turbine_name" in dict_settings:
-            t = str(dict_settings["turbine_name"])
-            self.name.setText(t)
-        else:
-            self.name.setText("")
-        if "blade_thickness" in dict_settings:
-            t = str(dict_settings["blade_thickness"])
-            self.blade_thickness.setText(t)
-        if "blade_design" in dict_settings:
-            self.blade_design.setCurrentIndex(dict_settings["blade_design"])
-        if "mass_density" in dict_settings:
-            t = str(dict_settings["mass_density"])
-            self.mass_density.setText(t)
-        if "num_gen_sections" in dict_settings:
-            t = str(dict_settings["num_gen_sections"])
-            self.num_gen_sections.setText(t)
-        if "design_tsr" in dict_settings:
-            t = str(dict_settings["design_tsr"])
-            self.design_tsr.setText(t)
-        if "design_aoa" in dict_settings:
-            t = str(dict_settings["design_aoa"])
-            self.design_aoa.setText(t)
-        if "design_cl" in dict_settings:
-            t = str(dict_settings["design_cl"])
-            self.design_cl.setText(t)
-        if "design_airfoil" in dict_settings:
-            t = str(dict_settings["design_airfoil"])
-            self.design_airfoil.setText(t)
-        if "design_RPM" in dict_settings:
-            t = str(dict_settings["design_RPM"])
-            self.design_RPM.setText(t)
-        if "design_velocity" in dict_settings:
-            t = str(dict_settings["design_velocity"])
-            self.design_velocity.setText(t)
-        if "design_thrust" in dict_settings:
-            t = str(dict_settings["design_thrust"])
-            self.design_thrust.setText(t)
-        if "design_power" in dict_settings:
-            t = str(dict_settings["design_power"])
-            self.design_power.setText(t)
-        if "design_use_power_constraint" in dict_settings:
-            t = dict_settings["design_use_power_constraint"]
-            self.design_use_power_constraint.setChecked(t)
-        if "design_minimize_losses" in dict_settings:
-            t = dict_settings["design_minimize_losses"]
-            self.design_minimize_losses.setChecked(t)
-        if "design_drag_lift_ratio" in dict_settings:
-            t = str(dict_settings["design_drag_lift_ratio"])
-            self.design_drag_lift_ratio.setText(t)
-        if "design_rho" in dict_settings:
-            t = str(dict_settings["design_rho"])
-            self.design_rho.setText(t)
-        if "design_kin_viscosity" in dict_settings:
-            t = str(dict_settings["design_kin_viscosity"])
-            self.design_kin_viscosity.setText(t)
-        if "design_iters" in dict_settings:
-            t = str(dict_settings["design_iters"])
-            self.design_iters.setText(t)
-        if "design_relaxation" in dict_settings:
-            t = str(dict_settings["design_relaxation"])
-            self.design_relaxation.setText(t)
-        if "convergence_criterion_adkins" in dict_settings:
-            t = str(dict_settings["convergence_criterion_adkins"])
-            self.convergence_criterion_adkins.setText(t)
-        if "design_method" in dict_settings:
-            t = dict_settings["design_method"]
-            self.design_method.setCurrentIndex(t)
-        if "turbine_type" in dict_settings:
-            t = dict_settings["turbine_type"]
-            self.turbine_type.setCurrentIndex(t)
 
         self.calculate_pitch()
         self.update_j()
+
 
     def export(self):
         """
@@ -730,7 +672,7 @@ class WindTurbineProperties(QWidget):
         if settings_fetched == None:
             return
         data = create_3d_blade(settings_fetched, self.flip_turning_direction.isChecked(),
-                               self.propeller_geom.isChecked())
+                               self.export_propeller_geom.isChecked())
 
         # DRAW MATPLOTLIB ############################
         self.w = MatplotlibWindow()

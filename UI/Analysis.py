@@ -483,10 +483,7 @@ class Analysis(QWidget):
             if name in inp_dict:
                 if isinstance(item, QComboBox):
                     _index = inp_dict[name]
-                    if _index >= 0:
-                        index = _index
-                    else:
-                        index = 0
+                    index = _index if _index >= 0 else 0
                     item.setCurrentIndex(index)
                 elif isinstance(item, QLineEdit):
                     item.setText(str(inp_dict[name]))

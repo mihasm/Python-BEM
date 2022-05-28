@@ -1,7 +1,7 @@
 import sys
 
 import pyqtgraph as pg
-from PyQt5 import QtCore
+from PyQt5 import QtCore, QtGui
 from PyQt5.QtCore import QThread
 from PyQt5.QtGui import QTextCursor
 from PyQt5.QtWidgets import QMainWindow, QWidget, QGridLayout, QLabel, QLineEdit, QPushButton, QTabWidget, \
@@ -12,6 +12,7 @@ from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 
 from scraping import scrape_data, get_x_y_from_link
 from utils import generate_propeller_adkins
+from main import ICON_PATH
 from xfoil import generate_polars_data
 
 
@@ -136,6 +137,8 @@ class XfoilOptionsWindow(QWidget):
     """
     def __init__(self, parent):
         super(XfoilOptionsWindow, self).__init__(None)
+        self.setWindowIcon(QtGui.QIcon(ICON_PATH))
+        
         self.parent = parent
         self.layout = QFormLayout()
         self.setLayout(self.layout)
@@ -251,6 +254,7 @@ class PyQtGraphWindow(QMainWindow):
     """
     def __init__(self, parent):
         super(PyQtGraphWindow, self).__init__(parent)
+        self.setWindowIcon(QtGui.QIcon(ICON_PATH))
         self.obj = pg.PlotWidget()
         self.setCentralWidget(self.obj)
         self.curve = self.obj.plot(pen=None, symbol='o', symbolPen=None, symbolSize=4, symbolBrush='g')
@@ -277,7 +281,7 @@ class PopupText(QWidget):
     """
 
     """
-    def __init__(self, message="message", default_str="", emitter=None):
+    def __init__(self, message="message", default_str="", emitter=None, windowTitle=""):
         QWidget.__init__(self)
 
         self.emitter = emitter
@@ -296,6 +300,9 @@ class PopupText(QWidget):
         self.button = QPushButton("OK")
         self.button.clicked.connect(self.send_signal)
         self.layout.addWidget(self.button, 2, 0)
+
+        self.setWindowTitle(windowTitle)
+        self.setWindowIcon(QtGui.QIcon(ICON_PATH))
 
     def send_signal(self):
         """
@@ -320,6 +327,7 @@ class MatplotlibWindow(QWidget):
     """
     def __init__(self):
         super(MatplotlibWindow, self).__init__(None)
+        self.setWindowIcon(QtGui.QIcon(ICON_PATH))
         self.layout = QGridLayout()
         self.setLayout(self.layout)
         self.figure = plt.figure(figsize=(10, 5))
@@ -346,6 +354,7 @@ class PrintoutWindow(QMainWindow):
     """
     def __init__(self, parent):
         super(PrintoutWindow, self).__init__(parent)
+        self.setWindowIcon(QtGui.QIcon(ICON_PATH))
         self.setWindowTitle("Progress")
         self.setGeometry(50, 50, 500, 300)
         self.parent = parent

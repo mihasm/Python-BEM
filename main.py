@@ -40,6 +40,8 @@ else:
     # else, resources are stored in same folder as executable
     data_path = application_path
 
+ICON_PATH = os.path.join(data_path,"icon_bem.ico")
+
 QtWidgets.QApplication.setAttribute(QtCore.Qt.AA_EnableHighDpiScaling, True)
 
 
@@ -57,8 +59,7 @@ def main(quick_results=False):
 
     app = QApplication([])
     QLocale.setDefault(QLocale(QLocale.English))  # da je pika decimalno mesto
-    app_icon = QtGui.QIcon(os.path.join(data_path,"icon_bem.ico"))
-    app.setWindowIcon(app_icon)
+    app.setWindowIcon(QtGui.QIcon(ICON_PATH))
     app.setStyle("Fusion")
     if sys.platform.startswith("darwin") or True:
         # dark theme fix on OSX
