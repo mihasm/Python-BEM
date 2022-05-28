@@ -3,8 +3,8 @@ from multiprocessing.context import Process
 
 import numpy as np
 from PyQt5 import QtGui
-from PyQt5.QtWidgets import QWidget, QTextEdit, QLineEdit, QLabel, QComboBox, QCheckBox, QPushButton, QGridLayout, \
-    QFormLayout, QMessageBox
+from PyQt5.QtWidgets import QWidget, QGridLayout, QFormLayout, QScrollArea, QVBoxLayout, QTextEdit, QPushButton, \
+    QComboBox, QCheckBox, QLineEdit, QLabel, QMessageBox
 
 from UI.helpers import PyQtGraphWindow
 from optimization import optimize
@@ -16,10 +16,28 @@ class Optimization(QWidget):
         super(Optimization, self).__init__(parent)
         self.main = self.parent()
 
-        self.validator = QtGui.QDoubleValidator()
+        self.grid = QGridLayout()
+        self.setLayout(self.grid)
+
         self.left = QWidget()
-        self.textEdit = QTextEdit()
-        self.textEdit.setReadOnly(True)
+        self.fbox = QFormLayout()
+        self.left.setLayout(self.fbox)
+
+        self.scroll_area = QScrollArea()
+        self.scroll_widget = QWidget()
+        self.scroll_widget_layout = QVBoxLayout()
+
+        self.scroll_widget.setLayout(self.scroll_widget_layout)
+        self.scroll_area.setWidget(self.left)
+        self.scroll_area.setWidgetResizable(True)
+
+        self.grid.addWidget(self.scroll_area, 1, 1)
+
+        self.right_output_text_area = QTextEdit()
+        self.right_output_text_area.setReadOnly(True)
+        self.grid.addWidget(self.right_output_text_area, 1, 2)
+
+        self.validator = QtGui.QDoubleValidator()
 
         self.form_list = []
 
@@ -104,14 +122,6 @@ class Optimization(QWidget):
         self.buttonEOF = QCheckBox()
         self.buttonEOF.setChecked(True)
         self.buttonEOFdescription = QLabel("Scroll to end of screen")
-
-        self.grid = QGridLayout()
-        self.setLayout(self.grid)
-        self.grid.addWidget(self.left, 1, 1)
-        self.grid.addWidget(self.textEdit, 1, 2)
-
-        self.fbox = QFormLayout()
-        self.left.setLayout(self.fbox)
 
         for a, b in self.form_list:
             self.fbox.addRow(a, b)
@@ -330,12 +340,12 @@ class Optimization(QWidget):
         return True
 
     def clear(self):
-        self.textEdit.clear()
+        self.right_output_text_area.clear()
 
     def add_text(self, string):
-        self.textEdit.insertPlainText(string)
+        self.right_output_text_area.insertPlainText(string)
         if self.buttonEOF.checkState() == 2:
-            self.textEdit.moveCursor(QtGui.QTextCursor.End)
+            self.right_output_text_area.moveCursor(QtGui.QTextCursor.End)
 
     def run(self):
         self.clear()

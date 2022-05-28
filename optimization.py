@@ -40,7 +40,10 @@ def optimize(inp_args, queue_pyqtgraph):
         p.print("Output variables:", output_variables)
         p.print("Target_variables:", target_variables)
 
-        p.print("Propeller mode:", inp_args["propeller_mode"])
+        if inp_args["turbine_type"] == 0:
+            p.print("Turbine type: Wind turbine")
+        elif inp_args["turbine_type"] == 1:
+            p.print("Turbine type: Propeller")
 
         C = Calculator(inp_args)
 

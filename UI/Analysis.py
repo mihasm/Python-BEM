@@ -18,26 +18,20 @@ class Analysis(QWidget):
 
         self.forms_dict = {}
 
-        self.settings = {"propeller_mode": False,
-                         "invert_alpha":False,
+        self.settings = {"invert_alpha":False,
                          "use_minimization_solver":False,
-                         "tip_loss": False,
-                         "hub_loss": False,
-                         "new_tip_loss": False,
-                         "new_hub_loss": False,
-                         "adkins_tip_loss": False,
+                         "tip_loss_mode":["None","Prandtl","Shen","Adkins"],
+                         "hub_loss_mode":["None","Prandtl","Shen"],
                          "cascade_correction": False,
                          "skewed_wake_correction": False,
                          "rotational_augmentation_correction": False,
-                         "rotational_augmentation_correction_method": 1,
+                         "rotational_augmentation_correction_method": ["1", "2", "3", "4", "5", "6", "7"],
                          "mach_number_correction": False,
-                         "max_iterations": 100,
-                         "convergence_limit": 0.001,
                          "rho": 1.225,
                          "kin_viscosity": 1.4207E-5,
                          "method": 6,
-                         "variable_selection": 4,
-                         "constant_selection": 0,
+                         "variable_selection": ["RPM and v", "TSR", "J", "pitch", "pitch+TSR", "pitch+J"],
+                         "constant_selection": ["speed","rpm"],
                          "constant_speed": 5,
                          "constant_rpm": 1500,
                          "pitch": 0.0,
@@ -56,6 +50,8 @@ class Analysis(QWidget):
                          "pitch_min": -15,
                          "pitch_max": 15,
                          "pitch_num": 10,
+                         "max_iterations": 100,
+                         "convergence_limit": 0.001,
                          "relaxation_factor": 0.3,
                          "a_initial": 0.3,
                          "aprime_initial": 0.01,
@@ -65,17 +61,11 @@ class Analysis(QWidget):
                          "fix_reynolds": False,
                          "yaw_angle": 0}
 
-        self.settings_to_name = {"propeller_mode": "Propeller mode",
-                                 "print_out": "Print final iteration data",
+        self.settings_to_name = {"print_out": "Print final iteration data",
                                  "invert_alpha":"Invert alpha",
-                                 "tip_loss": "Prandtl tip loss",
-                                 "hub_loss": "Prandtl hub loss",
-                                 "new_tip_loss": "New tip loss",
-                                 "new_hub_loss": "New hub loss",
-                                 "adkins_tip_loss" : "Adkins tip loss (prop)",
+                                 "tip_loss_mode":"Tip loss",
+                                 "hub_loss_mode":"Hub loss",
                                  "cascade_correction": "Cascade correction",
-                                 "max_iterations": "Maximum iterations",
-                                 "convergence_limit": "Convergence criteria",
                                  "rho": "Air density [kg/m^3]",
                                  "kin_viscosity": "Kinematic viscosity [m^2/s]",
                                  "method": "Calculation method",
@@ -99,6 +89,8 @@ class Analysis(QWidget):
                                  "pitch_min": "Min pitch",
                                  "pitch_max": "Max pitch",
                                  "pitch_num": "Num pitch",
+                                 "max_iterations": "Maximum iterations",
+                                 "convergence_limit": "Convergence criteria",
                                  "relaxation_factor": "Relaxation factor",
                                  "a_initial":"Initial a",
                                  "aprime_initial":"Initial a'",
@@ -111,17 +103,11 @@ class Analysis(QWidget):
                                  "use_minimization_solver":"Use minimization solver"}
 
         self.settings_to_tooltip = {
-            "propeller_mode": "Ta vrednost mora biti izbrana le v primeru, če preračunavamo propeler.",
             "invert_alpha":"Uporabimo, kadar računamo propeler v obratovalnem stanju vetrnice.",
             "print_out": "Izpis končnih vrednosti po konvergenci za vsak odsek",
-            "tip_loss": "Popravek izgub pri vrhu lopatice (po Prandtlu)",
-            "hub_loss": "Popravek izgub pri pestu (po Prandtlu)",
-            "new_tip_loss": "Popravek izgub pri vrhu lopatice (po Speri)",
-            "new_hub_loss": "Popravek izgub pri pestu (po Speri)",
-            "adkins_tip_loss" : "Popravek izgub po Adkinsu (propeler)",
+            "tip_loss_mode":"Popravek izgub pri vrhu lopatice",
+            "hub_loss_mode":"Popravek izgub pri pestu",
             "cascade_correction": "Kaskadni popravki",
-            "max_iterations": "Maksimalno število iteracij.",
-            "convergence_limit": "Konvergenčni kriterij.",
             "rho": "Gostota fluida [kg/m^3]",
             "kin_viscosity":"Kinematična viskoznost fluida [m^2/s]",
             "method": "Metoda za preračun. Privzeta je e) Aerodyn (Buhl).",
@@ -145,6 +131,8 @@ class Analysis(QWidget):
             "pitch_min": "Min pitch",
             "pitch_max": "Max pitch",
             "pitch_num": "Num pitch",
+            "max_iterations": "Maksimalno število iteracij.",
+            "convergence_limit": "Konvergenčni kriterij.",
             "relaxation_factor": "Relaksacijski faktor. Privzeta vrednost: 0.3",
             "print_all": "Podroben izpis vrednosti po vsaki iteraciji (upočasni izračun)",
             "rotational_augmentation_correction": "Popravek rotacijske augmentacije",
@@ -182,14 +170,15 @@ class Analysis(QWidget):
 
         self.grid.addWidget(self.scroll_area, 1, 1)
 
-        self.textEdit = QTextEdit()
-        self.textEdit.setReadOnly(True)
-        self.grid.addWidget(self.textEdit, 1, 2)
+        self.right_output_text_area = QTextEdit()
+        self.right_output_text_area.setReadOnly(True)
+        self.grid.addWidget(self.right_output_text_area, 1, 2)
 
         self.buttonRun = QPushButton("Run")
 
-        self.form_list = []
         self.validator = QtGui.QDoubleValidator()
+
+        self.form_list = []
 
         hideable_parameters = ["constant_selection", "constant_speed", "constant_rpm", "pitch", "v_min", "v_max",
                                "v_num", "rpm_min", "rpm_max", "rpm_num", "tsr_min", "tsr_max", "tsr_num", "J_min",
@@ -200,24 +189,14 @@ class Analysis(QWidget):
                 form = QComboBox()
                 form.addItems([self.methods_to_names[k] for k, v in self.methods_to_names.items()])
                 form.setCurrentIndex(7)
-            elif key == "rotational_augmentation_correction_method":
+            elif isinstance(value,list):
                 form = QComboBox()
-                form.addItems(["1", "2", "3", "4", "5", "6", "7"])
-            elif key == "variable_selection":
-                form = QComboBox()
-                form.addItems(["RPM and v", "TSR", "J", "pitch", "pitch+TSR", "pitch+J"])
+                form.addItems([l for l in value])
                 form.currentIndexChanged.connect(self.set_parameter_visibility)
-            elif key == "constant_selection":
-                form = QComboBox()
-                form.addItems(["speed", "rpm"])
-                form.currentIndexChanged.connect(self.set_parameter_visibility)
-            elif key == "fix_reynolds":
-                form = QCheckBox()
-                form.setTristate(False)
-                form.stateChanged.connect(self.set_parameter_visibility)
             elif isinstance(value, bool):
                 form = QCheckBox()
                 form.setTristate(value)
+                form.stateChanged.connect(self.set_parameter_visibility)
             else:
                 form = QLineEdit()
                 form.setValidator(self.validator)
@@ -521,11 +500,11 @@ class Analysis(QWidget):
 
     def add_text(self, string):
         if self.buttonEOF.checkState() == 2:
-            self.textEdit.moveCursor(QtGui.QTextCursor.End)
-        self.textEdit.insertPlainText(string)
+            self.right_output_text_area.moveCursor(QtGui.QTextCursor.End)
+        self.right_output_text_area.insertPlainText(string)
 
     def clear(self):
-        self.textEdit.clear()
+        self.right_output_text_area.clear()
 
     def terminate(self):
         try:

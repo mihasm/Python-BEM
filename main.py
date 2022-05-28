@@ -35,6 +35,7 @@ elif __file__:
 
 QtWidgets.QApplication.setAttribute(QtCore.Qt.AA_EnableHighDpiScaling, True)
 
+
 def main(quick_results=False):
     if sys.platform.startswith("win"):
         # On Windows calling this function is necessary for multiprocessing.
@@ -56,7 +57,6 @@ def main(quick_results=False):
     screen = app.primaryScreen()
     size = screen.size()
     main_win = MainWindow.MainWindow(size.width(), size.height())
-    main_win.setWindowIcon(app_icon)
     font = main_win.font()
     font.setPointSize(7)
     app.instance().setFont(font)

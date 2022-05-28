@@ -33,7 +33,6 @@ class MainWindow(QMainWindow):
     def __init__(self, width, height):
         super().__init__()
 
-        self.statusBar()
         mainMenu = self.menuBar()
         fileMenu = mainMenu.addMenu('&File')
         saveFile = QAction("&Save File", self)
@@ -50,9 +49,7 @@ class MainWindow(QMainWindow):
         fileMenu.addAction(loadFile)
         fileMenu.addAction(getSettings)
 
-        self.screen_width = width
-        self.screen_height = height
-        self.setGeometry(width * 0.125, height * 0.125, width * 0.75, height * 0.75)
+        #self.setGeometry(width * 0.125, height * 0.125, width * 0.75, height * 0.75)
         self.setWindowTitle(TITLE_STR)
         self.tab_widget = TabWidget(self)
         self.setCentralWidget(self.tab_widget)

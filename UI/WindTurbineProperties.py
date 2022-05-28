@@ -52,120 +52,133 @@ class WindTurbineProperties(QWidget):
         self.grid.addWidget(self.table_properties, 1, 2)
         self.hideable_widgets = []
 
-        _name = QLabel("Turbine Name")
+        self._name = QLabel("Turbine Name")
         self.name = QLineEdit()
-        self.fbox.addRow(_name, self.name)
+        self.fbox.addRow(self._name, self.name)
         self.name.textEdited.connect(self.main.set_title)
 
-        _Rhub = QLabel("Hub radius [m]")
+        self._turbine_type = QLabel("Turbine type.")
+        self.turbine_type = QComboBox()
+        self.turbine_type.addItems(["Wind turbine","Propeller",])
+        self.fbox.addRow(self._turbine_type, self.turbine_type)
+        self.turbine_type.setToolTip("Vrsta turbine.")
+        self.turbine_type.currentIndexChanged.connect(self.set_parameter_visibility)
+
+        self._Rhub = QLabel("Hub radius [m]")
         self.Rhub = QLineEdit()
         self.Rhub.setText("0.1")
-        self.fbox.addRow(_Rhub, self.Rhub)
+        self.fbox.addRow(self._Rhub, self.Rhub)
         self.Rhub.setToolTip("Radij pesta. Vpliv ima le pri Hub-Loss popravku.")
 
-        _R = QLabel("Tip radius [m]")
+        self._R = QLabel("Tip radius [m]")
         self.R = QLineEdit()
         self.R.setText("0.776")
-        self.fbox.addRow(_R, self.R)
+        self.fbox.addRow(self._R, self.R)
         self.R.setToolTip("Radij turbine. Vpliv ima na izračun moči ter pri Tip-Loss popravku.")
 
-        _B = QLabel("Number of blades")
+        self._B = QLabel("Number of blades")
         self.B = QLineEdit()
         self.B.setText("5")
-        self.fbox.addRow(_B, self.B)
+        self.fbox.addRow(self._B, self.B)
         self.B.setToolTip("Število lopatic.")
 
-        _blade_design = QLabel("Blade design")
+        self._blade_design = QLabel("Blade design")
         self.blade_design = QComboBox()
         self.blade_design.addItems(["Filled", "Hollow", "Spar"])
-        self.fbox.addRow(_blade_design, self.blade_design)
+        self.fbox.addRow(self._blade_design, self.blade_design)
         self.B.setToolTip("Pomembno za statični izračun.")
 
-        _blade_thickness = QLabel("Blade thickness [m]")
+        self._blade_thickness = QLabel("Blade thickness [m]")
         self.blade_thickness = QLineEdit()
         self.blade_thickness.setText("0.001")
-        self.fbox.addRow(_blade_thickness, self.blade_thickness)
+        self.fbox.addRow(self._blade_thickness, self.blade_thickness)
         self.blade_thickness.setToolTip("Debelina lopatice / Spar Cap-a.")
 
-        _mass_density = QLabel("Mass density [kg/m^3]")
+        self._mass_density = QLabel("Mass density [kg/m^3]")
         self.mass_density = QLineEdit()
         self.mass_density.setText("1060")
-        self.fbox.addRow(_mass_density, self.mass_density)
+        self.fbox.addRow(self._mass_density, self.mass_density)
         self.mass_density.setToolTip("Debelina lopatice / Spar Cap-a.")
 
         self.fbox.addRow(QLabel("————— Scale and interpolation —————"))
 
-        _geometry_scale = QLabel("Scale factor")
+        self._geometry_scale = QLabel("Scale factor")
         self.geometry_scale = QLineEdit()
         self.geometry_scale.setText("1.0")
-        self.fbox.addRow(_geometry_scale, self.geometry_scale)
+        self.fbox.addRow(self._geometry_scale, self.geometry_scale)
         self.geometry_scale.setToolTip("Scale factor")
 
-        _linspace_interp = QLabel("Interpolate geometry")
+        self._linspace_interp = QLabel("Interpolate geometry")
         self.linspace_interp = QCheckBox()
-        self.fbox.addRow(_linspace_interp, self.linspace_interp)
+        self.fbox.addRow(self._linspace_interp, self.linspace_interp)
         self.linspace_interp.setToolTip("Interpolate_geom")
 
-        _num_interp = QLabel("Number of interpolation points")
+        self._num_interp = QLabel("Number of interpolation points")
         self.num_interp = QLineEdit()
         self.num_interp.setText("25")
-        self.fbox.addRow(_num_interp, self.num_interp)
+        self.fbox.addRow(self._num_interp, self.num_interp)
         self.num_interp.setToolTip("Number of interpolation points")
 
         self.fbox.addRow(QLabel("————— Generate geometry —————"))
 
-        _num_gen_sections = QLabel("Number of gen. sections")
+        self._num_gen_sections = QLabel("Number of gen. sections")
         self.num_gen_sections = QLineEdit()
         self.num_gen_sections.setText("10")
-        self.fbox.addRow(_num_gen_sections, self.num_gen_sections)
+        self.fbox.addRow(self._num_gen_sections, self.num_gen_sections)
         self.num_gen_sections.setToolTip("Število odsekov za generiranje.")
 
-        _design_airfoil = QLabel("Airfoil")
+        self._design_airfoil = QLabel("Airfoil")
         self.design_airfoil = QLineEdit()
         self.design_airfoil.setText("s826")
-        self.fbox.addRow(_design_airfoil, self.design_airfoil)
+        self.fbox.addRow(self._design_airfoil, self.design_airfoil)
         self.design_airfoil.setToolTip("Tekst za v stolpec airfoil.")
 
-        _design_rho = QLabel("Air density [kg/m3]")
+        self._design_rho = QLabel("Fluid density [kg/m3]")
         self.design_rho = QLineEdit()
         self.design_rho.setText("1.225")
-        self.fbox.addRow(_design_rho, self.design_rho)
+        self.fbox.addRow(self._design_rho, self.design_rho)
         self.design_rho.setToolTip("Gostota zraka")
 
-        _design_tsr = QLabel("Design TSR")
+        self._design_kin_viscosity = QLabel("Kin. viscosity [m2/s]")
+        self.design_kin_viscosity = QLineEdit()
+        self.design_kin_viscosity.setText("1.4207e-5")
+        self.fbox.addRow(self._design_kin_viscosity, self.design_kin_viscosity)
+        self.design_kin_viscosity.setToolTip("Kinematična viskoznost")
+
+        self._design_tsr = QLabel("Design TSR")
         self.design_tsr = QLineEdit()
         self.design_tsr.setText("7")
-        self.fbox.addRow(_design_tsr, self.design_tsr)
+        self.fbox.addRow(self._design_tsr, self.design_tsr)
         self.design_tsr.setToolTip("Željeni TSR za generiranje.")
         self.hideable_widgets.append([
             self.fbox.itemAt(self.fbox.rowCount()-1,0),
             self.fbox.itemAt(self.fbox.rowCount()-1,1),
             ["Betz", "Schmitz"]])
 
-        _design_aoa = QLabel("Design AoA [°]")
+        self._design_aoa = QLabel("Design AoA [°]")
         self.design_aoa = QLineEdit()
         self.design_aoa.setText("7")
-        self.fbox.addRow(_design_aoa, self.design_aoa)
+        self.fbox.addRow(self._design_aoa, self.design_aoa)
         self.design_aoa.setToolTip("Željeni AoA za generiranje.")
         self.hideable_widgets.append([
             self.fbox.itemAt(self.fbox.rowCount()-1,0),
             self.fbox.itemAt(self.fbox.rowCount()-1,1),
             ["Betz", "Schmitz"]])
 
-        _design_cl = QLabel("Cl @ Design AoA")
+        self._design_cl = QLabel("Design Cl")
         self.design_cl = QLineEdit()
         self.design_cl.setText("1.4")
-        self.fbox.addRow(_design_cl, self.design_cl)
-        self.design_cl.setToolTip("Koeficient vzgona pri željenem AoA.")
+        self.fbox.addRow(self._design_cl, self.design_cl)
+        self.design_cl.setToolTip("Koeficient vzgona.")
         self.hideable_widgets.append([
             self.fbox.itemAt(self.fbox.rowCount()-1,0),
             self.fbox.itemAt(self.fbox.rowCount()-1,1),
-            ["Betz", "Schmitz"]])
+            ["Betz", "Schmitz", "Adkins", "design_minimize_losses"]])
 
-        _design_RPM = QLabel("RPM (prop)")
+        self._design_RPM = QLabel("RPM (prop)")
         self.design_RPM = QLineEdit()
         self.design_RPM.setText("5000")
-        self.fbox.addRow(_design_RPM, self.design_RPM)
+        self.fbox.addRow(self._design_RPM, self.design_RPM)
         self.design_RPM.textChanged.connect(self.update_j)
         self.design_RPM.setToolTip("RPM propelerja")
         self.hideable_widgets.append([
@@ -173,78 +186,109 @@ class WindTurbineProperties(QWidget):
             self.fbox.itemAt(self.fbox.rowCount()-1,1),
             ["Larrabee", "Adkins"]])
 
-        _design_velocity = QLabel("Velocity (prop) [m/s]")
+        self._design_velocity = QLabel("Velocity (prop) [m/s]")
         self.design_velocity = QLineEdit()
         self.design_velocity.setText("15")
-        self.fbox.addRow(_design_velocity, self.design_velocity)
+        self.fbox.addRow(self._design_velocity, self.design_velocity)
         self.design_velocity.textChanged.connect(self.update_j)
-        self.design_velocity.setToolTip("Hitrost letala")
+        self.design_velocity.setToolTip("Hitrost letala/ladje")
         self.hideable_widgets.append([
             self.fbox.itemAt(self.fbox.rowCount()-1,0),
             self.fbox.itemAt(self.fbox.rowCount()-1,1),
             ["Larrabee", "Adkins"]])
 
-        _design_thrust = QLabel("Thrust (prop) [N]")
+        self._design_thrust = QLabel("Thrust (prop) [N]")
         self.design_thrust = QLineEdit()
         self.design_thrust.setText("50")
         self.design_thrust.textChanged.connect(self.update_j)
-        self.fbox.addRow(_design_thrust, self.design_thrust)
-        self.design_thrust.setToolTip("Potisk")
+        self.fbox.addRow(self._design_thrust, self.design_thrust)
+        self.design_thrust.setToolTip("Željeni potisk propelerja")
         self.hideable_widgets.append([
             self.fbox.itemAt(self.fbox.rowCount()-1,0),
             self.fbox.itemAt(self.fbox.rowCount()-1,1),
             ["Larrabee", "Adkins"]])
 
-        _design_drag_lift_ratio = QLabel("Cd/Cl @ Design AoA (prop)")
+        self._design_power = QLabel("Power (prop) [W]")
+        self.design_power = QLineEdit()
+        self.design_power.setText("50")
+        self.design_power.textChanged.connect(self.update_j)
+        self.fbox.addRow(self._design_power, self.design_power)
+        self.design_power.setToolTip("Željena moč na gredi propelerja")
+        self.hideable_widgets.append([
+            self.fbox.itemAt(self.fbox.rowCount()-1,0),
+            self.fbox.itemAt(self.fbox.rowCount()-1,1),
+            ["Adkins"]])
+
+        self._design_use_power_constraint = QLabel("Use power constraint")
+        self.design_use_power_constraint = QCheckBox()
+        self.fbox.addRow(self._design_use_power_constraint, self.design_use_power_constraint)
+        self.design_power.setToolTip("Uporabi moč namesto potiska pri Adkins metodi")
+        self.hideable_widgets.append([
+            self.fbox.itemAt(self.fbox.rowCount()-1,0),
+            self.fbox.itemAt(self.fbox.rowCount()-1,1),
+            ["Adkins"]])
+        self.design_use_power_constraint.stateChanged.connect(self.set_parameter_visibility)
+
+        self._design_minimize_losses = QLabel("Minimize losses")
+        self.design_minimize_losses = QCheckBox()
+        self.fbox.addRow(self._design_minimize_losses, self.design_minimize_losses)
+        self.design_power.setToolTip("Pri analizi izbere najmanjši Cd/Cl(Re)")
+        self.hideable_widgets.append([
+            self.fbox.itemAt(self.fbox.rowCount()-1,0),
+            self.fbox.itemAt(self.fbox.rowCount()-1,1),
+            ["Adkins"]])
+        self.design_minimize_losses.stateChanged.connect(self.set_parameter_visibility)
+
+        self._design_drag_lift_ratio = QLabel("Cd/Cl @ Design AoA (prop)")
         self.design_drag_lift_ratio = QLineEdit()
         self.design_drag_lift_ratio.setText("0.02")
-        self.fbox.addRow(_design_drag_lift_ratio, self.design_drag_lift_ratio)
+        self.fbox.addRow(self._design_drag_lift_ratio, self.design_drag_lift_ratio)
         self.design_drag_lift_ratio.setToolTip("Razmerje Drag/Lift (samo pri Larrabee)")
         self.hideable_widgets.append([
             self.fbox.itemAt(self.fbox.rowCount()-1,0),
             self.fbox.itemAt(self.fbox.rowCount()-1,1),
             ["Larrabee"]])
 
-        _design_iters = QLabel("Num. Iterations")
+        self._design_iters = QLabel("Num. Iterations")
         self.design_iters = QLineEdit()
         self.design_iters.setText("15")
-        self.fbox.addRow(_design_iters, self.design_iters)
+        self.fbox.addRow(self._design_iters, self.design_iters)
         self.design_iters.setToolTip("St. iteracij (Adkins)")
         self.hideable_widgets.append([
             self.fbox.itemAt(self.fbox.rowCount()-1,0),
             self.fbox.itemAt(self.fbox.rowCount()-1,1),
             ["Adkins"]])
 
-        _design_relaxation = QLabel("Relax. factor (Adkins)")
+        self._design_relaxation = QLabel("Relax. factor (Adkins)")
         self.design_relaxation = QLineEdit()
         self.design_relaxation.setText("0.3")
-        self.fbox.addRow(_design_relaxation, self.design_relaxation)
+        self.fbox.addRow(self._design_relaxation, self.design_relaxation)
         self.design_relaxation.setToolTip("Relaksacijski faktor (Adkins)")
         self.hideable_widgets.append([
             self.fbox.itemAt(self.fbox.rowCount()-1,0),
             self.fbox.itemAt(self.fbox.rowCount()-1,1),
             ["Adkins"]])
 
-        _convergence_criterion_adkins = QLabel("Convergence crit.")
+        self._convergence_criterion_adkins = QLabel("Convergence crit.")
         self.convergence_criterion_adkins = QLineEdit()
         self.convergence_criterion_adkins.setText("0.05")
-        self.fbox.addRow(_convergence_criterion_adkins, self.convergence_criterion_adkins)
+        self.fbox.addRow(self._convergence_criterion_adkins, self.convergence_criterion_adkins)
         self.convergence_criterion_adkins.setToolTip("Konvergenčni kriterij")
         self.hideable_widgets.append([
             self.fbox.itemAt(self.fbox.rowCount()-1,0),
             self.fbox.itemAt(self.fbox.rowCount()-1,1),
             ["Adkins"]])
 
-        _design_method = QLabel("Design method.")
+        self._design_method = QLabel("Design method.")
         self.design_method = QComboBox()
         self.design_method.addItems(["Betz", "Schmitz", "Larrabee (prop)", "Adkins (prop)"])
-        self.fbox.addRow(_design_method, self.design_method)
+        self.fbox.addRow(self._design_method, self.design_method)
         self.design_method.setToolTip("Metoda dizajniranja.")
         self.design_method.currentIndexChanged.connect(self.set_parameter_visibility)
 
-        _button_generate_geometry = QLabel("Generate geometry.")
+        self._button_generate_geometry = QLabel("Generate geometry.")
         self.button_generate_geometry = QPushButton("Generate")
-        self.fbox.addRow(_button_generate_geometry, self.button_generate_geometry)
+        self.fbox.addRow(self._button_generate_geometry, self.button_generate_geometry)
         self.button_generate_geometry.clicked.connect(self.generate_geometry)
         self.button_generate_geometry.setToolTip("Generiraj geometrijo (povozi predhodno!).")
 
@@ -264,21 +308,21 @@ class WindTurbineProperties(QWidget):
 
         self.fbox.addRow(QLabel("—————————————————————————"))
 
-        _button_calculate_pitch = QLabel("Calculate pitch")
+        self._button_calculate_pitch = QLabel("Calculate pitch")
         self.button_calculate_pitch = QPushButton("Calculate pitch")
-        self.fbox.addRow(_button_calculate_pitch, self.button_calculate_pitch)
+        self.fbox.addRow(self._button_calculate_pitch, self.button_calculate_pitch)
         self.button_calculate_pitch.clicked.connect(self.calculate_pitch)
         self.button_calculate_pitch.setToolTip("Izračun zasuka propelerja v inčih")
 
-        _button_create_geometry_graph = QLabel("Create R,C,θ graph.")
+        self._button_create_geometry_graph = QLabel("Create R,C,θ graph.")
         self.button_create_geometry_graph = QPushButton("Create R,C,θ graph.")
-        self.fbox.addRow(_button_create_geometry_graph, self.button_create_geometry_graph)
+        self.fbox.addRow(self._button_create_geometry_graph, self.button_create_geometry_graph)
         self.button_create_geometry_graph.clicked.connect(self.create_geometry_graph)
         self.button_create_geometry_graph.setToolTip("Izris grafa R,C,θ.")
 
-        _button_create_pitch_graph = QLabel("Create pitch graph.")
+        self._button_create_pitch_graph = QLabel("Create pitch graph.")
         self.button_create_pitch_graph = QPushButton("Create pitch graph.")
-        self.fbox.addRow(_button_create_pitch_graph, self.button_create_pitch_graph)
+        self.fbox.addRow(self._button_create_pitch_graph, self.button_create_pitch_graph)
         self.button_create_pitch_graph.clicked.connect(self.create_pitch_graph)
         self.button_create_pitch_graph.setToolTip("Izris grafa koraka propelerja.")
 
@@ -329,7 +373,30 @@ class WindTurbineProperties(QWidget):
                 else:
                     item1.widget().hide()
                     item2.widget().hide()
-        
+                if "design_minimize_losses" in methods:
+                    if self.design_minimize_losses.isChecked():
+                        item1.widget().hide()
+                        item2.widget().hide()
+                    else:
+                        item1.widget().show()
+                        item2.widget().show()
+        if self.design_use_power_constraint.isChecked():
+            if self.design_method.currentIndex() == 3:
+                #adkins
+                self.design_power.show()
+                self._design_power.show()
+                self.design_thrust.hide()
+                self._design_thrust.hide()
+            else:
+                self.design_power.hide()
+                self._design_power.hide()
+                self.design_thrust.show()
+                self._design_thrust.show()
+        else:
+            self.design_power.hide()
+            self._design_power.hide()
+            self.design_thrust.show()
+            self._design_thrust.show()
 
 
     def get_settings(self):
@@ -355,8 +422,12 @@ class WindTurbineProperties(QWidget):
                "design_RPM":to_float(self.design_RPM.text()),
                "design_velocity":to_float(self.design_velocity.text()),
                "design_thrust":to_float(self.design_thrust.text()),
+               "design_power":to_float(self.design_power.text()),
+               "design_use_power_constraint": self.design_use_power_constraint.isChecked(),
+               "design_minimize_losses": self.design_minimize_losses.isChecked(),
                "design_drag_lift_ratio":to_float(self.design_drag_lift_ratio.text()),
                "design_rho":to_float(self.design_rho.text()),
+               "design_kin_viscosity":to_float(self.design_kin_viscosity.text()),
                "num_gen_sections":to_float(self.num_gen_sections.text()),
                "design_tsr":to_float(self.design_tsr.text()),
                "design_aoa":to_float(self.design_aoa.text()),
@@ -365,7 +436,8 @@ class WindTurbineProperties(QWidget):
                "design_relaxation":to_float(self.design_relaxation.text()),
                "design_airfoil":self.design_airfoil.text(),
                "design_method":to_float(self.design_method.currentIndex()),
-               "convergence_criterion_adkins":to_float(self.convergence_criterion_adkins.text())}
+               "convergence_criterion_adkins":to_float(self.convergence_criterion_adkins.text()),
+               "turbine_type":self.turbine_type.currentIndex()}
         
         geom_array = self.table_properties.get_values()
         r, c, theta, foils = [], [], [], []
@@ -441,7 +513,6 @@ class WindTurbineProperties(QWidget):
 
         self.gw_pitch.ax = self.gw_pitch.figure.add_subplot(111)
         self.gw_pitch.ax.set_title("p(r)")
-        #print(out["propeller_pitch"])
         self.gw_pitch.ax.plot(np.array(out["r"])/out["R"], out["propeller_pitch"])
         self.gw_pitch.ax.set_xlabel("r/R")
         self.gw_pitch.ax.set_ylabel("Pitch p [in]")
@@ -557,7 +628,6 @@ class WindTurbineProperties(QWidget):
         if "mass_density" in dict_settings:
             t = str(dict_settings["mass_density"])
             self.mass_density.setText(t)
-        
         if "num_gen_sections" in dict_settings:
             t = str(dict_settings["num_gen_sections"])
             self.num_gen_sections.setText(t)
@@ -582,12 +652,24 @@ class WindTurbineProperties(QWidget):
         if "design_thrust" in dict_settings:
             t = str(dict_settings["design_thrust"])
             self.design_thrust.setText(t)
+        if "design_power" in dict_settings:
+            t = str(dict_settings["design_power"])
+            self.design_power.setText(t)
+        if "design_use_power_constraint" in dict_settings:
+            t = dict_settings["design_use_power_constraint"]
+            self.design_use_power_constraint.setChecked(t)
+        if "design_minimize_losses" in dict_settings:
+            t = dict_settings["design_minimize_losses"]
+            self.design_minimize_losses.setChecked(t)
         if "design_drag_lift_ratio" in dict_settings:
             t = str(dict_settings["design_drag_lift_ratio"])
             self.design_drag_lift_ratio.setText(t)
         if "design_rho" in dict_settings:
             t = str(dict_settings["design_rho"])
             self.design_rho.setText(t)
+        if "design_kin_viscosity" in dict_settings:
+            t = str(dict_settings["design_kin_viscosity"])
+            self.design_kin_viscosity.setText(t)
         if "design_iters" in dict_settings:
             t = str(dict_settings["design_iters"])
             self.design_iters.setText(t)
@@ -600,6 +682,9 @@ class WindTurbineProperties(QWidget):
         if "design_method" in dict_settings:
             t = dict_settings["design_method"]
             self.design_method.setCurrentIndex(t)
+        if "turbine_type" in dict_settings:
+            t = dict_settings["turbine_type"]
+            self.turbine_type.setCurrentIndex(t)
 
         self.calculate_pitch()
         self.update_j()

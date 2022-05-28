@@ -840,12 +840,16 @@ def generate_propeller_adkins(inp):
     RPM = inp["design_RPM"]
     v = inp["design_velocity"]
     T = inp["design_thrust"]
+    use_power_constraint = inp["design_use_power_constraint"]
+    P = inp["design_power"]
     rho = inp["design_rho"]
+    kin_viscosity = inp["design_kin_viscosity"]
     cl_des = inp["design_cl"]
     airfoil = inp["design_airfoil"]
     relaxation_factor = inp["design_relaxation"]
     iters = int(inp["design_iters"])
     convergence_criterion_adkins = inp["convergence_criterion_adkins"]
+    minimize_losses = inp["design_minimize_losses"]
     
     airfoils,airfoils_list,transition_foils,transition_array,max_thickness_array = get_curves_functions(inp)
 
@@ -855,7 +859,6 @@ def generate_propeller_adkins(inp):
 
     for count in range(iters):
         print("count",count)
-        kin_viscosity = 1.4207E-5
         xi = r/R
         omega = 2*np.pi*RPM/60
         J=v/(RPM/60*2*R)
@@ -892,8 +895,6 @@ def generate_propeller_adkins(inp):
             print("section",i)
 
             Re_section = Re[i]
-            #Re_section = 100000
-            #print("Re_section",Re_section)
 
             min_cl = None
             max_cl = None
@@ -908,17 +909,51 @@ def generate_propeller_adkins(inp):
                 if _cl > max_cl:
                     max_cl = _cl
 
-            def eps_minimize_function(cl):
-                # finds minimal losses by choosing the right Cl
-                #print("===new eps minimization")
-                def get_dcl(alpha, cl_req=cl):
-                    # returns 0 if alpha produces specified cl, else returns > 0.
-                    # used as the minimization function
+            if minimize_losses:
+
+                def eps_minimize_function(cl):
+                    # finds minimal losses by choosing the right Cl
+
+                    def get_dcl(alpha, cl_req=cl):
+                        # returns 0 if alpha produces specified cl, else returns > 0.
+                        # used as the zero-finding function
+                        
+                        cl_actual = airfoils[airfoil]["interp_function_cl"](Re_section,alpha)
+                        dcl = cl_actual - cl_req
+                        return dcl #so zero finding finds value of cl
                     
+                    lower_bound = 45
+                    while get_dcl(lower_bound) > 0:
+                        lower_bound -= 1
+                        if lower_bound < -90:
+                            raise Exception ("Too low bound, perhaps too low initial Cl?")
+
+                    upper_bound = -45
+                    while get_dcl(upper_bound) < 0:
+                        upper_bound += 1
+                        if upper_bound > 90:
+                            raise Exception("Too high bound, perhaps too high initial Cl?")
+
+                    _alpha = scipy.optimize.ridder(get_dcl,lower_bound,upper_bound,xtol=1e-2,rtol=1e-4)
+
+                    alpha_arr[i] = _alpha
+                    cl = airfoils[airfoil]["interp_function_cl"](Re_section,_alpha)
+                    cd = airfoils[airfoil]["interp_function_cd"](Re_section,_alpha)
+
+                    cl_arr[i] = cl
+                    _eps = cd/cl
+                    return _eps
+            
+                min_eps = scipy.optimize.minimize(eps_minimize_function,0.1,bounds=[(0,max_cl)],method="powell",options={'ftol': 0.001,"xtol":0.01,'maxiter':5,'maxfev':5}).fun
+                eps_arr[i]= min_eps
+            else:
+                def get_dcl(alpha, cl_req=cl_des):
+                    # returns 0 if alpha produces specified cl, else returns > 0.
+                    # used as the zero-finding function
                     cl_actual = airfoils[airfoil]["interp_function_cl"](Re_section,alpha)
                     dcl = cl_actual - cl_req
                     return dcl #so zero finding finds value of cl
-                
+
                 lower_bound = 45
                 while get_dcl(lower_bound) > 0:
                     lower_bound -= 1
@@ -932,20 +967,12 @@ def generate_propeller_adkins(inp):
                         raise Exception("Too high bound, perhaps too high initial Cl?")
 
                 _alpha = scipy.optimize.ridder(get_dcl,lower_bound,upper_bound,xtol=1e-2,rtol=1e-4)
-
-                #print("alpha",_alpha,"cl_act",airfoils[airfoil]["interp_function_cl"](Re_section,_alpha),"cl_req",cl)
                 alpha_arr[i] = _alpha
                 cl = airfoils[airfoil]["interp_function_cl"](Re_section,_alpha)
                 cd = airfoils[airfoil]["interp_function_cd"](Re_section,_alpha)
-
-                cl_arr[i] = cl
                 _eps = cd/cl
-                #print("_eps",_eps)
-                return _eps
-
-            min_eps = scipy.optimize.minimize(eps_minimize_function,0.1,bounds=[(0,max_cl)],method="powell",options={'ftol': 0.001,"xtol":0.01,'maxiter':5,'maxfev':5}).fun
-            #min_eps = eps_minimize_function(0.5)
-            eps_arr[i]= min_eps
+                cl_arr[i] = cl
+                eps_arr[i] = _eps
 
         alpha_arr = np.array(alpha_arr)
         print("alpha",alpha_arr)
@@ -989,14 +1016,19 @@ def generate_propeller_adkins(inp):
         J1 =np.trapz(J1p,x=xi)
         J2 =np.trapz(J2p,x=xi)
 
-        #print("I1",I1,"I2",I2,"J1",J1,"J2",J2)
-        T_c=2*T/(rho*v**2*np.pi*R**2)
-        zeta_new = (I1/(2*I2))-((I1/(2*I2))**2-T_c/I2)**0.5
-        #zeta_new_2 = -(J1/(2*J2))+((J1/(2*J2))**2+P_c/J2)**0.5
+        if use_power_constraint:
+            print("Power")
+            P_c=2*P/(rho*v**3*np.pi*R**2)
+            zeta_new = -(J1/(2*J2))+((J1/(2*J2))**2+P_c/J2)**0.5
+        else:
+            print("Thrust")
+            T_c=2*T/(rho*v**2*np.pi*R**2)
+            zeta_new = (I1/(2*I2))-((I1/(2*I2))**2-T_c/I2)**0.5
         
         print("zeta_new",zeta_new)
         if abs(abs(zeta-zeta_new)*zeta_new)<convergence_criterion_adkins:
             print("converged")
+            print(c,np.rad2deg(beta))
             return c,np.rad2deg(beta)
         else:
             print("not converged")

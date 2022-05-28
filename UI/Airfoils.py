@@ -5,6 +5,7 @@ from matplotlib import pyplot as plt, cm
 from matplotlib.backends.backend_qt5 import NavigationToolbar2QT as NavigationToolbar
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib import pyplot as plt
+import pyqtgraph as pg
 
 from UI.helpers import XFoilThread, ScrapeThread, MatplotlibWindow, PrintoutWindow, XfoilOptionsWindow
 from UI.CurveViewer import CurveViewer
@@ -53,14 +54,12 @@ class Airfoils(QWidget):
         self.table_dat.set_labels(["x", "y"])
         self.grid.addWidget(self.table_dat, 1, 2)
 
-        self.plt = plt.figure(figsize=(10, 5))
+        self.plt = plt.figure(figsize=(3, 3))
         self.ax = self.plt.add_subplot(111)
 
-        self.canvas = FigureCanvas(self.plt)
-        self.grid.addWidget(self.canvas, 1, 3)
-
-        toolbar = NavigationToolbar(self.canvas, self)
-        self.grid.addWidget(toolbar, 2, 3)
+        self.airfoil_graph = pg.PlotWidget()
+        self.grid.addWidget(self.airfoil_graph, 1, 3)
+        self.airfoil_graph.getViewBox().setAspectLocked(lock=True,ratio=1)
 
         self.buttonRefresh = QPushButton("Refresh curve")
         self.grid.addWidget(self.buttonRefresh, 3, 3)
@@ -316,8 +315,7 @@ class Airfoils(QWidget):
                 c.create(x=x, y=y, Re=Re, ncrit=ncrit_selected, alpha=_alpha, cl=_cl, cd=_cd)
                 self.curves.add(c)
 
-    def refresh(self):
-        self.ax.clear()
+    def refresh(self):        
         x_values = []
         y_values = []
         array_dat = self.table_dat.get_values()
@@ -332,17 +330,15 @@ class Airfoils(QWidget):
                     return
                 x_values.append(_x)
                 y_values.append(_y)
-        self.ax.set_xlim(0, 1)
-        self.ax.set_ylim(-0.5, 0.5)
-        self.ax.plot(x_values, y_values)
+
+        self.airfoil_graph.plot(x_values,y_values)
+        
         try:
             centroid_x = float(self.centroid_x_edit.text())
             centroid_y = float(self.centroid_y_edit.text())
             self.ax.plot(centroid_x, centroid_y, "r+")
         except:
             msg = ErrorMessageBox()
-
-        self.plt.canvas.draw()
 
         self.refresh_ncrits_combobox()
 

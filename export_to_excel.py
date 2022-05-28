@@ -43,22 +43,36 @@ def generate_excel(settings,results):
 			column+=1
 		row += 1
 
-	"""
-	chart = ScatterChart()
-	chart.title = "Scatter Chart"
-	chart.style = 1
-	chart.x_axis.title = 'Size'
-	chart.y_axis.title = 'Percentage'
+	
+	c1 = ScatterChart()
+	c1.title = "Scatter Chart1"
+	c1.x_axis.title = 'Size1'
+	c1.y_axis.title = 'Percentage1'
 
 	xvalues = Reference(ws, min_col=1, min_row=data_start+1, max_row=data_start+1+num_sections)
-	for i in range(2, 3):
-	    values = Reference(ws, min_col=i, min_row=data_start, max_row=data_start+1+num_sections)
-	    series = Series(values, xvalues)
-	    chart.series.append(series)
+	values = Reference(ws, min_col=2, min_row=data_start, max_row=data_start+1+num_sections)
+	series = Series(values, xvalues)
+	c1.series.append(series)
 
-	ws.add_chart(chart,'C1')
+	c2 = ScatterChart()
+	c2.title = "Scatter Chart2"
+	c2.x_axis.title = 'Size2'
+	c2.y_axis.title = 'Percentage2'
+
+	xvalues = Reference(ws, min_col=1, min_row=data_start+1, max_row=data_start+1+num_sections)
+	values = Reference(ws, min_col=3, min_row=data_start, max_row=data_start+1+num_sections)
+	series = Series(values, xvalues)
+	c2.series.append(series)
+
+	c1.y_axis.crosses = "max"
+	c1 += c2
+
+	ws.add_chart(c1,'E1')
+	
+
+
+
 	"""
-
 	### ADD R,C,THETA CHART
 
 	fig, ax1 = plt.subplots()
@@ -84,6 +98,8 @@ def generate_excel(settings,results):
 
 	ws.add_image(image,'E2')
 
-	wb.save('test.xlsx')
+	"""
+
+	wb.save('test.xlsx') 
 
 generate_excel(SET_INIT,RESULTS)

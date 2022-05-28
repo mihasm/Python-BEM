@@ -8,6 +8,7 @@ from utils import Printer, generate_dat, sort_data, get_transition_foils, interp
 from visualize import scale_and_normalize, rotate_array
 from scipy import interpolate
 import scipy.optimize as optimize
+import warnings
 
 numpy.seterr(all="raise")
 numpy.seterr(invalid="raise")
@@ -26,13 +27,15 @@ OUTPUT_VARIABLES_LIST = {
 
     "dFn": {"type": "array", "name": "Incremental normal force", "symbol": r"$dF_n$", "unit": "N"},
     "dFt": {"type": "array", "name": "Incremental tangential force", "symbol": r"$dF_t$", "unit": "N"},
-    "dFc": {"post_processed":True,"type": "array", "name": "Incremental centrifugal force", "symbol": r"$dF_c$", "unit": "N"},
+    "dFc": {"post_processed": True, "type": "array", "name": "Incremental centrifugal force", "symbol": r"$dF_c$",
+            "unit": "N"},
     "dFn/n": {"type": "array", "name": "Incremental normal force (per unit length)", "symbol": r"$dF_n/n$",
               "unit": "N/m"},
     "dFt/n": {"type": "array", "name": "Incremental tangential force (per unit length)", "symbol": r"$dF_t/n$",
               "unit": "N/m"},
 
-    "foils": {"post_processed":True,"type": "string_array", "name": "Airfoil name", "symbol": "airfoil_name", "unit": ""},
+    "foils": {"post_processed": True, "type": "string_array", "name": "Airfoil name", "symbol": "airfoil_name",
+              "unit": ""},
     "dT": {"type": "array", "name": "Incremental thrust", "symbol": "dT", "unit": "N"},
     "dQ": {"type": "array", "name": "Incremental torque", "symbol": "dM", "unit": "N"},
     "Re": {"type": "array", "name": "Reynolds number", "symbol": "Re", "unit": ""},
@@ -41,24 +44,34 @@ OUTPUT_VARIABLES_LIST = {
     "U3": {"type": "array", "name": "Near-downwind speed", "symbol": "U3", "unit": "m/s"},
     "U4": {"type": "array", "name": "Far-downwind speed", "symbol": "U4", "unit": "m/s"},
 
-    "Ix": {"post_processed":True,"type": "array", "name": "Bending inertia (normal)", "symbol": r"$I_x$", "unit": r"$mm^4$"},
-    "Iy": {"post_processed":True,"type": "array", "name": "Bending inertia (tangential)", "symbol": r"$I_y$", "unit": r"$mm^4$"},
-    "Ixy": {"post_processed":True,"type": "array", "name": "Bending inertia (xy)", "symbol": r"$I_xy$", "unit": r"$mm^4$"},
-    "A": {"post_processed":True,"type": "array", "name": "Airfoil area", "symbol": "A", "unit": r"$mm^2$"},
-    "Ms_t": {"post_processed":True,"type": "array", "name": "Bending moment (tangential)", "symbol": r"$M_{bend,tang.}$", "unit": "Nm"},
-    "Ms_n": {"post_processed":True,"type": "array", "name": "Bending moment (normal)", "symbol": r"$M_{bend,norm.}$", "unit": "Nm"},
-    "stress_norm": {"post_processed":True,"type": "array", "name": "Bending stress (normal)", "symbol": r"$\sigma_n$", "unit": "MPa"},
-    "stress_tang": {"post_processed":True,"type": "array", "name": "Bending stress (tangential)", "symbol": r"$\sigma_t$", "unit": "MPa"},
-    "stress_cent": {"post_processed":True,"type": "array", "name": "Axial stress (centrifugal)", "symbol": r"$\sigma_c$", "unit": "MPa"},
-    "stress_von_mises": {"post_processed":True,"type": "array", "name": "Von Mises stress", "symbol": r"$\sigma_y$", "unit": "MPa"},
+    "Ix": {"post_processed": True, "type": "array", "name": "Bending inertia (normal)", "symbol": r"$I_x$",
+           "unit": r"$mm^4$"},
+    "Iy": {"post_processed": True, "type": "array", "name": "Bending inertia (tangential)", "symbol": r"$I_y$",
+           "unit": r"$mm^4$"},
+    "Ixy": {"post_processed": True, "type": "array", "name": "Bending inertia (xy)", "symbol": r"$I_xy$",
+            "unit": r"$mm^4$"},
+    "A": {"post_processed": True, "type": "array", "name": "Airfoil area", "symbol": "A", "unit": r"$mm^2$"},
+    "Ms_t": {"post_processed": True, "type": "array", "name": "Bending moment (tangential)",
+             "symbol": r"$M_{bend,tang.}$", "unit": "Nm"},
+    "Ms_n": {"post_processed": True, "type": "array", "name": "Bending moment (normal)", "symbol": r"$M_{bend,norm.}$",
+             "unit": "Nm"},
+    "stress_norm": {"post_processed": True, "type": "array", "name": "Bending stress (normal)", "symbol": r"$\sigma_n$",
+                    "unit": "MPa"},
+    "stress_tang": {"post_processed": True, "type": "array", "name": "Bending stress (tangential)",
+                    "symbol": r"$\sigma_t$", "unit": "MPa"},
+    "stress_cent": {"post_processed": True, "type": "array", "name": "Axial stress (centrifugal)",
+                    "symbol": r"$\sigma_c$", "unit": "MPa"},
+    "stress_von_mises": {"post_processed": True, "type": "array", "name": "Von Mises stress", "symbol": r"$\sigma_y$",
+                         "unit": "MPa"},
 
-    "r": {"post_processed":True,"type": "array", "name": "Section radius", "symbol": "r", "unit": "m"},
-    "dM": {"post_processed":True,"type": "array", "name": "Section torque", "symbol": "dM", "unit": "Nm"},
-    "dr": {"post_processed":True,"type": "array", "name": "Section height", "symbol": "dr", "unit": "m"},
-    "c": {"post_processed":True,"type": "array", "name": "Section chord length", "symbol": "c", "unit": "m"},
-    "theta": {"post_processed":True,"type": "array", "name": "Section twist angle", "symbol": r"$\Theta$", "unit": "°"},
+    "r": {"post_processed": True, "type": "array", "name": "Section radius", "symbol": "r", "unit": "m"},
+    "dM": {"post_processed": True, "type": "array", "name": "Section torque", "symbol": "dM", "unit": "Nm"},
+    "dr": {"post_processed": True, "type": "array", "name": "Section height", "symbol": "dr", "unit": "m"},
+    "c": {"post_processed": True, "type": "array", "name": "Section chord length", "symbol": "c", "unit": "m"},
+    "theta": {"post_processed": True, "type": "array", "name": "Section twist angle", "symbol": r"$\Theta$",
+              "unit": "°"},
 
-    "stall": {"type": "array", "name": "Stall boolean", "symbol":"", "unit":""},
+    "stall": {"type": "array", "name": "Stall boolean", "symbol": "", "unit": ""},
 
     "R": {"type": "float", "name": "Turbine radius", "symbol": "R", "unit": "m"},
     "rpm": {"type": "float", "name": "Turbine rotational velocity", "symbol": r"$\Omega$", "unit": "RPM"},
@@ -75,12 +88,13 @@ OUTPUT_VARIABLES_LIST = {
     "B": {"type": "float", "name": "Number of blades", "symbol": "B", "unit": ""},
 
     "pitch": {"type": "float", "name": "Pitch", "symbol": "p", "unit": "°"},
-    "blade_stall_percentage" : {"type":"float", "name":"Blade stall percentage", "symbol":r"$s_p$", "unit":""},
+    "blade_stall_percentage": {"type": "float", "name": "Blade stall percentage", "symbol": r"$s_p$", "unit": ""},
 
     "J": {"type": "float", "name": "Advance ratio", "symbol": "J", "unit": ""},
     "eff": {"type": "float", "name": "Propeller efficiency", "symbol": r"$\eta_p$", "unit": ""},
     "cq": {"type": "float", "name": "Torque coefficient", "symbol": r"$C_q$", "unit": ""},
 
+    "iterations": {"type": "array", "name": "Iterations", "symbol": "i", "unit": ""},
 }
 
 
@@ -91,9 +105,9 @@ class Calculator:
 
     def __init__(self, input_arguments):
         p = Printer(input_arguments["return_print"])
-        airfoils,airfoils_list,transition_foils,transition_array,max_thickness_array = get_curves_functions(input_arguments)
-        self.airfoils,self.airfoils_list,self.transition_foils,self.transition_array,self.max_thickness_array = airfoils,airfoils_list,transition_foils,transition_array,max_thickness_array
-        
+        airfoils, airfoils_list, transition_foils, transition_array, max_thickness_array = get_curves_functions(
+            input_arguments)
+        self.airfoils, self.airfoils_list, self.transition_foils, self.transition_array, self.max_thickness_array = airfoils, airfoils_list, transition_foils, transition_array, max_thickness_array
 
     def printer(self, _locals, p):
         p.print("----Running induction calculation for following parameters----")
@@ -133,9 +147,9 @@ class Calculator:
             return None
 
     # noinspection PyUnusedLocal,PyUnusedLocal
-    def run_array(self, theta, B, c, r, foils, dr, R, Rhub, rpm, v, pitch, method, propeller_mode, print_out, tip_loss,
-                  mach_number_correction,
-                  hub_loss, new_tip_loss, new_hub_loss, adkins_tip_loss, cascade_correction, max_iterations, convergence_limit, rho, kin_viscosity,
+    def run_array(self, theta, B, c, r, foils, dr, R, Rhub, rpm, v, pitch, method, turbine_type, print_out,
+                  mach_number_correction, tip_loss_mode, hub_loss_mode,
+                  cascade_correction, max_iterations, convergence_limit, rho, kin_viscosity,
                   relaxation_factor, print_all, rotational_augmentation_correction,
                   rotational_augmentation_correction_method,
                   fix_reynolds, reynolds, yaw_angle, skewed_wake_correction, blade_design, blade_thickness,
@@ -163,7 +177,7 @@ class Calculator:
         :param fix_reynolds: Force Reynolds number [bool]
         :param mach_number_correction: use only for propeller [bool]
         :param foils: list of airfoils [str]
-        :param propeller_mode: if calculating propeller thrust [bool]
+        :param turbine_type: int, 0 = wind turbine, 1 = propeller
         :param rotational_augmentation_correction_method:
         :param rotational_augmentation_correction:
         :param return_results: lst, used for returning results to main class
@@ -175,10 +189,6 @@ class Calculator:
         :param convergence_limit: convergence criterion
         :param max_iterations: maximum number of iterations
         :param cascade_correction: uses cascade correction
-        :param new_hub_loss: uses new tip loss correction
-        :param new_tip_loss: uses new tip loss correction
-        :param hub_loss: uses Prandtl tip loss correction
-        :param tip_loss: uses Prandtl tip loss correction
         :param print_out: bool; if true, prints iteration data, default: False
         :param v: wind speed [m]
         :param r: sections radiuses [m]
@@ -198,7 +208,8 @@ class Calculator:
         # create results array placeholders
         results = {}
         arrays = [k for k, v in OUTPUT_VARIABLES_LIST.items() if v["type"] == "array" or v["type"] == "string_array"]
-        arrays_no_statics = [k for k, v in OUTPUT_VARIABLES_LIST.items() if (v["type"] == "array" or v["type"] == "string_array") and "post_processed" not in v]
+        arrays_no_statics = [k for k, v in OUTPUT_VARIABLES_LIST.items() if
+                             (v["type"] == "array" or v["type"] == "string_array") and "post_processed" not in v]
         for array in arrays:
             results[array] = numpy.array([])
 
@@ -238,6 +249,54 @@ class Calculator:
 
             out_results = self.calculate_section(**_locals, printer=p)
 
+            try:
+                # Method to try and set a,a' and relaxation factor using DE so convergence is reached.
+                # Doesn't work that well. For now, I left it in.
+                if out_results["finished"] == False:
+                    def func(inp):
+                        p.print(inp)
+                        a_initial, aprime_initial, relaxation_factor = inp
+                        _locals_in = dict(_locals)
+                        del _locals_in["a_initial"]
+                        del _locals_in["aprime_initial"]
+                        del _locals_in["relaxation_factor"]
+                        res = self.calculate_section(a_initial=a_initial,
+                                                     aprime_initial=aprime_initial,
+                                                     relaxation_factor=relaxation_factor,
+                                                     **_locals_in,
+                                                     printer=p)
+                        if res["finished"] == False:
+                            return res["criterion_value"]
+                        else:
+                            global optimizer_results
+                            optimizer_results = inp
+                            raise Exception("Finished")
+
+                    bounds = [(-100, 100.0), (-1, 1.0), (0.001, 1.0)]
+                    initial_guess = [a_initial, aprime_initial, relaxation_factor]
+                    result = optimize.differential_evolution(func, bounds)
+
+                    # result = optimize.minimize(func,
+                    #    initial_guess,
+                    #    bounds=bounds,
+                    #    method="powell",
+                    #    options={
+                    #    'ftol': convergence_limit,
+                    #    "xtol":convergence_limit,
+                    #    'maxiter':max_iterations}
+                    # )
+
+                    a_initial, aprime_initial, relaxation_factor = list(result.x)
+            except Exception as e:
+                if "Finished" in str(e):
+                    a_initial, aprime_initial, relaxation_factor = list(optimizer_results)
+                    p.print("\na:", a_initial, "a':", aprime_initial, "RF:", relaxation_factor, )
+                    pass
+                else:
+                    raise
+
+            out_results = self.calculate_section(**_locals, printer=p)
+
             if print_progress:
                 p.print("*", add_newline=False)
 
@@ -245,7 +304,7 @@ class Calculator:
                 return None
 
             for a in arrays_no_statics:
-                results[a] = numpy.append(results[a],out_results[a])
+                results[a] = numpy.append(results[a], out_results[a])
 
         self.statical_analysis(blade_design, blade_thickness, c, dr, foils, mass_density, num_sections, omega, r,
                                results, theta)
@@ -255,10 +314,10 @@ class Calculator:
 
         dM = B * dFt * r
         M = numpy.sum(dM)
-        
+
         dQ = results["dQ"]
         Q = numpy.sum(dQ)
-        
+
         power_p = Q * omega
         power = M * omega
 
@@ -280,13 +339,13 @@ class Calculator:
 
         eff = J / 2 / pi * ct_p / cq_p
 
-        blade_stall_percentage = np.sum(results["stall"])/len(results["stall"])
+        blade_stall_percentage = np.sum(results["stall"]) / len(results["stall"])
 
         # floats
         results["R"] = R
         results["rpm"] = rpm
         results["v"] = v
-        if propeller_mode:
+        if turbine_type == 1:  # if propeller
             results["cp"] = cp_p
             results["ct"] = ct_p
             if results["ct"] < 0.0:
@@ -393,7 +452,7 @@ class Calculator:
             for j in range(i, num_sections):
                 _dr = dr[j]
                 _r = r[j]
-                _A = results["A"][j] # mm2 !
+                _A = results["A"][j]  # mm2 !
                 v_tan = _r * omega
                 section_mass = _A * 1e-6 * _dr * mass_density
                 F_centrifugal_section = section_mass * v_tan ** 2 / _r
@@ -451,16 +510,15 @@ class Calculator:
         return A, Ix, Ixy, Iy, norm_dist, tang_dist
 
     def calculate_section(self, v, omega, _r, _c, _theta, _dr, B, R, _airfoil, max_thickness, Rhub,
-                          propeller_mode, pitch=0.0, psi=0.0, fix_reynolds=False, reynolds=1e6, tip_loss=False,
-                          new_tip_loss=False,
-                          hub_loss=False, new_hub_loss=False, adkins_tip_loss=False, cascade_correction=False,
+                          turbine_type=0, pitch=0.0, psi=0.0, fix_reynolds=False, reynolds=1e6, tip_loss_mode=0,
+                          hub_loss_mode=0, cascade_correction=False,
                           rotational_augmentation_correction=False,
                           rotational_augmentation_correction_method=0, mach_number_correction=False, method=5,
                           kin_viscosity=1.4207E-5, rho=1.225, convergence_limit=0.001, max_iterations=100,
                           relaxation_factor=0.3,
                           printer=None, print_all=False, print_out=False, yaw_angle=0.0, tilt_angle=0.0,
                           skewed_wake_correction=False,
-                          lambda_r_array=[], invert_alpha = False,
+                          lambda_r_array=[], invert_alpha=False,
                           transition=False, _airfoil_prev=None, _airfoil_next=None, transition_coefficient=1.0,
                           num_sections=0, use_minimization_solver=False,
                           a_initial=0.3, aprime_initial=0.01,
@@ -490,7 +548,6 @@ class Calculator:
         Mach_number = omega * R / 343
         if Mach_number >= 1.0:
             p.print("\nTip mach 1.0 exceeded")
-            return None
 
         # convert pitch to radians
         _pitch = radians(pitch)
@@ -502,15 +559,14 @@ class Calculator:
         lambda_r_array = np.array(lambda_r_array)
         _theta = radians(_theta)
 
-
-        def func(inp,last_iteration=False):
+        def func(inp, last_iteration=False):
             if print_all:
                 p.print("             i", i)
-        ############ START ITERATION ############
+            ############ START ITERATION ############
             # update counter
-            #i = i + 1
-            a,aprime = inp
-            #p.print(inp)
+            # i = i + 1
+            a, aprime = inp
+            # p.print(inp)
 
             # for pretty-printing only
             prepend = ""
@@ -520,7 +576,7 @@ class Calculator:
             Vy = omega * _r * cos(psi) + v * (cos(yaw_angle) * sin(tilt_angle) - sin(yaw_angle))
 
             # wind components
-            if propeller_mode:
+            if turbine_type == 1:  # propeller
                 Un = Vx * (1 + a)
                 Ut = Vy * (1 - aprime)
             else:
@@ -538,27 +594,26 @@ class Calculator:
                 Re = Vrel_norm * _c / kin_viscosity
 
             F = 1
-            # Prandtl tip loss
-            if tip_loss:
+
+            if tip_loss_mode == 1:
+                # Prandtl tip loss
                 F = F * fTipLoss(B, _r, R, phi)
-
-            # New tip loss
-            elif new_tip_loss:
+            elif tip_loss_mode == 2:
+                # New tip loss
                 F = F * newTipLoss(B, _r, R, phi, lambda_r)
-
-            elif adkins_tip_loss:
+            elif tip_loss_mode == 3:
+                # Adkins tip loss
                 F = F * fAdkinsTipLoss(B, _r, R, phi)
 
-            # Prandtl hub loss
-            if hub_loss:
+            if hub_loss_mode == 1:
+                # Prandtl hub loss
                 F = F * fHubLoss(B, _r, Rhub, phi)
-
-            # New hub loss
-            elif new_hub_loss:
+            elif hub_loss_mode == 2:
+                # New hub loss
                 F = F * newHubLoss(B, _r, R, phi, lambda_r)
 
             # angle of attack
-            if propeller_mode:
+            if turbine_type == 1:  # propeller
                 alpha = (_theta + _pitch) - phi  # radians
             else:
                 alpha = phi - (_theta + _pitch)  # radians
@@ -580,16 +635,16 @@ class Calculator:
                                "interp_function_cd"](Re, degrees(alpha))
 
                 if Cl1 == False and Cd1 == False:
-                    return None
+                    return {"finished": False, "iterations": i, "criterion_value": abs(a - a_last)}
                 if Cl2 == False and Cd2 == False:
-                    return None
+                    return {"finished": False, "iterations": i, "criterion_value": abs(a - a_last)}
 
                 if invert_alpha:
-                    Cl1,Cl2 = -Cl1,-Cl2
+                    Cl1, Cl2 = -Cl1, -Cl2
 
                 Cl = Cl1 * transition_coefficient + Cl2 * (1 - transition_coefficient)
                 Cd = Cd1 * transition_coefficient + Cd2 * (1 - transition_coefficient)
-                
+
                 # determine min and max angle of attack for attached region
                 aoa_min_stall_1 = self.airfoils[_airfoil_prev]["interpolation_function_stall_min"](Re)
                 aoa_max_stall_1 = self.airfoils[_airfoil_prev]["interpolation_function_stall_max"](Re)
@@ -597,18 +652,22 @@ class Calculator:
                 aoa_min_stall_2 = self.airfoils[_airfoil_next]["interpolation_function_stall_min"](Re)
                 aoa_max_stall_2 = self.airfoils[_airfoil_next]["interpolation_function_stall_max"](Re)
 
-                aoa_min_stall = aoa_min_stall_1 * transition_coefficient + aoa_min_stall_2 * (1 - transition_coefficient)
-                aoa_max_stall = aoa_max_stall_1 * transition_coefficient + aoa_max_stall_2 * (1 - transition_coefficient)
+                aoa_min_stall = aoa_min_stall_1 * transition_coefficient + aoa_min_stall_2 * (
+                            1 - transition_coefficient)
+                aoa_max_stall = aoa_max_stall_1 * transition_coefficient + aoa_max_stall_2 * (
+                            1 - transition_coefficient)
 
                 def zero_finding_function1(alpha):
                     return self.airfoils[_airfoil_prev]["interp_function_cl"](Re, alpha)
-                alpha_zero_1 = optimize.bisect(zero_finding_function1,-10,10,xtol=1e-3,rtol=1e-3)
+
+                alpha_zero_1 = optimize.bisect(zero_finding_function1, -10, 10, xtol=1e-3, rtol=1e-3)
 
                 def zero_finding_function2(alpha):
                     return self.airfoils[_airfoil_next]["interp_function_cl"](Re, alpha)
-                alpha_zero_2 = optimize.bisect(zero_finding_function2,-10,10,xtol=1e-3,rtol=1e-3)
 
-                alpha_zero = alpha_zero_1*transition_coefficient + alpha_zero_2 * (1-transition_coefficient)
+                alpha_zero_2 = optimize.bisect(zero_finding_function2, -10, 10, xtol=1e-3, rtol=1e-3)
+
+                alpha_zero = alpha_zero_1 * transition_coefficient + alpha_zero_2 * (1 - transition_coefficient)
                 alpha_zero = radians(alpha_zero)
 
                 if print_all:
@@ -625,15 +684,15 @@ class Calculator:
                     alpha_deg = 180
                 if alpha_deg < -180:
                     alpha_deg = -180
-                
+
                 Cl, Cd = self.airfoils[_airfoil]["interp_function_cl"](Re, degrees(alpha)), self.airfoils[_airfoil][
                     "interp_function_cd"](Re, alpha_deg)
                 if Cl == False and Cd == False:
-                    p.print("\na:",a,"a':",aprime)
+                    p.print("\na:", a, "a':", aprime)
                     p.print("No Cl or CD")
-                    p.print("Re:",Re)
-                    p.print("alpha:",degrees(alpha))
-                    return None
+                    p.print("Re:", Re)
+                    p.print("alpha:", degrees(alpha))
+                    return {"finished": False, "iterations": i, "criterion_value": abs(a - a_last)}
 
                 if invert_alpha:
                     Cl = -Cl
@@ -645,9 +704,8 @@ class Calculator:
                 def zero_finding_function(alpha):
                     return self.airfoils[_airfoil]["interp_function_cl"](Re, alpha)
 
-                alpha_zero = optimize.bisect(zero_finding_function,-10,10,xtol=1e-2,rtol=1e-3)
+                alpha_zero = optimize.bisect(zero_finding_function, -10, 10, xtol=1e-2, rtol=1e-3)
                 alpha_zero = radians(alpha_zero)
-
 
             stall = 0
 
@@ -665,19 +723,20 @@ class Calculator:
                 Cl, Cd = calc_rotational_augmentation_correction(alpha=alpha, Cl=Cl, Cd=Cd, omega=omega, r=_r, R=R,
                                                                  c=_c, theta=_theta, v=v, Vrel_norm=Vrel_norm,
                                                                  method=rotational_augmentation_correction_method,
-                                                                 alpha_zero=alpha_zero,printer=printer,print_all=print_all)
+                                                                 alpha_zero=alpha_zero, printer=printer,
+                                                                 print_all=print_all)
 
                 if print_all:
                     p.print("             Cl_cor:", Cl, "Cd_cor:", Cd)
 
             if mach_number_correction:
-                Cl,Cd = machNumberCorrection(Cl, Cd, Mach_number)
+                Cl, Cd = machNumberCorrection(Cl, Cd, Mach_number)
 
             # circulation gamma
             Gamma_B = 0.5 * Vrel_norm * _c * Cl
 
             # normal and tangential coefficients
-            if propeller_mode:
+            if turbine_type == 1:  # propeller
                 C_norm = Cl * cos(phi) - Cd * sin(phi)
                 C_tang = Cl * sin(phi) + Cd * cos(phi)
             else:
@@ -690,21 +749,21 @@ class Calculator:
             dFt = dFL * sin(phi) - dFD * cos(phi)  # tangential force
             dFn = dFL * cos(phi) + dFD * sin(phi)  # normal force
 
-            Ct_r = dFn/(0.5*rho*v**2*2*pi*_r*_dr)*B
+            Ct_r = dFn / (0.5 * rho * v ** 2 * 2 * pi * _r * _dr) * B
 
             dFn_norm = dFn * num_sections
             dFt_norm = dFt * num_sections
 
             if invert_alpha:
-                alpha=-alpha
+                alpha = -alpha
 
             input_arguments = {"F": F, "lambda_r": lambda_r, "phi": phi, "sigma": sigma, "C_norm": C_norm,
-               "C_tang": C_tang, "Cl": Cl, "Cd": Cd, "B": B, "c": _c, "r": _r, "R": R, "psi": psi,
-               "aprime_last": aprime, "omega": omega, "v": v, "a_last": a, "Ct_r":Ct_r,
-               "method": method, "alpha": alpha, "alpha_deg": degrees(alpha)}
+                               "C_tang": C_tang, "Cl": Cl, "Cd": Cd, "B": B, "c": _c, "r": _r, "R": R, "psi": psi,
+                               "aprime_last": aprime, "omega": omega, "v": v, "a_last": a, "Ct_r": Ct_r,
+                               "method": method, "alpha": alpha, "alpha_deg": degrees(alpha)}
 
             if print_all:
-                args_to_print = ["a_last","aprime_last","alpha_deg","phi"]
+                args_to_print = ["a_last", "aprime_last", "alpha_deg", "phi"]
                 for argument in args_to_print:
                     p.print("            ", argument, input_arguments[argument])
                 p.print("             --------")
@@ -713,7 +772,7 @@ class Calculator:
                 # calculate new induction coefficients
                 coeffs = calculate_coefficients(method, input_arguments)
                 if coeffs == None:
-                    return None
+                    return {"finished": False, "iterations": i, "criterion_value": abs(a - a_last)}
 
                 # save old values
                 a_last = a
@@ -747,7 +806,7 @@ class Calculator:
             dQ_BET_p = 0.5 * rho * v * _c * B * omega * _r ** 2 * (1 + a) * (1 - aprime) / (
                     sin(phi) * cos(phi)) * C_tang * _dr
 
-            if propeller_mode:
+            if turbine_type == 1:  # propeller
                 dT = dT_MT_p
                 dQ = dQ_MT_p
             else:
@@ -755,7 +814,7 @@ class Calculator:
                 dQ = dQ_BET
 
             # wind after
-            if propeller_mode:
+            if turbine_type == 1:  # propeller
                 U1 = v
                 U2 = None
                 U3 = U1 * (1 + a)
@@ -769,13 +828,15 @@ class Calculator:
             out = {"a": a, "a'": aprime, "Cl": Cl, "Cd": Cd, "alpha": degrees(alpha), "phi": degrees(phi), "F": F,
                    "dFt": dFt, "dFn": dFn, "_airfoil": _airfoil, "dT": dT, "dQ": dQ, "Re": Re,
                    'U1': U1, 'U2': U2, 'U3': U3, 'U4': U4,
-                   "lambda_r": lambda_r, "dFt/n": dFt_norm, "dFn/n": dFn_norm, "stall": stall, "Ct_r":Ct_r, "Vrel_norm":Vrel_norm}
+                   "lambda_r": lambda_r, "dFt/n": dFt_norm, "dFn/n": dFn_norm, "stall": stall, "Ct_r": Ct_r,
+                   "Vrel_norm": Vrel_norm,
+                   "iterations": i, "criterion_value": abs(a - a_last)}
 
             if use_minimization_solver:
-                if propeller_mode:
-                    g = ((dT_BET_p-dT_MT_p)**2+100*(dQ_BET_p-dQ_MT_p)**2)
+                if turbine_type == 1:  # propeller
+                    g = ((dT_BET_p - dT_MT_p) ** 2 + 100 * (dQ_BET_p - dQ_MT_p) ** 2)
                 else:
-                    g = (dT_BET-dT_MT)**2+(dQ_BET-dQ_MT)**2
+                    g = (dT_BET - dT_MT) ** 2 + (dQ_BET - dQ_MT) ** 2
 
                 if last_iteration:
                     return out
@@ -785,43 +846,44 @@ class Calculator:
                 # check convergence
                 if abs(a - a_last) < convergence_limit:
                     if abs(aprime - aprime_last) < convergence_limit:
-                        return True,out
+                        out["finished"] = True
+                        return out
 
                 # relaxation
-                a = a_last*(1-relaxation_factor)+a*relaxation_factor
-                aprime = aprime_last*(1-relaxation_factor)+aprime*relaxation_factor
+                a = a_last * (1 - relaxation_factor) + a * relaxation_factor
+                aprime = aprime_last * (1 - relaxation_factor) + aprime * relaxation_factor
                 out["a"] = a
-                return False,out
-        
+                out["finished"] = False
+                return out
+
         if use_minimization_solver:
-            bounds = [(0.0001,1.0),(0.0001,1.0)]
-            initial_guess = [0.3,0.01]
-            result = optimize.minimize(func,initial_guess,bounds=bounds,method="powell",options={'ftol': convergence_limit,"xtol":convergence_limit,'maxiter':max_iterations})
+            bounds = [(0.0001, 1.0), (0.0001, 1.0)]
+            initial_guess = [a_initial, aprime_initial]
+            result = optimize.minimize(func, initial_guess, bounds=bounds, method="powell",
+                                       options={'ftol': convergence_limit, "xtol": convergence_limit,
+                                                'maxiter': max_iterations})
         else:
-            i=0
+            i = 0
             while True:
-                i=i+1
+                i = i + 1
+                out = func((a, aprime))
 
-                out_pack = func((a,aprime))
-                if out_pack == None:
-                    return None
-                else:
-                    finished_bool,out = out_pack
-
-                if finished_bool == True:
+                if out["finished"] == True:
                     return out
-                a,aprime = out["a"], out["a'"]
+                else:
+                    a, aprime = out["a"], out["a'"]
 
-                # check iterations limit
-                if i >= max_iterations:
-                    if print_out:
-                        p.print("-*-*-*-*-*-*-*-*-*-*-*-*-*-\n", "|max iterations exceeded\n", "|------>a:", a, " aprime",
-                                aprime, )
-                        prepend = "|"
-                    return None
+                    # check iterations limit
+                    if i >= max_iterations:
+                        if print_out:
+                            p.print("-*-*-*-*-*-*-*-*-*-*-*-*-*-\n", "|max iterations exceeded\n", "|------>a:", a,
+                                    " aprime",
+                                    aprime, )
+                            prepend = "|"
+                        return out
 
         ############ END ITERATION ############
-        out = func(result.x,True)
+        out = func(result.x, True)
         return out
 
     def get_crossection_data(self, _c, _theta, _airfoil, blade_design, blade_thickness):

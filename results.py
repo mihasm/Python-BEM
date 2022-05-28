@@ -66,7 +66,7 @@ class ResultsWindow(QMainWindow):
             variable_parameter_title = "TSR"
 
         ########### CP(lambda) CURVE ###############
-        if input_data["propeller_mode"] == False:
+        if input_data["turbine_type"] == 0: # wind turbine
             f2 = self.tab_widget.add_tab_figure("Cp curve")
 
             mat = np.array([results_3d["TSR"],results_3d["cp"],results_3d["pitch"],results_3d["blade_stall_percentage"]])
@@ -107,7 +107,7 @@ class ResultsWindow(QMainWindow):
         ############################################
 
         ############ Propeller curves ##############
-        if input_data["propeller_mode"] == True:
+        if input_data["turbine_type"] == 1: # propeller
             f3 = self.tab_widget.add_tab_figure("Prop curves")
             J,eff,ct,cp,cq = results_3d["J"],results_3d["eff"],results_3d["ct"],results_3d["cp"],results_3d["cq"]
             
@@ -127,7 +127,7 @@ class ResultsWindow(QMainWindow):
             f3.legend(loc="center right")
 
 
-        if input_data["propeller_mode"] == True:
+        if input_data["turbine_type"] == 1: # propeller
             f4 = self.tab_widget.add_tab_figure("Propeller efficency")
             mat = np.array([results_3d["J"],results_3d["eff"],results_3d["pitch"]])
             # transpose
