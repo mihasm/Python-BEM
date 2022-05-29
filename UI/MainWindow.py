@@ -85,7 +85,7 @@ class MainWindow(QMainWindow):
         """
         Sets the title of the UI window, based on the name of the wind turbine.
         """
-        s = self.wind_turbine_properties.name.text()
+        s = self.wind_turbine_properties.turbine_name.text()
         if s == "":
             self.setWindowTitle(TITLE_STR)
         else:

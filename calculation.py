@@ -257,58 +257,61 @@ class Calculator:
 
             out_results = self.calculate_section(**_locals, printer=p)
 
-            try:
-                # Method to try and set a,a' and relaxation factor using DE so convergence is reached.
-                # Doesn't work that well. For now, I left it in.
-                if out_results["finished"] == False:
-                    def func(inp):
-                        """
+            randomize_parameters = False
 
-                        :param inp:
-                        :return:
-                        """
-                        p.print(inp)
-                        a_initial, aprime_initial, relaxation_factor = inp
-                        _locals_in = dict(_locals)
-                        del _locals_in["a_initial"]
-                        del _locals_in["aprime_initial"]
-                        del _locals_in["relaxation_factor"]
-                        res = self.calculate_section(a_initial=a_initial,
-                                                     aprime_initial=aprime_initial,
-                                                     relaxation_factor=relaxation_factor,
-                                                     **_locals_in,
-                                                     printer=p)
-                        if res["finished"] == False:
-                            return res["criterion_value"]
-                        else:
-                            global optimizer_results
-                            optimizer_results = inp
-                            raise Exception("Finished")
+            if randomize_parameters:
+                try:
+                    # Method to try and set a,a' and relaxation factor using DE so convergence is reached.
+                    # Doesn't work that well. For now, I left it in.
+                    if out_results["finished"] == False:
+                        def func(inp):
+                            """
 
-                    bounds = [(-100, 100.0), (-1, 1.0), (0.001, 1.0)]
-                    initial_guess = [a_initial, aprime_initial, relaxation_factor]
-                    result = optimize.differential_evolution(func, bounds)
+                            :param inp:
+                            :return:
+                            """
+                            p.print(inp)
+                            a_initial, aprime_initial, relaxation_factor = inp
+                            _locals_in = dict(_locals)
+                            del _locals_in["a_initial"]
+                            del _locals_in["aprime_initial"]
+                            del _locals_in["relaxation_factor"]
+                            res = self.calculate_section(a_initial=a_initial,
+                                                         aprime_initial=aprime_initial,
+                                                         relaxation_factor=relaxation_factor,
+                                                         **_locals_in,
+                                                         printer=p)
+                            if res["finished"] == False:
+                                return res["criterion_value"]
+                            else:
+                                global optimizer_results
+                                optimizer_results = inp
+                                raise Exception("Finished")
 
-                    # result = optimize.minimize(func,
-                    #    initial_guess,
-                    #    bounds=bounds,
-                    #    method="powell",
-                    #    options={
-                    #    'ftol': convergence_limit,
-                    #    "xtol":convergence_limit,
-                    #    'maxiter':max_iterations}
-                    # )
+                        bounds = [(-100, 100.0), (-1, 1.0), (0.001, 1.0)]
+                        initial_guess = [a_initial, aprime_initial, relaxation_factor]
+                        result = optimize.differential_evolution(func, bounds)
 
-                    a_initial, aprime_initial, relaxation_factor = list(result.x)
-            except Exception as e:
-                if "Finished" in str(e):
-                    a_initial, aprime_initial, relaxation_factor = list(optimizer_results)
-                    p.print("\na:", a_initial, "a':", aprime_initial, "RF:", relaxation_factor, )
-                    pass
-                else:
-                    raise
+                        # result = optimize.minimize(func,
+                        #    initial_guess,
+                        #    bounds=bounds,
+                        #    method="powell",
+                        #    options={
+                        #    'ftol': convergence_limit,
+                        #    "xtol":convergence_limit,
+                        #    'maxiter':max_iterations}
+                        # )
 
-            out_results = self.calculate_section(**_locals, printer=p)
+                        a_initial, aprime_initial, relaxation_factor = list(result.x)
+                except Exception as e:
+                    if "Finished" in str(e):
+                        a_initial, aprime_initial, relaxation_factor = list(optimizer_results)
+                        p.print("\na:", a_initial, "a':", aprime_initial, "RF:", relaxation_factor, )
+                        pass
+                    else:
+                        raise
+
+                out_results = self.calculate_section(**_locals, printer=p)
 
             if print_progress:
                 p.print("*", add_newline=False)
