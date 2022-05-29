@@ -20,6 +20,7 @@ class CurveEditor(QWidget):
 
         # self.tab_widget = TabWidget(self)
         # self.grid.addWidget(self.tab_widget, 2, 0)
+        self.setWindowTitle("Curve Editor")
 
         self.validator = QtGui.QDoubleValidator()
 

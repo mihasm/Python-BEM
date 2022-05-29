@@ -11,6 +11,9 @@ class CurveViewer(QWidget):
         super(CurveViewer, self).__init__(None)
         self.resize(1600, 768)
         self.parent = parent
+
+        self.setWindowTitle("Curve Extrapolation Editor")
+
         self.grid = QGridLayout()
         self.setLayout(self.grid)
         self.button = QPushButton("Close")
@@ -42,11 +45,7 @@ class CurveViewer(QWidget):
         # delete stuff already here
         for i in reversed(range(self.grid_curves.count())):
             self.grid_curves.itemAt(i).widget().setParent(None)
-
-        # for i in range(10):
-        #    control = CurveControl(self,None)
-        #    self.grid_curves.addWidget(control)
-
+        
         for curve in self.parent.curves.get_curves_sorted():
             label = QLabel("Re = " + str(round(curve.Re, 2)) + ", Ncrit = " + str(round(curve.ncrit, 2)))
             control = CurveControl(self, curve)
