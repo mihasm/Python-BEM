@@ -341,10 +341,6 @@ class WindTurbineProperties(QWidget):
         self.fbox.addRow("Flip turning direction", self.flip_turning_direction)
         self.settings["flip_turning_direction"] = self.flip_turning_direction
 
-        self.export_propeller_geom = QCheckBox()
-        self.fbox.addRow("Propeller", self.export_propeller_geom)
-        self.settings["export_propeller_geom"] = self.export_propeller_geom
-
         self.fbox.addRow(QLabel("—————————————————————————"))
 
         self._button_calculate_pitch = QLabel("Calculate pitch")
@@ -663,10 +659,10 @@ class WindTurbineProperties(QWidget):
 
     def get_3d_data(self):
         settings_fetched = self.parent().parent().parent().get_all_settings()
+        propeller_mode = self.turbine_type.currentIndex() == 1
         if settings_fetched == None:
             return None
-        data = create_3d_blade(settings_fetched, self.flip_turning_direction.isChecked(),
-                               self.export_propeller_geom.isChecked())
+        data = create_3d_blade(settings_fetched, self.flip_turning_direction.isChecked(), propeller_mode)
         return data
 
     def view_3d(self):
