@@ -8,3 +8,4 @@ pyqt5
 matplotlib
 openpyxl
 pillow
+pyopengl

@@ -7,7 +7,7 @@ from numpy.core._multiarray_umath import array
 from scipy import interpolate
 
 from UI.Table import Table
-from UI.helpers import MatplotlibWindow, PrintoutWindow, AdkinsThread
+from UI.helpers import MatplotlibWindow, PrintoutWindow, AdkinsThread, PyQtGraph3DWindow
 from main import application_path
 from turbine_data import SET_INIT
 from utils import to_float, interpolate_geom, generate_chord_lengths_betz, generate_twists_betz, \
@@ -323,13 +323,19 @@ class WindTurbineProperties(QWidget):
         self.button_generate_geometry.clicked.connect(self.generate_geometry)
         self.button_generate_geometry.setToolTip("Generiraj geometrijo (povozi predhodno!).")
 
-        self.fbox.addRow(QLabel("————— Export to Solidworks —————"))
+        self.fbox.addRow(QLabel("————— Export Curves —————"))
 
         self.export_button = QPushButton("Export curve data")
         self.export_button.clicked.connect(self.export)
-        self.fbox.addRow("Export:", self.export_button)
+        self.fbox.addRow("Export to Solidworks:", self.export_button)
         self.export_button.setToolTip(
-            "Krivulje na vseh radijih lopatice se shranijo v posamezne datoteke. Solidworks makro se nato zgenerira v Python konzoli.")
+            "Krivulje na vseh radijih lopatice se shranijo v posamezne datoteke. Solidworks makro se nato zgenerira v novem oknu.")
+
+        self.view_3d_button = QPushButton("View 3D")
+        self.view_3d_button.clicked.connect(self.view_3d)
+        self.fbox.addRow("View 3D:", self.view_3d_button)
+        self.view_3d_button.setToolTip(
+            "Prikaži 3D pogled krivulj.")
 
         self.flip_turning_direction = QCheckBox()
         self.fbox.addRow("Flip turning direction", self.flip_turning_direction)
@@ -655,6 +661,20 @@ class WindTurbineProperties(QWidget):
         self.calculate_pitch()
         self.update_j()
 
+    def get_3d_data(self):
+        settings_fetched = self.parent().parent().parent().get_all_settings()
+        if settings_fetched == None:
+            return None
+        data = create_3d_blade(settings_fetched, self.flip_turning_direction.isChecked(),
+                               self.export_propeller_geom.isChecked())
+        return data
+
+    def view_3d(self):
+        data = self.get_3d_data()
+
+        self.w = PyQtGraph3DWindow(self)
+        for z,x,y in data["data"]:
+            self.w.set_points(x,y,[z]*len(x))
 
     def export(self):
         """
@@ -663,59 +683,29 @@ class WindTurbineProperties(QWidget):
         :return:
         """
 
-        if self.window != None:
-            self.window.close()
+        if self.window != None: self.window.close() #TODO: This doesnt release it from memory
         self.window = PrintoutWindow(self)
         self.window.setWindowTitle("Solidworks Export Macro")
 
-        settings_fetched = self.parent().parent().parent().get_all_settings()
-        if settings_fetched == None:
-            return
-        data = create_3d_blade(settings_fetched, self.flip_turning_direction.isChecked(),
-                               self.export_propeller_geom.isChecked())
-
-        # DRAW MATPLOTLIB ############################
-        self.w = MatplotlibWindow()
-        self.w.setWindowTitle("Export 3D preview")
-        self.w.ax = self.w.figure.add_subplot(111, projection="3d")
-        self.w.ax.scatter(data["X"], data["Y"], data["Z"])
-        X, Y, Z = array(data["X"]), array(data["Y"]), array(data["Z"])
-
-        # Create cubic bounding box to simulate equal aspect ratio
-        max_range = np.array([X.max() - X.min(), Y.max() - Y.min(), Z.max() - Z.min()]).max()
-        Xb = 0.5 * max_range * np.mgrid[-1:2:2, -1:2:2, -1:2:2][0].flatten() + 0.5 * (X.max() + X.min())
-        Yb = 0.5 * max_range * np.mgrid[-1:2:2, -1:2:2, -1:2:2][1].flatten() + 0.5 * (Y.max() + Y.min())
-        Zb = 0.5 * max_range * np.mgrid[-1:2:2, -1:2:2, -1:2:2][2].flatten() + 0.5 * (Z.max() + Z.min())
-        # Comment or uncomment following both lines to test the fake bounding box:
-        for xb, yb, zb in zip(Xb, Yb, Zb):
-            self.w.ax.plot([xb], [yb], [zb], 'w')
-        # self.w.ax.set_aspect("equal")
-        ##############################################
+        data = self.get_3d_data()
 
         # Create necessary folders
         create_folder(os.path.join(application_path, "export"))
         folder_path = os.path.join(application_path, "export", SET_INIT["turbine_name"])
         create_folder(folder_path)
 
-        # print("Exporting... (and converting m to mm)")
-
         filenames = []
         data_out = []
         for z, x_data, y_data in data["data"]:
-            # print("Exporting z=" + str(z), "[m]")
-            # z = z * 1e3  # in mm
             file_name = os.path.join(folder_path, "z_%s.txt" % z)
             filenames.append(os.path.join(os.getcwd(), file_name))
-            # print(file_name)
             f = open(os.path.join(folder_path, "z_%s.txt" % z), "w")
             for x, y in zip(x_data, y_data):
                 x_out, y_out, z_out = x * 1e3, y * 1e3, z * 1e3  # in mm
                 f.write("%s\t%s\t%s\n" % (y_out, z_out, x_out))  # Change indexes for SW
             f.close()
+            data_out.append([y_data, np.zeros(len(y_data)) + z, x_data]) # switch x,y,z to typical SW coordinate system
 
-            data_out.append([y_data, np.zeros(len(y_data)) + z, x_data])
-
-        # print("Filenames:", filenames)
         macro_text = create_macro_text(filenames, data_out)
 
         print("'===============MACRO START==================")

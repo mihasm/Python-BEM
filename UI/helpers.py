@@ -1,6 +1,7 @@
 import sys
 
 import pyqtgraph as pg
+import pyqtgraph.opengl as gl
 from PyQt5 import QtCore, QtGui
 from PyQt5.QtCore import QThread
 from PyQt5.QtGui import QTextCursor
@@ -9,11 +10,13 @@ from PyQt5.QtWidgets import QMainWindow, QWidget, QGridLayout, QLabel, QLineEdit
 from matplotlib import pyplot as plt
 from matplotlib.backends.backend_qt5 import NavigationToolbar2QT as NavigationToolbar
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+import numpy as np
 
 from scraping import scrape_data, get_x_y_from_link
 from utils import generate_propeller_adkins
 from main import ICON_PATH
 from xfoil import generate_polars_data
+
 
 
 class ThreadGetter(QThread):
@@ -275,6 +278,48 @@ class PyQtGraphWindow(QMainWindow):
 
         """
         self.thread.quit()
+
+class PyQtGraph3DWindow(QMainWindow):
+    """
+
+    """
+    def __init__(self, parent):
+        super(PyQtGraph3DWindow, self).__init__(parent)
+        self.setWindowIcon(QtGui.QIcon(ICON_PATH))
+        self.setWindowTitle("3D visualization")
+        #self.layout = QGridLayout()
+        #self.setLayout(self.layout)
+
+        self.w = gl.GLViewWidget(self)
+        self.w.opts['distance'] = 1
+        #self.layout.addWidget(self.w,0,0)
+        self.setCentralWidget(self.w)
+
+        # create the background grids
+        gx = gl.GLGridItem()
+        gx.setSize(2,2,2)
+        gx.setSpacing(0.1,0.1,0.1)
+        gx.rotate(90, 0, 1, 0)
+        gx.translate(-1, 0, 1)
+        self.w.addItem(gx)
+        gy = gl.GLGridItem()
+        gy.setSize(2,2,2)
+        gy.setSpacing(0.1,0.1,0.1)
+        gy.rotate(90, 1, 0, 0)
+        gy.translate(0, -1, 1)
+        self.w.addItem(gy)
+        gz = gl.GLGridItem()
+        gz.setSize(2,2,2)
+        gz.setSpacing(0.1,0.1,0.1)
+        gz.translate(0, 0, 0)
+        self.w.addItem(gz)
+
+        self.show()
+
+    def set_points(self,points_x,points_y,points_z):
+        ar = np.array([points_x,points_y,points_z]).transpose()
+        points = gl.GLLinePlotItem(pos=ar)
+        self.w.addItem(points)
 
 
 class PopupText(QWidget):
