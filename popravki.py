@@ -1,17 +1,11 @@
 from math import sin, cos, acos, pi, exp, sqrt, atan2, tan, degrees, tanh
 
-METHODS_STRINGS = {"0": "Original",
-                   "1": "Spera",
-                   "2": "Propx",
-                   "3": "Aerodyn (Buhl)",
-                   "4": "QBlade (Buhl)",
-                   "5": "Shen",
-                   "6": "Glauert",
-                   "7": "Wilson and Walker",
-                   "8": "Classical brake state model",
-                   "9": "Advanced brake state model",
-                   "10": "Modified ABS model",
-                   "11": "Propeller BEM"}
+METHODS_STRINGS = {"0": "Classic BEM",
+                   "1": "Spera Correction",
+                   "2": "Buhl Correction (Aerodyn)",
+                   "3": "Buhl Correction (QBlade)",
+                   "4": "Wilson and Walker model",
+                   "5": "Modified ABS model"}
 
 
 def calculate_coefficients(method, input_arguments):
@@ -21,30 +15,18 @@ def calculate_coefficients(method, input_arguments):
     :param input_arguments:
     :return:
     """
-    if method == 0:
+    if method == 0: 
         return fInductionCoefficients0(**input_arguments)
     if method == 1:
         return fInductionCoefficients1(**input_arguments)
     if method == 2:
-        return fInductionCoefficients5(**input_arguments)
+        return fInductionCoefficients2(**input_arguments)
     if method == 3:
-        return fInductionCoefficients6(**input_arguments)
+        return fInductionCoefficients3(**input_arguments)
     if method == 4:
-        return fInductionCoefficients7(**input_arguments)
+        return fInductionCoefficients4(**input_arguments)
     if method == 5:
-        return fInductionCoefficients8(**input_arguments)
-    if method == 6:
-        return fInductionCoefficients9(**input_arguments)
-    if method == 7:
-        return fInductionCoefficients10(**input_arguments)
-    if method == 8:
-        return fInductionCoefficients11(**input_arguments)
-    if method == 9:
-        return fInductionCoefficients12(**input_arguments)
-    if method == 10:
-        return fInductionCoefficients13(**input_arguments)
-    if method == 11:
-        return fInductionCoefficients14(**input_arguments)
+        return fInductionCoefficients5(**input_arguments)
     raise Exception("Method " + str(method) + " does not exist.")
 
 
@@ -148,7 +130,7 @@ def fAdkinsTipLoss(B, r, R, phi):
 
 
 # noinspection PyUnusedLocal,PyUnusedLocal
-def fInductionCoefficients0(F, phi, sigma, C_norm, C_tang, *args, **kwargs):
+def fInductionCoefficients0(F, phi, sigma, C_norm, C_tang, prop_coeff,  *args, **kwargs):
     """
     Calculates induction coefficients using no corrections.
 
@@ -163,8 +145,8 @@ def fInductionCoefficients0(F, phi, sigma, C_norm, C_tang, *args, **kwargs):
     :return: axial induction factor, tangential induction factor
     """
 
-    a = (sigma * C_norm) / (4 * F * sin(phi) ** 2 + sigma * C_norm)
-    aprime = (sigma * C_tang) / (4 * F * sin(phi) * cos(phi) - sigma * C_tang)
+    a = (sigma * C_norm) / (4 * F * sin(phi) ** 2 + sigma * C_norm * prop_coeff)
+    aprime = (sigma * C_tang) / (4 * F * sin(phi) * cos(phi) - sigma * C_tang * prop_coeff)
     return a, aprime
 
 
@@ -197,45 +179,7 @@ def fInductionCoefficients1(F, phi, sigma, C_norm, C_tang, *args, **kwargs):
 
 
 # noinspection PyUnusedLocal,PyUnusedLocal,PyUnusedLocal
-def fInductionCoefficients5(
-        aprime_last, F, lambda_r, phi, sigma, Cl, C_norm, B, c, psi, r, R, v, omega, Ct_r, *args, **kwargs
-):
-    """
-    Calculates induction coefficients using Harman method used in PROPX.
-
-    NAME: PROPX
-    SOURCE: PROPX: Definitions, Derivations and Data Flow, C. Harman, 1994
-    """
-
-    K = B * c * Cl * cos(phi) * cos(psi) / (8 * pi * r * sin(phi) ** 2)
-    a = K / (1 + K)
-
-    if a > 0.2:
-        ac = 0.2
-        acprime = 0.0
-        Fc = F
-        X = lambda_r
-        Ct_r = B * c * Cl * X * (1 + aprime_last) * cos(psi) / (2 * pi * R) * sqrt(
-            (1 - a) ** 2 + (1 + aprime_last) ** 2 * X ** 2)
-        CTL_ac = 4 * ac * Fc * (1 - ac)
-        cpsi = cos(psi)
-        dCTL_da = 4 * Fc * (1 - 2 * ac) + \
-                  4 * ac * B / pi * 1 / tan(pi * Fc / 2) * \
-                  ((R * cpsi - r * cpsi) / (R * cpsi)) * \
-                  (cos(phi) ** 2 / sin(phi)) * \
-                  (1 + (acprime * (1 - 2 * ac)) / ((1 + 2 * acprime) * ac * cos(psi) ** 2)) * \
-                  (1 - ac)
-        a = ac - (CTL_ac - Ct_r) / dCTL_da
-
-    XL = (r * cos(psi) * omega) / v
-
-    to_sqrt = abs(1 + (4 * a * (1 - a)) / (XL ** 2))
-    aprime = 0.5 * (sqrt(to_sqrt) - 1)
-    return a, aprime
-
-
-# noinspection PyUnusedLocal,PyUnusedLocal,PyUnusedLocal
-def fInductionCoefficients6(a_last, F, phi, sigma, C_norm, C_tang, Cl, *args, **kwargs):
+def fInductionCoefficients2(a_last, F, phi, sigma, C_norm, C_tang, Cl, *args, **kwargs):
     """
     Calculates induction coefficients using method used in Aerodyn software (Buhl method).
 
@@ -259,7 +203,7 @@ def fInductionCoefficients6(a_last, F, phi, sigma, C_norm, C_tang, Cl, *args, **
 
 
 # noinspection PyUnusedLocal,PyUnusedLocal,PyUnusedLocal
-def fInductionCoefficients7(a_last, F, lambda_r, phi, sigma, C_norm, *args, **kwargs):
+def fInductionCoefficients3(a_last, F, lambda_r, phi, sigma, C_norm, *args, **kwargs):
     """
     Calculates induction coefficients using Buhl correction (QBlade implementation).
 
@@ -283,72 +227,7 @@ def fInductionCoefficients7(a_last, F, lambda_r, phi, sigma, C_norm, *args, **kw
     return a, aprime
 
 
-# noinspection PyUnusedLocal,PyUnusedLocal,PyUnusedLocal
-def fInductionCoefficients8(a_last, F, phi, sigma, lambda_r, B, r, R, C_norm, Cl, C_tang, *args, **kwargs):
-    """
-    Calculates induction coefficients using Shen's correction.
-
-    NAME: SHEN
-    SOURCE: Pratumnopharat,2010
-    """
-
-    if F == 0:
-        F = 1e-6
-    a = a_last
-    g = exp(-0.125 * (B * lambda_r - 21)) + 0.1
-    F1 = (2 / pi) * acos(exp(-g * B * (R - r) / (2 * r * sin(phi))))
-
-    a_c = 1 / 3
-    # if a <= a_c:
-    #    Ct = 4*a*F*(1-a*F)
-    # else:
-    #    Ct = 4*(a_c**2*F**2+(1-2*a_c*F)*a*F)
-    Ct = sigma * (1 - a_last) ** 2 * C_norm / (sin(phi) ** 2)
-    Y1 = 4 * F * sin(phi) ** 2 / (sigma * F1 * C_norm)
-    Y2 = 4 * F * sin(phi) * cos(phi) / (sigma * F1 * Ct)
-    if Ct <= 0.888:
-        a = (1 - sqrt(1 - Ct)) / (2 * F)
-    else:
-        a = (2 + Y1 - sqrt(4 * Y1 * (1 - F) + Y1 ** 2)) / (2 * (1 + F * Y1))
-    aprime = 1 / ((1 - a * F) * Y2 / (1 - a) - 1)
-
-    return a, aprime
-
-
-def fInductionCoefficients9(a_last, F, phi, Cl, C_norm, C_tang, sigma, *args, **kwargs):
-    """
-    Calculates induction coefficients using Glauert correction.
-
-    NAME: Glauert
-    SOURCE: Pratumnopharat,2010
-    AUTHOR: Glauert
-
-    :param C_tang: tangential coefficient
-    :param C_norm: normal coefficient
-    :param a_last: axial induction factor
-    :param F: loss factors
-    :param Cl: lift coefficient
-    :param phi: relative wind [rad]
-    :param sigma: solidity
-    :return: axial induction factor, tangential induction factor
-    """
-
-    a = a_last
-    if a <= 1 / 3:
-        Ct = 4 * a * F * (1 - a)
-    else:
-        Ct = 4 * a * F * (1 - 1 / 4 * (5 - 3 * a)) * a
-    if Ct <= 0.888 * F:
-        a = (1 - sqrt(1 - Ct / F)) / 2
-    else:
-        Y = (sqrt(1 / 36 * (Ct / F) ** 2 - 145 / 2187 * Ct / F +
-                  92 / 2187) + Ct / (6 * F) - 145 / 729) ** (1 / 3)
-        a = Y - 11 / (81 * Y) + 5 / 9
-    aprime = (4 * F * sin(phi) ** 2 / (sigma * Ct) - 1) ** -1
-    return a, aprime
-
-
-def fInductionCoefficients10(a_last, F, phi, Cl, C_tang, C_norm, sigma, Ct_r, *args, **kwargs):
+def fInductionCoefficients4(a_last, F, phi, Cl, C_tang, C_norm, sigma, Ct_r, *args, **kwargs):
     """
     NAME: Wilson and walker
 
@@ -371,37 +250,7 @@ def fInductionCoefficients10(a_last, F, phi, Cl, C_tang, C_norm, sigma, Ct_r, *a
     return a, aprime
 
 
-def fInductionCoefficients11(a_last, F, phi, Cl, C_norm, C_tang, sigma, Ct_r, *args, **kwargs):
-    """
-    NAME: Classical brake state model
-    Method from Pratumnopharat,2010
-
-    Classical momentum brake state model
-    """
-    a = a_last
-    Sw = sigma / (8 * sin(phi) ** 2) * C_norm
-    a = (2 * Sw + F - sqrt(F ** 2 + 4 * Sw * F * (1 - F))) / (2 * (Sw + F ** 2))
-    aprime = (4 * F * sin(phi) * cos(phi) / (sigma * C_tang) - 1) ** -1
-    return a, aprime
-
-
-def fInductionCoefficients12(a_last, F, phi, Cl, C_tang, C_norm, sigma, lambda_r, Ct_r, *args, **kwargs):
-    """
-    NAME: Advanced brake state model
-
-    Method from Pratumnopharat,2010
-
-    Advanced brake state model
-    """
-
-    a = a_last
-    a = (18 * F - 20 - 3 *
-         sqrt(abs(Ct_r * (50 - 36 * F) + 12 * F * (3 * F - 4)))) / (36 * F - 50)
-    aprime = (4 * F * sin(phi) * cos(phi) / (sigma * C_tang) - 1) ** -1
-    return a, aprime
-
-
-def fInductionCoefficients13(a_last, F, phi, Cl, C_norm, sigma, lambda_r, Ct_r, *args, **kwargs):
+def fInductionCoefficients5(a_last, F, phi, Cl, C_norm, sigma, lambda_r, Ct_r, *args, **kwargs):
     """
     NAME: Modified ABS model
     Method from Pratumnopharat,2010
@@ -428,26 +277,6 @@ def fInductionCoefficients13(a_last, F, phi, Cl, C_norm, sigma, lambda_r, Ct_r, 
     else:
         aprime = (sqrt(1 + aprimeprime) - 1) / 2
 
-    return a, aprime
-
-
-def fInductionCoefficients14(a_last, phi, sigma, Cl, Cd, F, C_norm, C_tang, *args, **kwargs):
-    """
-    NAME: Propeller
-    Method from http://acoustics.ae.illinois.edu/pdfs/AIAA-Paper-2015-3296.pdf
-    :param Cd: Drag coefficient
-    :param C_norm: normal coefficient
-    :param a_last: axial induction factor
-    :param F: loss factors
-    :param Cl: lift coefficient
-    :param phi: relative wind [rad]
-    :param sigma: solidity
-    :return: axial induction factor, tangential induction factor
-    """
-
-    a = a_last
-    a = 1 / (F * 4 * sin(phi) ** 2 / (sigma * C_norm) - 1)
-    aprime = 1 / (F * 4 * sin(phi) * cos(phi) / (sigma * C_tang) + 1)
     return a, aprime
 
 
@@ -555,10 +384,12 @@ def calc_rotational_augmentation_correction(
         fd = 0
 
     if method == 5:
+        # Snel et al. for propellers
         # method for propellers from http://acoustics.ae.illinois.edu/pdfs/AIAA-Paper-2015-3296.pdf
         fl = (omega * r / Vrel_norm) ** 2 * (c / r) ** 2 * 1.5
 
     if method == 6:
+        # Gur & Rosen
         # method for propellers from Aviv (2005), Propeller Performance at Low Advance Ratio - JoA vol. 42 No. 2
         if degrees(alpha) >= 8:
             fl = tanh(10.73 * (c / r))

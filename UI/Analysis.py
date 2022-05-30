@@ -28,7 +28,7 @@ class Analysis(QWidget):
                          "cascade_correction": False,
                          "skewed_wake_correction": False,
                          "rotational_augmentation_correction": False,
-                         "rotational_augmentation_correction_method": ["1", "2", "3", "4", "5", "6", "7"],
+                         "rotational_augmentation_correction_method": ["Snel et al.", "Du & Selig", "Chaviaropoulos and Hansen", "Lindenburg", "Dumitrescu and Cardos", "Snel et al. (prop.)", "Gur & Rosen (prop.)"],
                          "mach_number_correction": False,
                          "rho": 1.225,
                          "kin_viscosity": 1.4207E-5,
@@ -191,7 +191,7 @@ class Analysis(QWidget):
             if key == "method":
                 form = QComboBox()
                 form.addItems([self.methods_to_names[k] for k, v in self.methods_to_names.items()])
-                form.setCurrentIndex(7)
+                form.setCurrentIndex(0)
             elif isinstance(value, list):
                 form = QComboBox()
                 form.addItems([l for l in value])
@@ -245,7 +245,12 @@ class Analysis(QWidget):
         self.fbox.addRow("TSR:", self.tsr_string)
         self.fbox.addRow("J:", self.J_string)
 
+        self.turbine_type = self.parent().wind_turbine_properties.turbine_type
+
+        self.turbine_type.currentIndexChanged.connect(self.refresh_methods)
+
         self.set_parameter_visibility()
+        self.refresh_methods()
 
     def set_parameter_visibility(self):
         """
@@ -405,6 +410,19 @@ class Analysis(QWidget):
         else:
             self.forms_dict["reynolds"][2].hide()
 
+    def refresh_methods(self):
+        if self.turbine_type.currentIndex() == 0:
+            for i in range(self.forms_dict["method"][0].count()):
+                self.forms_dict["method"][0].model().item(i).setEnabled(True)
+        else:
+            for i in range(self.forms_dict["method"][0].count()):
+                if i==0:
+                    self.forms_dict["method"][0].model().item(i).setEnabled(True)
+                else:
+                    self.forms_dict["method"][0].model().item(i).setEnabled(False)
+            self.forms_dict["method"][0].setCurrentIndex(0)
+
+
     def update_tsr_and_j(self):
         """
 
@@ -483,7 +501,7 @@ class Analysis(QWidget):
             if name in inp_dict:
                 if isinstance(item, QComboBox):
                     _index = inp_dict[name]
-                    index = _index if _index >= 0 else 0
+                    index = _index if _index >= 0 and _index <= item.count()-1 else 0
                     item.setCurrentIndex(index)
                 elif isinstance(item, QLineEdit):
                     item.setText(str(inp_dict[name]))

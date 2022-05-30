@@ -590,7 +590,7 @@ class Calculator:
             # update counter
             # i = i + 1
             a, aprime = inp
-            #a_last,aprime_last = None, None
+            a_last,aprime_last = None, None
             # p.print(inp)
 
             # for pretty-printing only
@@ -797,10 +797,22 @@ class Calculator:
             if invert_alpha:
                 alpha = -alpha
 
+            if turbine_type == 0:
+                # wind turbine
+                prop_coeff = 1.0
+                if invert_alpha:
+                    prop_coeff = -1.0
+            else:
+                # propeller
+                prop_coeff = -1.0
+                if invert_alpha:
+                    prop_coeff = 1.0
+
             input_arguments = {"F": F, "lambda_r": lambda_r, "phi": phi, "sigma": sigma, "C_norm": C_norm,
                                "C_tang": C_tang, "Cl": Cl, "Cd": Cd, "B": B, "c": _c, "r": _r, "R": R, "psi": psi,
                                "aprime_last": aprime, "omega": omega, "v": v, "a_last": a, "Ct_r": Ct_r,
-                               "method": method, "alpha": alpha, "alpha_deg": degrees(alpha)}
+                               "method": method, "alpha": alpha, "alpha_deg": degrees(alpha),
+                               "prop_coeff":prop_coeff}
 
             if print_all:
                 args_to_print = ["a_last", "aprime_last", "alpha_deg", "phi"]
@@ -865,10 +877,10 @@ class Calculator:
                 U3 = None
                 U4 = U1 * (1 - 2 * a)
 
-            #if a_last == None:
-            #    a_last = a
-            #if aprime_last == None:
-            #    aprime_last = aprime
+            if a_last == None:
+                a_last = a
+            if aprime_last == None:
+                aprime_last = aprime
 
             out = {"a": a, "a'": aprime, "Cl": Cl, "Cd": Cd, "alpha": degrees(alpha), "phi": degrees(phi), "F": F,
                    "dFt": dFt, "dFn": dFn, "_airfoil": _airfoil, "dT": dT, "dQ": dQ, "Re": Re,
