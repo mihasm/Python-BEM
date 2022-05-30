@@ -244,6 +244,11 @@ class ScrapeThread(QThread):
         """
         print("Running scrape")
         data = scrape_data(self.link.text())
+        if not isinstance(data,np.ndarray):
+            if data == None:
+                print("Scraping error, aborting!")
+                self.completeSignal.emit("Done")
+                return
         x, y = get_x_y_from_link(self.link.text())
         out = [data, x, y]
         self.parent.scraping_generated_data = out
@@ -340,6 +345,7 @@ class PopupText(QWidget):
 
         self.inp = QLineEdit()
         self.inp.setText(default_str)
+        self.inp.returnPressed.connect(self.send_signal)
         self.layout.addWidget(self.inp, 1, 0)
 
         self.button = QPushButton("OK")
@@ -363,6 +369,61 @@ class PopupText(QWidget):
         :param event:
         """
         self.emitter.disconnect()
+        event.accept()
+
+class PopupConfirmation(QWidget):
+    """
+
+    """
+    def __init__(self, message="message", windowTitle="", emitter_yes=None, emitter_no=None):
+        QWidget.__init__(self)
+
+        self.emitter_yes = emitter_yes
+        self.emitter_no = emitter_no
+
+        self.layout = QGridLayout()
+        self.setLayout(self.layout)
+
+        self.message = QLabel(message)
+
+        self.layout.addWidget(self.message, 0, 0)
+
+        self.button_yes = QPushButton("Yes")
+        self.button_yes.clicked.connect(self.send_signal_yes)
+        self.layout.addWidget(self.button_yes, 1, 0)
+
+        self.button_no = QPushButton("No")
+        self.button_no.clicked.connect(self.send_signal_no)
+        self.layout.addWidget(self.button_no, 2, 0)
+
+        self.setWindowTitle(windowTitle)
+        self.setWindowIcon(QtGui.QIcon(ICON_PATH))
+
+    def send_signal_yes(self):
+        """
+
+        """
+        if self.emitter_yes != None:
+            self.emitter_yes.emit("1")
+        self.close()
+
+    def send_signal_no(self):
+        """
+
+        """
+        if self.emitter_no != None:
+            self.emitter_no.emit("1")
+        self.close()
+
+    def closeEvent(self, event):
+        """
+
+        :param event:
+        """
+        if self.emitter_yes != None:
+            self.emitter_yes.disconnect()
+        if self.emitter_no != None:
+            self.emitter_no.disconnect()
         event.accept()
 
 
@@ -496,3 +557,4 @@ class TabWidget(QTabWidget):
         :return:
         """
         return self.tabText(self.currentIndex())
+

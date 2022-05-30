@@ -117,21 +117,21 @@ def interpolate_foils(foil_1_x, foil_1_y, foil_2_x, foil_2_y, t):
     xspline, yspline = interpolate.splev(np.linspace(0, 1, 500), tck, der=0)
 
     tck2, u2 = interpolate.splprep([foil_2_x, foil_2_y], s=0)
-    xspline2, yspline2 = interpolate.splev(np.linspace(0, 1, 100), tck2, der=0)
+    xspline2, yspline2 = interpolate.splev(np.linspace(0, 1, 500), tck2, der=0)
 
     # get list of zeros
     zeros_idx_1 = np.where(np.diff(np.sign(yspline)))[0]
     zeros_idx_2 = np.where(np.diff(np.sign(yspline2)))[0]
 
-    zero_1_index = zeros_idx_1[np.abs(zeros_idx_1 - len(zeros_idx_1) / 2).argmin()]
-    zero_2_index = zeros_idx_2[np.abs(zeros_idx_2 - len(zeros_idx_2) / 2).argmin()]
+    #zero_1_index = zeros_idx_1[np.abs(zeros_idx_1 - len(zeros_idx_1) / 2).argmin()]
+    #zero_2_index = zeros_idx_2[np.abs(zeros_idx_2 - len(zeros_idx_2) / 2).argmin()]
 
     for i in range(len(xspline2)):
         x_point, y_point = xspline2[i], yspline2[i]
-        if i <= zero_2_index:
-            xspline_in, yspline_in = xspline[:zero_1_index], yspline[:zero_1_index]
+        if i <= 250:
+            xspline_in, yspline_in = xspline[:250], yspline[:250]
         else:
-            xspline_in, yspline_in = xspline[zero_1_index:], yspline[zero_1_index:]
+            xspline_in, yspline_in = xspline[250:], yspline[250:]
         index, x_found, y_found = closest_point(x_point, y_point, xspline_in, yspline_in)
         x_new, y_new = point_along_line(x_found, y_found, x_point, y_point, t)
         out_x.append(x_new)

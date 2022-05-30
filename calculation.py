@@ -590,6 +590,7 @@ class Calculator:
             # update counter
             # i = i + 1
             a, aprime = inp
+            #a_last,aprime_last = None, None
             # p.print(inp)
 
             # for pretty-printing only
@@ -726,7 +727,7 @@ class Calculator:
                     p.print("No Cl or CD")
                     p.print("Re:", Re)
                     p.print("alpha:", degrees(alpha))
-                    return {"finished": False, "iterations": i, "criterion_value": abs(a - a_last)}
+                    return None
 
                 if invert_alpha:
                     Cl = -Cl
@@ -808,14 +809,14 @@ class Calculator:
                 p.print("             --------")
 
             if not use_minimization_solver:
-                # save old values
-                a_last = a
-                aprime_last = aprime
-
                 # calculate new induction coefficients
                 coeffs = calculate_coefficients(method, input_arguments)
                 if coeffs == None:
                     return {"finished": False, "iterations": i, "criterion_value": abs(a - a_last)}
+
+                # save old values
+                a_last = a
+                aprime_last = aprime
 
                 # set new values
                 a, aprime = coeffs
@@ -864,6 +865,11 @@ class Calculator:
                 U3 = None
                 U4 = U1 * (1 - 2 * a)
 
+            #if a_last == None:
+            #    a_last = a
+            #if aprime_last == None:
+            #    aprime_last = aprime
+
             out = {"a": a, "a'": aprime, "Cl": Cl, "Cd": Cd, "alpha": degrees(alpha), "phi": degrees(phi), "F": F,
                    "dFt": dFt, "dFn": dFn, "_airfoil": _airfoil, "dT": dT, "dQ": dQ, "Re": Re,
                    'U1': U1, 'U2': U2, 'U3': U3, 'U4': U4,
@@ -875,7 +881,7 @@ class Calculator:
                 if turbine_type == 1:  # propeller
                     g = ((dT_BET_p - dT_MT_p) ** 2 + 100 * (dQ_BET_p - dQ_MT_p) ** 2)
                 else:
-                    g = (dT_BET - dT_MT) ** 2 + (dQ_BET - dQ_MT) ** 2
+                    g = (dT_BET - dT_MT) ** 2 + 100 * (dQ_BET - dQ_MT) ** 2
 
                 if last_iteration:
                     return out
@@ -896,16 +902,20 @@ class Calculator:
                 return out
 
         if use_minimization_solver:
-            bounds = [(0.0001, 1.0), (0.0001, 1.0)]
+            bounds = [(0, 1.0), (0, 1.0)]
             initial_guess = [a_initial, aprime_initial]
             result = optimize.minimize(func, initial_guess, bounds=bounds, method="powell",
-                                       options={'ftol': convergence_limit, "xtol": convergence_limit,
+                                       options={"xtol": convergence_limit,
+                                                'ftol': convergence_limit,
                                                 'maxiter': max_iterations})
         else:
             i = 0
             while True:
                 i = i + 1
                 out = func((a, aprime))
+
+                if out == None:
+                    return
 
                 if out["finished"] == True:
                     return out

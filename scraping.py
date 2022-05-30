@@ -12,7 +12,11 @@ def scrape_data(link):
     :return:
     """
     out = []
-    data = get_polars(link)
+    try:
+        data = get_polars(link)
+    except Exception as e:
+        print(e)
+        return None
     for Re, value in data.items():
         for ncrit, value2 in value.items():
             for alpha, value3 in value2.items():

@@ -480,16 +480,21 @@ class Optimization(QWidget):
 
         :param inp_dict:
         """
-        self.target_rpm.setText(str(inp_dict["target_rpm"]))
-        self.target_speed.setText(str(inp_dict["target_speed"]))
-        # self.pitch_optimization.setChecked(inp_dict["pitch_optimization"])
-        self.mut_coeff.setText(str(inp_dict["mut_coeff"]))
-        self.population.setText(str(inp_dict["population"]))
-        self.num_iter.setText(str(inp_dict["num_iter"]))
-        self.list_input_variables = inp_dict["optimization_inputs"]
-        self.list_output_variables = inp_dict["optimization_outputs"]
+        if "target_rpm" in inp_dict.keys():
+            self.target_rpm.setText(str(inp_dict["target_rpm"]))
+        if "target_speed" in inp_dict.keys():
+            self.target_speed.setText(str(inp_dict["target_speed"]))
+        if "mut_coeff" in inp_dict.keys():
+            self.mut_coeff.setText(str(inp_dict["mut_coeff"]))
+        if "population" in inp_dict.keys():
+            self.population.setText(str(inp_dict["population"]))
+        if "num_iter" in inp_dict.keys():
+            self.num_iter.setText(str(inp_dict["num_iter"]))
+        if "optimization_inputs" in inp_dict.keys():
+            self.list_input_variables = inp_dict["optimization_inputs"]
+        if "optimization_outputs" in inp_dict.keys():
+            self.list_output_variables = inp_dict["optimization_outputs"]
+        
         self.refresh_output_variables()
         self.refresh_input_variables()
         self.refresh_target_variables()
-        # self.weight_dt.setText(str(inp_dict["weight_dt"]))
-        # self.weight_dq.setText(str(inp_dict["weight_dq"]))

@@ -332,11 +332,11 @@ class Airfoils(QWidget):
         print("Params")
         self.thread.set_params(self.link)
         print("Connecting")
-        self.thread.completeSignal.connect(self.generate_curves_link_completion)
+        self.thread.completeSignal.connect(self.generate_curves_link_finished)
         print("Starting")
         self.thread.start()
 
-    def generate_curves_link_completion(self, nothing_important):
+    def generate_curves_link_finished(self, nothing_important):
         """
 
         :param nothing_important:
@@ -528,22 +528,18 @@ class Airfoils(QWidget):
 
         :param dict_settings:
         """
-        x, y = dict_settings["x"], dict_settings["y"]
 
-        try:
+        if "x" in dict_settings and "y" in dict_settings:
+            x, y = dict_settings["x"], dict_settings["y"]
             self.set_x_y(x, y)
-        except:
-            raise
-        try:
+        
+        if "link" in dict_settings.keys():
             self.link.setText(dict_settings["link"])
-        except:
-            raise
-        try:
+        
+        if "curves" in dict_settings.keys():
             self.curves.load_curves(dict_settings["curves"])
-        except:
-            raise
-        try:
+        
+        if "extrapolation_bool" in dict_settings.keys():
             self.extrapolation_bool.setChecked(dict_settings["extrapolation_bool"])
-        except:
-            raise
+        
         self.refresh()
