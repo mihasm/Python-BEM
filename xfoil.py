@@ -14,7 +14,7 @@ import scipy.linalg
 from matplotlib import pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D  # noqa: F401 unused import
 
-from main import data_path
+from bem import data_path
 
 xfoil_path = os.path.join(data_path,"xfoil_executables", "xfoil.exe")
 if sys.platform.startswith("darwin"):

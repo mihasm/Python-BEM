@@ -24,6 +24,7 @@ def calculate_power(inp_args):
     :return: dict with results
     """
     p = Printer(inp_args["return_print"])
+
     for f in inp_args["foils_in"]:
         if f not in inp_args["airfoils"].keys():
             if f != "transition":
@@ -48,7 +49,10 @@ def calculate_power_3d(inp_args, print_eof=False, prepend="", print_progress=Tru
     Returns dictionary with arrays with data for every point.
     :return: dictionary with all results stored as numpy arrays
     """
-
+    if "return_print" not in inp_args:
+        inp_args["return_print"] = []
+    if "return_results" not in inp_args:
+        inp_args["return_results"] = []
     p = Printer(inp_args["return_print"])
     inp_args["print_progress"] = print_progress
     return_results = inp_args["return_results"]

@@ -1,6 +1,6 @@
-from .. calculation_runner import calculate_power_3d
-from turbine_data import SET_INIT
+import sys, os
+sys.path.append("..")
+from calculation_runner import calculate_power_3d
+import json
 
-SET_INIT["return_print"] = []
-SET_INIT["return_results"] = []
-results = calculate_power_3d(SET_INIT)
+results = calculate_power_3d(json.loads(open(os.path.join("..","karlsen.bem")).read()))

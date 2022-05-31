@@ -242,43 +242,6 @@ class Printer:
         self.out.append(out_str)
         return out_str
 
-
-def fltr(node, vals):
-    """
-
-    :param node:
-    :param vals:
-    :return:
-    """
-
-    if isinstance(node, dict):
-        retVal = {}
-        for key, value in node.items():
-            if isinstance(value, np.ndarray):
-                node[key] = value.tolist()
-            if isinstance(key, vals) and isinstance(value, vals):
-                retVal[key] = copy.deepcopy(node[key])
-            elif isinstance(node[key], list) or isinstance(node[key], dict):
-                child = fltr(node[key], vals)
-                if child:
-                    retVal[key] = child
-        if retVal:
-            return retVal
-        else:
-            return None
-
-    elif isinstance(node, list):
-        retVal = []
-        for entry in node:
-            child = fltr(entry, vals)
-            if child:
-                retVal.append(child)
-        if retVal:
-            return retVal
-        else:
-            return None
-
-
 def filter_3d_results(results_3d):
     """
     Input: 3D results from calculation_runner
@@ -660,6 +623,7 @@ def get_curves_functions(input_arguments):
         ncrit_selected = airfoils[blade_name]["ncrit_selected"]
 
         data = airfoils[blade_name]["gathered_curves"]
+        data = np.array(data)
         data = data[np.in1d(data[:, 1], ncrit_selected)]
         data = sort_data(data)
 
@@ -694,7 +658,6 @@ def get_curves_functions(input_arguments):
 
         airfoils[blade_name]["interp_function_cl"] = interpolation_function_cl
         airfoils[blade_name]["interp_function_cd"] = interpolation_function_cd
-
         re_stall_list, aoa_min_stall_list, aoa_max_stall_list = airfoils[blade_name]["stall_angles"]
 
         if len(re_stall_list) == 1:

@@ -6,7 +6,7 @@ from numpy import radians, degrees
 from bending_inertia import generate_hollow_foil, calculate_bending_inertia_2
 from popravki import *
 from utils import Printer, get_curves_functions
-from visualize import scale_and_normalize, rotate_array
+from visualization import scale_and_normalize, rotate_array
 
 numpy.seterr(all="raise")
 numpy.seterr(invalid="raise")
@@ -221,7 +221,7 @@ class Calculator:
         for array in arrays:
             results[array] = numpy.array([])
 
-        theta, c, r = self.convert_to_array(theta, c, r)
+        theta, c, r = np.array(theta), np.array(c), np.array(r)
         R = R * geometry_scale
         Rhub = Rhub * geometry_scale
         num_sections = len(theta)

@@ -33,14 +33,15 @@ elif __file__:
     application_path = os.path.dirname(__file__)
 
 # determine if application is a one-file exe
-if hasattr(sys,"_MEIPASS"):
+if hasattr(sys, "_MEIPASS"):
     # yes, resources are stored in temporary folder C:\TEMP or wherever it is
     data_path = sys._MEIPASS
 else:
     # else, resources are stored in same folder as executable
     data_path = application_path
 
-ICON_PATH = os.path.join(data_path,"icon_bem.ico")
+ICON_PATH = os.path.join(data_path, "icon_bem.ico")
+DEFAULT_SETTINGS_PATH = os.path.join(data_path,"karlsen.bem")
 
 QtWidgets.QApplication.setAttribute(QtCore.Qt.AA_EnableHighDpiScaling, True)
 

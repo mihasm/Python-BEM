@@ -3,12 +3,13 @@ from PyQt5.QtWidgets import QWidget, QGridLayout, QFormLayout, QLineEdit, QSlide
 from matplotlib import pyplot as plt
 from matplotlib.backends.backend_qt5 import NavigationToolbar2QT as NavigationToolbar
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
-
+from UI.helpers import ErrorMessageBox
 
 class CurveControl(QWidget):
     """
 
     """
+
     def __init__(self, parent=None, curve=None):
         super(CurveControl, self).__init__(parent)
         # self.setMinimumSize(300,400)
@@ -127,14 +128,18 @@ class CurveControl(QWidget):
 
         self.draw_base()
 
-        alpha, cl, cd = self.curve.get_extrapolated_curve()
-        self.ax.plot(alpha, cl, "g.")
-        self.ax.plot(alpha, cd, "r.")
         try:
-            self.ax.axvline(x=float(self.min_stable_aoa.text()), color="red")
-            self.ax.axvline(x=float(self.max_stable_aoa.text()), color="red")
+            alpha, cl, cd = self.curve.get_extrapolated_curve()
+            self.ax.plot(alpha, cl, "g.")
+            self.ax.plot(alpha, cd, "r.")
+            try:
+                self.ax.axvline(x=float(self.min_stable_aoa.text()), color="red")
+                self.ax.axvline(x=float(self.max_stable_aoa.text()), color="red")
+            except:
+                pass
         except:
-            pass
+            msg = ErrorMessageBox()
+
         self.canvas.draw()
 
     def update(self):

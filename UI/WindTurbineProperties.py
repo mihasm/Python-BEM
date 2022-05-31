@@ -8,12 +8,11 @@ from scipy import interpolate
 
 from UI.Table import Table
 from UI.helpers import MatplotlibWindow, PrintoutWindow, AdkinsThread, PyQtGraph3DWindow
-from main import application_path
-from turbine_data import SET_INIT
+from bem import application_path
 from utils import to_float, interpolate_geom, generate_chord_lengths_betz, generate_twists_betz, \
     generate_chord_lengths_schmitz, generate_twists_schmitz, create_folder, create_macro_text, \
     generate_propeller_larabee
-from visualize import create_3d_blade
+from visualization import create_3d_blade
 
 
 class WindTurbineProperties(QWidget):
@@ -323,7 +322,7 @@ class WindTurbineProperties(QWidget):
         self.button_generate_geometry.clicked.connect(self.generate_geometry)
         self.button_generate_geometry.setToolTip("Generiraj geometrijo (povozi predhodno!).")
 
-        self.fbox.addRow(QLabel("————— Export Curves —————"))
+        self.fbox.addRow(QLabel("————— Export CurveCollection —————"))
 
         self.export_button = QPushButton("Export curve data")
         self.export_button.clicked.connect(self.export)
@@ -597,7 +596,7 @@ class WindTurbineProperties(QWidget):
                         value = item.text()
                     except:
                         raise
-            out[key]=value
+            out[key] = value
 
         geom_array = self.table_properties.get_values()
         r, c, theta, foils = [], [], [], []
@@ -607,23 +606,29 @@ class WindTurbineProperties(QWidget):
                 c.append(to_float(row[1]))
                 theta.append(to_float(row[2]))
                 foils.append(row[3])
-        out["r"] = array(r)
-        out["c"] = array(c)
-        out["theta"] = array(theta)
-        out["foils"] = foils
-        _r = out["r"]
-        _c = out["c"]
-        _theta = out["theta"]
-        _foils = out["foils"]
-        out["R"] = out["R"]
-        out["Rhub"] = out["Rhub"]
-        r, c, theta, foils, dr = interpolate_geom(_r, _c, _theta, _foils, out["R"], out["Rhub"], out["num_interp"],
+
+        r = array(r)
+        c = array(c)
+        theta = array(theta)
+
+        # memory copies
+        _r = array(r)
+        _c = array(c)
+        _theta = array(theta)
+        _foils = list(foils)
+
+        r, c, theta, foils, dr = interpolate_geom(_r, _c, _theta, _foils,
+                                                  out["R"],
+                                                  out["Rhub"],
+                                                  out["num_interp"],
                                                   out["linspace_interp"],
                                                   out["geometry_scale"])
-        out["r"], out["c"], out["theta"], out["foils"], out["dr"] = r, c, theta, foils, dr
-        out["r_in"], out["c_in"], out["theta_in"], out["foils_in"] = _r, _c, _theta, _foils
 
-        out["propeller_pitch"] = 2 * np.pi * np.array(out["r"]) * np.tan(np.radians(out["theta"])) * 39.3701
+
+        out["r"], out["c"], out["theta"], out["foils"], out["dr"] = r.tolist(), c.tolist(), theta.tolist(), foils, dr.tolist()
+        out["r_in"], out["c_in"], out["theta_in"], out["foils_in"] = _r.tolist(), _c.tolist(), _theta.tolist(), _foils
+        propeller_pitch = 2 * np.pi * np.array(out["r"]) * np.tan(np.radians(out["theta"])) * 39.3701
+        out["propeller_pitch"] = propeller_pitch.tolist()
 
         return out
 

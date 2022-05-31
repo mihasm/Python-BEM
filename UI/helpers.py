@@ -15,7 +15,7 @@ import numpy as np
 
 from scraping import scrape_data, get_x_y_from_link
 from utils import generate_propeller_adkins
-from main import ICON_PATH
+from bem import ICON_PATH
 from xfoil import generate_polars_data
 
 

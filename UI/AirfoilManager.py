@@ -2,8 +2,8 @@ from PyQt5.QtCore import pyqtSignal, QRect
 from PyQt5.QtWidgets import QWidget, QGridLayout, QPushButton, QFileDialog
 
 from UI.helpers import PopupText, TabWidget, PopupConfirmation
-from UI.Airfoils import Airfoils
-from utils import fltr
+from UI.Airfoil import Airfoil
+#from utils import fltr
 
 import numpy as np
 import json
@@ -69,7 +69,7 @@ class AirfoilManager(QWidget):
 
         :param string:
         """
-        c = Airfoils(string, self)
+        c = Airfoil(string, self)
         self.tab_widget.add_tab(c, string)
         self.tab_widget.setCurrentIndex(len(self.tab_widget.tabs) - 1)
 
@@ -104,7 +104,7 @@ class AirfoilManager(QWidget):
                 break
             i+=1
         old_settings = cur_widget.get_settings()
-        new_airfoil = Airfoils(new_name,self)
+        new_airfoil = Airfoil(new_name, self)
         new_airfoil.set_settings(old_settings)
         self.tab_widget.add_tab(new_airfoil,new_name)
 
@@ -114,7 +114,7 @@ class AirfoilManager(QWidget):
             with open(file_path, "r") as fp:
                 data = json.load(fp)
             airfoil_name,airfoil_settings = list(data.items())[0]
-            new_airfoil = Airfoils(airfoil_name,self)
+            new_airfoil = Airfoil(airfoil_name, self)
             new_airfoil.set_settings(airfoil_settings)
             self.tab_widget.add_tab(new_airfoil,airfoil_name)
 
@@ -155,6 +155,6 @@ class AirfoilManager(QWidget):
         if "airfoils" in dict_settings:
             if len(dict_settings["airfoils"]) > 0:
                 for c_name, c_dict in dict_settings["airfoils"].items():
-                    curve_widget = Airfoils(c_name, self)
+                    curve_widget = Airfoil(c_name, self)
                     curve_widget.set_settings(c_dict)
                     self.tab_widget.add_tab(curve_widget, c_name)

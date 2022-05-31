@@ -3,7 +3,7 @@ from numpy.core._multiarray_umath import array
 from UI.Curve import Curve
 
 
-class Curves:
+class CurveCollection:
     """
 
     """

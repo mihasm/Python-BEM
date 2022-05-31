@@ -3,12 +3,12 @@ from PyQt5.QtWidgets import QWidget, QGridLayout, QPushButton, QScrollArea, QVBo
 from UI.CurveControl import CurveControl
 
 
-class CurveViewer(QWidget):
+class CurveExtrapolationEditor(QWidget):
     """
 
     """
     def __init__(self, parent=None):
-        super(CurveViewer, self).__init__(None)
+        super(CurveExtrapolationEditor, self).__init__(None)
         self.resize(1600, 768)
         self.parent = parent
 

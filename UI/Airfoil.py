@@ -7,29 +7,29 @@ from matplotlib import pyplot as plt
 
 from UI.Curve import Curve
 from UI.CurveEditor import CurveEditor
-from UI.CurveViewer import CurveViewer
-from UI.Curves import Curves
+from UI.CurveExtrapolationEditor import CurveExtrapolationEditor
+from UI.CurveCollection import CurveCollection
 from UI.Table import Table
 from UI.helpers import XFoilThread, ScrapeThread, MatplotlibWindow, PrintoutWindow, XfoilOptionsWindow, MyMessageBox, \
     ErrorMessageBox
 from utils import import_dat, import_nrel_dat, interp_at, generate_dat, to_float, get_centroid_coordinates
 
 
-class Airfoils(QWidget):
+class Airfoil(QWidget):
     """
 
     """
     def __init__(self, airfoil_name, parent=None):
-        super(Airfoils, self).__init__(parent)
+        super(Airfoil, self).__init__(parent)
 
         self.thread = None
         self.xfoil_window = None
 
         self.parent = parent
 
-        self.curves = Curves()
+        self.curves = CurveCollection()
 
-        self.viewer = CurveViewer(self)
+        self.viewer = CurveExtrapolationEditor(self)
 
         self.airfoil_name = airfoil_name
 
@@ -490,7 +490,6 @@ class Airfoils(QWidget):
 
         :return:
         """
-        out = {}
 
         x, y = self.get_x_y()
         try:
@@ -508,6 +507,7 @@ class Airfoils(QWidget):
             extrapolation_bool = self.extrapolation_bool.checkState()
         except:
             extrapolation_bool = True
+
         out = {"x": x,
                "y": y,
                "max_thickness": self.get_max_thickness(),
@@ -515,12 +515,13 @@ class Airfoils(QWidget):
                "interp_function_cl": self.interp_function_cl,
                "interp_function_cd": self.interp_function_cd,
                "curves": self.curves.save_curves(),
-               "gathered_curves": self.gather_curves(),
+               "gathered_curves": self.gather_curves().tolist(),
                "centroid_x": centroid_x,
                "centroid_y": centroid_y,
                "ncrit_selected": ncrit_selected,
                "extrapolation_bool": extrapolation_bool,
                "stall_angles": self.curves.get_stall_angles()}
+
         return out
 
     def set_settings(self, dict_settings):

@@ -12,10 +12,8 @@ from UI.Analysis import Analysis
 from UI.Optimization import Optimization
 from UI.WindTurbineProperties import WindTurbineProperties
 from UI.helpers import ThreadGetter, TabWidget, ErrorMessageBox
-from main import TITLE_STR, application_path
-from turbine_data import SET_INIT
-from utils import create_folder, fltr
-
+from bem import TITLE_STR, DEFAULT_SETTINGS_PATH, application_path
+from utils import create_folder
 
 class MainWindow(QMainWindow):
     """
@@ -73,11 +71,12 @@ class MainWindow(QMainWindow):
 
         self.running = False
         self.manager = Manager()
-        self.set_all_settings(SET_INIT)
 
         create_folder(os.path.join(application_path, "foils"))  # Used by XFoil
 
         self.set_process_stopped()
+
+        self.load_default_settings()
 
         self.show()
 
@@ -98,8 +97,7 @@ class MainWindow(QMainWindow):
         name = QFileDialog.getSaveFileName(self, 'Save File', "", "BEM (*.bem)")[0]
         if name != "":
             d = self.get_all_settings()
-            d_to_save = fltr(d, (float, int, list, str, bool, np.ndarray))
-            json_d = json.dumps(d_to_save)
+            json_d = json.dumps(d)
             file = open(name, 'w')
             file.write(json_d)
             file.close()
@@ -113,6 +111,17 @@ class MainWindow(QMainWindow):
             with open(file_path, "r") as fp:
                 data = json.load(fp)
             self.set_all_settings(data)
+        self.analysis.clear()
+        self.optimization.clear()
+        self.set_title()
+
+    def load_default_settings(self):
+        """
+
+        """
+        with open(DEFAULT_SETTINGS_PATH, "r") as fp:
+            data = json.load(fp)
+        self.set_all_settings(data)
         self.analysis.clear()
         self.optimization.clear()
         self.set_title()
