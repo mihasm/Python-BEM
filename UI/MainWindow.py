@@ -11,10 +11,10 @@ from UI.AirfoilManager import AirfoilManager
 from UI.Analysis import Analysis
 from UI.Optimization import Optimization
 from UI.WindTurbineProperties import WindTurbineProperties
-from UI.helpers import ThreadGetter, TabWidget
+from UI.helpers import ThreadGetter, TabWidget, ErrorMessageBox
 from main import TITLE_STR, application_path
 from turbine_data import SET_INIT
-from utils import create_folder, fltr, ErrorMessageBox
+from utils import create_folder, fltr
 
 
 class MainWindow(QMainWindow):

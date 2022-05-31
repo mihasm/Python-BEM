@@ -10,10 +10,10 @@ from UI.CurveEditor import CurveEditor
 from UI.CurveViewer import CurveViewer
 from UI.Curves import Curves
 from UI.Table import Table
-from UI.helpers import XFoilThread, ScrapeThread, MatplotlibWindow, PrintoutWindow, XfoilOptionsWindow
-from utils import import_dat, import_nrel_dat, interp_at, generate_dat, to_float, ErrorMessageBox, \
-    get_centroid_coordinates
-from utils import MyMessageBox
+from UI.helpers import XFoilThread, ScrapeThread, MatplotlibWindow, PrintoutWindow, XfoilOptionsWindow, MyMessageBox, \
+    ErrorMessageBox
+from utils import import_dat, import_nrel_dat, interp_at, generate_dat, to_float, get_centroid_coordinates
+
 
 class Airfoils(QWidget):
     """

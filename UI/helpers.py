@@ -1,4 +1,5 @@
 import sys
+import traceback
 
 import pyqtgraph as pg
 import pyqtgraph.opengl as gl
@@ -6,7 +7,7 @@ from PyQt5 import QtCore, QtGui
 from PyQt5.QtCore import QThread
 from PyQt5.QtGui import QTextCursor
 from PyQt5.QtWidgets import QMainWindow, QWidget, QGridLayout, QLabel, QLineEdit, QPushButton, QTabWidget, \
-    QTextEdit, QFormLayout
+    QTextEdit, QFormLayout, QMessageBox
 from matplotlib import pyplot as plt
 from matplotlib.backends.backend_qt5 import NavigationToolbar2QT as NavigationToolbar
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
@@ -558,3 +559,45 @@ class TabWidget(QTabWidget):
         """
         return self.tabText(self.currentIndex())
 
+
+class MyMessageBox(QMessageBox):
+    """
+
+    """
+
+    def __init__(self):
+        QMessageBox.__init__(self)
+        super().__init__()
+        self.setSizeGripEnabled(True)
+
+    def event(self, e):
+        """
+
+        :param e:
+        :return:
+        """
+        result = QMessageBox.event(self, e)
+
+        self.setMinimumHeight(0)
+        self.setMaximumHeight(16777215)
+        self.setMinimumWidth(0)
+        self.setMaximumWidth(16777215)
+        textEdit = self.findChild(QTextEdit)
+        if textEdit != None:
+            textEdit.setMinimumHeight(0)
+            textEdit.setMaximumHeight(16777215)
+            textEdit.setMinimumWidth(0)
+            textEdit.setMaximumWidth(16777215)
+            return result
+
+
+def ErrorMessageBox():
+    """
+
+    """
+    msg = MyMessageBox()
+    msg.setIcon(QMessageBox.Warning)
+    msg.setText("Error while getting settings")
+    var = traceback.format_exc()
+    msg.setDetailedText(str(var))
+    msg.exec_()

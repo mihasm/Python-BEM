@@ -2,7 +2,8 @@ from PyQt5 import QtGui
 from PyQt5.QtWidgets import QWidget, QGridLayout, QPushButton, QLineEdit, QLabel, QComboBox, QMessageBox
 
 from UI.Curve import Curve
-from utils import transpose, MyMessageBox
+from utils import transpose
+from UI.helpers import MyMessageBox
 from UI.Table import Table
 
 

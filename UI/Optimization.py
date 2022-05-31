@@ -6,9 +6,9 @@ from PyQt5 import QtGui
 from PyQt5.QtWidgets import QWidget, QGridLayout, QFormLayout, QScrollArea, QVBoxLayout, QTextEdit, QPushButton, \
     QComboBox, QCheckBox, QLineEdit, QLabel, QMessageBox
 
-from UI.helpers import PyQtGraphWindow
+from UI.helpers import PyQtGraphWindow, MyMessageBox
 from optimization import optimize
-from utils import MyMessageBox, to_float
+from utils import to_float
 
 
 class Optimization(QWidget):

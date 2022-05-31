@@ -7,7 +7,8 @@ from PyQt5.QtWidgets import QWidget, QGridLayout, QFormLayout, QScrollArea, QVBo
 
 from calculation_runner import calculate_power_3d
 from popravki import METHODS_STRINGS
-from utils import to_float, MyMessageBox
+from utils import to_float
+from UI.helpers import MyMessageBox
 
 
 class Analysis(QWidget):
