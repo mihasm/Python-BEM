@@ -1,8 +1,6 @@
-import numpy as np
-from matplotlib import pyplot as plt
-from matplotlib.widgets import Slider, Button
 from numpy import *
 from numpy import pi as PI
+import numpy as np
 
 
 class POLAR_CLASS:

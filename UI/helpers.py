@@ -7,7 +7,7 @@ from PyQt5 import QtCore, QtGui
 from PyQt5.QtCore import QThread
 from PyQt5.QtGui import QTextCursor
 from PyQt5.QtWidgets import QMainWindow, QWidget, QGridLayout, QLabel, QLineEdit, QPushButton, QTabWidget, \
-    QTextEdit, QFormLayout, QMessageBox
+    QTextEdit, QFormLayout, QMessageBox, QErrorMessage
 from matplotlib import pyplot as plt
 from matplotlib.backends.backend_qt5 import NavigationToolbar2QT as NavigationToolbar
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
@@ -595,9 +595,9 @@ def ErrorMessageBox():
     """
 
     """
-    msg = MyMessageBox()
-    msg.setIcon(QMessageBox.Warning)
-    msg.setText("Error while getting settings")
     var = traceback.format_exc()
-    msg.setDetailedText(str(var))
-    msg.exec_()
+    error_dialog = QErrorMessage()
+    error_dialog.setWindowTitle("Error")
+    #error_dialog.setIcon(QMessageBox.Warning)
+    error_dialog.showMessage(str(var))
+    error_dialog.exec_()

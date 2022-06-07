@@ -1,10 +1,8 @@
 import time
 import traceback
 from math import pi
-
 from calculation import Calculator
 from utils import Printer
-
 import scipy.optimize
 
 
@@ -17,8 +15,6 @@ def optimize(inp_args, queue_pyqtgraph):
     """
     p = Printer(inp_args["return_print"])
     try:
-        return_results = inp_args["return_results"]
-
         inp_args["v"] = inp_args["target_speed"]
         inp_args["rpm"] = inp_args["target_rpm"]
         inp_args["omega"] = 2 * pi * inp_args["rpm"] / 60
@@ -56,21 +52,18 @@ def optimize(inp_args, queue_pyqtgraph):
                 list_queue_internal_x = []
                 list_queue_internal_y = []
 
-                section_inp_args = {}
-
-                section_inp_args["_r"] = inp_args["r"][n]
-                section_inp_args["_c"] = inp_args["c"][n]
-                section_inp_args["_theta"] = inp_args["theta"][n]
-                section_inp_args["_dr"] = inp_args["dr"][n]
-
-                section_inp_args["transition"] = C.transition_array[n]
-                section_inp_args["_airfoil"] = C.airfoils_list[n]
-                section_inp_args["_airfoil_prev"] = C.transition_foils[n][0]
-                section_inp_args["_airfoil_next"] = C.transition_foils[n][1]
-                section_inp_args["transition_coefficient"] = C.transition_foils[n][2]
-                section_inp_args["max_thickness"] = C.max_thickness_array[n]
-
-                # worst_value = 0.0
+                section_inp_args = {
+                    "_r": inp_args["r"][n],
+                    "_c": inp_args["c"][n],
+                    "_theta": inp_args["theta"][n],
+                    "_dr": inp_args["dr"][n],
+                    "transition": C.transition_array[n],
+                    "_airfoil": C.airfoils_list[n],
+                    "_airfoil_prev": C.transition_foils[n][0],
+                    "_airfoil_next": C.transition_foils[n][1],
+                    "transition_coefficient": C.transition_foils[n][2],
+                    "max_thickness": C.max_thickness_array[n]
+                }
 
                 inputs_list = [i[0] for i in input_variables]
                 bounds_list = [(b[1], b[2]) for b in input_variables]
@@ -99,15 +92,10 @@ def optimize(inp_args, queue_pyqtgraph):
                         comparison = abs(d[var] - target_value) * coeff
                         fitness += comparison
 
-                    # p.print(queue_pyqtgraph)
-
                     list_queue_internal_x.append(args["_theta"])
                     list_queue_internal_y.append(fitness)
 
                     queue_pyqtgraph[0] = [list_queue_internal_x, list_queue_internal_y, args["_theta"], fitness]
-
-                    # p.print(args["_theta"],fitness)
-                    # p.print(queue_pyqtgraph)
 
                     return fitness
 

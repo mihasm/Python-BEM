@@ -141,25 +141,25 @@ class MainWindow(QMainWindow):
         try:
             properties = self.wind_turbine_properties.get_settings()
         except:
-            msg = ErrorMessageBox()
+            ErrorMessageBox()
             properties = {}
 
         try:
             settings = self.analysis.get_settings()
         except:
-            msg = ErrorMessageBox()
+            ErrorMessageBox()
             settings = {}
 
         try:
             opt_settings = self.optimization.get_settings()
         except:
-            msg = ErrorMessageBox()
+            ErrorMessageBox()
             opt_settings = {}
 
         try:
             curve_manager_settings = self.curve_manager.get_settings()
         except:
-            msg = ErrorMessageBox()
+            ErrorMessageBox()
             curve_manager_settings = {}
 
         try:
@@ -167,7 +167,7 @@ class MainWindow(QMainWindow):
             # pprint(out)
             return out
         except:
-            msg = ErrorMessageBox()
+            ErrorMessageBox()
             return None
 
     # noinspection PyBroadException
