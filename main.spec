@@ -3,7 +3,7 @@
 block_cipher = None
 
 
-a = Analysis(['main.py'],
+a = Analysis(['bem.py'],
              pathex=[],
              binaries=[],
              datas=[("icon_bem.ico","."),
@@ -55,7 +55,7 @@ exe = EXE(pyz,
           strip=False,
           upx=False,
           runtime_tmpdir=None,
-          console=True,
+          console=False,
           icon="icon_bem.ico")
 
 coll = COLLECT(exe,
