@@ -16,6 +16,8 @@ OUTPUT_VARIABLES_LIST = {
     "a'": {"type": "array", "name": "Tangential induction factor", "symbol": "a'", "unit": ""},
     "Cl": {"type": "array", "name": "Lift coefficient", "symbol": r"$C_l$", "unit": ""},
     "Cd": {"type": "array", "name": "Drag coefficient", "symbol": r"$C_d$", "unit": ""},
+    "Cn": {"type": "array", "name": "Normal coefficient", "symbol": r"$C_n$", "unit": ""},
+    "Ct": {"type": "array", "name": "Tangential coefficient", "symbol": r"$C_t$", "unit": ""},
     "alpha": {"type": "array", "name": "Angle of attack", "symbol": r"$\alpha$", "unit": "°"},
     "phi": {"type": "array", "name": "Relative wind angle", "symbol": r"$\phi$", "unit": "°"},
     "F": {"type": "array", "name": "Tip loss correction factor", "symbol": "F", "unit": ""},
@@ -887,6 +889,7 @@ class Calculator:
                    'U1': U1, 'U2': U2, 'U3': U3, 'U4': U4,
                    "lambda_r": lambda_r, "dFt/n": dFt_norm, "dFn/n": dFn_norm, "stall": stall, "Ct_r": Ct_r,
                    "Vrel_norm": Vrel_norm,
+                   "Cn":C_norm,"Ct":C_tang,
                    "iterations": i, "criterion_value": abs(a - a_last)}
 
             if use_minimization_solver:

@@ -87,6 +87,23 @@ def dict_to_csv(inp_dict, delimiter=";"):
         out += "\n"
     return out
 
+def array_to_csv(in_ar, delimiter="\t"):
+    """
+
+    :param in_ar:
+    :param delimiter:
+    :return:
+    """
+    out = ""
+    for r in range(len(in_ar)):
+        for c in in_ar[r]:
+            if c == None:
+                c = ""
+            out += c + delimiter
+        out = out[0:-1]
+        out += "\n"
+    return out
+
 
 def sort_xy(array_x, array_y):
     """

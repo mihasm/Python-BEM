@@ -43,8 +43,8 @@ class ResultsWindow(QMainWindow):
         self.screen_width = width
         self.screen_height = height
         self.setWindowTitle(self.title)
-        self.setGeometry(self.screen_width * 0.125, self.screen_height * 0.125, self.screen_width * 0.75,
-                         self.screen_width * 0.75 * 0.4, )
+        self.setGeometry(int(self.screen_width * 0.125), int(self.screen_height * 0.125), int(self.screen_width * 0.75),
+                         int(self.screen_width * 0.75 * 0.4))
         self.tab_widget = TabWidget(self)
         self.setCentralWidget(self.tab_widget)
 
@@ -382,7 +382,8 @@ class CustomGraphWidget(QWidget):
 
         try:
             self.figure.delaxes(self.ax)
-        except KeyError:
+        except Exception as e:
+            print(e)
             print("Did not find axes, not deleting...")
             pass
 
@@ -395,8 +396,9 @@ class CustomGraphWidget(QWidget):
             self.ax.legend(np.round(list_of_variable_parameter, 2), title=variable_parameter_title)
             # data_table = np.column_stack((x_ar,y_ar))
             # data_table=transpose(data_table)
-            # self.table.createTable(data_table)
-            self.table.clear_table()
+            self.table.createTable(y_ar)
+            # self.table.clear_table()
+
 
         elif type_x == "array" and type_y == "float":
             print("case 2")
