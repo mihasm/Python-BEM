@@ -643,7 +643,7 @@ class WindTurbineProperties(QWidget):
                 if isinstance(item, QComboBox):
                     _index = dict_settings[key]
                     index = _index if _index >= 0 else 0
-                    item.setCurrentIndex(index)
+                    item.setCurrentIndex(int(index))
                 elif isinstance(item, QLineEdit):
                     item.setText(str(dict_settings[key]))
                 elif isinstance(item, QCheckBox):
@@ -692,7 +692,8 @@ class WindTurbineProperties(QWidget):
 
         # Create necessary folders
         create_folder(os.path.join(application_path, "export"))
-        folder_path = os.path.join(application_path, "export", SET_INIT["turbine_name"])
+        folder_appropriate_turbine_name = "".join(x for x in self.settings["turbine_name"].text() if x.isalnum())
+        folder_path = os.path.join(application_path, "export", folder_appropriate_turbine_name)
         create_folder(folder_path)
 
         filenames = []

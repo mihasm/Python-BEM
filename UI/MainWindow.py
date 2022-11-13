@@ -251,7 +251,7 @@ class MainWindow(QMainWindow):
                 size = size + 1
             else:
                 size = size - 1
-            font.setPointSize(size)
+            font.setPointSize(int(size))
             QApplication.instance().setFont(font)
             for w in QApplication.allWidgets():
                 w.setFont(font)

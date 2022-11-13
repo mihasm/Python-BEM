@@ -474,7 +474,7 @@ class Analysis(QWidget):
             color = "#fff79a"  # yellow
         else:
             color = "#f6989d"  # red
-        # sender.setStyleSheet("QLineEdit { background-color: %s; color: #000000 }" % color)
+        sender.setStyleSheet("QLineEdit { color: %s;}" % color)
 
     def get_settings(self):
         """
@@ -503,7 +503,7 @@ class Analysis(QWidget):
                 if isinstance(item, QComboBox):
                     _index = inp_dict[name]
                     index = _index if _index >= 0 and _index <= item.count()-1 else 0
-                    item.setCurrentIndex(index)
+                    item.setCurrentIndex(int(index))
                 elif isinstance(item, QLineEdit):
                     item.setText(str(inp_dict[name]))
                 elif isinstance(item, QCheckBox):
