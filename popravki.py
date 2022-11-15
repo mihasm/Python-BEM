@@ -179,7 +179,7 @@ def fInductionCoefficients1(F, phi, sigma, C_norm, C_tang, *args, **kwargs):
 
 
 # noinspection PyUnusedLocal,PyUnusedLocal,PyUnusedLocal
-def fInductionCoefficients2(a_last, F, phi, sigma, C_norm, C_tang, Cl, *args, **kwargs):
+def fInductionCoefficients2(a_last, F, phi, sigma, C_norm, C_tang, Cl, Ct_r, *args, **kwargs):
     """
     Calculates induction coefficients using method used in Aerodyn software (Buhl method).
 
@@ -189,11 +189,10 @@ def fInductionCoefficients2(a_last, F, phi, sigma, C_norm, C_tang, Cl, *args, **
     This method is equal to Advanced brake state model method.
     """
 
-    CT = ((sigma * (1 - a_last) ** 2 * C_norm) / (sin(phi) ** 2))
-    if CT > 0.96 * F:
+    if Ct_r > 0.96 * F:
         # Modified Glauert correction
         a = (
-                    18 * F - 20 - 3 * sqrt(CT * (50 - 36 * F) +
+                    18 * F - 20 - 3 * sqrt(Ct_r * (50 - 36 * F) +
                                            12 * F * (3 * F - 4))
             ) / (36 * F - 50)
     else:
@@ -203,7 +202,7 @@ def fInductionCoefficients2(a_last, F, phi, sigma, C_norm, C_tang, Cl, *args, **
 
 
 # noinspection PyUnusedLocal,PyUnusedLocal,PyUnusedLocal
-def fInductionCoefficients3(a_last, F, lambda_r, phi, sigma, C_norm, *args, **kwargs):
+def fInductionCoefficients3(a_last, F, lambda_r, phi, sigma, C_norm, Ct_r, *args, **kwargs):
     """
     Calculates induction coefficients using Buhl correction (QBlade implementation).
 
@@ -212,13 +211,11 @@ def fInductionCoefficients3(a_last, F, lambda_r, phi, sigma, C_norm, *args, **kw
     AUTHOR: Buhl
     """
 
-    Ct = sigma * (1 - a_last) ** 2 * C_norm / (sin(phi) ** 2)  # Qblade
-
-    if Ct <= 0.96 * F:
+    if Ct_r <= 0.96 * F:
         a = 1 / (4 * F * sin(phi) ** 2 / (sigma * C_norm) + 1)
     else:
         a = (
-                    18 * F - 20 - 3 * abs(Ct * (50 - 36 * F) +
+                    18 * F - 20 - 3 * abs(Ct_r * (50 - 36 * F) +
                                           12 * F * (3 * F - 4)) ** 0.5
             ) / (36 * F - 50)
 

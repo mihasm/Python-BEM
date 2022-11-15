@@ -791,7 +791,7 @@ class Calculator:
             dFt = dFL * sin(phi) - dFD * cos(phi)  # tangential force
             dFn = dFL * cos(phi) + dFD * sin(phi)  # normal force
 
-            Ct_r = dFn / (0.5 * rho * v ** 2 * 2 * pi * _r * _dr) * B
+            Ct_r = (sigma * (1 - a) ** 2 * C_norm) / (sin(phi) ** 2)
 
             dFn_norm = dFn * num_sections
             dFt_norm = dFt * num_sections
