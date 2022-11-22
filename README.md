@@ -15,18 +15,18 @@ The main disadvantage of BEM is that it does not account for complex 3-D hydrody
 
 In principle, the calculation is done on a single blade. Each blade is divided into sections, and forces on each section are calculated separately. The coefficients of lift and drag (cL and cD) of each section depends mainly on the Reynolds number of the medium and the angle of attack (but also depends on other factors, such as the boundary layer, etc.). An iterative system of equations is then set up to determine the needed parameters.
 
-The input to the calculation consists of the following data:
-a. basic turbine data (tip radius, hub radius, type of turbine, type of fluid)
-b. geometry of each section (chord length, twist angle, radius, type of airfoil)
-c. the lift/drag curves of each airfoil
-d. calculation parameters (main equation selection, selection of corrections, etc.)
-e. other parameters
+The input to the calculation consists of the following data: \
+a. basic turbine data (tip radius, hub radius, type of turbine, type of fluid) \
+b. geometry of each section (chord length, twist angle, radius, type of airfoil) \
+c. the lift/drag curves of each airfoil \
+d. calculation parameters (main equation selection, selection of corrections, etc.) \
+e. other parameters \
 
-The output of the calculation consists of:
-a. forces acting on each blade
-b. the total power, torque and efficiency
-c. (optionally) statical analysis
-d. other parameters
+The output of the calculation consists of: \
+a. forces acting on each blade \
+b. the total power, torque and efficiency \
+c. (optionally) statical analysis \
+d. other parameters \
 
 ## Similar software
 
@@ -43,27 +43,27 @@ The BEM software main window is divided into multiple tabs, which are divided by
 
 ### Airfoil management
 
-In the Airfoil management tab, a designer can:
-	a. Add, rename, duplicate, remove, load and save airfoil data
-	b. import airfoil data
-	c. import or calculate the cL/cD curves of an airfoil
-	d. create 360° cL/cD curves using Montgomerie methods
+In the Airfoil management tab, a designer can: \
+	a. Add, rename, duplicate, remove, load and save airfoil data \
+	b. import airfoil data \
+	c. import or calculate the cL/cD curves of an airfoil \
+	d. create 360° cL/cD curves using Montgomerie methods \
 
 ### Turbine info
 
-In the Turbine info tab, a designer can:
-	a. Set up the basic turbine data (name, radii, number of blades, etc.)
-	b. Set the turbine scaling and interpolation, if needed for calculation for different sizes and numbers of sections
-	c. Generate a preliminary geometry of wind turbines or propellers using different methods (included are Betz, Schmitz, Larrabee, Adkins)
-	d. View the generated geometry in 3D
-	e. Export the geometry to Solidworks
-	f. Create standard geometry graphs for distribution and documentation purposes
+In the Turbine info tab, a designer can: \
+	a. Set up the basic turbine data (name, radii, number of blades, etc.) \
+	b. Set the turbine scaling and interpolation, if needed for calculation for different sizes and numbers of sections \
+	c. Generate a preliminary geometry of wind turbines or propellers using different methods (included are Betz, Schmitz, Larrabee, Adkins) \
+	d. View the generated geometry in 3D \
+	e. Export the geometry to Solidworks \
+	f. Create standard geometry graphs for distribution and documentation purposes \
 
 ### Analysis
 
-In the Analysis tab, a designer can:
-	a. Determine the basic calculation parameters
-	b. Run the analysis, which will, after finishing, open the results window
+In the Analysis tab, a designer can: \
+	a. Determine the basic calculation parameters \
+	b. Run the analysis, which will, after finishing, open the results window \
 
 ### Optimization
 
@@ -73,17 +73,36 @@ The optimization GUI is still in developement.
 
 # Installation and usage
 
-## Supported Python version
-3.2<3.9
+### Supported Python version
+3.2+
 
-## Install
+### Install
 pip install -r requirements.txt
 
-## Usage
+### Usage
 python main.py
 
-## Create Executable
+### Create Executable
 pyinstaller main.spec
 
-## On Mac - to run xfoil
+### On Mac - to run xfoil
 brew install xquartz
+
+# License
+
+Python BEM - Blade Element Momentum Theory Software.
+
+Copyright (C) 2022 M. Smrekar
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
