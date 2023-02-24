@@ -62,7 +62,6 @@ DEFAULT_SETTINGS_PATH = os.path.join(data_path,"karlsen.bem")
 
 QtWidgets.QApplication.setAttribute(QtCore.Qt.AA_EnableHighDpiScaling, True)
 
-
 def main(quick_results=False):
     """
     :param quick_results:

@@ -87,7 +87,6 @@ def calculate_power_3d(inp_args, print_eof=False, prepend="", print_progress=Tru
             "pitch"]
         variable_selection = inp_args["variable_selection"]
         constant_selection = inp_args["constant_selection"]
-        geometry_scale = inp_args["geometry_scale"]
         R = inp_args["R"]
 
         if variable_selection == 0:
@@ -103,7 +102,7 @@ def calculate_power_3d(inp_args, print_eof=False, prepend="", print_progress=Tru
                 constant_rpm = None
             else:
                 constant_speed = None
-            speeds, rpms = generate_v_and_rpm_from_tsr(tsr_list=tsr_list, R=R, geometry_scale=geometry_scale,
+            speeds, rpms = generate_v_and_rpm_from_tsr(tsr_list=tsr_list, R=R,
                                                        v=constant_speed, rpm=constant_rpm)
             pitches = [constant_pitch]
 
@@ -114,7 +113,7 @@ def calculate_power_3d(inp_args, print_eof=False, prepend="", print_progress=Tru
                 constant_rpm = None
             else:
                 constant_speed = None
-            speeds, rpms = generate_v_and_rpm_from_J(J_list=j_list, R=R, geometry_scale=geometry_scale,
+            speeds, rpms = generate_v_and_rpm_from_J(J_list=j_list, R=R,
                                                      v=constant_speed, rpm=constant_rpm, printer=p)
             pitches = [constant_pitch]
 
@@ -129,7 +128,7 @@ def calculate_power_3d(inp_args, print_eof=False, prepend="", print_progress=Tru
                 constant_rpm = None
             else:
                 constant_speed = None
-            speeds, rpms = generate_v_and_rpm_from_tsr(tsr_list=tsr_list, R=R, geometry_scale=geometry_scale,
+            speeds, rpms = generate_v_and_rpm_from_tsr(tsr_list=tsr_list, R=R,
                                                        v=constant_speed, rpm=constant_rpm)
 
         elif variable_selection == 5:
@@ -139,7 +138,7 @@ def calculate_power_3d(inp_args, print_eof=False, prepend="", print_progress=Tru
                 constant_rpm = None
             else:
                 constant_speed = None
-            speeds, rpms = generate_v_and_rpm_from_J(J_list=j_list, R=R, geometry_scale=geometry_scale,
+            speeds, rpms = generate_v_and_rpm_from_J(J_list=j_list, R=R,
                                                      v=constant_speed, rpm=constant_rpm, printer=p)
 
         total_iterations = int(len(speeds) * len(rpms))
@@ -216,10 +215,10 @@ def print_progress_message(v, rpm, inp_args, p, prepend, print_progress):
     """
     if print_progress:
         if v > 0:
-            _lambda = rpm / 60 * 2 * pi * inp_args["R"] * inp_args["geometry_scale"] / v
+            _lambda = rpm / 60 * 2 * pi * inp_args["R"] / v
         else:
             _lambda = 0.0
-        _advance_ratio = v / (rpm / 60 * 2 * inp_args["R"] * inp_args["geometry_scale"])
+        _advance_ratio = v / (rpm / 60 * 2 * inp_args["R"])
         # pitch = inp_args["pitch"]
         p.print(prepend + "v=%.1f m/s, n=%.0f RPM, λ=%.2f, J=%.2f" % (v, rpm, _lambda, _advance_ratio))
 

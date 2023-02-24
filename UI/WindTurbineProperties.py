@@ -634,16 +634,24 @@ class WindTurbineProperties(QWidget):
         _theta = array(theta)
         _foils = list(foils)
 
-        r, c, theta, foils, dr = interpolate_geom(_r, _c, _theta, _foils,
+        # save input values
+        out["R_in"] = out["R"]
+        out["Rhub_in"] = out["Rhub"]
+        out["r_in"], out["c_in"], out["theta_in"], out["foils_in"] = _r.tolist(), _c.tolist(), _theta.tolist(), _foils
+
+        r, c, theta, foils, dr, R, Rhub = interpolate_geom(_r, _c, _theta, _foils,
                                                   out["R"],
                                                   out["Rhub"],
                                                   out["num_interp"],
                                                   out["linspace_interp"],
                                                   out["geometry_scale"])
 
-
+        # override with interpolated and scaled values
         out["r"], out["c"], out["theta"], out["foils"], out["dr"] = r.tolist(), c.tolist(), theta.tolist(), foils, dr.tolist()
-        out["r_in"], out["c_in"], out["theta_in"], out["foils_in"] = _r.tolist(), _c.tolist(), _theta.tolist(), _foils
+        out["R"] = R
+        out["Rhub"] = Rhub
+
+        # calculate pitch
         propeller_pitch = 2 * np.pi * np.array(out["r"]) * np.tan(np.radians(out["theta"])) * 39.3701
         out["propeller_pitch"] = propeller_pitch.tolist()
 

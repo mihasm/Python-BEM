@@ -176,7 +176,7 @@ class Calculator:
                   relaxation_factor, print_all, rotational_augmentation_correction,
                   rotational_augmentation_correction_method,
                   fix_reynolds, reynolds, yaw_angle, skewed_wake_correction, blade_design, blade_thickness,
-                  mass_density, geometry_scale, use_minimization_solver, invert_alpha,
+                  mass_density, use_minimization_solver, invert_alpha,
                   a_initial, aprime_initial,
                   print_progress=False, return_print=None, return_results=None, *args, **kwargs):
         """
@@ -190,7 +190,6 @@ class Calculator:
         phi - angle of relative wind
 
         :param print_progress:
-        :param geometry_scale:
         :param mass_density:
         :param blade_thickness:
         :param blade_design:
@@ -241,8 +240,6 @@ class Calculator:
             results[array] = numpy.array([])
 
         theta, c, r = np.array(theta), np.array(c), np.array(r)
-        R = R * geometry_scale
-        Rhub = Rhub * geometry_scale
         num_sections = len(theta)
 
         # set constants that are section-independent
@@ -901,13 +898,34 @@ class Calculator:
             if aprime_last == None:
                 aprime_last = aprime
 
-            out = {"a": a, "a'": aprime, "Cl": Cl, "Cd": Cd, "alpha": degrees(alpha), "phi": degrees(phi), "F": F,
-                   "dFt": dFt, "dFn": dFn, "_airfoil": _airfoil, "dT": dT, "dQ": dQ, "Re": Re,
-                   'U1': U1, 'U2': U2, 'U3': U3, 'U4': U4,
-                   "lambda_r": lambda_r, "dFt/n": dFt_norm, "dFn/n": dFn_norm, "stall": stall, "Ct_r": Ct_r,
-                   "Vrel_norm": Vrel_norm,
-                   "Cn":C_norm,"Ct":C_tang,
-                   "iterations": i, "criterion_value": abs(a - a_last)}
+            out = {
+                "a": a,
+                "a'": aprime,
+                "Cl": Cl,
+                "Cd": Cd,
+                "alpha": degrees(alpha),
+                "phi": degrees(phi),
+                "F": F,
+                "dFt": dFt,
+                "dFn": dFn,
+                "dFt/n": dFt_norm,
+                "dFn/n": dFn_norm,
+                "_airfoil": _airfoil,
+                "dT": dT,
+                "dQ": dQ,
+                "Re": Re,
+                'U1': U1,
+                'U2': U2,
+                'U3': U3,
+                'U4': U4,
+                "lambda_r": lambda_r,
+                "stall": stall,
+                "Ct_r": Ct_r,
+                "Vrel_norm": Vrel_norm,
+                "Cn":C_norm, "Ct":C_tang,
+                "iterations": i,
+                "criterion_value": abs(a - a_last)
+            }
 
             if use_minimization_solver:
                 if turbine_type == 1:  # propeller

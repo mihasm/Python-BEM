@@ -159,6 +159,7 @@ def interpolate_geom(r, c, theta, foils, R, Rhub, num=None, linspace_interp=Fals
     theta_interpolator = interpolate.interp1d(r, theta)
     r_orig = r.copy()
     foils_orig = foils.copy()
+    
     if linspace_interp:
         r = np.linspace(start=r[0], stop=r[-1], num=int(num) + 1)
         c = c_interpolator(r)
@@ -177,8 +178,10 @@ def interpolate_geom(r, c, theta, foils, R, Rhub, num=None, linspace_interp=Fals
     r = geometry_scale * r
     dr = geometry_scale * dr
     c = geometry_scale * c
+    R = geometry_scale * R
+    Rhub = geometry_scale * Rhub
 
-    return r, c, theta, foils, dr
+    return r, c, theta, foils, dr, R, Rhub
 
 
 def calculate_dr(r, R, Rhub):
@@ -401,7 +404,7 @@ def get_centroid_coordinates(x, y):
     return Cx, Cy
 
 
-def generate_v_and_rpm_from_tsr(tsr_list, R, geometry_scale, v=None, rpm=None):
+def generate_v_and_rpm_from_tsr(tsr_list, R, v=None, rpm=None):
     """
     TSR = omega * R / v
 
@@ -413,18 +416,18 @@ def generate_v_and_rpm_from_tsr(tsr_list, R, geometry_scale, v=None, rpm=None):
         # rpm is fixed
         out_rpm.append(rpm)
         for tsr in tsr_list:
-            _v = 2 * np.pi * rpm / 60 * (R * geometry_scale) / tsr
+            _v = 2 * np.pi * rpm / 60 * R / tsr
             out_v.append(_v)
     elif rpm == None:
         # v is fixed
         out_v.append(v)
         for tsr in tsr_list:
-            _rpm = tsr * v * 60 / (R * geometry_scale) / 2 / np.pi
+            _rpm = tsr * v * 60 / R / 2 / np.pi
             out_rpm.append(_rpm)
     return out_v, out_rpm
 
 
-def generate_v_and_rpm_from_J(J_list, R, geometry_scale, v=None, rpm=None, printer=None):
+def generate_v_and_rpm_from_J(J_list, R, v=None, rpm=None, printer=None):
     """
     J = v / (rpm/60 * D) ...
 
