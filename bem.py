@@ -19,7 +19,7 @@
 __author__ = "Miha Smrekar"
 __credits__ = ["Miha Smrekar"]
 __license__ = "GPL"
-__version__ = "0.4.7"
+__version__ = "0.4.8"
 __maintainer__ = "Miha Smrekar"
 __email__ = "xmiha.xsmrekar@gmail.com"
 __status__ = "Development"
