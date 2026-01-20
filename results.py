@@ -33,7 +33,7 @@ from UI.Table import Table
 from calculation import OUTPUT_VARIABLES_LIST
 from utils import dict_to_ar, greek_letters_to_string, transpose, filter_3d_results
 
-warnings.filterwarnings("ignore", category=matplotlib.cbook.MatplotlibDeprecationWarning)
+#warnings.filterwarnings("ignore", category=matplotlib.cbook.MatplotlibDeprecationWarning)
 
 
 class ResultsWindow(QMainWindow):
@@ -116,7 +116,7 @@ class ResultsWindow(QMainWindow):
             sm = plt.cm.ScalarMappable(cmap="RdYlGn", norm=norm)
             sm.set_array([])
 
-            cbar = plt.colorbar(sm, ticks=[0, 0.5, 1])
+            cbar = f2.colorbar(sm, ax=ax_cp, ticks=[0, 0.5, 1])
             cbar.set_label("Stalled area")
             cbar.ax.set_yticklabels(["100 %", "50 %", "0 %"])
 
