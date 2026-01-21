@@ -1,4 +1,6 @@
-# About the software
+# Python BEM
+
+![bem.png](bem.png)
 
 ## What is it for?
 Wind turbines and propellers involve relatively complex geometries, and due to the rotation of the turbine, movement of the air, and the fact that lift is a function of the shape of each blade, it is hard to calculate the forces, power and efficiency of such systems by hand.
