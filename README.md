@@ -223,10 +223,8 @@ $$
 The current code implements hub loss as
 
 $$
-F_{hub} = \frac{2}{\pi}\cos^{-1}\left[\exp\left(-\frac{B}{2}\left|\frac{(r-R_{hub})/r}{\sin(\phi/360\cdot 2\pi)}\right|\right)\right]
+F_{hub} = \frac{2}{\pi}\cos^{-1}\left[\exp\left(-\frac{B}{2}\left|\frac{(r-R_{hub})/r}{\sin\phi}\right|\right)\right]
 $$
-
-Note: this function mixes the angle handling differently from the tip-loss function, because it is documented here exactly as implemented.
 
 #### Modified Tip Loss
 
@@ -1063,7 +1061,7 @@ $$
 ### Betz Twist Distribution
 
 $$
-\theta = \tan^{-1}\left(\frac{2R}{3r\,TSR}\right) + \alpha_d
+\theta = \tan^{-1}\left(\frac{2R}{3r\,TSR}\right) - \alpha_d
 $$
 
 The code returns this in degrees.

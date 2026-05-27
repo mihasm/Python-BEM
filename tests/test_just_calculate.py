@@ -15,9 +15,23 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import sys, os
-sys.path.append("..")
-from calculation_runner import calculate_power_3d
 import json
+import sys
+from pathlib import Path
 
-results = calculate_power_3d(json.loads(open(os.path.join("..","karlsen.bem")).read()))
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.append(str(ROOT))
+
+from calculation_runner import calculate_power_3d
+
+
+def test_calculate_power_3d_from_sample_file():
+    settings_path = ROOT / "karlsen.bem"
+    with settings_path.open() as f:
+        settings = json.load(f)
+
+    results = calculate_power_3d(settings, print_progress=False)
+
+    assert isinstance(results, dict)
+    assert "power" in results
+    assert len(results["power"]) > 0
