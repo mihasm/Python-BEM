@@ -643,7 +643,7 @@ def get_curves_functions(input_arguments):
 
         data = airfoils[blade_name]["gathered_curves"]
         data = np.array(data)
-        data = data[np.in1d(data[:, 1], ncrit_selected)]
+        data = data[np.isin(data[:, 1], ncrit_selected)]
         data = sort_data(data)
 
         re = data[:, 0].flatten()

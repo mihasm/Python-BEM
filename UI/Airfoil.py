@@ -204,7 +204,7 @@ class Airfoil(QWidget):
         print("Visualizing")
         data = self.gather_curves()
         print(data)
-        data = data[np.in1d(data[:, 1], float(self.ncrit_selection.currentText()))]  # current Ncrit
+        data = data[np.isin(data[:, 1], float(self.ncrit_selection.currentText()))]  # current Ncrit
 
         re = data[:, 0]
         alpha = data[:, 2]
@@ -374,10 +374,10 @@ class Airfoil(QWidget):
         x, y = self.get_x_y()
         ncrit_list = np.unique(data[:, 1])
         for ncrit_selected in ncrit_list:
-            rows_with_ncrit = data[np.in1d(data[:, 1], ncrit_selected)]
+            rows_with_ncrit = data[np.isin(data[:, 1], ncrit_selected)]
             Re_list = np.unique(rows_with_ncrit[:, 0])
             for Re in Re_list:
-                rows_with_Re = rows_with_ncrit[np.in1d(rows_with_ncrit[:, 0], Re)]
+                rows_with_Re = rows_with_ncrit[np.isin(rows_with_ncrit[:, 0], Re)]
                 _alpha = rows_with_Re[:, 2].flatten()
                 _cl = rows_with_Re[:, 3].flatten()
                 _cd = rows_with_Re[:, 4].flatten()
