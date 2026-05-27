@@ -183,7 +183,7 @@ $$
 The relative-flow angle is
 
 $$
-\phi = \operatorname{atan2}(U_n, U_t)
+\phi = atan2(U_n, U_t)
 $$
 
 The relative speed magnitude is
@@ -309,7 +309,11 @@ The code sets a section stall flag if the current angle of attack is outside the
 
 $$
 \alpha > \alpha_{stall,max}
-\quad \text{or} \quad
+$$
+
+or
+
+$$
 \alpha < \alpha_{stall,min}
 $$
 
@@ -481,6 +485,16 @@ $$
 
 $$
 dF_n = dF_L\cos\phi + dF_D\sin\phi
+$$
+
+The per-unit-length outputs stored as `dFt/n` and `dFn/n` are
+
+$$
+\frac{dF_t}{dr}
+$$
+
+$$
+\frac{dF_n}{dr}
 $$
 
 The local thrust coefficient used by the induction models is
@@ -1366,7 +1380,6 @@ The full list is defined in `OUTPUT_VARIABLES_LIST` in `calculation.py`.
 
 - This README documents the code as implemented, not an idealized textbook BEM derivation.
 - Some formulas differ between wind-turbine and propeller branches by sign convention and by which thrust/torque expression is finally stored.
-- The hub-loss implementation uses its current in-code angle handling exactly as written.
 - The Adkins and Montgomerie parts are iterative and partially empirical; their equations above are intended as a code reference.
 
 ## License
