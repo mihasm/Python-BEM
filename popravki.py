@@ -83,7 +83,7 @@ def fHubLoss(B, r, Rhub, phi):
     :return: returns hub loss factor [float]
     """
     F = 1
-    f = sin(phi / 360 * 2 * pi)
+    f = sin(phi)
     g = (r - Rhub) / r
     Fr = 2 / pi * acos(exp(-B / 2 * abs(g / f)))
     F = F * Fr

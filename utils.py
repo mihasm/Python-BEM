@@ -760,7 +760,7 @@ def generate_twists_betz(radiuses, R, TSR, alpha_d, ):
     """
     Source: http://wflportal.amcplaza.com/Research/DYNAM/Resource%20Documents/WT_Theory_2009.pdf
     """
-    thetas = np.rad2deg(np.arctan(2 * R / (3 * radiuses * TSR))) + alpha_d
+    thetas = np.rad2deg(np.arctan(2 * R / (3 * radiuses * TSR))) - alpha_d
     return thetas
 
 

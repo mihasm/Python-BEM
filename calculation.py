@@ -99,6 +99,7 @@ OUTPUT_VARIABLES_LIST = {
     "Ft": {"type": "float", "name": "Tangential force", "symbol": r"$F_t$", "unit": "N"},
     "omega": {"type": "float", "name": "Rotational velocity", "symbol": r"$\Omega$", "unit": r"$rad^{-1}$"},
     "M": {"type": "float", "name": "Torque sum", "symbol": r"$M_Sum$", "unit": "Nm"},
+    "Q": {"type": "float", "name": "Aerodynamic torque", "symbol": "Q", "unit": "Nm"},
     "power": {"type": "float", "name": "Power", "symbol": "P", "unit": "W"},
     "thrust": {"type": "float", "name": "Thrust", "symbol": "T", "unit": "N"},
     "Rhub": {"type": "float", "name": "Hub radius", "symbol": r"$R_hub$", "unit": "m"},
@@ -395,6 +396,7 @@ class Calculator:
         results["Ft"] = Ft
         results["omega"] = omega
         results["M"] = M
+        results["Q"] = Q
         results["power"] = power
         results["thrust"] = T
         results["Rhub"] = Rhub
@@ -676,9 +678,9 @@ class Calculator:
                                "interp_function_cd"](Re, degrees(alpha))
 
                 if Cl1 == False and Cd1 == False:
-                    return {"finished": False, "iterations": i, "criterion_value": abs(a - a_last)}
+                    return {"finished": False, "iterations": i, "criterion_value": abs(a - inp[0])}
                 if Cl2 == False and Cd2 == False:
-                    return {"finished": False, "iterations": i, "criterion_value": abs(a - a_last)}
+                    return {"finished": False, "iterations": i, "criterion_value": abs(a - inp[0])}
 
                 if invert_alpha:
                     Cl1, Cl2 = -Cl1, -Cl2
@@ -807,8 +809,8 @@ class Calculator:
 
             Ct_r = (sigma * (1 - a) ** 2 * C_norm) / (sin(phi) ** 2) # BT
 
-            dFn_norm = dFn * num_sections
-            dFt_norm = dFt * num_sections
+            dFn_norm = dFn / _dr
+            dFt_norm = dFt / _dr
 
             if invert_alpha:
                 alpha = -alpha
@@ -840,7 +842,7 @@ class Calculator:
                 # calculate new induction coefficients
                 coeffs = calculate_coefficients(method, input_arguments)
                 if coeffs == None:
-                    return {"finished": False, "iterations": i, "criterion_value": abs(a - a_last)}
+                    return {"finished": False, "iterations": i, "criterion_value": abs(a - inp[0])}
 
                 # save old values
                 a_last = a

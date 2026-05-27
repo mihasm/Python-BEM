@@ -24,8 +24,55 @@ from PyQt5.QtWidgets import QWidget, QGridLayout, QFormLayout, QScrollArea, QVBo
     QComboBox, QCheckBox, QLineEdit, QLabel, QMessageBox
 
 from UI.helpers import PyQtGraphWindow, MyMessageBox
+from UI.Table import Table
 from optimization import optimize
 from utils import to_float
+
+
+class OptimizationResultWindow(QWidget):
+    def __init__(self, optimization_widget, geometry, summary_lines):
+        super(OptimizationResultWindow, self).__init__(optimization_widget)
+        self.optimization_widget = optimization_widget
+        self.main = optimization_widget.main
+        self.geometry = geometry
+
+        self.setWindowTitle("Optimized geometry")
+        self.setMinimumSize(720, 520)
+
+        layout = QGridLayout()
+        self.setLayout(layout)
+
+        self.summary = QTextEdit()
+        self.summary.setReadOnly(True)
+        self.summary.setPlainText("\n".join(summary_lines))
+        layout.addWidget(self.summary, 0, 0)
+
+        self.table = Table(True)
+        self.table.set_labels(["r [m]", "c [m]", "theta [deg]", "airfoil"])
+        rows = []
+        for r, c, theta, foil in zip(geometry["r_in"], geometry["c_in"], geometry["theta_in"], geometry["foils_in"]):
+            rows.append([round(float(r), 8), round(float(c), 8), round(float(theta), 8), str(foil)])
+        self.table.createTable(rows)
+        layout.addWidget(self.table, 1, 0)
+
+        self.button_import = QPushButton("Import this geometry back into the software")
+        self.button_import.clicked.connect(self.import_geometry)
+        layout.addWidget(self.button_import, 2, 0)
+
+        self.show()
+
+    def import_geometry(self):
+        settings = self.main.get_all_settings()
+        if settings is None:
+            return
+        settings.update(self.geometry)
+        if self.geometry.get("pitch") is not None:
+            settings["pitch"] = self.geometry.get("pitch")
+        self.main.set_all_settings(settings)
+        self.main.analysis.clear()
+        self.optimization_widget.clear()
+        self.main.tab_widget.setCurrentIndex(1)
+        QMessageBox.information(self, "Geometry imported", "The optimized geometry was imported into Turbine info.")
 
 
 class Optimization(QWidget):
@@ -103,13 +150,76 @@ class Optimization(QWidget):
         self.num_iter.setToolTip(
             "Število generacij (iteracij). Konvergenčni kriterij je pri tovrstnih algoritmih težko določljiv, zato izberemo fiksno vrednost.")
 
+        self.optimization_mode_selection = QComboBox()
+        self.optimization_mode_selection.addItems(["Section-by-section", "Whole-blade"])
+        self.optimization_mode_selection.currentIndexChanged.connect(self.update_mode_visibility)
+        self._optimization_mode = QLabel("Optimization mode")
+        self.form_list.append([self._optimization_mode, self.optimization_mode_selection])
+
+        self.whole_blade_objective_selection = QComboBox()
+        self.whole_blade_objective_selection.addItems([
+            "Min torque at target thrust",
+            "Max thrust at power limit",
+            "Max Cp",
+            "Max efficiency at target thrust",
+            "Weighted custom objective",
+        ])
+        self.whole_blade_objective_selection.currentIndexChanged.connect(self.update_mode_visibility)
+        self._whole_blade_objective = QLabel("Whole-blade objective")
+        self.form_list.append([self._whole_blade_objective, self.whole_blade_objective_selection])
+
+        self.whole_blade_solver_selection = QComboBox()
+        self.whole_blade_solver_selection.addItems(["SLSQP", "Differential evolution"])
+        self._whole_blade_solver = QLabel("Whole-blade solver")
+        self.form_list.append([self._whole_blade_solver, self.whole_blade_solver_selection])
+
+        self.whole_blade_twist_cp = QLineEdit("5")
+        self.whole_blade_twist_cp.setValidator(self.validator)
+        self._whole_blade_twist_cp = QLabel("Twist control points")
+        self.form_list.append([self._whole_blade_twist_cp, self.whole_blade_twist_cp])
+
+        self.whole_blade_chord_cp = QLineEdit("4")
+        self.whole_blade_chord_cp.setValidator(self.validator)
+        self._whole_blade_chord_cp = QLabel("Chord control points")
+        self.form_list.append([self._whole_blade_chord_cp, self.whole_blade_chord_cp])
+
+        self.whole_blade_root_cp_lock = QLineEdit("1")
+        self.whole_blade_root_cp_lock.setValidator(self.validator)
+        self._whole_blade_root_cp_lock = QLabel("Locked root CPs")
+        self.form_list.append([self._whole_blade_root_cp_lock, self.whole_blade_root_cp_lock])
+
+        self.whole_blade_tip_cp_lock = QLineEdit("1")
+        self.whole_blade_tip_cp_lock.setValidator(self.validator)
+        self._whole_blade_tip_cp_lock = QLabel("Locked tip CPs")
+        self.form_list.append([self._whole_blade_tip_cp_lock, self.whole_blade_tip_cp_lock])
+
+        self.whole_blade_target_thrust = QLineEdit()
+        self.whole_blade_target_thrust.setValidator(self.validator)
+        self._whole_blade_target_thrust = QLabel("Target thrust [N]")
+        self.form_list.append([self._whole_blade_target_thrust, self.whole_blade_target_thrust])
+
+        self.whole_blade_max_power = QLineEdit()
+        self.whole_blade_max_power.setValidator(self.validator)
+        self._whole_blade_max_power = QLabel("Max power [W]")
+        self.form_list.append([self._whole_blade_max_power, self.whole_blade_max_power])
+
+        self.whole_blade_max_stall_percentage = QLineEdit()
+        self.whole_blade_max_stall_percentage.setValidator(self.validator)
+        self._whole_blade_max_stall_percentage = QLabel("Max stall fraction")
+        self.form_list.append([self._whole_blade_max_stall_percentage, self.whole_blade_max_stall_percentage])
+
+        self.whole_blade_monotonic_chord = QCheckBox()
+        self.whole_blade_monotonic_chord.setChecked(True)
+        self._whole_blade_monotonic_chord = QLabel("Monotonic chord after max")
+        self.form_list.append([self._whole_blade_monotonic_chord, self.whole_blade_monotonic_chord])
+
         self.input_variables_widget = QWidget()
         self.input_variables_layout = QGridLayout()
         self.input_variables_widget.setLayout(self.input_variables_layout)
         self.button_add_input_variable = QPushButton("Add input variable")
         self.button_add_input_variable.clicked.connect(self.add_input_variable)
         self.input_variable_selection = QComboBox()
-        self.input_variable_selection.addItems(["_theta", "_c"])
+        self.input_variable_selection.addItems(["_theta", "_c", "pitch"])
         self.list_input_variables = []
 
         self.output_variables_widget = QWidget()
@@ -118,7 +228,10 @@ class Optimization(QWidget):
         self.button_add_output_variable = QPushButton("Add output variable")
         self.button_add_output_variable.clicked.connect(self.add_output_variable)
         self.output_variable_selection = QComboBox()
-        self.output_variable_selection.addItems(["dQ", "dT", "a", "a'", "Cl", "Cd", "dFn", "dFt", "U4", "alpha", "phi"])
+        self.output_variable_selection.addItems([
+            "dQ", "dT", "a", "a'", "Cl", "Cd", "dFn", "dFt", "U4", "alpha", "phi",
+            "thrust", "power", "cp", "ct", "cq", "eff", "M", "Q", "blade_stall_percentage",
+        ])
         self.list_output_variables = []
 
         self.target_variables_widget = QWidget()
@@ -127,7 +240,10 @@ class Optimization(QWidget):
         self.button_add_target_variable = QPushButton("Add target variable")
         self.button_add_target_variable.clicked.connect(self.add_target_variable)
         self.target_variable_selection = QComboBox()
-        self.target_variable_selection.addItems(["dQ", "dT", "a", "a'", "Cl", "Cd", "dFn", "dFt", "U4", "alpha", "phi"])
+        self.target_variable_selection.addItems([
+            "dQ", "dT", "a", "a'", "Cl", "Cd", "dFn", "dFt", "U4", "alpha", "phi",
+            "thrust", "power", "cp", "ct", "cq", "eff", "M", "Q", "blade_stall_percentage",
+        ])
         self.list_target_variables = []
 
         self.buttonOptimization = QPushButton("Run optimization")
@@ -171,6 +287,26 @@ class Optimization(QWidget):
         self.J_string = QLabel("0")
         self.fbox.addRow("TSR:", self.tsr_string)
         self.fbox.addRow("J:", self.J_string)
+
+        self.whole_blade_widgets = [
+            self._whole_blade_objective, self.whole_blade_objective_selection,
+            self._whole_blade_solver, self.whole_blade_solver_selection,
+            self._whole_blade_twist_cp, self.whole_blade_twist_cp,
+            self._whole_blade_chord_cp, self.whole_blade_chord_cp,
+            self._whole_blade_root_cp_lock, self.whole_blade_root_cp_lock,
+            self._whole_blade_tip_cp_lock, self.whole_blade_tip_cp_lock,
+            self._whole_blade_target_thrust, self.whole_blade_target_thrust,
+            self._whole_blade_max_power, self.whole_blade_max_power,
+            self._whole_blade_max_stall_percentage, self.whole_blade_max_stall_percentage,
+            self._whole_blade_monotonic_chord, self.whole_blade_monotonic_chord,
+        ]
+        self.section_objective_widgets = [
+            self.button_add_output_variable, self.output_variable_selection, self.output_variables_widget,
+            self.button_add_target_variable, self.target_variable_selection, self.target_variables_widget,
+        ]
+
+        self.result_window = None
+        self.update_mode_visibility()
 
     def refresh_input_variables(self):
         """
@@ -317,7 +453,13 @@ class Optimization(QWidget):
 
         """
         variable = str(self.input_variable_selection.currentText())
-        self.list_input_variables.append([variable, 0, 0])
+        default_bounds = {
+            "_theta": [-45, 45],
+            "_c": [0.001, 5],
+            "pitch": [-45, 45],
+        }
+        bounds = default_bounds.get(variable, [0, 0])
+        self.list_input_variables.append([variable, bounds[0], bounds[1]])
         self.refresh_input_variables()
 
     def add_output_variable(self):
@@ -335,6 +477,29 @@ class Optimization(QWidget):
         variable = str(self.target_variable_selection.currentText())
         self.list_target_variables.append([variable, 0, 1])
         self.refresh_target_variables()
+
+    def set_widgets_visible(self, widgets, visible):
+        for widget in widgets:
+            widget.setVisible(visible)
+
+    def update_mode_visibility(self):
+        is_whole_blade = self.optimization_mode_selection.currentIndex() == 1
+        objective_index = self.whole_blade_objective_selection.currentIndex()
+        uses_custom_objective = objective_index == 4
+
+        self.set_widgets_visible(self.whole_blade_widgets, is_whole_blade)
+        self.set_widgets_visible(self.section_objective_widgets, (not is_whole_blade) or uses_custom_objective)
+
+        show_target_thrust = is_whole_blade and objective_index in [0, 3]
+        self.set_widgets_visible([self._whole_blade_target_thrust, self.whole_blade_target_thrust], show_target_thrust)
+
+        show_max_power = is_whole_blade and objective_index == 1
+        self.set_widgets_visible([self._whole_blade_max_power, self.whole_blade_max_power], show_max_power)
+
+        if is_whole_blade:
+            self.button_add_input_variable.setText("Add design variable")
+        else:
+            self.button_add_input_variable.setText("Add input variable")
 
     def update_tsr_and_j(self):
         """
@@ -462,6 +627,32 @@ class Optimization(QWidget):
         self.main.emitter_done.disconnect()
 
         self.win.stop_update()
+        self.show_results()
+
+    def show_results(self):
+        if len(self.main.return_results) == 0:
+            return
+        result = self.main.return_results[-1]
+        if "optimized_geometry" not in result:
+            return
+
+        geometry = result["optimized_geometry"]
+        summary_lines = []
+        if "thrust" in result:
+            summary_lines.append("Thrust: %s N" % round(float(result["thrust"]), 6))
+        if "Q" in result:
+            summary_lines.append("Torque: %s Nm" % round(float(result["Q"]), 6))
+        if "power" in result:
+            summary_lines.append("Power: %s W" % round(float(result["power"]), 6))
+        if "cp" in result:
+            summary_lines.append("Cp: %s" % round(float(result["cp"]), 6))
+        if "eff" in result:
+            summary_lines.append("Efficiency: %s" % round(float(result["eff"]), 6))
+        if geometry.get("pitch") is not None:
+            summary_lines.append("Pitch: %s deg" % round(float(geometry["pitch"]), 6))
+        summary_lines.append("Rows: %d" % len(geometry.get("r_in", [])))
+
+        self.result_window = OptimizationResultWindow(self, geometry, summary_lines)
 
     def get_settings(self):
         """
@@ -474,8 +665,23 @@ class Optimization(QWidget):
         out["mut_coeff"] = self.mut_coeff.text()
         out["population"] = self.population.text()
         out["num_iter"] = self.num_iter.text()
+        out["optimization_mode"] = self.optimization_mode_selection.currentIndex()
+        out["whole_blade_objective"] = self.whole_blade_objective_selection.currentIndex()
+        out["whole_blade_solver"] = self.whole_blade_solver_selection.currentIndex()
+        out["whole_blade_twist_cp"] = self.whole_blade_twist_cp.text()
+        out["whole_blade_chord_cp"] = self.whole_blade_chord_cp.text()
+        out["whole_blade_root_cp_lock"] = self.whole_blade_root_cp_lock.text()
+        out["whole_blade_tip_cp_lock"] = self.whole_blade_tip_cp_lock.text()
+        out["whole_blade_target_thrust"] = self.whole_blade_target_thrust.text()
+        out["whole_blade_max_power"] = self.whole_blade_max_power.text()
+        out["whole_blade_max_stall_percentage"] = self.whole_blade_max_stall_percentage.text()
+        out["whole_blade_monotonic_chord"] = self.whole_blade_monotonic_chord.isChecked()
 
         for k, v in out.items():
+            if isinstance(v, bool):
+                continue
+            if k in ["optimization_mode", "whole_blade_objective", "whole_blade_solver"]:
+                continue
             if v == "":
                 v = None
             elif v == None:
@@ -507,11 +713,36 @@ class Optimization(QWidget):
             self.population.setText(str(inp_dict["population"]))
         if "num_iter" in inp_dict.keys():
             self.num_iter.setText(str(inp_dict["num_iter"]))
+        if "optimization_mode" in inp_dict.keys():
+            self.optimization_mode_selection.setCurrentIndex(int(inp_dict["optimization_mode"]))
+        if "whole_blade_objective" in inp_dict.keys():
+            self.whole_blade_objective_selection.setCurrentIndex(int(inp_dict["whole_blade_objective"]))
+        if "whole_blade_solver" in inp_dict.keys():
+            self.whole_blade_solver_selection.setCurrentIndex(int(inp_dict["whole_blade_solver"]))
+        if "whole_blade_twist_cp" in inp_dict.keys():
+            self.whole_blade_twist_cp.setText(str(inp_dict["whole_blade_twist_cp"]))
+        if "whole_blade_chord_cp" in inp_dict.keys():
+            self.whole_blade_chord_cp.setText(str(inp_dict["whole_blade_chord_cp"]))
+        if "whole_blade_root_cp_lock" in inp_dict.keys():
+            self.whole_blade_root_cp_lock.setText(str(inp_dict["whole_blade_root_cp_lock"]))
+        if "whole_blade_tip_cp_lock" in inp_dict.keys():
+            self.whole_blade_tip_cp_lock.setText(str(inp_dict["whole_blade_tip_cp_lock"]))
+        if "whole_blade_target_thrust" in inp_dict.keys():
+            self.whole_blade_target_thrust.setText(str(inp_dict["whole_blade_target_thrust"]))
+        if "whole_blade_max_power" in inp_dict.keys():
+            self.whole_blade_max_power.setText(str(inp_dict["whole_blade_max_power"]))
+        if "whole_blade_max_stall_percentage" in inp_dict.keys():
+            self.whole_blade_max_stall_percentage.setText(str(inp_dict["whole_blade_max_stall_percentage"]))
+        if "whole_blade_monotonic_chord" in inp_dict.keys():
+            self.whole_blade_monotonic_chord.setChecked(bool(inp_dict["whole_blade_monotonic_chord"]))
         if "optimization_inputs" in inp_dict.keys():
             self.list_input_variables = inp_dict["optimization_inputs"]
         if "optimization_outputs" in inp_dict.keys():
             self.list_output_variables = inp_dict["optimization_outputs"]
+        if "optimization_targets" in inp_dict.keys():
+            self.list_target_variables = inp_dict["optimization_targets"]
         
         self.refresh_output_variables()
         self.refresh_input_variables()
         self.refresh_target_variables()
+        self.update_mode_visibility()
