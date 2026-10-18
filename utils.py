@@ -296,7 +296,9 @@ def generate_dat(name, x, y):
         else:
             out += "%.6f  %.6f\n" % (_x, _y)
 
-    f = open(os.path.join(application_path, "foils", name + ".dat"), "w")
+    foils_path = os.path.join(application_path, "foils")
+    create_folder(foils_path)
+    f = open(os.path.join(foils_path, name + ".dat"), "w")
     f.write(out)
     f.close()
     return out
