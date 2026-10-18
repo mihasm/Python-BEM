@@ -157,7 +157,7 @@ def interpolate_foils(foil_1_x, foil_1_y, foil_2_x, foil_2_y, t):
     return out_x, out_y
 
 
-def create_3d_blade(input_data, flip_turning_direction=False, propeller_geom=False):
+def build_blade_lines(input_data, flip_turning_direction=False, propeller_geom=False):
     """
 
     :param input_data:
@@ -226,10 +226,26 @@ def create_3d_blade(input_data, flip_turning_direction=False, propeller_geom=Fal
 
         data.append([_r, np.array(list_x), np.array(list_y)])
 
+    return {"data": data, "X": np.array(out_x), "Y": np.array(out_y), "Z": np.array(out_z)}
+
+
+def create_3d_blade(input_data, flip_turning_direction=False, propeller_geom=False):
+    """
+
+    :param input_data:
+    :param flip_turning_direction:
+    :param propeller_geom:
+    :return:
+    """
+    blade_data = build_blade_lines(input_data,
+                                   flip_turning_direction=flip_turning_direction,
+                                   propeller_geom=propeller_geom)
+
+    X, Y, Z = blade_data["X"], blade_data["Y"], blade_data["Z"]
+
     # DRAW ########
     fig = plt.figure()
     ax = fig.add_subplot(111, projection='3d')
-    X, Y, Z = np.array(out_x), np.array(out_y), np.array(out_z)
     max_range = np.array(
         [X.max() - X.min(), Y.max() - Y.min(), Z.max() - Z.min()]).max() / 2.0
     mid_x = (X.max() + X.min()) * 0.5
@@ -242,6 +258,4 @@ def create_3d_blade(input_data, flip_turning_direction=False, propeller_geom=Fal
     ax.scatter(X, Y, Z)
     # plt.show()
     ###############
-
-    # data = np.array(data)
-    return {"data": data, "X": X, "Y": Y, "Z": Z}
+    return blade_data

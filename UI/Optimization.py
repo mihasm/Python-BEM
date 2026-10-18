@@ -19,11 +19,11 @@ from multiprocessing import Manager
 from multiprocessing.context import Process
 
 import numpy as np
-from PyQt5 import QtGui
+from PyQt5 import QtCore, QtGui
 from PyQt5.QtWidgets import QWidget, QGridLayout, QFormLayout, QScrollArea, QVBoxLayout, QTextEdit, QPushButton, \
     QComboBox, QCheckBox, QLineEdit, QLabel, QMessageBox
 
-from UI.helpers import PyQtGraphWindow, MyMessageBox
+from UI.helpers import PyQtGraphWindow, OptimizationPreviewWindow, MyMessageBox
 from UI.Table import Table
 from optimization import optimize
 from utils import to_float
@@ -31,11 +31,12 @@ from utils import to_float
 
 class OptimizationResultWindow(QWidget):
     def __init__(self, optimization_widget, geometry, summary_lines):
-        super(OptimizationResultWindow, self).__init__(optimization_widget)
+        super(OptimizationResultWindow, self).__init__(None)
         self.optimization_widget = optimization_widget
         self.main = optimization_widget.main
         self.geometry = geometry
 
+        self.setWindowFlags(QtCore.Qt.Window)
         self.setWindowTitle("Optimized geometry")
         self.setMinimumSize(720, 520)
 
@@ -60,6 +61,8 @@ class OptimizationResultWindow(QWidget):
         layout.addWidget(self.button_import, 2, 0)
 
         self.show()
+        self.raise_()
+        self.activateWindow()
 
     def import_geometry(self):
         settings = self.main.get_all_settings()
@@ -279,9 +282,10 @@ class Optimization(QWidget):
 
         self.win = PyQtGraphWindow(self)
         self.win.setWindowTitle("Live Optimization Visualizer")
+        self.preview_win = None
         self.manager_pyqtgraph = Manager()
         self.queue_pyqtgraph = self.manager_pyqtgraph.list()
-        self.queue_pyqtgraph.append([[0], [0], 0, 0])
+        self.queue_pyqtgraph.append([[0], [0], 0, 0, None])
 
         self.tsr_string = QLabel("0")
         self.J_string = QLabel("0")
@@ -606,10 +610,17 @@ class Optimization(QWidget):
         if not self.main.running:
             self.main.set_process_running()
             self.runner_input = self.main.get_input_params()
+            is_whole_blade = self.optimization_mode_selection.currentIndex() == 1
+            self.win.set_axis_mode(is_whole_blade)
+            if self.preview_win is None:
+                self.preview_win = OptimizationPreviewWindow(self)
+            self.preview_win.reset()
+            self.queue_pyqtgraph[0] = [[0], [0], 0, 0, None]
             self.main.getter.start()
             self.p = Process(target=optimize, args=[self.runner_input, self.queue_pyqtgraph])
             self.p.start()
             self.win.show()
+            self.preview_win.show()
             self.win.start_update()
 
     def terminate(self):
@@ -627,6 +638,8 @@ class Optimization(QWidget):
         self.main.emitter_done.disconnect()
 
         self.win.stop_update()
+        if self.preview_win is not None:
+            self.preview_win.hide()
         self.show_results()
 
     def show_results(self):
@@ -698,21 +711,28 @@ class Optimization(QWidget):
         out["optimization_targets"] = self.list_target_variables
         return out
 
+    @staticmethod
+    def set_line_edit_value(widget, value):
+        if value is None:
+            widget.setText("")
+        else:
+            widget.setText(str(value))
+
     def set_settings(self, inp_dict):
         """
 
         :param inp_dict:
         """
         if "target_rpm" in inp_dict.keys():
-            self.target_rpm.setText(str(inp_dict["target_rpm"]))
+            self.set_line_edit_value(self.target_rpm, inp_dict["target_rpm"])
         if "target_speed" in inp_dict.keys():
-            self.target_speed.setText(str(inp_dict["target_speed"]))
+            self.set_line_edit_value(self.target_speed, inp_dict["target_speed"])
         if "mut_coeff" in inp_dict.keys():
-            self.mut_coeff.setText(str(inp_dict["mut_coeff"]))
+            self.set_line_edit_value(self.mut_coeff, inp_dict["mut_coeff"])
         if "population" in inp_dict.keys():
-            self.population.setText(str(inp_dict["population"]))
+            self.set_line_edit_value(self.population, inp_dict["population"])
         if "num_iter" in inp_dict.keys():
-            self.num_iter.setText(str(inp_dict["num_iter"]))
+            self.set_line_edit_value(self.num_iter, inp_dict["num_iter"])
         if "optimization_mode" in inp_dict.keys():
             self.optimization_mode_selection.setCurrentIndex(int(inp_dict["optimization_mode"]))
         if "whole_blade_objective" in inp_dict.keys():
@@ -720,19 +740,19 @@ class Optimization(QWidget):
         if "whole_blade_solver" in inp_dict.keys():
             self.whole_blade_solver_selection.setCurrentIndex(int(inp_dict["whole_blade_solver"]))
         if "whole_blade_twist_cp" in inp_dict.keys():
-            self.whole_blade_twist_cp.setText(str(inp_dict["whole_blade_twist_cp"]))
+            self.set_line_edit_value(self.whole_blade_twist_cp, inp_dict["whole_blade_twist_cp"])
         if "whole_blade_chord_cp" in inp_dict.keys():
-            self.whole_blade_chord_cp.setText(str(inp_dict["whole_blade_chord_cp"]))
+            self.set_line_edit_value(self.whole_blade_chord_cp, inp_dict["whole_blade_chord_cp"])
         if "whole_blade_root_cp_lock" in inp_dict.keys():
-            self.whole_blade_root_cp_lock.setText(str(inp_dict["whole_blade_root_cp_lock"]))
+            self.set_line_edit_value(self.whole_blade_root_cp_lock, inp_dict["whole_blade_root_cp_lock"])
         if "whole_blade_tip_cp_lock" in inp_dict.keys():
-            self.whole_blade_tip_cp_lock.setText(str(inp_dict["whole_blade_tip_cp_lock"]))
+            self.set_line_edit_value(self.whole_blade_tip_cp_lock, inp_dict["whole_blade_tip_cp_lock"])
         if "whole_blade_target_thrust" in inp_dict.keys():
-            self.whole_blade_target_thrust.setText(str(inp_dict["whole_blade_target_thrust"]))
+            self.set_line_edit_value(self.whole_blade_target_thrust, inp_dict["whole_blade_target_thrust"])
         if "whole_blade_max_power" in inp_dict.keys():
-            self.whole_blade_max_power.setText(str(inp_dict["whole_blade_max_power"]))
+            self.set_line_edit_value(self.whole_blade_max_power, inp_dict["whole_blade_max_power"])
         if "whole_blade_max_stall_percentage" in inp_dict.keys():
-            self.whole_blade_max_stall_percentage.setText(str(inp_dict["whole_blade_max_stall_percentage"]))
+            self.set_line_edit_value(self.whole_blade_max_stall_percentage, inp_dict["whole_blade_max_stall_percentage"])
         if "whole_blade_monotonic_chord" in inp_dict.keys():
             self.whole_blade_monotonic_chord.setChecked(bool(inp_dict["whole_blade_monotonic_chord"]))
         if "optimization_inputs" in inp_dict.keys():

@@ -23,6 +23,7 @@ import scipy.optimize
 
 from calculation import Calculator
 from utils import Printer
+from visualization import build_blade_lines
 
 
 WHOLE_BLADE_MODE = 1
@@ -78,6 +79,7 @@ def optimize_section_by_section(inp_args, queue_pyqtgraph, p, C):
     target_variables = inp_args["optimization_targets"]
     optimized_theta = np.asarray(inp_args["theta"], dtype=float).copy()
     optimized_c = np.asarray(inp_args["c"], dtype=float).copy()
+    preview_frame = 0
 
     if any(var[0] == "pitch" for var in input_variables):
         raise ValueError("Input variable 'pitch' is only supported in whole-blade optimization mode.")
@@ -113,6 +115,7 @@ def optimize_section_by_section(inp_args, queue_pyqtgraph, p, C):
         bounds_list = [(b[1], b[2]) for b in input_variables]
 
         def fobj(input_numbers):
+            nonlocal preview_frame
             for i in range(len(input_numbers)):
                 section_inp_args[inputs_list[i]] = input_numbers[i]
 
@@ -131,9 +134,20 @@ def optimize_section_by_section(inp_args, queue_pyqtgraph, p, C):
                 comparison = abs(d[var] - target_value) * coeff
                 fitness += comparison
 
+            theta_preview = optimized_theta.copy()
+            chord_preview = optimized_c.copy()
+            theta_preview[n] = float(args["_theta"])
+            chord_preview[n] = max(float(args["_c"]), 1e-4)
+            preview_args = {**inp_args, "theta": list(theta_preview), "c": list(chord_preview)}
+            preview_payload = {
+                "frame": preview_frame,
+                "data": build_blade_lines(preview_args, propeller_geom=inp_args["turbine_type"] == 1)["data"],
+            }
+            preview_frame += 1
+
             list_queue_internal_x.append(args["_theta"])
             list_queue_internal_y.append(fitness)
-            queue_pyqtgraph[0] = [list_queue_internal_x, list_queue_internal_y, args["_theta"], fitness]
+            queue_pyqtgraph[0] = [list_queue_internal_x, list_queue_internal_y, args["_theta"], fitness, preview_payload]
 
             return fitness
 
@@ -217,8 +231,13 @@ def optimize_whole_blade(inp_args, queue_pyqtgraph, p, C):
             best["c"] = np.asarray(chord, dtype=float)
             best["pitch"] = pitch
             best["iteration"] = len(history_x) - 1
+            preview_args = {**inp_args, "theta": list(best["theta"]), "c": list(best["c"]), "pitch": best["pitch"]}
+            best["preview"] = {
+                "frame": best["iteration"],
+                "data": build_blade_lines(preview_args, propeller_geom=inp_args["turbine_type"] == 1)["data"],
+            }
 
-        queue_pyqtgraph[0] = [history_x, history_y, best["iteration"], best["fitness"]]
+        queue_pyqtgraph[0] = [history_x, history_y, best["iteration"], best["fitness"], best.get("preview")]
         return fitness
 
     solver = config["solver"]
@@ -260,7 +279,7 @@ def optimize_whole_blade(inp_args, queue_pyqtgraph, p, C):
         history_x.append(best["iteration"])
         history_y.append(best["fitness"])
 
-    queue_pyqtgraph[0] = [history_x, history_y, best["iteration"], best["fitness"]]
+    queue_pyqtgraph[0] = [history_x, history_y, best["iteration"], best["fitness"], best.get("preview")]
 
     p.print("Optimization success:", bool(getattr(result, "success", False)))
     p.print("Optimizer message:", getattr(result, "message", ""))

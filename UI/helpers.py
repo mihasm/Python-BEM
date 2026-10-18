@@ -96,6 +96,8 @@ class DataCaptureThread(QThread):
             best_y = [item[3]]
             self.parent().curve.setData(x, y)
             self.parent().curve_red.setData(best_x, best_y)
+            if len(item) > 4 and item[4] is not None and self.parent().parent.preview_win is not None:
+                self.parent().parent.preview_win.update_blade(item[4])
 
 
 class XFoilThread(QThread):
@@ -285,10 +287,16 @@ class PyQtGraphWindow(QMainWindow):
         self.setCentralWidget(self.obj)
         self.curve = self.obj.plot(pen=None, symbol='o', symbolPen=None, symbolSize=4, symbolBrush='g')
         self.curve_red = self.obj.plot(pen=None, symbol='o', symbolPen=None, symbolSize=5, symbolBrush='r')
-        self.obj.setLabel("left", "Optimization variable")
+        self.obj.setLabel("left", "Fitness")
         self.obj.setLabel("bottom", "Theta [°]")
         self.parent = parent
         self.thread = DataCaptureThread(self)
+
+    def set_axis_mode(self, whole_blade):
+        if whole_blade:
+            self.obj.setLabel("bottom", "Iteration")
+        else:
+            self.obj.setLabel("bottom", "Theta [°]")
 
     def start_update(self):
         """
@@ -343,6 +351,38 @@ class PyQtGraph3DWindow(QMainWindow):
         ar = np.array([points_x,points_y,points_z]).transpose()
         points = gl.GLLinePlotItem(pos=ar)
         self.w.addItem(points)
+
+
+class OptimizationPreviewWindow(PyQtGraph3DWindow):
+    def __init__(self, parent):
+        super(OptimizationPreviewWindow, self).__init__(parent)
+        self.setWindowTitle("Live Best Blade Preview")
+        self.resize(1100, 800)
+        self._blade_items = []
+        self._last_frame = None
+
+    def reset(self):
+        self._last_frame = None
+        for item in self._blade_items:
+            self.w.removeItem(item)
+        self._blade_items = []
+
+    def update_blade(self, preview_payload):
+        frame = preview_payload.get("frame")
+        if frame == self._last_frame:
+            return
+
+        self._last_frame = frame
+        self.reset()
+        self._last_frame = frame
+
+        for z, points_x, points_y in preview_payload.get("data", []):
+            ar = np.array([points_x, points_y, [z] * len(points_x)]).transpose()
+            points = gl.GLLinePlotItem(pos=ar, color=(0.2, 0.8, 1.0, 1.0), width=2, antialias=True)
+            self.w.addItem(points)
+            self._blade_items.append(points)
+
+        self.show()
 
 
 class PopupText(QWidget):
