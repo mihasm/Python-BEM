@@ -1,0 +1,15 @@
+  
+       XFOIL         Version 6.97
+  
+ Calculated polar for: NACA 63-8xx t/c=0.151 (63-series thickness, a=1.
+  
+ 1 1 Reynolds number fixed          Mach number fixed         
+  
+ xtrf =   1.000 (top)        1.000 (bottom)  
+ Mach =   0.000     Re =     0.300 e 6     Ncrit =   9.000
+  
+   alpha    CL        CD       CDp       CM     Top_Xtr  Bot_Xtr
+  ------ -------- --------- --------- -------- -------- --------
+ -12.000  -0.3382   0.12090   0.11807  -0.0502   1.0000   0.0410
+ -11.500  -0.3021   0.11378   0.11092  -0.0568   0.9960   0.0435
+ -11.000  -0.2828   0.10272   0.09986  -0.0675   0.9901   0.0466

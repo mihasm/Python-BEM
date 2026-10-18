@@ -1,0 +1,123 @@
+{
+  "id": "kp505",
+  "name": "KRISO KP505 (KCS container-ship propeller) - 5 blades, model D = 0.250 m, open water",
+  "turbine_type": 1,
+  "B": 5,
+  "R": 0.125,
+  "Rhub": 0.0225,
+  "fluid": {
+    "rho": 998.0,
+    "kin_viscosity": 1.14e-06,
+    "medium": "fresh water"
+  },
+  "geometry_file": "geometry.csv",
+  "airfoils": {
+    "kp505_r0180": {
+      "coordinates": "airfoils/kp505_r0180.dat",
+      "polars": "airfoils/kp505_r0180_polars.csv",
+      "polar_source": "XFOIL 6.99 (repository binary), Ncrit = 9, free transition, computed (no measured polars exist); NACA 66 thickness (DTMB-modified ordinates, Brockett 1966) + a=0.8 mean line, t/c and f/c of the station"
+    },
+    "kp505_r0300": {
+      "coordinates": "airfoils/kp505_r0300.dat",
+      "polars": "airfoils/kp505_r0300_polars.csv",
+      "polar_source": "XFOIL 6.99 (repository binary), Ncrit = 9, free transition, computed (no measured polars exist); NACA 66 thickness (DTMB-modified ordinates, Brockett 1966) + a=0.8 mean line, t/c and f/c of the station"
+    },
+    "kp505_r0400": {
+      "coordinates": "airfoils/kp505_r0400.dat",
+      "polars": "airfoils/kp505_r0400_polars.csv",
+      "polar_source": "XFOIL 6.99 (repository binary), Ncrit = 9, free transition, computed (no measured polars exist); NACA 66 thickness (DTMB-modified ordinates, Brockett 1966) + a=0.8 mean line, t/c and f/c of the station"
+    },
+    "kp505_r0500": {
+      "coordinates": "airfoils/kp505_r0500.dat",
+      "polars": "airfoils/kp505_r0500_polars.csv",
+      "polar_source": "XFOIL 6.99 (repository binary), Ncrit = 9, free transition, computed (no measured polars exist); NACA 66 thickness (DTMB-modified ordinates, Brockett 1966) + a=0.8 mean line, t/c and f/c of the station"
+    },
+    "kp505_r0600": {
+      "coordinates": "airfoils/kp505_r0600.dat",
+      "polars": "airfoils/kp505_r0600_polars.csv",
+      "polar_source": "XFOIL 6.99 (repository binary), Ncrit = 9, free transition, computed (no measured polars exist); NACA 66 thickness (DTMB-modified ordinates, Brockett 1966) + a=0.8 mean line, t/c and f/c of the station"
+    },
+    "kp505_r0700": {
+      "coordinates": "airfoils/kp505_r0700.dat",
+      "polars": "airfoils/kp505_r0700_polars.csv",
+      "polar_source": "XFOIL 6.99 (repository binary), Ncrit = 9, free transition, computed (no measured polars exist); NACA 66 thickness (DTMB-modified ordinates, Brockett 1966) + a=0.8 mean line, t/c and f/c of the station"
+    },
+    "kp505_r0800": {
+      "coordinates": "airfoils/kp505_r0800.dat",
+      "polars": "airfoils/kp505_r0800_polars.csv",
+      "polar_source": "XFOIL 6.99 (repository binary), Ncrit = 9, free transition, computed (no measured polars exist); NACA 66 thickness (DTMB-modified ordinates, Brockett 1966) + a=0.8 mean line, t/c and f/c of the station"
+    },
+    "kp505_r0900": {
+      "coordinates": "airfoils/kp505_r0900.dat",
+      "polars": "airfoils/kp505_r0900_polars.csv",
+      "polar_source": "XFOIL 6.99 (repository binary), Ncrit = 9, free transition, computed (no measured polars exist); NACA 66 thickness (DTMB-modified ordinates, Brockett 1966) + a=0.8 mean line, t/c and f/c of the station"
+    },
+    "kp505_r0950": {
+      "coordinates": "airfoils/kp505_r0950.dat",
+      "polars": "airfoils/kp505_r0950_polars.csv",
+      "polar_source": "XFOIL 6.99 (repository binary), Ncrit = 9, free transition, computed (no measured polars exist); NACA 66 thickness (DTMB-modified ordinates, Brockett 1966) + a=0.8 mean line, t/c and f/c of the station"
+    }
+  },
+  "experiments": [
+    {
+      "file": "experiment/performance_moeri_250mm.csv",
+      "kind": "performance",
+      "x": "J",
+      "y": [
+        "ct",
+        "cp",
+        "eta"
+      ],
+      "defaults": {
+        "rpm": 1080.0,
+        "pitch_deg": 0.0,
+        "rho": 998.0,
+        "kin_viscosity": 1.14e-06
+      },
+      "conditions": "MOERI/KRISO towing-tank open-water test of the 250 mm model (scale 31.6). Rate of revolution and water temperature are NOT given in the published archive: rpm 1080 (18 rps) and nu 1.14e-6 are ASSUMPTIONS (Re(0.7R) ~ 8e5); coefficients do not depend on them except through Re.",
+      "source": "KCS_prop_MOERI.zip / openwater.txt (Tokyo 2015 CFD workshop archive; same data in CFDWS2010 and SIMMAN2014), tabulated",
+      "uncertainty": "tabulated to 3 decimals; measurement uncertainty not published"
+    },
+    {
+      "file": "experiment/performance_nmri_105mm.csv",
+      "kind": "performance",
+      "x": "J",
+      "y": [
+        "ct",
+        "cp",
+        "eta"
+      ],
+      "defaults": {
+        "rpm": 336.2,
+        "pitch_deg": 0.0,
+        "rho": 997.7,
+        "kin_viscosity": 9.51e-07
+      },
+      "conditions": "NMRI No.3 towing tank, 104.6 mm model of the same geometry, n = 32 rps, 22.2 C, Rn = nD^2/nu = 3.68e5, immersion 1.5 D. The defaults are REYNOLDS-EQUIVALENT for the 250 mm case geometry: rpm 336.2 = 32 rps x (0.1046/0.25)^2 x 60, nu from the stated Rn - they reproduce the 104.6 mm model's chord Reynolds numbers (Re(0.7R) ~ 3e5). A low-Re comparison: KT about 3-6 % above the MOERI data at the same J.",
+      "source": "SIMMAN 2008 KCS_POT_NMRI.zip / KCS_POT_NMRI.txt (NMRI, 2005-09-12), tabulated",
+      "uncertainty": "tabulated to 4 decimals; source warns 'KQ data are only as a guide due to the small size propeller'"
+    }
+  ],
+  "sources": [
+    {
+      "key": "t2015_kcs",
+      "citation": "Tokyo 2015: A Workshop on CFD in Ship Hydrodynamics, KCS geometry and conditions page; archive KCS_prop_MOERI.zip (propgeom.txt, openwater.txt; KRISO/MOERI) and KP505.zip (IGES/STEP model, courtesy of KRISO).",
+      "url": "https://t2015.nmri.go.jp/kcs_gc.html"
+    },
+    {
+      "key": "simman2008_kcs",
+      "citation": "SIMMAN 2008 workshop, KCS geometry page: KCS Propeller (MOERI model), KCS propgeom NMRI.zip, KCS_POT_NMRI.zip.",
+      "url": "http://www.simman2008.dk/KCS/kcs_geometry.htm"
+    },
+    {
+      "key": "fujisawa2000",
+      "citation": "Fujisawa J., Ukon Y., Kume K., Takeshi H. (2000). Local velocity field measurements around the KCS model (SRI M.S. No. 631) in the SRI 400 m towing tank. Ship Performance Division Report No. 00-003-02, Ship Research Institute, Tokyo (cited as the origin of the KP505 open-water data; not obtained)."
+    },
+    {
+      "key": "brockett1966",
+      "citation": "Brockett T. (1966). DTMB Report 1780, Tables 1 and 3 (NACA 66 (mod) thickness, a=0.8 mean line).",
+      "url": "https://dome.mit.edu/bitstreams/43016e87-c7ed-4647-a213-6927f101f65b/download"
+    }
+  ],
+  "notes": "Modern merchant-ship propeller: P/D peaks at 1.013 (0.6R) and is unloaded at root and tip; AE/A0 0.80; hub d/D 0.18 (Rhub = 0.18R, the table starts there). SKEW 32 deg (balanced) is not representable in BEM - expect a small bias. Sections: KRISO states 'NACA66 thickness form + a=0.8 mean line'; the DTMB-modified NACA 66 ordinates are used (the standard choice; the unmodified 66 differs only near LE/TE). Polars computed with XFOIL at Re 1e5-1.5e6. Tip row: the source has C/D = 0.0001 and fo/C = 8.7 (meaningless), handled as zero chord with the 0.95R section. Two independent tests of the same geometry at different Re (MOERI 250 mm; NMRI 104.6 mm) give a Reynolds-sensitivity check. The NMRI file's J=0.7 appears twice (repeat point). Rows with negative KT at J = 1.05 are kept (eta negative there)."
+}

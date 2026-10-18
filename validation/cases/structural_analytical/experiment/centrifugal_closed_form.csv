@@ -1,0 +1,49 @@
+# Centrifugal force and stress of rotating bars (kind: structural) - case structural_analytical
+# Exact integrals F(r) = rho omega^2 int_r^R A(xi) xi dxi, sigma(r) = F(r)/A(r) (axis of rotation at r = 0, blade along r,
+#   no coning/pitch effect; the bar's own centrifugal load only). Uniform bar: sigma = rho omega^2 (R^2 - r^2)/2,
+#   independent of A (standard result, e.g. Timoshenko & Goodier / any rotating-bar derivation; re-derived here).
+# C2: solid NACA 0012 (A = K_A c^2 with K_A = 0.68504*0.12 from section_properties.csv), chord linear root->tip;
+#   integrals of the polynomial A(r)*r done exactly (numpy.polynomial). rho = 2700 kg/m3 (aluminium, assumed).
+# Columns: r_m station; A_m2 area there; centrifugal_force_n = axial force at r from the mass outboard (the program's dFc);
+#   stress_centrifugal_pa (the program's stress_cent, in Pa); mass_outboard_kg = mass between r and R (r=r0 row: blade mass
+#   from r0).
+# Note for comparing with the program: it lumps each element's mass at its centre radius - a midpoint rule, error O(dr^2).
+case_id,description,r_m,r0_m,R_m,rpm,rho_kg_m3,A_m2,chord_m,centrifugal_force_n,stress_centrifugal_pa,mass_outboard_kg
+C1_uniform_bar,"uniform NACA0012 solid c=0.1 m, rho=2700, 600 rpm",0.1,0.1,1,600,2700,0.0008221,0.1,4337.6384,5276290.5,1.997703
+C2_tapered_naca0012,"NACA0012 solid, chord 0.15->0.05 m linear, rho=2700, 600 rpm",0.1,0.1,1,600,2700,0.001849725,0.15,3516.116,1900885.8,2.1641782
+C1_uniform_bar,"uniform NACA0012 solid c=0.1 m, rho=2700, 600 rpm",0.15,0.1,1,600,2700,0.0008221,0.1,4282.8703,5209670.7,1.8867195
+C2_tapered_naca0012,"NACA0012 solid, chord 0.15->0.05 m linear, rho=2700, 600 rpm",0.15,0.1,1,600,2700,0.0017152457,0.14444444,3397.6939,1980878.9,1.9235998
+C1_uniform_bar,"uniform NACA0012 solid c=0.1 m, rho=2700, 600 rpm",0.2,0.1,1,600,2700,0.0008221,0.1,4206.1948,5116402.9,1.775736
+C2_tapered_naca0012,"NACA0012 solid, chord 0.15->0.05 m linear, rho=2700, 600 rpm",0.2,0.1,1,600,2700,0.001585841,0.13888889,3244.0783,2045651.6,1.7008336
+C1_uniform_bar,"uniform NACA0012 solid c=0.1 m, rho=2700, 600 rpm",0.25,0.1,1,600,2700,0.0008221,0.1,4107.6121,4996487.2,1.6647525
+C2_tapered_naca0012,"NACA0012 solid, chord 0.15->0.05 m linear, rho=2700, 600 rpm",0.25,0.1,1,600,2700,0.0014615111,0.13333333,3061.6924,2094881.4,1.4951944
+C1_uniform_bar,"uniform NACA0012 solid c=0.1 m, rho=2700, 600 rpm",0.3,0.1,1,600,2700,0.0008221,0.1,3987.1222,4849923.6,1.553769
+C2_tapered_naca0012,"NACA0012 solid, chord 0.15->0.05 m linear, rho=2700, 600 rpm",0.3,0.1,1,600,2700,0.0013422559,0.12777778,2856.5541,2128174,1.3059972
+C1_uniform_bar,"uniform NACA0012 solid c=0.1 m, rho=2700, 600 rpm",0.35,0.1,1,600,2700,0.0008221,0.1,3844.725,4676712,1.4427855
+C2_tapered_naca0012,"NACA0012 solid, chord 0.15->0.05 m linear, rho=2700, 600 rpm",0.35,0.1,1,600,2700,0.0012280753,0.12222222,2634.2753,2145043.8,1.1325569
+C1_uniform_bar,"uniform NACA0012 solid c=0.1 m, rho=2700, 600 rpm",0.4,0.1,1,600,2700,0.0008221,0.1,3680.4205,4476852.6,1.331802
+C2_tapered_naca0012,"NACA0012 solid, chord 0.15->0.05 m linear, rho=2700, 600 rpm",0.4,0.1,1,600,2700,0.0011189694,0.11666667,2400.0626,2144886.6,0.9741885
+C1_uniform_bar,"uniform NACA0012 solid c=0.1 m, rho=2700, 600 rpm",0.45,0.1,1,600,2700,0.0008221,0.1,3494.2087,4250345.1,1.2208185
+C2_tapered_naca0012,"NACA0012 solid, chord 0.15->0.05 m linear, rho=2700, 600 rpm",0.45,0.1,1,600,2700,0.0010149383,0.11111111,2158.7164,2126943.5,0.83020682
+C1_uniform_bar,"uniform NACA0012 solid c=0.1 m, rho=2700, 600 rpm",0.5,0.1,1,600,2700,0.0008221,0.1,3286.0897,3997189.8,1.109835
+C2_tapered_naca0012,"NACA0012 solid, chord 0.15->0.05 m linear, rho=2700, 600 rpm",0.5,0.1,1,600,2700,0.00091598179,0.10555556,1914.6318,2090251,0.6999268
+C1_uniform_bar,"uniform NACA0012 solid c=0.1 m, rho=2700, 600 rpm",0.55,0.1,1,600,2700,0.0008221,0.1,3056.0634,3717386.5,0.9988515
+C2_tapered_naca0012,"NACA0012 solid, chord 0.15->0.05 m linear, rho=2700, 600 rpm",0.55,0.1,1,600,2700,0.0008221,0.1,1671.7981,2033570.3,0.58266337
+C1_uniform_bar,"uniform NACA0012 solid c=0.1 m, rho=2700, 600 rpm",0.6,0.1,1,600,2700,0.0008221,0.1,2804.1299,3410935.3,0.887868
+C2_tapered_naca0012,"NACA0012 solid, chord 0.15->0.05 m linear, rho=2700, 600 rpm",0.6,0.1,1,600,2700,0.0007332929,0.094444444,1433.7989,1955288.2,0.47773144
+C1_uniform_bar,"uniform NACA0012 solid c=0.1 m, rho=2700, 600 rpm",0.65,0.1,1,600,2700,0.0008221,0.1,2530.2891,3077836.1,0.7768845
+C2_tapered_naca0012,"NACA0012 solid, chord 0.15->0.05 m linear, rho=2700, 600 rpm",0.65,0.1,1,600,2700,0.00064956049,0.088888889,1203.8121,1853271.7,0.38444593
+C1_uniform_bar,"uniform NACA0012 solid c=0.1 m, rho=2700, 600 rpm",0.7,0.1,1,600,2700,0.0008221,0.1,2234.541,2718089.1,0.665901
+C2_tapered_naca0012,"NACA0012 solid, chord 0.15->0.05 m linear, rho=2700, 600 rpm",0.7,0.1,1,600,2700,0.00057090278,0.083333333,984.60984,1724654.2,0.30212175
+C1_uniform_bar,"uniform NACA0012 solid c=0.1 m, rho=2700, 600 rpm",0.75,0.1,1,600,2700,0.0008221,0.1,1916.8857,2331694,0.5549175
+C2_tapered_naca0012,"NACA0012 solid, chord 0.15->0.05 m linear, rho=2700, 600 rpm",0.75,0.1,1,600,2700,0.00049731975,0.077777778,778.55872,1565509.3,0.23007382
+C1_uniform_bar,"uniform NACA0012 solid c=0.1 m, rho=2700, 600 rpm",0.8,0.1,1,600,2700,0.0008221,0.1,1577.3231,1918651.1,0.443934
+C2_tapered_naca0012,"NACA0012 solid, chord 0.15->0.05 m linear, rho=2700, 600 rpm",0.8,0.1,1,600,2700,0.00042881142,0.072222222,587.61955,1370344.9,0.16761706
+C1_uniform_bar,"uniform NACA0012 solid c=0.1 m, rho=2700, 600 rpm",0.85,0.1,1,600,2700,0.0008221,0.1,1215.8532,1478960.2,0.3329505
+C2_tapered_naca0012,"NACA0012 solid, chord 0.15->0.05 m linear, rho=2700, 600 rpm",0.85,0.1,1,600,2700,0.00036537778,0.066666667,413.34749,1131288,0.11406637
+C1_uniform_bar,"uniform NACA0012 solid c=0.1 m, rho=2700, 600 rpm",0.9,0.1,1,600,2700,0.0008221,0.1,832.47606,1012621.4,0.221967
+C2_tapered_naca0012,"NACA0012 solid, chord 0.15->0.05 m linear, rho=2700, 600 rpm",0.9,0.1,1,600,2700,0.00030701883,0.061111111,256.89198,836730.38,0.068736694
+C1_uniform_bar,"uniform NACA0012 solid c=0.1 m, rho=2700, 600 rpm",0.95,0.1,1,600,2700,0.0008221,0.1,427.19166,519634.67,0.1109835
+C2_tapered_naca0012,"NACA0012 solid, chord 0.15->0.05 m linear, rho=2700, 600 rpm",0.95,0.1,1,600,2700,0.00025373457,0.055555556,118.99679,468981.39,0.030942931
+C1_uniform_bar,"uniform NACA0012 solid c=0.1 m, rho=2700, 600 rpm",1,0.1,1,600,2700,0.0008221,0.1,0,0,0
+C2_tapered_naca0012,"NACA0012 solid, chord 0.15->0.05 m linear, rho=2700, 600 rpm",1,0.1,1,600,2700,0.000205525,0.05,0,0,0

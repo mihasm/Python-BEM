@@ -1,0 +1,235 @@
+{
+  "id": "mexico",
+  "name": "MEXICO / New MEXICO model rotor (EU FP5 MEXICO 2006, ESWIRP New MEXICO 2014; DNW-LLF open jet 9.5 x 9.5 m)",
+  "turbine_type": 0,
+  "B": 3,
+  "R": 2.25,
+  "Rhub": 0.21,
+  "fluid": {
+    "rho": 1.191,
+    "kin_viscosity": 1.51e-05,
+    "medium": "air (DNW-LLF, ~21 C, 1013 hPa)"
+  },
+  "geometry_file": "geometry.csv",
+  "defaults": {
+    "pitch_deg": -2.3,
+    "yaw_deg": 0.0
+  },
+  "airfoils": {
+    "circle": {
+      "cd": 1.0,
+      "polar_source": "cylinder root (d = 0.09 m, r = 0.23-0.30 m) and root fitting (r 0.21-0.23 m): cl = 0, cd = 1.0 constant. Section Re ~1e5 (subcritical, cd 1.0-1.2); cd = 1.0 is the value most Mexnext participants used (e.g. CENER, ECN-E--18-003 App. E)."
+    },
+    "du91_w2_250": {
+      "coordinates": "airfoils/du91_w2_250.dat",
+      "polars": "airfoils/du91_w2_250_polars.csv",
+      "polar_source": "XFOIL 6.97, Ncrit=9, forced transition x/c=0.05 both sides (zig-zag tape), Re 3e5/5e5/7e5/1e6. Alternatives in airfoils/: du91_w2_250_polars_xfoil_free.csv, du91_w2_250_polars_measured_clean_re1e6.csv (TU Delft, clean, Re 1e6, tabulated). The Mexnext set (TU Delft, Re 0.5e6, rough) is not public."
+    },
+    "risoe_a1_21": {
+      "coordinates": "airfoils/risoe_a1_21.dat",
+      "polars": "airfoils/risoe_a1_21_polars.csv",
+      "polar_source": "MEASURED, Risoe-R-1112 run005 (VELUX tunnel, zigzag tape at the LE = 'rough'), Re 1.6e6, extracted exactly from the vector figure 6-8 - the data set Mexnext prescribes. Coordinates: proprietary profile, RECONSTRUCTED from the MEXICO 60%R pressure-sensor positions (good to ~0.3% c; do not run XFOIL on it). Alternative: risoe_a1_21_polars_measured_smooth.csv (tabulated, smooth, Re 1.6e6)."
+    },
+    "naca64_418": {
+      "coordinates": "airfoils/naca64_418.dat",
+      "polars": "airfoils/naca64_418_polars.csv",
+      "polar_source": "XFOIL 6.97, Ncrit=9, FREE transition (New MEXICO configuration 3: outboard 30% clean), Re 3e5/5e5/7e5/1e6. For fully tripped blades (MEXICO 2006, New MEXICO config 0) use airfoils/naca64_418_polars_xfoil_trip.csv. The Mexnext set (TU Delft, Re 0.7e6, clean) is not public."
+    }
+  },
+  "experiments": [
+    {
+      "file": "experiment/newmexico2014_spanwise_axial.csv",
+      "kind": "spanwise",
+      "x": "r_m",
+      "y": [
+        "fn_n_per_m",
+        "ft_n_per_m"
+      ],
+      "defaults": {
+        "rpm": 425.1,
+        "pitch_deg": -2.3,
+        "yaw_deg": 0.0
+      },
+      "conditions": "New MEXICO 2014, Mexnext-III axial cases 1.1/1.2/1.3: V = 10.05/15.06/24.05 m/s (re-calibrated tunnel speed), rho per row, 425.1 rpm, pitch -2.3 deg, configuration 3 (tape on r/R<0.7, outboard clean). Pressure-only sectional forces (no skin friction) at r/R 0.25/0.35/0.60/0.82/0.92, converted from chord axes to rotor-plane axes; source chord-axes values kept in fn_chord_n_per_m/ft_chord_n_per_m. No blockage correction applied (none is applied in the source).",
+      "source": "Boorsma, Schepers et al. 2018, ECN-E--18-003 (Mexnext-III final report), Fig. A.4, vector extraction",
+      "uncertainty": "extraction < 0.1 N/m; *_err = repeatability band (stdev of datapoint averages) from the figure; sensor accuracy (ECN-E--14-048 Table 1) worst case +-0.46 Cn at 25%R, +-0.03 at 92%R; tangential pressure force is very sensitive to sensor positions (Table 3.1)"
+    },
+    {
+      "file": "experiment/newmexico2014_axial_rotor_loads.csv",
+      "kind": "power_curve",
+      "x": "v_ms",
+      "y": [
+        "thrust_n",
+        "torque_nm"
+      ],
+      "defaults": {
+        "rpm": 425.1,
+        "pitch_deg": -2.3,
+        "yaw_deg": 0.0
+      },
+      "conditions": "same cases; thrust/torque = Mexnext weighting-factor integration of the 5 pressure sections (zero at root and tip): misses -2.5..-5.8% of the axial force and contains no skin-friction torque (torque too high by 2-25%, most at 10 m/s). Prefer the spanwise file; see notes for the weighting factors.",
+      "source": "ECN-E--18-003 App. C Tables 1-2 applied to Fig. A.4; checked against Fig. A.5 (<0.3%) and Table 12.3 (Fax identical)",
+      "uncertainty": "integration-method bias as stated; extraction < 0.2%"
+    },
+    {
+      "file": "experiment/newmexico2014_tsr_sweep_clean.csv",
+      "kind": "performance",
+      "x": "tsr",
+      "y": [
+        "ct",
+        "cp"
+      ],
+      "defaults": {
+        "rpm": 424.5,
+        "pitch_deg": -2.3,
+        "yaw_deg": 0.0,
+        "rho": 1.2
+      },
+      "conditions": "New MEXICO 2014 TSR sweep at 424 rpm (tunnel speed varied 5-30 m/s), pitch -2.3 deg, configuration 3 (outboard 30% clean). ct = balance Cdax minus estimated tower/nacelle drag (full rotor thrust); cp = pressure-integrated Cp (no friction, too high). Extra columns: ct_pressure, cp_generator (generator torque, loss-corrected by the authors, includes friction; probably still too low). rho not given per point: 1.2 assumed (1.19-1.21 in the reports).",
+      "source": "ct: ECN-E--14-048 Fig. 30(a) (ct_pressure Fig. 30(b)); cp: Boorsma & Schepers 2016 (ECN-M--16-063) Fig. 4(b); digitised from raster charts",
+      "uncertainty": "+-0.05 tsr, +-0.006 Cdax, +-0.003 Cp from digitising; the real aerodynamic Cp lies between cp and cp_generator (gap ~0.08 at the optimum)"
+    },
+    {
+      "file": "experiment/newmexico2014_tsr_sweep_rough.csv",
+      "kind": "performance",
+      "x": "tsr",
+      "y": [
+        "ct",
+        "cp"
+      ],
+      "defaults": {
+        "rpm": 424.5,
+        "pitch_deg": -2.3,
+        "yaw_deg": 0.0,
+        "rho": 1.2
+      },
+      "conditions": "as the clean sweep but configuration 0 (zig-zag tape on the full span, as in 2006). Use naca64_418_polars_xfoil_trip.csv for the NACA part to model this configuration.",
+      "source": "ct: ECN-E--14-048 Fig. 22(a) red (ct_pressure Fig. 22(b)); cp: ECN-M--16-063 Fig. 4(b); digitised from raster charts",
+      "uncertainty": "+-0.05 tsr, +-0.006 Cdax, +-0.003 Cp"
+    },
+    {
+      "file": "experiment/mexico2006_tsr_sweep.csv",
+      "kind": "performance",
+      "x": "tsr",
+      "y": [
+        "ct"
+      ],
+      "defaults": {
+        "rpm": 424.5,
+        "pitch_deg": -2.3,
+        "yaw_deg": 0.0,
+        "rho": 1.19
+      },
+      "conditions": "MEXICO 2006 (full-span tape), 424.5 rpm, pitch -2.3 deg. CORRECTED as plotted by ECN: 2006 tunnel speed minus 0.2 m/s, 2013 pressure calibration. ct = balance Cdax minus estimated tower drag; ct_pressure extra column. No torque/power was measured in 2006.",
+      "source": "ECN-E--14-048 Fig. 22 (black squares), digitised from raster charts",
+      "uncertainty": "+-0.05 tsr, +-0.006 Cdax; the 0.2 m/s speed correction is ECN's preliminary value"
+    },
+    {
+      "file": "experiment/mexico2006_spanwise_axial.csv",
+      "kind": "spanwise",
+      "x": "r_m",
+      "y": [
+        "fn_n_per_m",
+        "ft_n_per_m"
+      ],
+      "defaults": {
+        "rpm": 424.5,
+        "pitch_deg": -2.3,
+        "yaw_deg": 0.0
+      },
+      "conditions": "MEXICO 2006 run 11 pnt 92/93/95 (raw tunnel speed 9.97/14.93/24.02 m/s, v_ms = raw - 0.2), full-span tape; ORIGINAL 2006 pressure calibration (2013 re-calibration would add +4..6% to Fn). Forces converted from the tabulated Cn/Ct (no-induction normalisation).",
+      "source": "Bechmann, Sorensen & Zahle 2011, Wind Energy 14:677-689, Table IV (tabulated)",
+      "uncertainty": "~1% from the normalisation assumptions; sensor accuracy as for 2014 plus known faulty inboard sensors in 2006"
+    },
+    {
+      "file": "experiment/mexico2006_balance_thrust.csv",
+      "kind": "power_curve",
+      "x": "v_ms",
+      "y": [
+        "thrust_n"
+      ],
+      "defaults": {
+        "rpm": 424.5,
+        "pitch_deg": -2.3,
+        "yaw_deg": 0.0
+      },
+      "conditions": "MEXICO 2006, same three points: balance axial force minus a coarse tower-drag estimate (174/390/1010 N); v_ms = raw - 0.2 m/s.",
+      "source": "Bechmann, Sorensen & Zahle 2011, Table III (tabulated)",
+      "uncertainty": "tower drag estimate +-100..300 N"
+    }
+  ],
+  "sources": [
+    {
+      "key": "schepers2007",
+      "citation": "Schepers J.G., Snel H., Model Experiments in Controlled Conditions, Final report, ECN-E--07-042, ECN, 2007",
+      "url": "https://publications.tno.nl/ecn-report/report/2007/e07042.pdf"
+    },
+    {
+      "key": "mexnext1",
+      "citation": "Schepers J.G., Boorsma K., et al., Final report of IEA Task 29, Mexnext (Phase 1): Analysis of Mexico wind tunnel measurements, ECN-E--12-004, 2012",
+      "url": "https://backend.orbit.dtu.dk/ws/files/56752175/ecn_e12004.pdf"
+    },
+    {
+      "key": "boorsma2014",
+      "citation": "Boorsma K., Schepers J.G., New MEXICO experiment, preliminary overview with initial validation, ECN-E--14-048, 2014",
+      "url": "https://publications.tno.nl/ecn-report/report/2014/e14048.pdf"
+    },
+    {
+      "key": "mexnext2",
+      "citation": "Schepers J.G., Boorsma K., et al., Final report of IEA Wind Task 29: Mexnext (Phase 2), ECN-E--14-060, 2014",
+      "url": "https://publications.tno.nl/ecn-report/report/2014/e14060.pdf"
+    },
+    {
+      "key": "mexnext3",
+      "citation": "Schepers J.G., Boorsma K., et al., Final report of IEA Wind Task 29 Mexnext (Phase 3), ECN-E--18-003, 2018",
+      "url": "https://publications.tno.nl/ecn-report/report/2018/e18003.pdf"
+    },
+    {
+      "key": "boorsma2016",
+      "citation": "Boorsma K., Schepers J.G., Rotor experiments in controlled conditions continued: New Mexico, J. Phys.: Conf. Ser. 753 (2016) 022004 (ECN-M--16-063)",
+      "doi": "10.1088/1742-6596/753/2/022004",
+      "url": "https://publications.tno.nl/publication/34631709/15iZf7/m16063.pdf"
+    },
+    {
+      "key": "bechmann2011",
+      "citation": "Bechmann A., Sorensen N.N., Zahle F., CFD simulations of the MEXICO rotor, Wind Energy 14 (2011) 677-689",
+      "doi": "10.1002/we.450"
+    },
+    {
+      "key": "guntur2013",
+      "citation": "Guntur S., A Detailed Study of the Rotational Augmentation and Dynamic Stall Phenomena for Wind Turbines, PhD thesis, DTU Wind Energy, 2013, Table 3.1",
+      "url": "https://backend.orbit.dtu.dk/ws/files/86307371/A_Detailed_Study_of_the_Rotational.pdf"
+    },
+    {
+      "key": "fuglsang1999",
+      "citation": "Fuglsang P., Dahl K.S., Antoniou I., Wind tunnel tests of the Risoe-A1-18, Risoe-A1-21 and Risoe-A1-24 airfoils, Risoe-R-1112(EN), 1999",
+      "url": "https://backend.orbit.dtu.dk/ws/portalfiles/portal/7731506/ris_r_1112.pdf"
+    },
+    {
+      "key": "bertagnolio2001",
+      "citation": "Bertagnolio F., Sorensen N., Johansen J., Fuglsang P., Wind Turbine Airfoil Catalogue, Risoe-R-1280(EN), 2001 - data set (DU91-W2-250 and RISO-A1-21 cldm.exp, DU profile)",
+      "url": "https://github.com/balagos/mjl-airfoil-data/tree/master/RISO-data"
+    },
+    {
+      "key": "softx_du91",
+      "citation": "DU 91-W2-250 coordinates, ElsevierSoftwareX SOFTX-D-16-00046 repository, AirfoilCoordinates/DU91W2250.dat",
+      "url": "https://github.com/ElsevierSoftwareX/SOFTX-D-16-00046/blob/master/AirfoilCoordinates/DU91W2250.dat"
+    },
+    {
+      "key": "uiuc_naca643418",
+      "citation": "NACA 64(3)-418 coordinates, UIUC Airfoil Coordinates Database via airfoiltools.com (naca643418-il)",
+      "url": "http://airfoiltools.com/airfoil/seligdatfile?airfoil=naca643418-il"
+    },
+    {
+      "key": "plaza2015",
+      "citation": "Plaza B., Bardera R., Visiedo S., Comparison of BEM and CFD results for MEXICO rotor aerodynamics, J. Wind Eng. Ind. Aerodyn. 145 (2015) 115-122 (read, not used for data)",
+      "doi": "10.1016/j.jweia.2015.05.005"
+    },
+    {
+      "key": "shen2012",
+      "citation": "Shen W.Z., Zhu W.J., Sorensen J.N., Actuator line/Navier-Stokes computations for the MEXICO rotor: comparison with detailed measurements, Wind Energy 15 (2012) 811-825 (read, not used for data)",
+      "doi": "10.1002/we.510"
+    }
+  ],
+  "notes": "GEOMETRY: design geometry (Technion), Guntur 2013 Table 3.1, identical to Bechmann 2011 Table II at the 11 aerodynamic stations. twist_deg is the source's own design twist (16.4 deg at r=0.45 m to 0 at the tip), measured chord vs rotor plane, positive towards feather, WITHOUT pitch - this already is the solver convention, no conversion was needed; all experiments are at pitch_deg = -2.3 (towards stall; local blade angle = twist - 2.3, e.g. -2.3 deg at the tip). The pitch axis is at 0.25c. Scanned blades: twist deviation < 0.1 deg, chordwise deviation < 0.3-1.7 mm, flapwise < 3.4 mm, airfoil shape worst near the LE of blades 2-3 (Mexnext-I Table 6.1). Airfoils: DU91-W2-250 r/R 0.20-0.456, RISO-A1-21 0.544-0.656, NACA 64-418 0.744-1.0, linear transitions in between (rows 'transition' at 0.5R and 0.7R) and from the cylinder (0.133R) to the DU section (0.2R). The tip is a sharp taper from 0.092 m at 0.962R to 0.011 m at R (rows from Guntur). Rhub = 0.21 m (spinner/blade root). Root: cylinder d 0.09 m modelled as 'circle' with cd = 1.0. AIRFOIL DATA: the 'best set' distributed to Mexnext participants (DU Re 0.5e6 rough, RISO Re 1.6e6 rough, NACA Re 0.7e6 clean, ExperimentDescriptionNewMexico.xlsx on the closed Mexnext EPOS site) is not public; only the RISO set is reproduced from its open origin (Risoe-R-1112 run005). DU and NACA polars are XFOIL. Known issue (Mexnext-I/III, Shen 2012): the RISO 2D data give too much lift on the rotor around r/R 0.6 compared with the measurements; several Mexnext participants modified it. Sectional chord Reynolds numbers at 424.5 rpm: 0.4-0.75e6. EXPERIMENT ISSUES: (1) open jet 9.5 x 9.5 m, rotor D 4.5 m: blockage/open-jet effects judged small in the rotor plane (ECN-E--07-042, pilot-tunnel test), no correction applied to any stored value; 'breathing slots' behind the collector. (2) 2006 tunnel speed: the DNW calibration of the first campaign over-indicated the speed; ECN deducts 0.2 m/s (stored v_ms = raw - 0.2, raw kept as v_tunnel_raw_ms). New MEXICO 2014 speeds use the re-calibrated tunnel (Mexnext-III: loads and PIV velocities then agree with momentum theory). (3) 2006 pressure sensors: re-calibration in 2013 raised loads by +4..7% (ECN-E--14-048 Table 2) - applied in the ECN Fig. 22 data (mexico2006_tsr_sweep), NOT in the Bechmann Table IV data (mexico2006_spanwise_axial); several inboard sensors were faulty in 2006. (4) 2006 balance: total axial force includes the tower (d ~0.5 m, Re near critical) and nacelle drag; rotor thrust only via estimated tower drag (Bechmann Table III, ECN balance Cdax). (5) Strain gauges: the 2006 blade-root gauges gave unusable results (calibration error, drift; blade 2 unusable, Mexnext-I ch. 6); new flap/edge gauges at 5 cm from the blade root were installed for 2014, but no reduced root-moment values are published in the open reports, so experiment/loads.csv is absent. (6) Pressure-derived torque excludes skin friction; pressure-derived Fax/torque with 5 sections miss load (ECN-E--18-003 Table 3.1). (7) No torque measurement in 2006; in 2014 only generator torque (with uncertain loss correction). MEXNEXT WEIGHTING FACTORS (ECN-E--18-003 App. C Tables 1-2) to integrate chord-axes Fn/Ft [N/m] at r/R 0.25,0.35,0.60,0.82,0.92 into rotor Fax [N] and torque [N m] (all 3 blades): Fax = 0.847477 Fn25 - 0.179364 Ft25 + 1.170039 Fn35 - 0.162356 Ft35 + 1.584740 Fn60 - 0.069191 Ft60 + 1.079999 Fn82 - 0.001508 Ft82 + 0.607397 Fn92 + 0.011208 Ft92; Torque = 0.089458 Fn25 + 0.422679 Ft25 + 0.155253 Fn35 + 1.118850 Ft35 + 0.091073 Fn60 + 2.085914 Ft60 + 0.002579 Fn82 + 1.846798 Ft82 - 0.022949 Fn92 + 1.243645 Ft92 (pitch -2.3 deg). SAME GEOMETRY 2006/2014: yes - the same model and blades were re-used in New MEXICO (ECN-E--14-048 ch. 3), so both campaigns are in this one case; configuration (tape) differs, see each file. CONSISTENCY: the TSR-sweep pressure Cdax (ECN Fig. 22b/30b) includes ECN's +6% root/tip factor, the Mexnext-III weighting-factor integration does not (sweep config 3 at tsr 6.6: 0.80 vs case 1.2: 0.774 = 0.82/1.06). The sweep pressure Cp (ECN-M--16-063 Fig. 4b, ~0.47 at tsr 6.7) is higher than the Mexnext-III case 1.2 Cp (0.436); the processing of the two differs (sensor set / TE treatment, not documented) - treat the pressure Cp as an upper bound and cp_generator as a lower bound. Running the repository harness (validation/run_validation.py --cases mexico, 2026-10-18) on this case works for all 7 files; buhl_prandtl gives NRMSE 10% (Fn), 19% (Ft) on the 2014 spanwise data."
+}

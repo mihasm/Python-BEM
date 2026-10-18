@@ -1,0 +1,43 @@
+# NTNU 'Blind test' rotor blade (turbine T2 of BT1-BT5, LARS1 of BT5; same blades on T1 of BT2-BT4).
+# Source: Saetran, Muehle, Bartl, Schottler, Hoelling, Adaramola (2017) Invitation to the 'Blind test 5' workshop,
+#   Appendix C, Table C.1 (tabulated), https://doi.org/10.5281/zenodo.1218555 ; identical to Krogstad & Lund (2012)
+#   Wind Energy 15:443-457, Table I (given there as r/R, c/R with R = 0.45 m): max differences 1.5e-06 m in r, 2.0e-06 m in c, 4.0e-05 deg in twist.
+# r_m: centre of 30 blade elements of 0.015 m from the rotor axis (outer edge of element 30 = 0.450 m).
+# twist_deg: angle chord vs rotor plane (source: 'twist angle measured with respect to the rotor plane'),
+#   blade pitch 0 in all tests; twist is about the quarter chord (K&L 2012 sec. 2.2). No conversion needed.
+# Rows 1-3: circular cylinder d = 13.5 mm (chord column = diameter) used to fix the blade in the hub; the
+#   source marks them with twist 120 deg (a flag). Here twist is set to 38.0 deg (= first transition row) so that
+#   interpolation between rows does not produce spurious angles; irrelevant for the cylinder (cl = 0).
+# Row 4 (r = 0.055 m): 'linear transition' from the cylinder (r <= 0.049 m) to the S826 (r >= 0.0675 m)
+#   (K&L 2012: transition between r/R = 0.109 and 0.151). Rows 5-30: NREL S826, t/c = 0.14, sharp square tip.
+r_m,chord_m,twist_deg,airfoil,thickness_ratio
+0.0075,0.0135,38,circle,1
+0.0225,0.0135,38,circle,1
+0.049,0.0135,38,circle,1
+0.055,0.0495,38,transition,
+0.0675,0.081433,37.055,s826,0.14
+0.0825,0.080111,32.544,s826,0.14
+0.0975,0.077012,28.677,s826,0.14
+0.1125,0.073126,25.262,s826,0.14
+0.1275,0.069008,22.43,s826,0.14
+0.1425,0.064952,19.988,s826,0.14
+0.1575,0.061102,18.034,s826,0.14
+0.1725,0.05752,16.349,s826,0.14
+0.1875,0.054223,14.663,s826,0.14
+0.2025,0.051204,13.067,s826,0.14
+0.2175,0.048447,11.829,s826,0.14
+0.2325,0.045931,10.753,s826,0.14
+0.2475,0.043632,9.8177,s826,0.14
+0.2625,0.041529,8.8827,s826,0.14
+0.2775,0.039601,7.9877,s826,0.14
+0.2925,0.037831,7.2527,s826,0.14
+0.3075,0.036201,6.565,s826,0.14
+0.3225,0.034697,5.9187,s826,0.14
+0.3375,0.033306,5.3045,s826,0.14
+0.3525,0.032017,4.7185,s826,0.14
+0.3675,0.030819,4.1316,s826,0.14
+0.3825,0.029704,3.5439,s826,0.14
+0.3975,0.028664,2.9433,s826,0.14
+0.4125,0.027691,2.2185,s826,0.14
+0.4275,0.02678,1.097,s826,0.14
+0.4425,0.025926,-0.7167,s826,0.14

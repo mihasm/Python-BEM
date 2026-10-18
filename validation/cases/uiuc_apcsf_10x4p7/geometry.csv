@@ -1,0 +1,48 @@
+# APC Slow Flyer 10x4.7 (10x4.7SF), UIUC Vol. 1 geometry: APC manufacturer geometry file 10x47SF-PERF.PE0 (10x4.7SF                          (10x47SF.dat) / v2025-1001), from PE0-FILES_WEB-202602.zipx; tabulated.
+# Columns used: STATION (in) -> r_m, CHORD (in) -> chord_m (x 0.0254), TWIST (deg) -> twist_deg, THICKNESS RATIO -> thickness_ratio. APC defines TWIST and CHORD with the mold LE and TE parting lines, i.e. the LE-TE chord line; TWIST = atan(quoted pitch / 2 pi r) = blade angle from the plane of rotation (solver convention).
+# Stations inboard of r = 0.15 R dropped (hub; APC HUBRAD = 0.25 in, HUBTRA (hub transition) = 0.83 in).
+# APC airfoil sections: AIRFOIL1 E63 at 4.90 in (transition start), AIRFOIL2 APC12 at 5.00 in (transition end), 'scaled based on thickness ratio'; APC12 = NACA 4412 (APC note in the file).
+# Airfoil column: named XFOIL sections at anchor stations r/R = 0.167, 0.263, 0.395 (blend fraction and t/c of the station, see case.json airfoils), 'transition' rows in between (solver interpolates cl/cd).
+# UIUC PropellerScanner geometry of the tested specimen (Vol. 1 file apcsf_10x4.7_geom.txt): extraction/geometry_uiuc_scan.csv
+r_m,chord_m,twist_deg,airfoil,thickness_ratio
+0.0211582,0.0164236,22.735,e63_t6p0,0.0599
+0.0233375,0.0174981,23.364,transition,0.0575
+0.0266319,0.0190398,23.8446,transition,0.0541
+0.0299898,0.020508,23.933,transition,0.0511
+0.0333477,0.0218719,23.7391,e63_t4p9,0.0485
+0.0367055,0.0231242,23.3383,transition,0.0464
+0.0400634,0.0242672,22.7794,transition,0.0448
+0.0434213,0.0252984,22.0951,transition,0.0436
+0.0467792,0.0262153,21.3083,transition,0.0428
+0.0501371,0.027018,20.4354,e63,0.0425
+0.0534949,0.0277012,19.4888,e63,0.0425
+0.0568528,0.0282702,18.4796,e63,0.0425
+0.0602107,0.0287147,17.5137,e63,0.0425
+0.0635686,0.0290398,16.6411,e63,0.0425
+0.0669265,0.029243,15.8491,e63,0.0425
+0.0702843,0.0293192,15.1274,e63,0.0425
+0.0736397,0.0292684,14.4672,e63,0.0425
+0.0769976,0.0290881,13.8612,e63,0.0425
+0.0803554,0.0287782,13.303,e63,0.0425
+0.0837133,0.0283388,12.7873,e63,0.0425
+0.0870712,0.0277622,12.3095,e63,0.0425
+0.0904291,0.0270535,11.8656,e63,0.0425
+0.093787,0.0262077,11.4522,e63,0.0425
+0.0971448,0.0252222,11.0663,e63,0.0425
+0.100503,0.024097,10.7053,e63,0.0425
+0.103861,0.0228295,10.3668,e63,0.0425
+0.107218,0.0214198,10.0415,e63,0.0425
+0.110576,0.0198628,9.6744,e63,0.0425
+0.113934,0.018161,9.2583,e63,0.0425
+0.117292,0.0163119,8.7971,e63,0.0425
+0.120508,0.0142596,8.3161,e63,0.0425
+0.121293,0.0135788,8.1935,e63,0.0425
+0.121933,0.0129413,8.0916,e63,0.0425
+0.122575,0.0122199,7.9883,e63,0.0425
+0.123215,0.0113919,7.8836,e63,0.0425
+0.123858,0.0104292,7.7776,e63,0.0425
+0.124498,0.009271,7.6702,e63,0.0425
+0.125141,0.00778002,7.5616,e63,0.0425
+0.125781,0.00549148,7.4517,e63,0.0425
+0.126423,0.00286766,7.3406,e63,0.0425
+0.127,0.00050546,7.2508,e63,0.0425

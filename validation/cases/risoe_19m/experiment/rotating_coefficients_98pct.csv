@@ -1,0 +1,34 @@
+# Risoe 19 m - rotating-blade chord-normal (cn_chord) and chordwise (ct_chord) force coefficients vs alpha, 98 % span (r = 9.275 m)
+# Source: IEA Annex XVIII database files cna*_rot_r / cta*_rot_r (Figs. G.6/G.7 of Schepers J.G. et al. (2002) Final report of IEA Annex XVIII 'Enhanced Field Rotor Aerodynamics Database', ECN-C--02-016, Appendix G (updated Aug 2003); data: Zenodo doi:10.5281/zenodo.10619556 (CC-BY-4.0)). Tabulated, copied;
+#   *_std = standard deviation within the alpha bin (as published). Forces measured directly on blade segments
+#   (segment radii 3.555 / 6.475 / 9.275 m), not from pressures; 47.5 rpm, normal operation, January 1993.
+# CAUTION: alpha is the five-hole-pitot inflow angle at r = 6.83 m minus a constant 4.7 deg chosen so that the measured
+#   power curve vs alpha matched a BEM computation (NY_LOG: 'subtracted a constant 4.7 deg'); not an independent alpha.
+# cn_chord = force normal to the chord, ct_chord = force along the chord (positive towards the leading edge), both divided
+#   by the local dynamic pressure and chord; reference velocity = measured inflow velocity scaled to the segment radius.
+r_m,r_R,alpha_deg,cn_chord,cn_chord_std,ct_chord,ct_chord_std
+9.275,0.976,1.507,0.226,0.0,0.015,0.0
+9.275,0.976,2.644,0.246,0.035,0.013,0.009
+9.275,0.976,3.577,0.283,0.027,0.016,0.009
+9.275,0.976,4.525,0.323,0.029,0.021,0.01
+9.275,0.976,5.513,0.368,0.029,0.027,0.01
+9.275,0.976,6.507,0.409,0.029,0.032,0.01
+9.275,0.976,7.479,0.451,0.027,0.037,0.01
+9.275,0.976,8.441,0.49,0.029,0.044,0.01
+9.275,0.976,9.442,0.534,0.029,0.049,0.011
+9.275,0.976,10.408,0.566,0.028,0.053,0.012
+9.275,0.976,11.555,0.635,0.042,0.058,0.012
+9.275,0.976,12.593,0.697,0.038,0.063,0.015
+9.275,0.976,13.553,0.725,0.032,0.063,0.017
+9.275,0.976,14.508,0.759,0.035,0.077,0.021
+9.275,0.976,15.525,0.795,0.041,0.085,0.025
+9.275,0.976,16.507,0.813,0.04,0.09,0.027
+9.275,0.976,17.483,0.832,0.043,0.092,0.03
+9.275,0.976,18.475,0.838,0.048,0.1,0.031
+9.275,0.976,19.471,0.843,0.053,0.107,0.034
+9.275,0.976,20.515,0.832,0.065,0.102,0.038
+9.275,0.976,21.382,0.827,0.067,0.108,0.032
+9.275,0.976,22.309,0.833,0.059,0.121,0.017
+9.275,0.976,23.191,0.847,0.013,0.116,0.013
+9.275,0.976,24.116,0.833,0.086,0.093,0.011
+9.275,0.976,25.081,0.761,0.0,0.071,0.0

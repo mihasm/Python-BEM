@@ -1,0 +1,243 @@
+# ALTERNATIVE polar set (case.json alternative_polars): NREL S826 measured polars, DTU red wind tunnel (closed test section 0.5 x 0.5 m), 2D wing c = 0.100 m, span 0.499 m,
+#   inflow TI < 0.2 %; lift from force balance, drag from wake rake (alpha <= ~15 deg reliable, beyond less so).
+# Source: Sarlak, Frere, Mikkelsen, Sorensen (2018) Energies 11(6):1418, doi:10.3390/en11061418, Appendix
+#   Tables A2 (cl) and A3 (cd), tabulated (copied exactly). Re = 40e3 ... 400e3. At Re = 40e3 the upstroke
+#   (increasing alpha) values are used; the downstroke values (static hysteresis near stall) are omitted.
+# Tunnel corrections: the paper states they are negligible (sec. 3.1.2); the tabulated values are as given.
+# Note: this is the same DTU facility/model as Sarmast & Mikkelsen (2012/13) 'The experimental results of the NREL
+#   S826 airfoil at low Reynolds numbers' (the report itself could not be downloaded); see case.json notes.
+re,alpha_deg,cl,cd,source
+4e+04,-9.9,-0.306,0.141,exp DTU Sarlak 2018 Tab.A2/A3 (upstroke)
+4e+04,-8,-0.46,0.102,exp DTU Sarlak 2018 Tab.A2/A3 (upstroke)
+4e+04,-6,-0.331,0.053,exp DTU Sarlak 2018 Tab.A2/A3 (upstroke)
+4e+04,-4,-0.149,0.036,exp DTU Sarlak 2018 Tab.A2/A3 (upstroke)
+4e+04,-2,-0.16,0.042,exp DTU Sarlak 2018 Tab.A2/A3 (upstroke)
+4e+04,-1,-0.06,0.043,exp DTU Sarlak 2018 Tab.A2/A3 (upstroke)
+4e+04,-0,0.034,0.047,exp DTU Sarlak 2018 Tab.A2/A3 (upstroke)
+4e+04,1,0.166,0.054,exp DTU Sarlak 2018 Tab.A2/A3 (upstroke)
+4e+04,2,0.288,0.054,exp DTU Sarlak 2018 Tab.A2/A3 (upstroke)
+4e+04,3,0.372,0.063,exp DTU Sarlak 2018 Tab.A2/A3 (upstroke)
+4e+04,4,0.441,0.075,exp DTU Sarlak 2018 Tab.A2/A3 (upstroke)
+4e+04,5,0.494,0.078,exp DTU Sarlak 2018 Tab.A2/A3 (upstroke)
+4e+04,6,0.559,0.078,exp DTU Sarlak 2018 Tab.A2/A3 (upstroke)
+4e+04,7,0.584,0.091,exp DTU Sarlak 2018 Tab.A2/A3 (upstroke)
+4e+04,8,0.63,0.105,exp DTU Sarlak 2018 Tab.A2/A3 (upstroke)
+4e+04,9,0.657,0.119,exp DTU Sarlak 2018 Tab.A2/A3 (upstroke)
+4e+04,9.9,0.678,0.141,exp DTU Sarlak 2018 Tab.A2/A3 (upstroke)
+4e+04,10.9,0.702,0.17,exp DTU Sarlak 2018 Tab.A2/A3 (upstroke)
+4e+04,11.9,0.727,0.2,exp DTU Sarlak 2018 Tab.A2/A3 (upstroke)
+4e+04,12.9,0.76,0.226,exp DTU Sarlak 2018 Tab.A2/A3 (upstroke)
+4e+04,14,0.839,0.257,exp DTU Sarlak 2018 Tab.A2/A3 (upstroke)
+4e+04,14.9,0.862,0.254,exp DTU Sarlak 2018 Tab.A2/A3 (upstroke)
+4e+04,16,0.908,0.262,exp DTU Sarlak 2018 Tab.A2/A3 (upstroke)
+4e+04,18,0.937,0.322,exp DTU Sarlak 2018 Tab.A2/A3 (upstroke)
+4e+04,20,0.974,0.364,exp DTU Sarlak 2018 Tab.A2/A3 (upstroke)
+4e+04,24.9,1.103,0.459,exp DTU Sarlak 2018 Tab.A2/A3 (upstroke)
+6e+04,-9.9,-0.263,0.14,exp DTU Sarlak 2018 Tab.A2/A3
+6e+04,-8,-0.454,0.128,exp DTU Sarlak 2018 Tab.A2/A3
+6e+04,-6,-0.341,0.053,exp DTU Sarlak 2018 Tab.A2/A3
+6e+04,-4,-0.07,0.029,exp DTU Sarlak 2018 Tab.A2/A3
+6e+04,-2,-0.064,0.046,exp DTU Sarlak 2018 Tab.A2/A3
+6e+04,-1,0.062,0.053,exp DTU Sarlak 2018 Tab.A2/A3
+6e+04,-0,0.224,0.053,exp DTU Sarlak 2018 Tab.A2/A3
+6e+04,1,0.315,0.055,exp DTU Sarlak 2018 Tab.A2/A3
+6e+04,2,0.358,0.058,exp DTU Sarlak 2018 Tab.A2/A3
+6e+04,3,0.399,0.064,exp DTU Sarlak 2018 Tab.A2/A3
+6e+04,4,0.451,0.07,exp DTU Sarlak 2018 Tab.A2/A3
+6e+04,5,0.51,0.078,exp DTU Sarlak 2018 Tab.A2/A3
+6e+04,6,0.563,0.088,exp DTU Sarlak 2018 Tab.A2/A3
+6e+04,7,0.624,0.108,exp DTU Sarlak 2018 Tab.A2/A3
+6e+04,8,1.312,0.035,exp DTU Sarlak 2018 Tab.A2/A3
+6e+04,9,1.363,0.029,exp DTU Sarlak 2018 Tab.A2/A3
+6e+04,9.9,1.345,0.04,exp DTU Sarlak 2018 Tab.A2/A3
+6e+04,10.9,1.321,0.051,exp DTU Sarlak 2018 Tab.A2/A3
+6e+04,11.9,1.299,0.069,exp DTU Sarlak 2018 Tab.A2/A3
+6e+04,12.9,1.273,0.093,exp DTU Sarlak 2018 Tab.A2/A3
+6e+04,14,1.221,0.118,exp DTU Sarlak 2018 Tab.A2/A3
+6e+04,14.9,1,0.249,exp DTU Sarlak 2018 Tab.A2/A3
+6e+04,16,0.998,0.268,exp DTU Sarlak 2018 Tab.A2/A3
+6e+04,18,0.944,0.33,exp DTU Sarlak 2018 Tab.A2/A3
+6e+04,20,0.981,0.372,exp DTU Sarlak 2018 Tab.A2/A3
+6e+04,24.9,1.13,0.459,exp DTU Sarlak 2018 Tab.A2/A3
+8e+04,-9.9,-0.235,0.14,exp DTU Sarlak 2018 Tab.A2/A3
+8e+04,-8,-0.445,0.13,exp DTU Sarlak 2018 Tab.A2/A3
+8e+04,-6,-0.347,0.054,exp DTU Sarlak 2018 Tab.A2/A3
+8e+04,-4,-0.022,0.028,exp DTU Sarlak 2018 Tab.A2/A3
+8e+04,-2,0.015,0.047,exp DTU Sarlak 2018 Tab.A2/A3
+8e+04,-1,0.182,0.046,exp DTU Sarlak 2018 Tab.A2/A3
+8e+04,-0,0.368,0.043,exp DTU Sarlak 2018 Tab.A2/A3
+8e+04,1,0.511,0.042,exp DTU Sarlak 2018 Tab.A2/A3
+8e+04,2,0.612,0.044,exp DTU Sarlak 2018 Tab.A2/A3
+8e+04,3,0.583,0.059,exp DTU Sarlak 2018 Tab.A2/A3
+8e+04,4,0.586,0.068,exp DTU Sarlak 2018 Tab.A2/A3
+8e+04,5,0.599,0.079,exp DTU Sarlak 2018 Tab.A2/A3
+8e+04,6,0.66,0.088,exp DTU Sarlak 2018 Tab.A2/A3
+8e+04,7,1.222,0.032,exp DTU Sarlak 2018 Tab.A2/A3
+8e+04,8,1.33,0.025,exp DTU Sarlak 2018 Tab.A2/A3
+8e+04,9,1.353,0.033,exp DTU Sarlak 2018 Tab.A2/A3
+8e+04,9.9,1.306,0.041,exp DTU Sarlak 2018 Tab.A2/A3
+8e+04,10.9,1.259,0.057,exp DTU Sarlak 2018 Tab.A2/A3
+8e+04,11.9,1.227,0.085,exp DTU Sarlak 2018 Tab.A2/A3
+8e+04,12.9,1.201,0.105,exp DTU Sarlak 2018 Tab.A2/A3
+8e+04,14,1.182,0.133,exp DTU Sarlak 2018 Tab.A2/A3
+8e+04,14.9,1.208,0.15,exp DTU Sarlak 2018 Tab.A2/A3
+8e+04,16,0.913,0.295,exp DTU Sarlak 2018 Tab.A2/A3
+8e+04,18,0.954,0.336,exp DTU Sarlak 2018 Tab.A2/A3
+8e+04,20,0.983,0.376,exp DTU Sarlak 2018 Tab.A2/A3
+8e+04,24.9,1.152,0.452,exp DTU Sarlak 2018 Tab.A2/A3
+1e+05,-9.9,-0.238,0.142,exp DTU Sarlak 2018 Tab.A2/A3
+1e+05,-8,-0.441,0.134,exp DTU Sarlak 2018 Tab.A2/A3
+1e+05,-6,-0.325,0.052,exp DTU Sarlak 2018 Tab.A2/A3
+1e+05,-4,0.048,0.033,exp DTU Sarlak 2018 Tab.A2/A3
+1e+05,-2,0.259,0.035,exp DTU Sarlak 2018 Tab.A2/A3
+1e+05,-1,0.335,0.034,exp DTU Sarlak 2018 Tab.A2/A3
+1e+05,-0,0.533,0.029,exp DTU Sarlak 2018 Tab.A2/A3
+1e+05,1,0.611,0.03,exp DTU Sarlak 2018 Tab.A2/A3
+1e+05,2,0.718,0.029,exp DTU Sarlak 2018 Tab.A2/A3
+1e+05,3,0.842,0.03,exp DTU Sarlak 2018 Tab.A2/A3
+1e+05,4,0.947,0.031,exp DTU Sarlak 2018 Tab.A2/A3
+1e+05,5,1.055,0.031,exp DTU Sarlak 2018 Tab.A2/A3
+1e+05,6,1.176,0.034,exp DTU Sarlak 2018 Tab.A2/A3
+1e+05,7,1.266,0.028,exp DTU Sarlak 2018 Tab.A2/A3
+1e+05,8,1.326,0.021,exp DTU Sarlak 2018 Tab.A2/A3
+1e+05,9,1.334,0.035,exp DTU Sarlak 2018 Tab.A2/A3
+1e+05,9.9,1.273,0.047,exp DTU Sarlak 2018 Tab.A2/A3
+1e+05,10.9,1.228,0.076,exp DTU Sarlak 2018 Tab.A2/A3
+1e+05,11.9,1.196,0.111,exp DTU Sarlak 2018 Tab.A2/A3
+1e+05,12.9,1.172,0.139,exp DTU Sarlak 2018 Tab.A2/A3
+1e+05,14,1.15,0.163,exp DTU Sarlak 2018 Tab.A2/A3
+1e+05,14.9,1.126,0.19,exp DTU Sarlak 2018 Tab.A2/A3
+1e+05,16,0.908,0.291,exp DTU Sarlak 2018 Tab.A2/A3
+1e+05,18,0.954,0.341,exp DTU Sarlak 2018 Tab.A2/A3
+1e+05,20,0.989,0.376,exp DTU Sarlak 2018 Tab.A2/A3
+1e+05,24.9,1.165,0.451,exp DTU Sarlak 2018 Tab.A2/A3
+1.2e+05,-9.9,-0.243,0.143,exp DTU Sarlak 2018 Tab.A2/A3
+1.2e+05,-8,-0.455,0.13,exp DTU Sarlak 2018 Tab.A2/A3
+1.2e+05,-6,-0.294,0.05,exp DTU Sarlak 2018 Tab.A2/A3
+1.2e+05,-4,0.076,0.029,exp DTU Sarlak 2018 Tab.A2/A3
+1.2e+05,-2,0.348,0.029,exp DTU Sarlak 2018 Tab.A2/A3
+1.2e+05,-1,0.414,0.026,exp DTU Sarlak 2018 Tab.A2/A3
+1.2e+05,-0,0.514,0.026,exp DTU Sarlak 2018 Tab.A2/A3
+1.2e+05,1,0.608,0.025,exp DTU Sarlak 2018 Tab.A2/A3
+1.2e+05,2,0.732,0.025,exp DTU Sarlak 2018 Tab.A2/A3
+1.2e+05,3,0.858,0.026,exp DTU Sarlak 2018 Tab.A2/A3
+1.2e+05,4,0.959,0.026,exp DTU Sarlak 2018 Tab.A2/A3
+1.2e+05,5,1.075,0.027,exp DTU Sarlak 2018 Tab.A2/A3
+1.2e+05,6,1.185,0.028,exp DTU Sarlak 2018 Tab.A2/A3
+1.2e+05,7,1.275,0.022,exp DTU Sarlak 2018 Tab.A2/A3
+1.2e+05,8,1.331,0.027,exp DTU Sarlak 2018 Tab.A2/A3
+1.2e+05,9,1.319,0.035,exp DTU Sarlak 2018 Tab.A2/A3
+1.2e+05,9.9,1.258,0.053,exp DTU Sarlak 2018 Tab.A2/A3
+1.2e+05,10.9,1.215,0.088,exp DTU Sarlak 2018 Tab.A2/A3
+1.2e+05,11.9,1.182,0.125,exp DTU Sarlak 2018 Tab.A2/A3
+1.2e+05,12.9,1.156,0.148,exp DTU Sarlak 2018 Tab.A2/A3
+1.2e+05,14,1.136,0.173,exp DTU Sarlak 2018 Tab.A2/A3
+1.2e+05,14.9,1.113,0.206,exp DTU Sarlak 2018 Tab.A2/A3
+1.2e+05,16,0.992,0.274,exp DTU Sarlak 2018 Tab.A2/A3
+1.2e+05,18,0.95,0.342,exp DTU Sarlak 2018 Tab.A2/A3
+1.2e+05,20,0.993,0.376,exp DTU Sarlak 2018 Tab.A2/A3
+1.2e+05,24.9,1.17,0.45,exp DTU Sarlak 2018 Tab.A2/A3
+1.5e+05,-9.9,-0.244,0.142,exp DTU Sarlak 2018 Tab.A2/A3
+1.5e+05,-8,-0.461,0.133,exp DTU Sarlak 2018 Tab.A2/A3
+1.5e+05,-6,-0.27,0.047,exp DTU Sarlak 2018 Tab.A2/A3
+1.5e+05,-4,0.115,0.021,exp DTU Sarlak 2018 Tab.A2/A3
+1.5e+05,-2,0.354,0.025,exp DTU Sarlak 2018 Tab.A2/A3
+1.5e+05,-1,0.481,0.023,exp DTU Sarlak 2018 Tab.A2/A3
+1.5e+05,-0,0.539,0.022,exp DTU Sarlak 2018 Tab.A2/A3
+1.5e+05,1,0.635,0.022,exp DTU Sarlak 2018 Tab.A2/A3
+1.5e+05,2,0.745,0.022,exp DTU Sarlak 2018 Tab.A2/A3
+1.5e+05,3,0.849,0.022,exp DTU Sarlak 2018 Tab.A2/A3
+1.5e+05,4,0.965,0.024,exp DTU Sarlak 2018 Tab.A2/A3
+1.5e+05,5,1.099,0.024,exp DTU Sarlak 2018 Tab.A2/A3
+1.5e+05,6,1.201,0.024,exp DTU Sarlak 2018 Tab.A2/A3
+1.5e+05,7,1.278,0.02,exp DTU Sarlak 2018 Tab.A2/A3
+1.5e+05,8,1.332,0.03,exp DTU Sarlak 2018 Tab.A2/A3
+1.5e+05,9,1.308,0.034,exp DTU Sarlak 2018 Tab.A2/A3
+1.5e+05,9.9,1.25,0.056,exp DTU Sarlak 2018 Tab.A2/A3
+1.5e+05,10.9,1.199,0.101,exp DTU Sarlak 2018 Tab.A2/A3
+1.5e+05,11.9,1.161,0.134,exp DTU Sarlak 2018 Tab.A2/A3
+1.5e+05,12.9,1.137,0.155,exp DTU Sarlak 2018 Tab.A2/A3
+1.5e+05,14,1.115,0.177,exp DTU Sarlak 2018 Tab.A2/A3
+1.5e+05,14.9,1.091,0.209,exp DTU Sarlak 2018 Tab.A2/A3
+1.5e+05,16,1.043,0.225,exp DTU Sarlak 2018 Tab.A2/A3
+1.5e+05,18,0.95,0.343,exp DTU Sarlak 2018 Tab.A2/A3
+1.5e+05,20,0.995,0.379,exp DTU Sarlak 2018 Tab.A2/A3
+1.5e+05,24.9,1.168,0.446,exp DTU Sarlak 2018 Tab.A2/A3
+2e+05,-9.9,-0.268,0.148,exp DTU Sarlak 2018 Tab.A2/A3
+2e+05,-8,-0.467,0.13,exp DTU Sarlak 2018 Tab.A2/A3
+2e+05,-6,-0.166,0.038,exp DTU Sarlak 2018 Tab.A2/A3
+2e+05,-4,0.158,0.019,exp DTU Sarlak 2018 Tab.A2/A3
+2e+05,-2,0.401,0.019,exp DTU Sarlak 2018 Tab.A2/A3
+2e+05,-1,0.504,0.017,exp DTU Sarlak 2018 Tab.A2/A3
+2e+05,-0,0.614,0.017,exp DTU Sarlak 2018 Tab.A2/A3
+2e+05,1,0.718,0.018,exp DTU Sarlak 2018 Tab.A2/A3
+2e+05,2,0.831,0.018,exp DTU Sarlak 2018 Tab.A2/A3
+2e+05,3,0.952,0.019,exp DTU Sarlak 2018 Tab.A2/A3
+2e+05,4,1.037,0.019,exp DTU Sarlak 2018 Tab.A2/A3
+2e+05,5,1.108,0.02,exp DTU Sarlak 2018 Tab.A2/A3
+2e+05,6,1.211,0.017,exp DTU Sarlak 2018 Tab.A2/A3
+2e+05,7,1.287,0.024,exp DTU Sarlak 2018 Tab.A2/A3
+2e+05,8,1.326,0.029,exp DTU Sarlak 2018 Tab.A2/A3
+2e+05,9,1.298,0.034,exp DTU Sarlak 2018 Tab.A2/A3
+2e+05,9.9,1.235,0.066,exp DTU Sarlak 2018 Tab.A2/A3
+2e+05,10.9,1.183,0.112,exp DTU Sarlak 2018 Tab.A2/A3
+2e+05,11.9,1.143,0.139,exp DTU Sarlak 2018 Tab.A2/A3
+2e+05,12.9,1.123,0.155,exp DTU Sarlak 2018 Tab.A2/A3
+2e+05,14,1.102,0.182,exp DTU Sarlak 2018 Tab.A2/A3
+2e+05,14.9,1.058,0.219,exp DTU Sarlak 2018 Tab.A2/A3
+2e+05,16,1.007,0.248,exp DTU Sarlak 2018 Tab.A2/A3
+2e+05,18,1.064,0.3,exp DTU Sarlak 2018 Tab.A2/A3
+2e+05,20,1.107,0.326,exp DTU Sarlak 2018 Tab.A2/A3
+2e+05,24.9,1.168,0.448,exp DTU Sarlak 2018 Tab.A2/A3
+3e+05,-9.9,-0.295,0.17,exp DTU Sarlak 2018 Tab.A2/A3
+3e+05,-8,-0.332,0.087,exp DTU Sarlak 2018 Tab.A2/A3
+3e+05,-6,-0.085,0.026,exp DTU Sarlak 2018 Tab.A2/A3
+3e+05,-4,0.134,0.016,exp DTU Sarlak 2018 Tab.A2/A3
+3e+05,-2,0.358,0.013,exp DTU Sarlak 2018 Tab.A2/A3
+3e+05,-1,0.459,0.012,exp DTU Sarlak 2018 Tab.A2/A3
+3e+05,-0,0.564,0.013,exp DTU Sarlak 2018 Tab.A2/A3
+3e+05,1,0.66,0.013,exp DTU Sarlak 2018 Tab.A2/A3
+3e+05,2,0.769,0.014,exp DTU Sarlak 2018 Tab.A2/A3
+3e+05,3,0.862,0.015,exp DTU Sarlak 2018 Tab.A2/A3
+3e+05,4,0.947,0.015,exp DTU Sarlak 2018 Tab.A2/A3
+3e+05,5,1.056,0.016,exp DTU Sarlak 2018 Tab.A2/A3
+3e+05,6,1.171,0.016,exp DTU Sarlak 2018 Tab.A2/A3
+3e+05,7,1.254,0.014,exp DTU Sarlak 2018 Tab.A2/A3
+3e+05,8,1.286,0.02,exp DTU Sarlak 2018 Tab.A2/A3
+3e+05,9,1.314,0.027,exp DTU Sarlak 2018 Tab.A2/A3
+3e+05,9.9,1.315,0.033,exp DTU Sarlak 2018 Tab.A2/A3
+3e+05,10.9,1.242,0.062,exp DTU Sarlak 2018 Tab.A2/A3
+3e+05,11.9,1.183,0.111,exp DTU Sarlak 2018 Tab.A2/A3
+3e+05,12.9,1.131,0.144,exp DTU Sarlak 2018 Tab.A2/A3
+3e+05,14,1.078,0.179,exp DTU Sarlak 2018 Tab.A2/A3
+3e+05,14.9,1.025,0.214,exp DTU Sarlak 2018 Tab.A2/A3
+3e+05,16,0.977,0.247,exp DTU Sarlak 2018 Tab.A2/A3
+3e+05,18,1.068,0.291,exp DTU Sarlak 2018 Tab.A2/A3
+3e+05,20,0.93,0.43,exp DTU Sarlak 2018 Tab.A2/A3
+3e+05,24.9,1.013,0.379,exp DTU Sarlak 2018 Tab.A2/A3
+4e+05,-9.9,-0.349,0.175,exp DTU Sarlak 2018 Tab.A2/A3
+4e+05,-8,-0.295,0.086,exp DTU Sarlak 2018 Tab.A2/A3
+4e+05,-6,-0.093,0.026,exp DTU Sarlak 2018 Tab.A2/A3
+4e+05,-4,0.111,0.013,exp DTU Sarlak 2018 Tab.A2/A3
+4e+05,-2,0.326,0.011,exp DTU Sarlak 2018 Tab.A2/A3
+4e+05,-1,0.424,0.011,exp DTU Sarlak 2018 Tab.A2/A3
+4e+05,-0,0.525,0.011,exp DTU Sarlak 2018 Tab.A2/A3
+4e+05,1,0.631,0.011,exp DTU Sarlak 2018 Tab.A2/A3
+4e+05,2,0.735,0.012,exp DTU Sarlak 2018 Tab.A2/A3
+4e+05,3,0.841,0.013,exp DTU Sarlak 2018 Tab.A2/A3
+4e+05,4,0.94,0.014,exp DTU Sarlak 2018 Tab.A2/A3
+4e+05,5,1.038,0.014,exp DTU Sarlak 2018 Tab.A2/A3
+4e+05,6,1.135,0.015,exp DTU Sarlak 2018 Tab.A2/A3
+4e+05,7,1.225,0.013,exp DTU Sarlak 2018 Tab.A2/A3
+4e+05,8,1.276,0.019,exp DTU Sarlak 2018 Tab.A2/A3
+4e+05,9,1.303,0.025,exp DTU Sarlak 2018 Tab.A2/A3
+4e+05,9.9,1.298,0.032,exp DTU Sarlak 2018 Tab.A2/A3
+4e+05,10.9,1.231,0.06,exp DTU Sarlak 2018 Tab.A2/A3
+4e+05,11.9,1.165,0.111,exp DTU Sarlak 2018 Tab.A2/A3
+4e+05,12.9,1.114,0.143,exp DTU Sarlak 2018 Tab.A2/A3
+4e+05,14,1.055,0.178,exp DTU Sarlak 2018 Tab.A2/A3
+4e+05,14.9,0.987,0.221,exp DTU Sarlak 2018 Tab.A2/A3
+4e+05,16,0.956,0.242,exp DTU Sarlak 2018 Tab.A2/A3
+4e+05,18,1.166,0.27,exp DTU Sarlak 2018 Tab.A2/A3
+4e+05,20,0.945,0.402,exp DTU Sarlak 2018 Tab.A2/A3
+4e+05,24.9,0.985,0.369,exp DTU Sarlak 2018 Tab.A2/A3

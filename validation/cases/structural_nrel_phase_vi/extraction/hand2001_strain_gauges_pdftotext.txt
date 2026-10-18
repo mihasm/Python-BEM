@@ -1,0 +1,18 @@
+
+Structural Measurements
+
+Strain Gauges
+
+Bending moments were measured at the root of each blade and on the low-speed shaft with strain
+gauges. The strain gauges measuring root flap and edge loads were applied to the steel pitch shaft
+adjacent to the blade attachment location. The pitch shaft was reduced to a uniform cylinder, 80
+mm in diameter at 8.6% span [0.432 m], the location where the strain gauges were applied. The
+uniform, cylindrical region eliminates geometry effects to facilitate accurate measurement of flap
+and edge bending moments. The pitch shaft rotates with the blade when the blade pitch changes
+to maintain alignment of the strain gauges with the blade chord at the tip of the blade. This
+cylindrical section of the blade root is illustrated in Figure 9 and in Appendix B. The low-speed
+shaft was instrumented with strain gauges to measure bending about two axes and torque.
+Diagrams of the strain gauge orientation are included in Appendix B. The measurement
+conventions were such that positive blade root flap bending occurred because of a force in the
+downwind direction for both the upwind and downwind turbine configurations. Blade root edge
+bending and low-speed shaft torque were positive because of a force in the direction of rotation

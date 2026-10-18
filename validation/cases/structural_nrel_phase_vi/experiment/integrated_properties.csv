@@ -1,0 +1,10 @@
+# NREL UAE Phase VI blade - measured mass and centre of gravity (kind: structural)
+# value: Hand et al. 2001, Appendix A p. 75 (pdf p. 85), tabulated text; measured=True for weighed values.
+# table_a9_trapezoid: trapezoidal integral of Table A-9 (estimated) by extraction/build_case.py, for
+#   comparison - the estimate and the weighing are independent.
+quantity,value,table_a9_trapezoid,measured,note
+blade_mass_kg,60.2,57.3083,True,"blade 3 with standard tip, probe plugs inserted (Hand 2001 p. 75); table integral from r = 0.508 m (blade root) to 5.0 m"
+cm_from_rotor_axis_m,2.266,2.24111,True,blade 3 with standard tip (p. 75); table: same range
+mass_r0.369_to_5.0_kg,,75.3516,False,whole Table A-9 range incl. pitch shaft / root hardware
+pitch_shaft_hardware_per_blade_kg,38.6,,True,"pitch shaft, bull gear, instrumentation, bearings, nut, spacers, one blade (p. 75)"
+tip_mass_difference_tip_plate_kg,2.41,,True,tip plate minus standard tip (p. 75)

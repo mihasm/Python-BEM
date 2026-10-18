@@ -1,0 +1,51 @@
+# TUM G06 - Fig. 8d,e: Cp, Ct vs tsr at beta = 0 for U = 6, 7, 8, 9, 10 m/s (Reynolds-number effect)
+# Source: Nanos E.M., Bottasso C.L., Manolas D.I., Riziotis V.A. (2022), Wind Energ. Sci. 7, 1263-1287, doi:10.5194/wes-7-1263-2022, Fig. 8. DIGITISED from the embedded raster (PDF p. 12, 2067x1279 px) with extraction/digitise_fig8.py
+#   (gridline calibration, colour masks per curve, marker detection; overlay extraction/fig8_overlay_final.png).
+# cp_read/ct_read: 'marker' = centre of the plotted marker found automatically; 'line' = marker hidden under other curves,
+#   value read from the curve line at the 0.5-spaced tsr set-point (line interpolation between neighbouring markers).
+# Extraction uncertainty: tsr +-0.03, cp +-0.004, ct +-0.005 ('marker'); about twice that for 'line'.
+# Test: UTD BLAST boundary-layer wind tunnel, 2.8 m x 2.1 m, blockage 4.8 % (uncorrected), low turbulence (TI 0.15 %),
+#   uniform inflow (shear exponent 0) - paper Table 2. Torque from shaft strain gauges, thrust from the tower-base load cell
+#   (paper Sect. 2.5). Cp = P/(0.5 rho U^3 pi R^2), R = 0.3 m. Published measurement uncertainty ~1 % on loads, pitch +-0.3 deg.
+# Rows with cp or ct empty: the marker was not visible/detected in that panel.
+v_ms,tsr,cp,ct,cp_read,ct_read,pitch_deg
+6.0,5.4728,,0.5674,,marker,0.0
+6.0,6.0,,0.6224,,line,0.0
+6.0,7.0,,0.7049,,line,0.0
+6.0,7.508,0.3798,0.7298,marker,line,0.0
+6.0,7.977,0.36,0.742,marker,marker,0.0
+6.0,8.4713,0.3271,0.7412,marker,marker,0.0
+6.0,8.9856,0.2887,0.729,marker,marker,0.0
+6.0,9.3851,0.251,0.7143,marker,marker,0.0
+7.0,4.2693,,0.4416,,marker,0.0
+7.0,4.5,,0.4665,,line,0.0
+7.0,4.9857,,0.5241,,marker,0.0
+7.0,5.4928,0.273,,marker,,0.0
+7.0,5.9769,0.3236,,marker,,0.0
+7.0,7.0,0.3914,,line,,0.0
+7.0,7.5159,0.3962,,marker,,0.0
+7.0,7.9654,0.3859,,marker,,0.0
+8.0,4.9914,0.2206,,marker,,0.0
+8.0,5.5,0.2801,,line,,0.0
+8.0,6.0,0.33,,line,,0.0
+8.0,6.3228,0.3693,,marker,,0.0
+8.0,6.5,0.3936,,line,,0.0
+8.0,7.0,0.4096,,line,,0.0
+8.0,7.5,0.4074,,line,,0.0
+8.0,7.7925,0.407,,marker,,0.0
+9.0,5.9942,0.3351,,marker,,0.0
+9.0,6.513,0.3789,,marker,,0.0
+9.0,6.9741,0.3962,,marker,,0.0
+9.0,7.4713,0.4013,0.7376,marker,marker,0.0
+9.0,8.0002,0.3994,0.7596,marker,marker,0.0
+9.0,8.454,0.3882,0.7751,marker,marker,0.0
+10.0,4.0029,0.1102,0.4269,marker,marker,0.0
+10.0,4.5057,0.1684,0.4865,marker,marker,0.0
+10.0,5.0172,0.2433,0.5461,marker,marker,0.0
+10.0,5.5201,0.2951,0.5935,marker,marker,0.0
+10.0,6.023,0.3488,0.6457,marker,marker,0.0
+10.0,6.5489,0.3923,0.689,marker,marker,0.0
+10.0,7.023,0.4093,0.7208,marker,marker,0.0
+10.0,7.5172,0.4154,0.7482,marker,marker,0.0
+10.0,8.0287,0.4122,0.7706,marker,marker,0.0
+10.0,8.4899,0.4045,,marker,,0.0

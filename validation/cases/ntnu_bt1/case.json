@@ -1,0 +1,213 @@
+{
+  "id": "ntnu_bt1",
+  "name": "NTNU 'Blind test' model wind turbine (BT1-BT5 rotor, NREL S826, D = 0.894 m)",
+  "turbine_type": 0,
+  "B": 3,
+  "R": 0.447,
+  "Rhub": 0.045,
+  "fluid": {
+    "rho": 1.2,
+    "kin_viscosity": 1.5e-05,
+    "medium": "air"
+  },
+  "defaults": {
+    "v_ms": 10.0,
+    "pitch_deg": 0.0,
+    "yaw_deg": 0.0,
+    "rho": 1.2,
+    "kin_viscosity": 1.5e-05
+  },
+  "geometry_file": "geometry.csv",
+  "airfoils": {
+    "s826": {
+      "coordinates": "airfoils/s826.dat",
+      "polars": "airfoils/s826_polars_ntnu_bartl2019.csv",
+      "polar_source": "experimental, NTNU 2D wing c = 0.45 m in the same NTNU wind tunnel as the turbine (TI 0.7 %), Re 0.5e5-6e5: Bartl, Sagmo, Bracchi & Saetran (2019) Eur. J. Mech. B 75:180, Fig. 4 (digitised, cl +-0.01..0.03, cd +-0.002..0.03)",
+      "alternative_polars": {
+        "airfoils/s826_polars.csv": "experimental, DTU 2D wing c = 0.1 m, TI < 0.2 %, Re 40e3-400e3: Sarlak, Frere, Mikkelsen & Sorensen (2018) Energies 11:1418, Tables A2/A3 (tabulated exactly); laminar-bubble effects, abrupt stall ~9 deg, cd 0.03 at Re 1e5",
+        "airfoils/s826_polars_bt5_xfoil_re1e5.csv": "XFOIL Re = 1e5, -40..50 deg, the 'standard' polar distributed by the organisers (BT5 invitation Table D.1)"
+      },
+      "polar_choice": "NTNU set chosen as default because it was measured in the turbine's own wind tunnel at a comparable turbulence level, on a large (c = 0.45 m, end dummies) model, and was published as BEM input for exactly these turbines. Quick solver check 2026-10-18 (variant buhl_prandtl, 30 sections, R = 0.447, U = 10 m/s) vs BT1 Fig. 3: TSR 3.2/4.9/6.2/7.8/9.5 -> cp NTNU 0.246/0.423/0.426/0.354/0.195, DTU 0.153/0.297/0.366/0.271/0.090, XFOIL-BT5 0.275/0.407/0.394/0.297/0.119, measured 0.245/0.434/0.448/0.390/0.248; ct NTNU 0.44/0.71/0.81/0.88/0.93, measured 0.50/0.81/0.92/1.04/1.13 (all polars under-predict CT by 10-17 % above TSR 4)."
+    },
+    "circle": {
+      "cd": 1.2,
+      "polar_source": "circular cylinder d = 13.5 mm, cl = 0, cd = 1.2 (subcritical cylinder; local Re = W*d/nu ~ 1e4 at r ~ 0.047 m, TSR 6)"
+    }
+  },
+  "experiments": [
+    {
+      "file": "experiment/performance_bt1_krogstad_eriksen2013_fig3.csv",
+      "kind": "performance",
+      "x": "tsr",
+      "y": [
+        "cp",
+        "ct"
+      ],
+      "defaults": {
+        "v_ms": 10.0,
+        "pitch_deg": 0.0,
+        "yaw_deg": 0.0,
+        "rho": 1.2,
+        "kin_viscosity": 1.5e-05
+      },
+      "conditions": "BT1 reference measurement, turbine T2 alone, U_ref = 10 m/s, TI 0.3 %, uniform, rpm varied; coefficients with D = 0.894 m; CT = rotor thrust (tower/nacelle drag subtracted); NOT blockage-corrected (rotor 11.8-12.8 % of the 2.71 x 1.81 m section)",
+      "source": "Krogstad & Eriksen 2013, Renewable Energy 50:325, Fig. 3 (a),(b) 'Measured' (exact from the vector PDF)",
+      "uncertainty": "extraction < 0.001; measurement CP +-4 %, CT +-2 % (cp_err/ct_err columns)"
+    },
+    {
+      "file": "experiment/performance_krogstad_lund2012_tableII.csv",
+      "kind": "performance",
+      "x": "tsr",
+      "y": [
+        "cp",
+        "ct"
+      ],
+      "defaults": {
+        "v_ms": 10.0,
+        "pitch_deg": 0.0,
+        "yaw_deg": 0.0,
+        "rho": 1.2,
+        "kin_viscosity": 1.5e-05
+      },
+      "conditions": "same rotor, U_inf ~ 10 m/s, TI 0.3 %, rpm varied; published with D = 0.9 m (R = 0.45 m), converted to R = 0.447 m (tsr x0.9933, cp/ct x1.0135; published values in *_src columns), rpm = measured speed; CT with blade-less model drag (CD 0.137) subtracted; NOT blockage-corrected",
+      "source": "Krogstad & Lund 2012, Wind Energy 15:443, Table II (tabulated)",
+      "uncertainty": "tabulated; measurement CT 0.5-2 %, CP ~4 %"
+    },
+    {
+      "file": "experiment/performance_re_dependence_krogstad_adaramola2012_fig4.csv",
+      "kind": "performance",
+      "x": "tsr",
+      "y": [
+        "cp"
+      ],
+      "defaults": {
+        "pitch_deg": 0.0,
+        "yaw_deg": 0.0,
+        "rho": 1.2,
+        "kin_viscosity": 1.5e-05
+      },
+      "conditions": "Reynolds-number dependence: U_inf = 7.22 ... 10.30 m/s (v_ms column, one curve per speed), rpm varied; published with D = 0.90 m normalisation, converted to R = 0.447 m (tsr x0.9933, cp/ct x1.0135; published values kept in *_src columns); not blockage-corrected; CT of this figure (column ct_incl_tower) is ~0.13 above the rotor CT of the other files at all TSR = very probably includes tower+nacelle drag, so only cp is compared",
+      "source": "Krogstad & Adaramola 2012, Wind Energy 15:743, Fig. 4 (exact from the vector PDF)",
+      "uncertainty": "extraction < 0.001 in CP/CT, < 0.01 in tsr"
+    },
+    {
+      "file": "experiment/performance_yaw_krogstad_adaramola2012_fig5.csv",
+      "kind": "performance",
+      "x": "tsr",
+      "y": [
+        "cp",
+        "ct"
+      ],
+      "defaults": {
+        "v_ms": 10.0,
+        "pitch_deg": 0.0,
+        "rho": 1.2,
+        "kin_viscosity": 1.5e-05
+      },
+      "conditions": "yawed rotor, yaw_deg = 0, 10, 20, 30, 40, 50 (column), U_inf ~ 10 m/s, rpm varied; coefficients on the full rotor area pi*R^2 and U_inf; published with D = 0.90 m normalisation, converted to R = 0.447 m (tsr x0.9933, cp/ct x1.0135; published values kept in *_src columns); direction of the measured thrust (wind vs rotor axis) not stated; not blockage-corrected",
+      "source": "Krogstad & Adaramola 2012, Wind Energy 15:743, Fig. 5 (a) CP and (c) CT (exact from the vector PDF; CT-panel tsr rescaled by 1/1.024, see file header)",
+      "uncertainty": "extraction < 0.001 in CP/CT; tsr of the CT points uncertain by 2.4 % (figure inconsistency)"
+    },
+    {
+      "file": "experiment/yaw_sweep_bartl2018_tsr6_fig1.csv",
+      "kind": "performance",
+      "x": "yaw_deg",
+      "y": [
+        "cp",
+        "ct"
+      ],
+      "defaults": {
+        "v_ms": 10.0,
+        "pitch_deg": 0.0,
+        "rho": 1.2,
+        "kin_viscosity": 1.5e-05
+      },
+      "conditions": "TSR 6.0 fixed, yaw -40..+40 deg in 10 deg steps, U_ref = 10 m/s, uniform inflow TI 0.23 %; D = 0.894 m; thrust normal to the rotor plane; not blockage-corrected",
+      "source": "Bartl et al. 2018, Wind Energ. Sci. 3:489, Fig. 1 (a),(b) inflow A (digitised raster)",
+      "uncertainty": "digitising +-0.004; measurement CP +-0.017, CT +-0.018 (cp_err/ct_err)"
+    },
+    {
+      "file": "experiment/yaw_bartl2018a_table2_inflowA.csv",
+      "kind": "performance",
+      "x": "yaw_deg",
+      "y": [
+        "cp",
+        "ct"
+      ],
+      "defaults": {
+        "v_ms": 10.0,
+        "pitch_deg": 0.0,
+        "rho": 1.2,
+        "kin_viscosity": 1.5e-05
+      },
+      "conditions": "TSR 6.0, yaw -30 / 0 / +30 deg, uniform inflow TI 0.23 %, U_ref = 10 m/s; published with D = 0.90 m, converted to R = 0.447 m (tsr x0.9933, cp/ct x1.0135; *_src columns keep the published values)",
+      "source": "Bartl et al. 2018, Wind Energ. Sci. 3:329, Table 2 inflow A (tabulated)",
+      "uncertainty": "tabulated; measurement CP +-0.011..0.017, CT +-0.013..0.018"
+    }
+  ],
+  "sources": [
+    {
+      "key": "saetran2017_bt5",
+      "citation": "Saetran L., Muehle F., Bartl J., Schottler J., Hoelling M., Adaramola M.S. (2017) Invitation to the 2017 'Blind test 5' workshop - The wake behind a yawed wind turbine. NTNU/NMBU/ForWind. (Tables B.1 airfoil coordinates, C.1 blade geometry, D.1 XFOIL polar)",
+      "doi": "10.5281/zenodo.1218555",
+      "url": "https://zenodo.org/record/1218555/files/Invitation_Blind_test_5.pdf"
+    },
+    {
+      "key": "krogstad_lund2012",
+      "citation": "Krogstad P.-A., Lund J.A. (2012) An experimental and numerical study of the performance of a model turbine. Wind Energy 15(3):443-457 (Table I blade definition, Table II measured CP/CT)",
+      "doi": "10.1002/we.482"
+    },
+    {
+      "key": "krogstad_eriksen2013",
+      "citation": "Krogstad P.-A., Eriksen P.E. (2013) 'Blind test' calculations of the performance and wake development for a model wind turbine. Renewable Energy 50:325-333 (Fig. 3)",
+      "doi": "10.1016/j.renene.2012.06.044"
+    },
+    {
+      "key": "krogstad_adaramola2012",
+      "citation": "Krogstad P.-A., Adaramola M.S. (2012) Performance and near wake measurements of a model horizontal axis wind turbine. Wind Energy 15(5):743-756 (Figs. 4, 5)",
+      "doi": "10.1002/we.502"
+    },
+    {
+      "key": "bartl2018a",
+      "citation": "Bartl J., Muehle F., Schottler J., Saetran L., Peinke J., Adaramola M., Hoelling M. (2018) Wind tunnel experiments on wind turbine wakes in yaw: effects of inflow turbulence and shear. Wind Energ. Sci. 3:329-343 (Table 2)",
+      "doi": "10.5194/wes-3-329-2018"
+    },
+    {
+      "key": "bartl2018b",
+      "citation": "Bartl J., Muehle F., Saetran L. (2018) Wind tunnel study on power output and yaw moments for two yaw-controlled model wind turbines. Wind Energ. Sci. 3:489-502 (Fig. 1)",
+      "doi": "10.5194/wes-3-489-2018"
+    },
+    {
+      "key": "sarlak2018",
+      "citation": "Sarlak H., Frere A., Mikkelsen R., Sorensen J.N. (2018) Experimental investigation of static stall hysteresis and 3-dimensional flow structures for an NREL S826 wing section of finite span. Energies 11(6):1418 (Tables A2, A3)",
+      "doi": "10.3390/en11061418",
+      "url": "https://backend.orbit.dtu.dk/ws/files/149168593/energies_11_01418.pdf"
+    },
+    {
+      "key": "bartl2019",
+      "citation": "Bartl J., Sagmo K.F., Bracchi T., Saetran L. (2019) Performance of the NREL S826 airfoil at low to moderate Reynolds numbers - A reference experiment for CFD models. Eur. J. Mech. B/Fluids 75:180-192 (Fig. 4)",
+      "doi": "10.1016/j.euromechflu.2018.10.002"
+    },
+    {
+      "key": "krogstad_saetran2015_bt3",
+      "citation": "Krogstad P.-A., Saetran L., Adaramola M.S. (2015) 'Blind Test 3' calculations of the performance and wake development behind two in-line and offset model wind turbines. J. Fluids Struct. 52:65-80 (measurement uncertainties, T1/T2 rotor diameters)",
+      "doi": "10.1016/j.jfluidstructs.2014.10.002"
+    },
+    {
+      "key": "bartl_saetran2017_bt4",
+      "citation": "Bartl J., Saetran L. (2017) Blind test comparison of the performance and wake flow between two in-line wind turbines exposed to different turbulent inflow conditions. Wind Energ. Sci. 2:55-76",
+      "doi": "10.5194/wes-2-55-2017"
+    },
+    {
+      "key": "muehle2018_bt5",
+      "citation": "Muehle F., Schottler J., Bartl J., et al. (2018) Blind test comparison on the wake behind a yawed wind turbine. Wind Energ. Sci. 3:883-903 (Table 3: CP 0.32, CT 0.76 at yaw 30 deg, TSR 6, SHEARED turbulent inflow)",
+      "doi": "10.5194/wes-3-883-2018"
+    },
+    {
+      "key": "sarlak2014",
+      "citation": "Sarlak H., Mikkelsen R., Sarmast S., Sorensen J.N. (2014) Aerodynamic behaviour of NREL S826 airfoil at Re=100,000. J. Phys.: Conf. Ser. 524:012027",
+      "doi": "10.1088/1742-6596/524/1/012027"
+    }
+  ],
+  "notes": "ROTOR: 3 blades, NREL S826 (t/c 14 %) from r = 0.0675 m to the tip, blades milled in aluminium, pitch 0 in all tests, stall controlled, counter-clockwise rotation seen from upstream (irrelevant for BEM). The same blades were used on every NTNU blind-test turbine; the rotor diameter differs only by the hub: T2 (BT1, the downstream turbine of BT2-BT4, BT5) and LARS1 (BT5, Bartl 2018) D = 0.894 m; T1 (upstream turbine of BT2-BT4) D = 0.944 m (wider hub; not covered here). Krogstad & Lund 2012, Krogstad & Adaramola 2012 and Bartl 2018a state D = 0.90 m for the same rotor and normalise with it; their tsr, cp, ct were converted to R = 0.447 m (tsr x 0.447/0.45, cp and ct x (0.45/0.447)^2), the published values are kept in tsr_src/cp_src/ct_src columns, and rpm is the measured speed. The 3 mm ambiguity: the geometry table (Table C.1 of the BT5 invitation = Table I of Krogstad & Lund with R = 0.45 m) has 30 elements of 0.015 m whose outer edge is r = 0.450 m, while the stated BT1 diameter is 0.894 m (blade length 0.413 m + hub 0.068/2 m = 0.447 m). R = 0.447 m is used here with the table radii unchanged; the alternative (shift the table by -3 mm or use R = 0.45) changes CP by ~1 %. HUB/ROOT: nacelle/hub cover d = 90 mm (Rhub = 0.045 m; the BT5 invitation's 'Dhub = 0.068 m' is the blade-mounting hub inside the cover). Rows r = 0.0075/0.0225 m are inside the hub, the cylinder d = 13.5 mm is exposed from 0.045 to 0.049 m, a linear transition from 0.049 to 0.0675 m with a sharp corner, and the S826 from 0.0675 m. The tip is cut off square. TWIST is relative to the rotor plane (source convention = solver convention, no conversion); the source's twist 120 deg on the cylinder rows is a flag and is replaced by 38 deg. AIRFOIL DATA: the blades' Re is ~0.6e5-1.8e5 (tip Re ~1e5 at TSR 6, U 10 m/s; 3e4 at TSR 2). The S826 has strong low-Re effects below Re ~ 0.8e5 (laminar separation, static hysteresis); the DTU (low TI) and NTNU (TI 0.7 %) polars differ strongly in and after stall (DTU: abrupt stall at ~9 deg, cl_max 1.35; NTNU: cl_max ~1.5 at 13 deg, gentle), so the polar choice matters for TSR < 5. Sarmast & Mikkelsen's DTU report (2012/13, the polar the brief named) could not be downloaded (DTU Orbit/KTH DiVA block bots); Sarlak 2018 is the later, tabulated publication of the DTU measurements on the same wing (Sarlak 2014 shows the two DTU series agree). The METU data (Ostovan, Amiri & Uzol 2013, RUZGEM conference) were not found online. WIND TUNNEL: closed-return NTNU tunnel, test section 2.71 m wide x 1.80-1.85 m high (roof adjusted for zero pressure gradient), 11.15 m long; the BT1 paper says 'about 2 m high and almost 3 m wide'. Rotor-swept area 11.8-12.8 % of the section: NO blockage correction is applied to any of the data (the organisers deliberately leave the walls to the modellers; Sorensen & Mikkelsen's corrected BEM in BT1 changed CT by up to 10 %). Inflow TI 0.23-0.3 %, uniform within +-1 %. Air density: rho = 1.2 kg/m3 given by the organisers (BT5), viscosity not given (1.5e-5 m2/s assumed, air at ~20 C). CP is from a shaft torque transducer between rotor and bearings (bearing friction subtracted in the Bartl papers), CT = balance force minus the separately measured tower+nacelle drag. CP and CT independent of U for U > 9 m/s (Re-dependence file shows the drop at 7-9 m/s). LOADS: no blade or root-moment data were published for this rotor - Krogstad & Lund 2012 mention strain gauges for the root bending moment on one blade but write 'not included here'; only rotor thrust (and yaw moment My*, Bartl 2018b Fig. 1c / Muehle 2018 Table 3, not extracted since the BEM does not compute it) are available. The BT1 test also required spanwise load distributions at TSR 3, 6, 10, but only predictions (no measurements) were published. KARLSEN.BEM in the repo root is this rotor (B = 3, R = 0.45 m, design_tsr 7 (published design TSR 6), rho 1.225, nu 1.4207e-5): its 11 r/c/theta stations (r = 0.0075 ... 0.4425 m in 0.0435 m steps) are the published table resampled; 7 of the 9 S826 stations agree with linear interpolation of Table C.1 to < 0.001 deg / 0.01 mm, but r = 0.2685 m has twist 8.256 deg (table 8.525) and chord 0.04081 m (0.04076), and r = 0.3555 m has twist 4.366 deg (table 4.601) and chord 0.03130 m (0.03178) - probably spline-interpolated or typed from a figure. Further differences: Rhub = 0.006 m (physical hub/nacelle cover radius 0.045 m); the cylinder chord is 0.030 m (table: 0.0135 m - Krogstad & Lund give c/R = 0.03, i.e. the .bem took c/R as metres) and r = 0.051 m (in the transition, table chord 0.0255 m) is labelled 'Circle'; the 'Circle' twist values 120 / 92.67 deg are the source's flag value 120 interpolated, not a geometric angle; R = 0.45 m (the K&L value) instead of 0.447 m."
+}

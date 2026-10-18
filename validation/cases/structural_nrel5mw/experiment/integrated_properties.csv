@@ -1,0 +1,16 @@
+# NREL 5-MW blade - integrated structural properties (kind: structural)
+# value: Jonkman et al. 2009, Table 2-2 (p. 6), tabulated.
+# trapezoid_table21: trapezoidal integral of Table 2-1 x 1.04536 (differs by -0.7 %).
+# midpoint_17_elements: Table 2-1 x 1.04536 linearly interpolated to the 17 element centres of Table 3-1
+#   (geometry.csv r_m) times the element lengths dr_m - the lumped-mass rule FAST uses AND the program uses
+#   (section mass at the element centre); it reproduces Table 2-2 to 5 digits. A program run with this mass
+#   distribution on these 17 sections must give these numbers (mass, and with omega the root centrifugal force
+#   F = omega^2 * sum(m_i dr_i r_i) about the rotor axis - row centrifugal_root_force_n_at_12.1rpm).
+quantity,value,midpoint_17_elements,trapezoid_table21,note
+blade_length_m,61.5,61.4998,61.5,w.r.t. root along preconed axis
+mass_scaling_factor,1.04536,,,applied to mass_per_length_kg_m
+blade_mass_kg,17740,17740.05,17608.78,
+first_mass_moment_root_kgm,363231,363229.2,361106.2,w.r.t. blade root
+second_mass_moment_root_kgm2,1.177605e+07,1.177596e+07,1.16887e+07,w.r.t. blade root
+cm_from_root_m,20.475,20.47509,20.50717,along preconed axis
+centrifugal_root_force_n_at_12.1rpm,,625912.4,622187.6,"derived here (not in the source): omega^2 sum(m dr r), rated 12.1 rpm, no precone"

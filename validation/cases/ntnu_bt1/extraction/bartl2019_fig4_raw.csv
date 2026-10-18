@@ -1,0 +1,193 @@
+re,alpha_deg,cl,cd,cl_digitised,cd_digitised,cd_method
+50000.0,-15,-0.46,0.2885,visible,visible,wake rake
+50000.0,-10,-0.47,0.2326,occluded,visible,wake rake
+50000.0,-8,-0.412,0.1905,visible,visible,wake rake
+50000.0,-6,-0.302,0.0621,visible,visible,wake rake
+50000.0,-4,-0.097,0.0321,visible,visible,wake rake
+50000.0,-2,0.2,0.0249,visible,visible,wake rake
+50000.0,0,0.458,0.0249,visible,visible,wake rake
+50000.0,2,0.592,0.0341,visible,visible,wake rake
+50000.0,4,0.735,0.0458,visible,visible,wake rake
+50000.0,6,0.871,0.0625,visible,visible,wake rake
+50000.0,8,1.28,0.0587,visible,visible,wake rake
+50000.0,9,1.378,0.0458,visible,visible,wake rake
+50000.0,10,1.425,0.0543,visible,visible,wake rake
+50000.0,11,1.404,0.0622,visible,visible,wake rake
+50000.0,12,1.364,0.0746,visible,visible,wake rake
+50000.0,13,1.328,0.1168,visible,visible,force balance (dashed)
+50000.0,14,1.3,0.1093,visible,visible,single cluster (wake=force or one hidden)
+50000.0,15,1.133,0.138,visible,visible,single cluster (wake=force or one hidden)
+50000.0,16,0.931,0.18,visible,visible,single cluster (wake=force or one hidden)
+50000.0,17,0.956,0.2174,visible,visible,single cluster (wake=force or one hidden)
+50000.0,18,0.989,0.3609,visible,visible,force balance (dashed)
+50000.0,20,1.064,0.4139,visible,visible,single cluster (wake=force or one hidden)
+50000.0,25,1.104,0.5455,visible,visible,single cluster (wake=force or one hidden)
+50000.0,30,1.234,0.6894,visible,visible,single cluster (wake=force or one hidden)
+70000.0,-15,-0.46,0.2759,visible,visible,wake rake
+70000.0,-10,-0.47,0.2145,occluded,visible,wake rake
+70000.0,-8,-0.42,0.167,visible,visible,wake rake
+70000.0,-6,-0.28,0.0596,visible,visible,wake rake
+70000.0,-4,-0.002,0.0356,visible,visible,wake rake
+70000.0,-2,0.242,0.028,visible,visible,wake rake
+70000.0,0,0.475,0.0246,visible,visible,wake rake
+70000.0,2,0.728,0.0249,visible,visible,wake rake
+70000.0,4,0.953,0.0263,visible,visible,wake rake
+70000.0,6,1.117,0.0273,visible,visible,wake rake
+70000.0,8,1.304,0.0283,visible,visible,wake rake
+70000.0,9,1.377,0.0307,visible,visible,wake rake
+70000.0,10,1.441,0.0354,visible,visible,wake rake
+70000.0,11,1.487,0.04,visible,visible,wake rake
+70000.0,12,1.518,0.0444,visible,visible,wake rake
+70000.0,13,1.548,0.0982,occluded,visible,single cluster (wake=force or one hidden)
+70000.0,14,1.539,0.1076,occluded,visible,single cluster (wake=force or one hidden)
+70000.0,15,1.517,0.1201,occluded,visible,force balance (dashed)
+70000.0,16,1.481,0.1743,occluded,visible,force balance (dashed)
+70000.0,17,1.424,0.2609,occluded,visible,force balance (dashed)
+70000.0,18,1.298,0.3449,visible,visible,force balance (dashed)
+70000.0,20,1.293,0.3975,visible,visible,single cluster (wake=force or one hidden)
+70000.0,25,1.201,0.5298,visible,visible,single cluster (wake=force or one hidden)
+70000.0,30,1.252,0.6727,visible,visible,single cluster (wake=force or one hidden)
+100000.0,-15,-0.457,0.2506,visible,visible,wake rake
+100000.0,-10,-0.497,0.1707,visible,visible,wake rake
+100000.0,-8,-0.444,0.0949,visible,visible,wake rake
+100000.0,-6,-0.241,0.0425,visible,visible,wake rake
+100000.0,-4,0.026,0.0263,visible,visible,wake rake
+100000.0,-2,0.292,0.0145,visible,occluded,wake rake
+100000.0,0,0.521,0.0134,visible,occluded,wake rake
+100000.0,2,0.751,0.0152,visible,occluded,wake rake
+100000.0,4,0.966,0.0161,visible,occluded,wake rake
+100000.0,6,1.147,0.0176,visible,occluded,wake rake
+100000.0,8,1.324,0.0142,visible,occluded,wake rake
+100000.0,9,1.391,0.0277,visible,visible,wake rake
+100000.0,10,1.447,0.0314,visible,visible,wake rake
+100000.0,11,1.489,0.0369,visible,visible,wake rake
+100000.0,12,1.519,0.037,visible,occluded,wake rake
+100000.0,13,1.548,0.0782,occluded,visible,force balance (dashed)
+100000.0,14,1.539,0.0977,occluded,visible,single cluster (wake=force or one hidden)
+100000.0,15,1.517,0.1082,occluded,visible,single cluster (wake=force or one hidden)
+100000.0,16,1.481,0.127,occluded,visible,single cluster (wake=force or one hidden)
+100000.0,17,1.42,0.1963,visible,visible,force balance (dashed)
+100000.0,18,1.306,0.3217,visible,visible,force balance (dashed)
+100000.0,20,1.291,0.3845,visible,visible,single cluster (wake=force or one hidden)
+100000.0,25,1.197,0.5014,visible,occluded,force balance
+100000.0,30,1.222,0.6696,visible,visible,single cluster (wake=force or one hidden)
+200000.0,-15,-0.446,0.2397,visible,visible,wake rake
+200000.0,-10,-0.493,0.1431,visible,occluded,wake rake
+200000.0,-8,-0.392,0.0608,visible,occluded,wake rake
+200000.0,-6,-0.141,0.0361,visible,visible,wake rake
+200000.0,-4,0.127,0.0225,visible,visible,wake rake
+200000.0,-2,0.354,0.0178,visible,visible,wake rake
+200000.0,0,0.57,0.0134,visible,occluded,wake rake
+200000.0,2,0.783,0.0191,visible,visible,wake rake
+200000.0,4,0.99,0.0198,visible,visible,wake rake
+200000.0,6,1.174,0.0208,visible,visible,wake rake
+200000.0,8,1.336,0.0142,visible,occluded,wake rake
+200000.0,9,1.4,0.028,visible,visible,wake rake
+200000.0,10,1.449,0.0307,visible,visible,wake rake
+200000.0,11,1.492,0.0321,visible,occluded,wake rake
+200000.0,12,1.519,0.037,visible,occluded,wake rake
+200000.0,13,1.525,0.0533,visible,visible,single cluster (wake=force or one hidden)
+200000.0,14,1.514,0.07,visible,visible,single cluster (wake=force or one hidden)
+200000.0,15,1.517,0.0925,occluded,visible,single cluster (wake=force or one hidden)
+200000.0,16,1.481,0.111,occluded,visible,single cluster (wake=force or one hidden)
+200000.0,17,1.419,0.1858,visible,visible,force balance (dashed)
+200000.0,18,1.282,0.3213,visible,visible,force balance (dashed)
+200000.0,20,1.239,0.3786,visible,occluded,force balance
+200000.0,25,1.189,0.5084,visible,visible,single cluster (wake=force or one hidden)
+200000.0,30,1.176,0.6424,occluded,occluded,force balance
+300000.0,-15,-0.436,0.2329,visible,visible,wake rake
+300000.0,-10,-0.48,0.1564,visible,visible,wake rake
+300000.0,-8,-0.346,0.0693,visible,visible,wake rake
+300000.0,-6,-0.088,0.028,visible,visible,wake rake
+300000.0,-4,0.165,0.0178,occluded,visible,wake rake
+300000.0,-2,0.384,0.0167,occluded,visible,wake rake
+300000.0,0,0.604,0.0154,occluded,visible,wake rake
+300000.0,2,0.793,0.0167,visible,visible,wake rake
+300000.0,4,1.002,0.0174,visible,visible,wake rake
+300000.0,6,1.19,0.0195,visible,visible,wake rake
+300000.0,8,1.347,0.0142,visible,occluded,wake rake
+300000.0,9,1.405,0.027,visible,visible,wake rake
+300000.0,10,1.453,0.0297,visible,visible,wake rake
+300000.0,11,1.496,0.0341,visible,visible,wake rake
+300000.0,12,1.527,0.037,visible,occluded,wake rake
+300000.0,13,1.534,0.0499,visible,visible,single cluster (wake=force or one hidden)
+300000.0,14,1.521,0.0676,visible,visible,force balance (dashed)
+300000.0,15,1.498,0.0881,visible,visible,force balance (dashed)
+300000.0,16,1.468,0.1113,visible,visible,single cluster (wake=force or one hidden)
+300000.0,17,1.403,0.1813,visible,visible,single cluster (wake=force or one hidden)
+300000.0,18,1.266,0.3165,visible,visible,force balance (dashed)
+300000.0,20,1.184,0.3855,visible,visible,force balance (dashed)
+300000.0,25,1.167,0.5074,visible,visible,single cluster (wake=force or one hidden)
+300000.0,30,1.156,0.6424,visible,occluded,force balance
+400000.0,-15,-0.424,0.2216,visible,visible,wake rake
+400000.0,-10,-0.463,0.135,visible,visible,wake rake
+400000.0,-8,-0.304,0.0615,visible,visible,wake rake
+400000.0,-6,-0.088,0.026,visible,visible,wake rake
+400000.0,-4,0.178,0.0181,visible,visible,wake rake
+400000.0,-2,0.396,0.0167,visible,visible,wake rake
+400000.0,0,0.617,0.0164,visible,visible,wake rake
+400000.0,2,0.802,0.0171,occluded,visible,wake rake
+400000.0,4,1.005,0.0178,visible,visible,wake rake
+400000.0,6,1.196,0.0191,visible,visible,wake rake
+400000.0,8,1.352,0.0142,occluded,occluded,wake rake
+400000.0,9,1.405,0.0273,visible,visible,wake rake
+400000.0,10,1.456,0.0304,visible,visible,wake rake
+400000.0,11,1.501,0.0346,visible,visible,wake rake
+400000.0,12,1.534,0.0396,visible,visible,wake rake
+400000.0,13,1.545,0.0461,visible,visible,single cluster (wake=force or one hidden)
+400000.0,14,1.532,0.0632,visible,visible,single cluster (wake=force or one hidden)
+400000.0,15,1.502,0.085,visible,visible,force balance (dashed)
+400000.0,16,1.487,0.1106,occluded,visible,force balance (dashed)
+400000.0,17,1.438,0.1461,occluded,visible,force balance (dashed)
+400000.0,18,1.348,0.2066,visible,visible,force balance (dashed)
+400000.0,20,1.166,0.3828,visible,visible,force balance (dashed)
+400000.0,25,1.149,0.5033,visible,visible,single cluster (wake=force or one hidden)
+400000.0,30,1.195,0.6481,visible,visible,single cluster (wake=force or one hidden)
+500000.0,-15,-0.42,0.2069,visible,occluded,wake rake
+500000.0,-10,-0.449,0.139,visible,visible,wake rake
+500000.0,-8,-0.287,0.0594,visible,visible,wake rake
+500000.0,-6,-0.056,0.0225,visible,visible,wake rake
+500000.0,-4,0.169,0.016,visible,visible,wake rake
+500000.0,-2,0.389,0.0137,visible,visible,wake rake
+500000.0,0,0.607,0.014,visible,visible,wake rake
+500000.0,2,0.796,0.0147,visible,visible,wake rake
+500000.0,4,1.012,0.0157,visible,visible,wake rake
+500000.0,6,1.203,0.0171,visible,visible,wake rake
+500000.0,8,1.346,0.012,visible,visible,wake rake
+500000.0,9,1.407,0.0242,visible,visible,wake rake
+500000.0,10,1.463,0.028,visible,visible,wake rake
+500000.0,11,1.513,0.0276,visible,occluded,wake rake
+500000.0,12,1.549,0.0345,visible,occluded,wake rake
+500000.0,13,1.562,0.041,visible,visible,single cluster (wake=force or one hidden)
+500000.0,14,1.556,0.0591,visible,visible,single cluster (wake=force or one hidden)
+500000.0,15,1.521,0.082,visible,visible,force balance (dashed)
+500000.0,16,1.478,0.1086,visible,visible,single cluster (wake=force or one hidden)
+500000.0,17,1.43,0.1405,visible,visible,single cluster (wake=force or one hidden)
+500000.0,18,1.375,0.1782,visible,visible,single cluster (wake=force or one hidden)
+500000.0,20,1.203,0.3794,visible,visible,force balance (dashed)
+500000.0,25,1.143,0.4972,visible,visible,single cluster (wake=force or one hidden)
+500000.0,30,1.189,0.6447,visible,visible,single cluster (wake=force or one hidden)
+600000.0,-15,-0.408,0.2069,visible,visible,wake rake
+600000.0,-10,-0.435,0.142,visible,visible,wake rake
+600000.0,-8,-0.269,0.0529,visible,visible,wake rake
+600000.0,-6,-0.075,0.0164,visible,visible,wake rake
+600000.0,-4,0.148,0.0106,visible,visible,wake rake
+600000.0,-2,0.368,0.0079,visible,visible,wake rake
+600000.0,0,0.588,0.0079,visible,visible,wake rake
+600000.0,2,0.808,0.0085,visible,visible,wake rake
+600000.0,4,1.023,0.0099,visible,visible,wake rake
+600000.0,6,1.216,0.0116,visible,visible,wake rake
+600000.0,8,1.359,0.0164,visible,visible,wake rake
+600000.0,9,1.42,0.0191,visible,visible,wake rake
+600000.0,10,1.48,0.0229,visible,visible,wake rake
+600000.0,11,1.53,0.0276,visible,visible,wake rake
+600000.0,12,1.567,0.0345,visible,visible,wake rake
+600000.0,13,1.575,0.0359,visible,visible,single cluster (wake=force or one hidden)
+600000.0,14,1.574,0.0478,visible,visible,single cluster (wake=force or one hidden)
+600000.0,15,1.545,0.0673,visible,visible,single cluster (wake=force or one hidden)
+600000.0,16,1.496,0.1024,visible,visible,single cluster (wake=force or one hidden)
+600000.0,17,1.446,0.1407,visible,visible,single cluster (wake=force or one hidden)
+600000.0,18,1.396,0.1863,visible,visible,single cluster (wake=force or one hidden)
+600000.0,20,1.263,0.3667,visible,visible,single cluster (wake=force or one hidden)
+600000.0,25,1.126,0.4907,visible,visible,single cluster (wake=force or one hidden)
+600000.0,30,1.166,0.6344,visible,visible,single cluster (wake=force or one hidden)

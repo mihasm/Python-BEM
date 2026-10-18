@@ -1,0 +1,36 @@
+Appendix A of Ref. [17] to ensure that the zero-twist reference location is at the blade tip.
+Integrating the chord distribution along the blade span reveals that the rotor solidity is roughly
+5.16%.
+
+As indicated in Table 3-1, we incorporated eight unique airfoil-data tables for the NREL offshore
+5-MW baseline wind turbine. The two innermost airfoil tables represent cylinders with drag
+coefficients of 0.50 (Cylinder1.dat) and 0.35 (Cylinder2.dat) and no lift. We created the
+remaining six airfoil tables by making corrections for three-dimensional behavior to the two-
+dimensional airfoil-data coefficients of the six airfoils used in the DOWEC study (as detailed in
+                      Table 3-1. Distributed Blade Aerodynamic Properties
+              Node        RNodes AeroTwst DRNodes         Chord        Airfoil Table
+              (-)              (m)         (º)      (m)      (m)                  (-)
+              1            2.8667      13.308    2.7333    3.542     Cylinder1.dat
+              2            5.6000      13.308    2.7333    3.854     Cylinder1.dat
+              3            8.3333      13.308    2.7333    4.167     Cylinder2.dat
+              4           11.7500      13.308    4.1000    4.557   DU40_A17.dat
+              5           15.8500      11.480    4.1000    4.652   DU35_A17.dat
+              6           19.9500      10.162    4.1000    4.458   DU35_A17.dat
+              7           24.0500       9.011    4.1000    4.249   DU30_A17.dat
+              8           28.1500       7.795    4.1000    4.007   DU25_A17.dat
+              9           32.2500       6.544    4.1000    3.748   DU25_A17.dat
+              10          36.3500       5.361    4.1000    3.502   DU21_A17.dat
+              11          40.4500       4.188    4.1000    3.256   DU21_A17.dat
+              12          44.5500       3.125    4.1000    3.010 NACA64_A17.dat
+              13          48.6500       2.319    4.1000    2.764 NACA64_A17.dat
+              14          52.7500       1.526    4.1000    2.518 NACA64_A17.dat
+              15          56.1667       0.863    2.7333    2.313 NACA64_A17.dat
+              16          58.9000       0.370    2.7333    2.086 NACA64_A17.dat
+              17          61.6333       0.106    2.7333    1.419 NACA64_A17.dat
+
+
+
+
+                                                7
+Appendix A of Ref. [14]). 8 In these airfoil tables, “DU” refers to Delft University and “NACA”
+refers to the National Advisory Committee for Aeronautics. We used AirfoilPrep v2.0 [9] to

@@ -1,0 +1,14 @@
+  
+       XFOIL         Version 6.97
+  
+ Calculated polar for: Wageningen B-series section r/R=0.400 t/c=0.0786
+  
+ 1 1 Reynolds number fixed          Mach number fixed         
+  
+ xtrf =   1.000 (top)        1.000 (bottom)  
+ Mach =   0.000     Re =     2.000 e 6     Ncrit =   9.000
+  
+   alpha    CL        CD       CDp       CM     Top_Xtr  Bot_Xtr
+  ------ -------- --------- --------- -------- -------- --------
+   0.000   0.2331   0.00664   0.00055  -0.0457   0.5526   0.0074
+   0.250   0.2589   0.00674   0.00050  -0.0454   0.5172   0.0047

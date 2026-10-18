@@ -1,0 +1,11 @@
+# TUM G1 - upstream turbine, baseline (no wake control) operating point in the NTUA wind tunnel
+# Data: TWEET-IE blind test Phase II, Zenodo doi:10.5281/zenodo.15607777 (CC-BY-4.0), 'NTUA Dataset/Case 1 - Baseline/<Low|High> Turbulence/Reference_*_5D_WT_1.dat'.
+#   Tabulated, copied unchanged (power, cp, combined uncertainty, tsr, rpm). A downstream G1 runs 5D behind.
+# Test: NTUA closed-circuit tunnel, section 2.5 m (H) x 3.5 m (W); blockage 11 %, no blockage correction;
+#   U from a Pitot tube 2D upstream. 'high' turbulence = screen + passive grid. Same G1 rotor, pitch ~0.4 deg.
+# v_ms: NOT tabulated; derived here as (rpm*2*pi/60)*0.55/tsr (tsr is rounded to 0.1 -> v uncertain by ~0.6 %).
+# Note the much lower Cp than in the TUM tunnel at the same tsr (0.39 vs 0.50): blockage 11 % vs 20 % and
+#   different inflow; useful as a reminder of the size of tunnel effects on this rotor.
+tsr,cp,cp_err,power_w,power_w_err,rpm,v_ms,turbulence
+8.4,0.388,0.013,42.627,0.502,850.0,5.828,low
+8.3,0.374,0.014,41.011,0.504,850.0,5.898,high

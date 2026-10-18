@@ -1,0 +1,38 @@
+# MEXICO rotor blade (EU FP5 MEXICO / New MEXICO, DNW-LLF), design geometry, R = 2.25 m, B = 3.
+# Source (tabulated): Guntur S., "A Detailed Study of the Rotational Augmentation and Dynamic Stall Phenomena for
+#   Wind Turbines", PhD thesis DTU Wind Energy PhD-0022, 2013, Table 3.1 (p. 23), given as r/R; r_m = r/R * 2.25.
+#   Cross-check, aerodynamic part (0.45-2.25 m): Bechmann, Sorensen & Zahle 2011, Wind Energy 14:677-689,
+#   doi:10.1002/we.450, Table II - identical chord and twist at all 11 common stations (0.45/0.675/0.9/1.025/1.225/
+#   1.35/1.475/1.675/1.8/2.025/2.165 m). Airfoil extents agree with Mexnext-I report ECN-E--12-004, ch. 4:
+#   DU91-W2-250 20-45.6% span, RISO-A1-21 54.4-65.6%, NACA 64-418 from 74.4% (r/R 0.2-0.456, 0.544-0.656, 0.744-1).
+# twist_deg = design twist, angle chord vs rotor plane WITHOUT pitch (positive = towards feather, the source's
+#   own convention: 16.4 deg at the root, 0 at the tip). The blade setting in the experiments is pitch = -2.3 deg
+#   (towards stall), stored in the pitch_deg column/defaults of the experiment files; local angle = twist + pitch.
+# Root: blade/hub junction r = 0.21 m (spinner), round cylinder root (d 0.09 m) 0.23-0.30 m, transition to the DU
+#   section 0.30-0.45 m; the first two rows (chord 0.195 m) are the root fitting as tabulated by Guntur.
+#   The root rows are named 'circle' (cl = 0, constant cd, see case.json) and 'transition'.
+# Radii of the 11 aerodynamic stations are Bechmann's exact mm values (Guntur's r/R rounds e.g. 1.025 m to 0.455R);
+#   the root/transition/tip-cap radii are Guntur's r/R x 2.25 m.
+# thickness_ratio: design t/c of the named airfoil (DU 0.25, RISO 0.21, NACA 0.18); in transitions left empty.
+r_m,chord_m,twist_deg,airfoil,thickness_ratio
+0.20925,0.195,0.0,circle,1.0
+0.2295,0.195,0.0,circle,1.0
+0.234,0.090,0.0,circle,1.0
+0.29925,0.090,0.0,circle,1.0
+0.3735,0.165,8.2,transition,
+0.450,0.240,16.4,du91_w2_250,0.25
+0.675,0.207,12.1,du91_w2_250,0.25
+0.900,0.178,8.3,du91_w2_250,0.25
+1.025,0.166,7.1,du91_w2_250,0.25
+1.125,0.158,6.1,transition,
+1.225,0.150,5.5,risoe_a1_21,0.21
+1.350,0.142,4.8,risoe_a1_21,0.21
+1.475,0.134,4.0,risoe_a1_21,0.21
+1.575,0.129,3.7,transition,
+1.675,0.123,3.2,naca64_418,0.18
+1.800,0.116,2.6,naca64_418,0.18
+2.025,0.102,1.5,naca64_418,0.18
+2.165,0.092,0.7,naca64_418,0.18
+2.1915,0.082,0.469,naca64_418,0.18
+2.22075,0.056,0.231,naca64_418,0.18
+2.250,0.011,0.0,naca64_418,0.18

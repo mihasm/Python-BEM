@@ -1,0 +1,104 @@
+{
+  "id": "dtmb_4119",
+  "name": "DTMB (DTRC) model propeller 4119 - 3 blades, D = 0.3048 m, open water (Jessup)",
+  "turbine_type": 1,
+  "B": 3,
+  "R": 0.1524,
+  "Rhub": 0.03048,
+  "fluid": {
+    "rho": 998.2,
+    "kin_viscosity": 1e-06,
+    "medium": "fresh water"
+  },
+  "geometry_file": "geometry.csv",
+  "airfoils": {
+    "dtmb4119_r0200": {
+      "coordinates": "airfoils/dtmb4119_r0200.dat",
+      "polars": "airfoils/dtmb4119_r0200_polars.csv",
+      "polar_source": "XFOIL 6.99 (repository binary), Ncrit = 9, free transition, computed (no measured polars exist); NACA 66 (TMB mod.) thickness + a=0.8 mean line, Brockett 1966 ordinates, t/c and f/c of the station"
+    },
+    "dtmb4119_r0300": {
+      "coordinates": "airfoils/dtmb4119_r0300.dat",
+      "polars": "airfoils/dtmb4119_r0300_polars.csv",
+      "polar_source": "XFOIL 6.99 (repository binary), Ncrit = 9, free transition, computed (no measured polars exist); NACA 66 (TMB mod.) thickness + a=0.8 mean line, Brockett 1966 ordinates, t/c and f/c of the station"
+    },
+    "dtmb4119_r0400": {
+      "coordinates": "airfoils/dtmb4119_r0400.dat",
+      "polars": "airfoils/dtmb4119_r0400_polars.csv",
+      "polar_source": "XFOIL 6.99 (repository binary), Ncrit = 9, free transition, computed (no measured polars exist); NACA 66 (TMB mod.) thickness + a=0.8 mean line, Brockett 1966 ordinates, t/c and f/c of the station"
+    },
+    "dtmb4119_r0500": {
+      "coordinates": "airfoils/dtmb4119_r0500.dat",
+      "polars": "airfoils/dtmb4119_r0500_polars.csv",
+      "polar_source": "XFOIL 6.99 (repository binary), Ncrit = 9, free transition, computed (no measured polars exist); NACA 66 (TMB mod.) thickness + a=0.8 mean line, Brockett 1966 ordinates, t/c and f/c of the station"
+    },
+    "dtmb4119_r0600": {
+      "coordinates": "airfoils/dtmb4119_r0600.dat",
+      "polars": "airfoils/dtmb4119_r0600_polars.csv",
+      "polar_source": "XFOIL 6.99 (repository binary), Ncrit = 9, free transition, computed (no measured polars exist); NACA 66 (TMB mod.) thickness + a=0.8 mean line, Brockett 1966 ordinates, t/c and f/c of the station"
+    },
+    "dtmb4119_r0700": {
+      "coordinates": "airfoils/dtmb4119_r0700.dat",
+      "polars": "airfoils/dtmb4119_r0700_polars.csv",
+      "polar_source": "XFOIL 6.99 (repository binary), Ncrit = 9, free transition, computed (no measured polars exist); NACA 66 (TMB mod.) thickness + a=0.8 mean line, Brockett 1966 ordinates, t/c and f/c of the station"
+    },
+    "dtmb4119_r0800": {
+      "coordinates": "airfoils/dtmb4119_r0800.dat",
+      "polars": "airfoils/dtmb4119_r0800_polars.csv",
+      "polar_source": "XFOIL 6.99 (repository binary), Ncrit = 9, free transition, computed (no measured polars exist); NACA 66 (TMB mod.) thickness + a=0.8 mean line, Brockett 1966 ordinates, t/c and f/c of the station"
+    },
+    "dtmb4119_r0900": {
+      "coordinates": "airfoils/dtmb4119_r0900.dat",
+      "polars": "airfoils/dtmb4119_r0900_polars.csv",
+      "polar_source": "XFOIL 6.99 (repository binary), Ncrit = 9, free transition, computed (no measured polars exist); NACA 66 (TMB mod.) thickness + a=0.8 mean line, Brockett 1966 ordinates, t/c and f/c of the station"
+    },
+    "dtmb4119_r0950": {
+      "coordinates": "airfoils/dtmb4119_r0950.dat",
+      "polars": "airfoils/dtmb4119_r0950_polars.csv",
+      "polar_source": "XFOIL 6.99 (repository binary), Ncrit = 9, free transition, computed (no measured polars exist); NACA 66 (TMB mod.) thickness + a=0.8 mean line, Brockett 1966 ordinates, t/c and f/c of the station"
+    }
+  },
+  "experiments": [
+    {
+      "file": "experiment/performance_open_water.csv",
+      "kind": "performance",
+      "x": "J",
+      "y": [
+        "ct",
+        "cp",
+        "eta"
+      ],
+      "defaults": {
+        "rpm": 600.0,
+        "pitch_deg": 0.0,
+        "rho": 998.2,
+        "kin_viscosity": 1e-06
+      },
+      "conditions": "DTMB towing basin open-water test (Jessup), uniform inflow, no cavitation; Fig. 1.3.1 of the source states Rn = 1e6 (0.7R chord Reynolds number); n = 10 rps is the workshop's calculation condition and gives Re(0.7R) = 1.0e6 at J = 0.833 with nu = 1e-6, so it is used as default (the towing-tank rps itself is not stated). No blockage (towing tank).",
+      "source": "Koyama (1993), Papers of Ship Research Institute Suppl. 15 (20th ITTC Propulsor Committee panel-method workshop), Table 1.3.1 (tabulated)",
+      "uncertainty": "tabulated to 3 decimals (+-0.0005 KT, +-0.00005 KQ); measurement uncertainty not published; the source eta0 column disagrees with J KT/(2 pi KQ) by up to 0.014 - eta here is recomputed"
+    }
+  ],
+  "sources": [
+    {
+      "key": "koyama1993",
+      "citation": "Koyama K. (1993). Comparative calculations of propellers by surface panel method - workshop organized by the 20th ITTC Propulsor Committee. Papers of Ship Research Institute, Supplement No. 15, Tokyo. Appendix 'Input data sent': Table 1.1.1 (geometry of DTRC 4119), Table 1.3.1 and Fig. 1.3.1 (open water, Jessup).",
+      "url": "https://www.nmri.go.jp/service/repository_data/PNM19150001-03.pdf"
+    },
+    {
+      "key": "jessup1989",
+      "citation": "Jessup S.D. (1989). An experimental investigation of viscous aspects of propeller blade flow. PhD thesis, The Catholic University of America (original experiment; not obtained, ProQuest 8912977)."
+    },
+    {
+      "key": "ittc1998",
+      "citation": "22nd ITTC Propulsion Committee (1999). Final report and recommendations, sect. 7 (RANS/panel workshop, Grenoble 1998, DTMB P4119: D = 304.8 mm, J = 0.833, n = 10 rps, V = 2.540 m/s).",
+      "url": "https://ittc.info/media/1492/propulsion-committee.pdf"
+    },
+    {
+      "key": "brockett1966",
+      "citation": "Brockett T. (1966). Minimum pressure envelopes for modified NACA-66 sections with NACA a=0.8 camber and BuShips Type I and Type II sections. DTMB Report 1780. Tables 1 and 3 (section ordinates).",
+      "url": "https://dome.mit.edu/bitstreams/43016e87-c7ed-4647-a213-6927f101f65b/download"
+    }
+  ],
+  "notes": "Classic open benchmark: no skew, no rake, nearly constant pitch (P/D 1.105 -> 1.075), hub d/D = 0.2 (Rhub = 0.2R; the blade table starts at 0.2R). Twist = atan(P/D/(pi r/R)) of the tabulated nose-tail pitch (= the table's PITCHAN). Sections NACA 66 (TMB modified nose and tail) thickness + NACA a=0.8 mean line with the station t/c and camber f/c; polars computed with XFOIL at Re 2e5-1.5e6 (chord Re ranges 3e5 at the root to 1e6 at 0.7R). The tip chord goes to zero at r/R = 1.0 (rounded tip; the table includes 0.925-0.995R). The open-water data are towing-tank values (no tunnel blockage). Expected BEM behaviour: KT/KQ near design J = 0.833 within a few percent with a Prandtl tip loss; the hub (d/D 0.2, cylindrical in the LDV tests) is not modelled. 5 measured points only; the faired curve (source Fig. 1.3.1, J 0.4-1.2) was not digitised because the table carries the same experiment."
+}

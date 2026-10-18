@@ -1,0 +1,26 @@
+# DTMB (DTRC) propeller 4119 - 3 blades, D = 12.000 in = 0.3048 m, no skew, no rake, hub d/D = 0.2
+# Source: Koyama (1993) Papers of Ship Research Institute Suppl. 15, Table 1.1.1(a) "Blade geometry of DTRC4119"
+#   (p. 65, DTRC xyzprop print; TABULATED, copied unchanged; rows re-sorted root->tip). Same table: 22nd ITTC
+#   Propulsion Committee RANS/panel workshop (Jessup 1998), Energy Equip. Sys. 6 (2018) Table 2 (agrees).
+# twist_deg = blade angle beta from the plane of rotation = atan( (P/D) / (pi r/R) ) of the nose-tail-line pitch;
+#   matches the table PITCHAN column (e.g. 0.7R: 0.45794 rad = 26.24 deg). No global pitch (fixed-pitch propeller).
+# chord_m = (c/D) * 0.3048; tip row 1.0 has zero chord (table). thickness_ratio = T/CHORD, camber_ratio = FM/CHORD.
+# airfoil: NACA 66 (TMB mod.) + a=0.8 sections built at 0.2..0.95R; 'transition' rows interpolate between the
+#   neighbouring named sections; rows 0.975..1.0 use the 0.95R section (t/c 0.032 is nearly constant there).
+# Extra columns r_R, P_D, camber_ratio are documentation only.
+r_m,chord_m,twist_deg,airfoil,thickness_ratio,r_R,P_D,camber_ratio
+0.030480,0.097536,60.376831,dtmb4119_r0200,0.205500,0.200000,1.105000,0.014290
+0.038100,0.104242,54.564165,transition,0.178700,0.250000,1.103700,0.019850
+0.045720,0.110795,49.466651,dtmb4119_r0300,0.155300,0.300000,1.102200,0.023180
+0.060960,0.123383,41.153438,dtmb4119_r0400,0.118000,0.400000,1.098300,0.023030
+0.076200,0.133868,34.836092,dtmb4119_r0500,0.090160,0.500000,1.093200,0.021820
+0.091440,0.140513,29.991345,dtmb4119_r0600,0.069600,0.600000,1.087900,0.020720
+0.106680,0.140879,26.237771,dtmb4119_r0700,0.054180,0.700000,1.083900,0.020030
+0.121920,0.132497,23.275249,dtmb4119_r0800,0.042060,0.800000,1.081100,0.019670
+0.137160,0.110124,20.878919,dtmb4119_r0900,0.033210,0.900000,1.078500,0.018170
+0.140970,0.099429,20.349203,transition,0.032520,0.925000,1.077790,0.017440
+0.144780,0.084582,19.842632,dtmb4119_r0950,0.032280,0.950000,1.077000,0.016310
+0.148590,0.062329,19.357034,dtmb4119_r0950,0.032110,0.975000,1.076090,0.014500
+0.150876,0.040465,19.074742,dtmb4119_r0950,0.031870,0.990000,1.075460,0.012980
+0.151638,0.028892,18.981999,dtmb4119_r0950,0.031750,0.995000,1.075230,0.012390
+0.152400,0.000000,18.890081,dtmb4119_r0950,0.031600,1.000000,1.075000,0.011750

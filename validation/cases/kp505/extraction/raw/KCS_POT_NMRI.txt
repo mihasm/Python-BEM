@@ -1,0 +1,44 @@
+KCS POT data (NMRI)
+
+DIAMETER(D)		0.1046	[m]
+BOSS RATIO		0.180	
+PITCH RATIO (0.7R)	0.997	
+EXP.AREA RATIO		0.800	
+No. OF BLADES		5	
+ANGLE OF SKEW		32.0 	[deg]
+ANGLE OF RAKE		0	[deg]
+
+Sting Type Dynamometer ; Without Stay
+(In No.3 Towing Tank)
+
+DATE	2005/9/12		
+Tw	22.2	[deg. C.]	Water temperature
+Np	32	[rps]	Propeller revolution
+Rn	3.68	*10^5	Rn=Np*D^2/'nu'
+I/D	1.5		I: Immersion Depth
+
+J	KT	10KQ
+0.000	0.5327	0.7517
+0.100	0.4937	0.7058
+0.150	0.4719	0.6813
+0.200	0.4469	0.6538
+0.250	0.4208	0.6232
+0.300	0.3922	0.5895
+0.350	0.3657	0.5589
+0.400	0.3425	0.5314
+0.450	0.3143	0.5008
+0.500	0.2895	0.4702
+0.550	0.2647	0.4396
+0.600	0.2407	0.4090
+0.650	0.2162	0.3784
+0.700	0.1931	0.3478
+0.700	0.1943	0.3478
+0.750	0.1688	0.3172
+0.800	0.1414	0.2805
+0.850	0.1148	0.2468
+0.900	0.0870	0.2132
+0.950	0.0581	0.1704
+1.000	0.0293	0.1275
+1.050	-0.0033	0.0786
+
+NB!: KQ data are only as a guide due to the small size propeller.

@@ -1,0 +1,14 @@
+# DTMB propeller 4119, open-water test (Jessup), DTMB towing basin; uniform inflow, uncavitating.
+# Source: Koyama (1993) Papers of Ship Research Institute Suppl. 15, Table 1.3.1 "Open water test results for
+#   DTRC4119" (p. 72), TABULATED (KT, 10KQ, eta0 at 5 J). Fig. 1.3.1 (p. 75) shows the faired curves, Rn = 1e6.
+# Conversion to the program convention: ct = KT, cp = 2*pi*KQ, eta = J*ct/cp. kt, kq, kq10, eta_table = source values.
+#   NOTE: the source eta0 column is NOT consistent with its own KT/KQ at J = 0.5, 0.9, 1.1 (0.489/0.725/0.575 vs
+#   0.475/0.719/0.562 from J KT/(2 pi KQ)); it agrees at J 0.7/0.833 - probably read off the faired curve. Use eta.
+# Extraction uncertainty: none (table, 3 decimals: +-0.0005 KT, +-0.0005 10KQ). Measurement uncertainty not stated.
+# Design point (lifting-surface design, not measured): J = 0.833, KT = 0.154, 10KQ = 0.290, eta = 0.706.
+J,ct,cp,eta,kt,kq,kq10,eta_table
+0.50000,0.28500,0.29971,0.47546,0.28500,0.04770,0.47700,0.48900
+0.70000,0.20000,0.22619,0.61894,0.20000,0.03600,0.36000,0.63200
+0.83300,0.14600,0.17593,0.69129,0.14600,0.02800,0.28000,0.69200
+0.90000,0.12000,0.15017,0.71919,0.12000,0.02390,0.23900,0.72500
+1.10000,0.03400,0.06660,0.56155,0.03400,0.01060,0.10600,0.57500

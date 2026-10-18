@@ -1,0 +1,4 @@
+Same with SIMMAN2014 '120524110441KCS_Propeller_MOERI.zip'.
+Same with CFDWS2010 'KCS propgeom NMRI.zip'
+
+openwater.txt for KP505 was added in this zip file.

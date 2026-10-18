@@ -1,0 +1,24 @@
+# UIUC DA4052 9-in propeller (2 blades, PROPID minimum-induced-loss design, SDA1045/SDA1075/SDA1100), B=2, blade-angle offset +0 deg: static performance (J = 0, tunnel off), CT and CP vs rpm.
+# Source: UIUC Propeller Database Vol. 2, file da4052_9x6.75_static_1041rd.txt; tabulated (RPM, CT, CP), copied without change.
+# Re in the database static plots is based on c(0.75R) and 0.75*Omega*R. No tunnel corrections needed.
+# Uncertainty: not quantified by the source; scatter between neighbouring rpm points ~+-0.002 in CT.
+rpm,J,v_ms,ct,cp,pitch_deg
+1460,0,0,0.107294,0.066613,0
+1753.33,0,0,0.114292,0.068237,0
+1996.67,0,0,0.109946,0.064553,0
+2243.33,0,0,0.111298,0.064328,0
+2440,0,0,0.115019,0.065906,0
+2726.67,0,0,0.114154,0.06509,0
+3006.67,0,0,0.115517,0.06495,0
+3210,0,0,0.114315,0.063982,0
+3420,0,0,0.116555,0.064905,0
+3770,0,0,0.114617,0.063254,0
+3980,0,0,0.114711,0.06292,0
+4213.33,0,0,0.114012,0.062267,0
+4460,0,0,0.114474,0.062057,0
+4700,0,0,0.114813,0.061826,0
+4940,0,0,0.115366,0.061923,0
+5193.33,0,0,0.114147,0.061082,0
+5416.67,0,0,0.114733,0.061242,0
+5673.33,0,0,0.114687,0.060849,0
+5946.67,0,0,0.115379,0.060859,0

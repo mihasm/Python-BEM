@@ -1,0 +1,4 @@
+sources/
+!*.dat
+results/
+__pycache__/

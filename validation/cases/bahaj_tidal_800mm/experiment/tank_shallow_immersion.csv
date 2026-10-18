@@ -1,0 +1,57 @@
+# Bahaj AS, Molland AF, Chaplin JR, Batten WMJ (2007) Power and thrust measurements of marine current turbines
+# under various hydrodynamic flow conditions in a cavitation tunnel and a towing tank. Renewable Energy 32(3):407-426,
+# doi:10.1016/j.renene.2006.01.012.
+# Extraction: VECTOR extraction of the marker centres from the publisher PDF drawing commands (PyMuPDF), axes calibrated
+# on the gridlines (residual < 0.003 TSR, < 0.0003 in C). Scripts: extraction/vector_extract.py + build_experiment.py;
+# overlays extraction/overlay_fig*.png. Every marker of the figure is one row (repeated TSRs = separate measurements).
+# Extraction uncertainty: +-0.005 in TSR, +-0.003 in Cp/Ct.
+# cp_err/ct_err = RSS of the dynamometer accuracy (paper Sec. 4.3: torque +-0.25 N m, thrust +-5 N, converted at the
+# row's v_ms and tsr) and the extraction uncertainty; blockage-correction uncertainty not included.
+# Coefficients: Cp = Q*Omega/(0.5 rho U^3 A), Ct = T/(0.5 rho U^2 A), A = pi*0.4^2, TSR = Omega R / U.
+# BLOCKAGE-CORRECTED values (paper Sec. 6.2 and App. A: Barnsley & Wellicome actuator-disc wake-blockage
+# correction to the equivalent free-stream speed U_F; tunnel 2.4 x 1.2 m -> A/C = 0.175; up to -18 % Cp, -11 % Ct
+# in the tunnel and -8 % / -5 % in the tank at Ct = 0.8). Compare with the open-water (unbounded) BEM directly.
+# pitch_deg = solver global pitch = TIP chord angle = hub_pitch_deg - 15.0, where hub_pitch_deg (extra column, the
+# paper's 'hub pitch angle') is the nose-tail angle at r = 80 mm = 0.2R from the rotor plane and geometry.csv
+# twist_deg is the Table 1 'pitch distribution' (15.0 deg at 0.2R ... 0 at the tip).
+# v_ms = nominal tunnel / carriage speed of the figure legend or caption (the blockage-corrected U_F is a few % lower
+# and not given; v_ms only sets the Reynolds number here). Torque/thrust from the hub dynamometer, ahead of bearings
+# and seals (no mechanical losses in Cp). Thrust = rotor thrust only (dynamometer between rotor and shaft).
+# Extra columns ignored by the runner: hub_pitch_deg, facility, tip_immersion_D, figure.
+# SOURCE: Fig. 8 (p. 418, 20 deg hub pitch, 1.5 m/s) and Fig. 9 (p. 419, 25 deg hub pitch, 1.2 m/s), upper panels,
+# square markers: towing tank, SHALLOW tip immersion h = 0.19D (blade tip 150 mm below the free surface at its top
+# position). The upper panels are 'scale adjusted'; this set has zero shift (checked against the lower panel fits).
+# Fig. 9's Ct panel has no shallow-immersion data: the 25 deg rows have Cp only.
+# FREE-SURFACE EFFECT: Cp 10-15 % and Ct ~5 % below the deep-immersion results (paper Sec. 7.1); an unbounded BEM is
+# expected to over-predict these rows - they document the free-surface effect, not the rotor aerodynamics.
+tsr,cp,ct,cp_err,ct_err,v_ms,pitch_deg,hub_pitch_deg,facility,tip_immersion_D,figure
+4.9667,0.4057,0.6872,0.0063,0.0093,1.5000,5.0000,20.0000,towing_tank,0.1900,8
+5.3006,0.4153,0.7239,0.0066,0.0093,1.5000,5.0000,20.0000,towing_tank,0.1900,8
+5.5771,0.4176,0.7499,0.0069,0.0093,1.5000,5.0000,20.0000,towing_tank,0.1900,8
+6.0295,0.4116,0.7685,0.0073,0.0093,1.5000,5.0000,20.0000,towing_tank,0.1900,8
+6.0475,0.4170,0.7877,0.0073,0.0093,1.5000,5.0000,20.0000,towing_tank,0.1900,8
+6.6723,0.4156,0.8363,0.0080,0.0093,1.5000,5.0000,20.0000,towing_tank,0.1900,8
+7.1857,0.3826,0.8380,0.0085,0.0093,1.5000,5.0000,20.0000,towing_tank,0.1900,8
+7.8607,0.3653,0.8713,0.0092,0.0093,1.5000,5.0000,20.0000,towing_tank,0.1900,8
+8.4353,0.3334,0.9199,0.0098,0.0093,1.5000,5.0000,20.0000,towing_tank,0.1900,8
+8.8266,0.3247,0.9204,0.0102,0.0093,1.5000,5.0000,20.0000,towing_tank,0.1900,8
+8.9954,0.2967,0.9080,0.0104,0.0093,1.5000,5.0000,20.0000,towing_tank,0.1900,8
+9.1642,0.2721,0.9080,0.0106,0.0093,1.5000,5.0000,20.0000,towing_tank,0.1900,8
+9.1642,0.2882,0.9199,0.0106,0.0093,1.5000,5.0000,20.0000,towing_tank,0.1900,8
+9.5412,0.2425,0.9266,0.0110,0.0093,1.5000,5.0000,20.0000,towing_tank,0.1900,8
+3.7477,0.3009,,0.0071,,1.2000,10.0000,25.0000,towing_tank,0.1900,9
+4.0852,0.3190,,0.0077,,1.2000,10.0000,25.0000,towing_tank,0.1900,9
+4.4945,0.3215,,0.0083,,1.2000,10.0000,25.0000,towing_tank,0.1900,9
+4.8320,0.3085,,0.0089,,1.2000,10.0000,25.0000,towing_tank,0.1900,9
+4.9720,0.3066,,0.0091,,1.2000,10.0000,25.0000,towing_tank,0.1900,9
+5.1444,0.3105,,0.0094,,1.2000,10.0000,25.0000,towing_tank,0.1900,9
+5.3131,0.3147,,0.0097,,1.2000,10.0000,25.0000,towing_tank,0.1900,9
+5.4101,0.3196,,0.0098,,1.2000,10.0000,25.0000,towing_tank,0.1900,9
+5.9559,0.3111,,0.0107,,1.2000,10.0000,25.0000,towing_tank,0.1900,9
+6.4693,0.2899,,0.0116,,1.2000,10.0000,25.0000,towing_tank,0.1900,9
+6.6668,0.2772,,0.0119,,1.2000,10.0000,25.0000,towing_tank,0.1900,9
+6.9253,0.2461,,0.0123,,1.2000,10.0000,25.0000,towing_tank,0.1900,9
+7.1839,0.2362,,0.0128,,1.2000,10.0000,25.0000,towing_tank,0.1900,9
+7.3239,0.2185,,0.0130,,1.2000,10.0000,25.0000,towing_tank,0.1900,9
+7.3418,0.2134,,0.0130,,1.2000,10.0000,25.0000,towing_tank,0.1900,9
+7.3490,0.2252,,0.0131,,1.2000,10.0000,25.0000,towing_tank,0.1900,9

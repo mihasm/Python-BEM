@@ -1,0 +1,23 @@
+# NREL 5-MW reference blade, Jonkman et al. 2009, Table 3-1 (p. 7), tabulated. r_m = RNodes (element centres,
+# from the rotor apex along the pitch axis; root 1.5 m, tip 63 m); twist_deg = AeroTwst (chord vs rotor plane at
+# zero pitch, positive towards feather - already the solver's wind-turbine convention, no conversion);
+# dr_m = DRNodes element length. thickness_ratio: DU 00-W2-401 0.405, DU 00-W2-350 0.35, DU 97-W-300 0.30,
+# DU 91-W2-250 0.25, DU 93-W-210 0.21, NACA 64-618 0.18 (airfoil names; Jonkman 2009 §3), cylinders 1.0.
+r_m,chord_m,twist_deg,airfoil,thickness_ratio,dr_m
+2.8667,3.542,13.308,circle,1,2.7333
+5.6,3.854,13.308,circle,1,2.7333
+8.3333,4.167,13.308,circle_cd035,1,2.7333
+11.75,4.557,13.308,du40,0.405,4.1
+15.85,4.652,11.48,du35,0.35,4.1
+19.95,4.458,10.162,du35,0.35,4.1
+24.05,4.249,9.011,du30,0.3,4.1
+28.15,4.007,7.795,du25,0.25,4.1
+32.25,3.748,6.544,du25,0.25,4.1
+36.35,3.502,5.361,du21,0.21,4.1
+40.45,3.256,4.188,du21,0.21,4.1
+44.55,3.01,3.125,naca64_618,0.18,4.1
+48.65,2.764,2.319,naca64_618,0.18,4.1
+52.75,2.518,1.526,naca64_618,0.18,4.1
+56.1667,2.313,0.863,naca64_618,0.18,2.7333
+58.9,2.086,0.37,naca64_618,0.18,2.7333
+61.6333,1.419,0.106,naca64_618,0.18,2.7333

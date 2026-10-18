@@ -1,0 +1,18 @@
+# Risoe 19 m test turbine (LM 8.2 m blades + 1 m root extensions, 3 blades, NACA 63-2xx) - planform
+# Source: Table G.2 'Planform data for the 19 m rotor with LM 8.2 m blades', Schepers J.G. et al. (2002) Final report of IEA Annex XVIII 'Enhanced Field Rotor Aerodynamics Database', ECN-C--02-016, Appendix G (updated Aug 2003); data: Zenodo doi:10.5281/zenodo.10619556 (CC-BY-4.0), p. 294 (tabulated).
+# Twist is given relative to the tip station (twist 0 at r = 9.5 m), positive towards feather = solver convention;
+#   the measured tip angles (1.8, 1.8, 1.5 deg, App. G.1) are the global pitch -> pitch_deg = 1.7 in experiment files.
+# The profiled blade starts at r = 2.7 m (blade 8.2 m incl. 1.4 m non-profiled root + 1 m extension); inner part not given.
+# Cross-check: Table E.1 of the same report (same LM 8.2 m blade on the IC/RAL 17 m rotor, distance from blade root)
+#   agrees except chord 1.000 vs 1.005 m (2nd station) and 0.770 vs 0.765 m (5th station).
+# airfoil: one polar set per station, linearly interpolated in t/c from Tables G.3/G.4 (see airfoils/*_polars.csv).
+r_m,chord_m,twist_deg,airfoil,thickness_ratio
+2.7,1.09,15.0,risoe_r2700,0.246
+3.55,1.005,9.5,risoe_r3550,0.207
+4.4,0.925,6.1,risoe_r4400,0.187
+5.25,0.845,3.9,risoe_r5250,0.176
+6.1,0.765,2.4,risoe_r6100,0.166
+6.95,0.685,1.5,risoe_r6950,0.156
+7.8,0.605,0.9,risoe_r7800,0.146
+8.65,0.525,0.4,risoe_r8650,0.136
+9.5,0.445,0.0,risoe_r9500,0.126

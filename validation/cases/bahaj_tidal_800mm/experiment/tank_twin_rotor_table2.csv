@@ -1,0 +1,30 @@
+# Bahaj et al. 2007, Renewable Energy 32:407-426, Table 2 (p. 421) "Effect of dummy TSR on power and thrust
+# coefficient". TABULATED (typed from the paper). tsr given as e.g. '6.6 +- 0.1' -> tsr_err = 0.1; Cp, Ct to 2 decimals
+# (cp_err/ct_err = RSS of dynamometer accuracy and the +-0.005 rounding).
+# Towing tank, deep tip immersion h = 0.55D; the instrumented rotor runs beside an identical non-instrumented dummy rotor
+# with tip-to-tip gap g (gap_mm, gap_over_R); tsr_dummy = 0: dummy static. Extra blockage corrections were applied when
+# the dummy rotated. Blockage-corrected like all data of the paper.
+# ASSUMED (not stated for the twin-rotor tests): hub pitch 20 deg (pitch_deg = 5.0) - the static-dummy values match the
+# 20 deg deep-tank curve of Fig. 8 within ~0.03 (crosscheck.txt); carriage speed 1.4 m/s (as the 20 deg deep-tank
+# runs; the tank tests used 0.8-1.5 m/s) - it only sets the Reynolds number.
+# The paper concludes the dummy rotor has no measurable influence, so these are effectively single-rotor points.
+tsr,cp,ct,tsr_err,cp_err,ct_err,v_ms,pitch_deg,gap_over_R,gap_mm,dummy_rotating,tsr_dummy
+6.6000,0.4200,0.8400,0.1000,0.0098,0.0113,1.4000,5.0000,0.2500,100,False,0.0000
+6.6000,0.4300,0.8300,0.1000,0.0098,0.0113,1.4000,5.0000,0.2500,100,True,6.5000
+6.6000,0.4400,0.8400,0.1000,0.0098,0.0113,1.4000,5.0000,0.2500,100,True,7.8000
+9.4000,0.3200,0.9400,0.1000,0.0129,0.0113,1.4000,5.0000,0.2500,100,False,0.0000
+9.4000,0.3000,0.9500,0.1000,0.0129,0.0113,1.4000,5.0000,0.2500,100,True,7.1000
+9.4000,0.3000,0.9500,0.1000,0.0129,0.0113,1.4000,5.0000,0.2500,100,True,8.6000
+9.4000,0.3000,0.9400,0.1000,0.0129,0.0113,1.4000,5.0000,0.2500,100,True,10.3000
+6.8000,0.4300,0.8000,0.1000,0.0099,0.0113,1.4000,5.0000,0.5000,200,False,0.0000
+6.8000,0.4100,0.8200,0.1000,0.0099,0.0113,1.4000,5.0000,0.5000,200,True,5.2000
+6.8000,0.4200,0.8100,0.1000,0.0099,0.0113,1.4000,5.0000,0.5000,200,True,7.6000
+6.8000,0.4100,0.8500,0.1000,0.0099,0.0113,1.4000,5.0000,0.5000,200,True,9.7400
+8.8000,0.3200,0.9300,0.1000,0.0123,0.0113,1.4000,5.0000,0.5000,200,False,0.0000
+8.8000,0.2700,0.9400,0.1000,0.0123,0.0113,1.4000,5.0000,0.5000,200,True,7.7000
+8.8000,0.2600,0.9500,0.1000,0.0123,0.0113,1.4000,5.0000,0.5000,200,True,8.4000
+8.8000,0.2600,0.9500,0.1000,0.0123,0.0113,1.4000,5.0000,0.5000,200,True,9.7000
+7.4000,0.4100,0.8600,0.1000,0.0107,0.0113,1.4000,5.0000,1.0000,400,False,0.0000
+7.4000,0.4200,0.8600,0.1000,0.0107,0.0113,1.4000,5.0000,1.0000,400,True,6.2000
+7.4000,0.4200,0.8800,0.1000,0.0107,0.0113,1.4000,5.0000,1.0000,400,True,7.1000
+7.4000,0.4200,0.8700,0.1000,0.0107,0.0113,1.4000,5.0000,1.0000,400,True,9.1000

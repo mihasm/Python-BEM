@@ -1,0 +1,43 @@
+
+
+INPUT GUIDE FOR PROGRAM NACA456                            \naca456\input.txt
+
+The input data is all in one namelist record. One nice feature
+of namelist input is that you may put comments before the actual data.
+Just be sure you don't say the magic word &NACA in your comments.
+The sample cases I have supplied have comments before the main data
+to explain the case.
+
+NAMELIST /NACA/ a,camber,cl,chord,cmax,dencode,leindex,name,ntable, &
+  profile,toc,xmaxc,xmaxt,xorigin,yorigin,xtable
+
+ The variables have the following meanings:
+a		extent of constant loading (as fraction of chord)
+                  (only applies to 6-digit camber lines )	
+camber		Name of the camber line, enclosed in quotes.
+                   Acceptable values are '0', '2', '3', '3R', '6' and '6A'
+cl		design lift coefficient of the camber line
+	              (Applies to three-digit, three-digit-reflex, 6-series and 
+        	         6A-series camber lines)
+chord		Model chord used for listing ordinates in dimensional units.
+cmax		Maximum camber, as a fraction of chord.
+dencode 	spacing of the x-array where the points are computed
+			=0 if specified by user
+			=1 for coarse output
+			=2 for fine output
+			=3 for very fine output
+leindex		leading edge radius parameter
+			(only applies to 4-digit-modified profiles)
+name		Title desired on output. It must be enclosed in quotes.
+ntable		Size of xtable (Only if dencode==0)
+profile		Thickness family name, enclosed in quotes.
+             	 Acceptable values are '4', '4M', '6', '6A'.
+toc		Thickness-chord ratio of airfoil (fraction, not percent)
+xmaxc		chordwise position of maximum camber, given as fraction of chord.
+	              (Only used for two digit camber lines)
+xmaxt		Chordwise location of maximum thickness, as fraction of chord.
+	              ( Only used for 4-digit modified airfoils)
+xorigin		X-coordinate of the leading edge of the airfoil
+yorigin		Y-coordinate of the leading edge of the airfoil            
+xtable		table of points (ntable values) at which the airfoil ordinates
+			will be computed

@@ -1,0 +1,166 @@
+{
+  "id": "uiuc_apce_10x7",
+  "name": "APC Thin Electric 10x7 (10x7E), UIUC Vol. 1",
+  "turbine_type": 1,
+  "B": 2,
+  "R": 0.127,
+  "Rhub": 0.019558,
+  "fluid": {
+    "rho": 1.17,
+    "kin_viscosity": 1.55e-05,
+    "medium": "air"
+  },
+  "geometry_file": "geometry.csv",
+  "alternative_geometry": {
+    "uiuc_scan": "extraction/geometry_uiuc_scan.csv"
+  },
+  "airfoils": {
+    "e63_t16p6": {
+      "coordinates": "airfoils/e63_t16p6.dat",
+      "polars": "airfoils/e63_t16p6_polars.csv",
+      "polar_source": "XFOIL 6.97, Ncrit=9, Re 20k/30k/40k/60k/80k/100k/150k/200k (computed; no measured polar exists for this section)",
+      "thickness_ratio": 0.1658,
+      "alternative_polars": {
+        "ncrit5": "airfoils/e63_t16p6_ncrit5_polars.csv"
+      },
+      "note": "APC section at r/R = 0.220 of 10x7E-PERF.PE0: E63 thickness-scaled to t/c = 0.1658 (camber kept), APC 10x7E-PERF.PE0 r/R = 0.220"
+    },
+    "e63naca4412_f0p33_t11p4": {
+      "coordinates": "airfoils/e63naca4412_f0p33_t11p4.dat",
+      "polars": "airfoils/e63naca4412_f0p33_t11p4_polars.csv",
+      "polar_source": "XFOIL 6.97, Ncrit=9, Re 20k/30k/40k/60k/80k/100k/150k/200k (computed; no measured polar exists for this section)",
+      "thickness_ratio": 0.1139,
+      "alternative_polars": {
+        "ncrit5": "airfoils/e63naca4412_f0p33_t11p4_ncrit5_polars.csv"
+      },
+      "note": "APC section at r/R = 0.388 of 10x7E-PERF.PE0: blend E63->APC12(NACA4412) fraction 0.329, t/c = 0.1139, APC 10x7E-PERF.PE0 r/R = 0.388"
+    },
+    "e63naca4412_f0p66_t10p5": {
+      "coordinates": "airfoils/e63naca4412_f0p66_t10p5.dat",
+      "polars": "airfoils/e63naca4412_f0p66_t10p5_polars.csv",
+      "polar_source": "XFOIL 6.97, Ncrit=9, Re 20k/30k/40k/60k/80k/100k/150k/200k (computed; no measured polar exists for this section)",
+      "thickness_ratio": 0.105,
+      "alternative_polars": {
+        "ncrit5": "airfoils/e63naca4412_f0p66_t10p5_ncrit5_polars.csv"
+      },
+      "note": "APC section at r/R = 0.559 of 10x7E-PERF.PE0: blend E63->APC12(NACA4412) fraction 0.663, t/c = 0.1050, APC 10x7E-PERF.PE0 r/R = 0.559"
+    },
+    "e63naca4412_f1p00_t10p1": {
+      "coordinates": "airfoils/e63naca4412_f1p00_t10p1.dat",
+      "polars": "airfoils/e63naca4412_f1p00_t10p1_polars.csv",
+      "polar_source": "XFOIL 6.97, Ncrit=9, Re 20k/30k/40k/60k/80k/100k/150k/200k (computed; no measured polar exists for this section)",
+      "thickness_ratio": 0.1006,
+      "alternative_polars": {
+        "ncrit5": "airfoils/e63naca4412_f1p00_t10p1_ncrit5_polars.csv"
+      },
+      "note": "APC section at r/R = 0.730 of 10x7E-PERF.PE0: blend E63->APC12(NACA4412) fraction 0.997, t/c = 0.1006, APC 10x7E-PERF.PE0 r/R = 0.730"
+    }
+  },
+  "experiments": [
+    {
+      "file": "experiment/performance.csv",
+      "kind": "performance",
+      "x": "J",
+      "y": [
+        "ct",
+        "cp",
+        "eta"
+      ],
+      "defaults": {
+        "pitch_deg": 0.0,
+        "rho": 1.17,
+        "kin_viscosity": 1.55e-05
+      },
+      "conditions": "UIUC 2.8x4.0 ft low-turbulence tunnel (Tu < 0.1 %), B=2, constant rpm per run (4007, 5018, 5001, 6020, 6015, 6531, 6519 rpm), tunnel speed varied; blade-angle offset +0 deg; tunnel corrections applied by UIUC.",
+      "source": "UIUC Propeller Database Vol. 1, files apce_10x7_pg0812_4007.txt, apce_10x7_pg0813_5018.txt, apce_10x7_pg0814_5001.txt, apce_10x7_pg0815_6020.txt, apce_10x7_pg0816_6015.txt, apce_10x7_pg0817_6531.txt, apce_10x7_pg0818_6519.txt (tabulated)",
+      "uncertainty": "not given by the source; ~+-3-5 % in CT/CP estimated from the published repeatability"
+    },
+    {
+      "file": "experiment/static.csv",
+      "kind": "performance",
+      "x": "rpm",
+      "y": [
+        "ct",
+        "cp"
+      ],
+      "defaults": {
+        "pitch_deg": 0.0,
+        "v_ms": 0.0,
+        "J": 0.0,
+        "rho": 1.17,
+        "kin_viscosity": 1.55e-05
+      },
+      "conditions": "static (J = 0, tunnel off), B=2, rpm swept 1975-6542; blade-angle offset +0 deg",
+      "source": "UIUC Propeller Database Vol. 1, file apce_10x7_static_pg0811.txt (tabulated)",
+      "uncertainty": "not given by the source"
+    },
+    {
+      "file": "experiment/performance_osu.csv",
+      "kind": "performance",
+      "x": "J",
+      "y": [
+        "ct",
+        "cp",
+        "eta"
+      ],
+      "defaults": {
+        "pitch_deg": 0.0,
+        "rho": 1.17,
+        "kin_viscosity": 1.55e-05
+      },
+      "conditions": "Ohio State 3x5 ft tunnel, constant rpm (assumed 6500, not stated), speed varied",
+      "source": "McCrink & Gregory (OSU) data in the UIUC/OSU comparison .fig files (exact plotted values)",
+      "uncertainty": "rpm assumed; data 95 % CI shown graphically in McCrink & Gregory 2017"
+    }
+  ],
+  "sources": [
+    {
+      "key": "uiucpropdb",
+      "citation": "Brandt, J.B., Deters, R.W., Ananda, G.K., Dantsker, O.D., and Selig, M.S., UIUC Propeller Database, Vols 1-4, University of Illinois at Urbana-Champaign, Department of Aerospace Engineering (downloaded 2026-10-18, archive UIUC-propDB.zip md5 a41e484f1fd0fb6ff80b76e27410808b)",
+      "url": "https://m-selig.ae.illinois.edu/props/propDB.html"
+    },
+    {
+      "key": "apcpe0",
+      "citation": "APC Propellers (Landing Products Inc.), propeller geometry files PE0-FILES_WEB-202602.zipx (file version v2025-1001, simulation date 02/24/2026), downloaded 2026-10-18",
+      "url": "https://www.apcprop.com/technical-information/file-downloads/"
+    },
+    {
+      "key": "apceng",
+      "citation": "APC Propellers, 'Engineering' technical information page: the dominant basis of most APC airfoils is similar to NACA 4412 and Clark-Y",
+      "url": "https://www.apcprop.com/technical-information/engineering"
+    },
+    {
+      "key": "brandt2011",
+      "citation": "Brandt, J.B., and Selig, M.S., 'Propeller Performance Data at Low Reynolds Numbers', 49th AIAA Aerospace Sciences Meeting, AIAA Paper 2011-1255, Orlando, FL, January 2011",
+      "doi": "10.2514/6.2011-1255",
+      "url": "https://m-selig.ae.illinois.edu/pubs/BrandtSelig-2011-AIAA-2011-1255-LRN-Propellers.pdf"
+    },
+    {
+      "key": "brandt2005",
+      "citation": "Brandt, J.B., 'Small-Scale Propeller Performance at Low Speeds', MS thesis, University of Illinois at Urbana-Champaign, 2005",
+      "url": "https://m-selig.ae.illinois.edu/props/volume-1/Brandt_2005_UIUC-MS-Thesis.pdf"
+    },
+    {
+      "key": "selig2015corr",
+      "citation": "Selig, M.S., and Ananda, G.K., 'Low Reynolds Number Propeller Performance Data: Wind Tunnel Corrections for Motor Fixture Drag', UIUC report AE 15-01, January 22, 2015",
+      "url": "https://m-selig.ae.illinois.edu/props/volume-1/uiuc-props-wind-tunnel-correction-new.pdf"
+    },
+    {
+      "key": "uiucads",
+      "citation": "UIUC Airfoil Coordinates Database (Selig), files e63.dat and clarky.dat",
+      "url": "https://m-selig.ae.illinois.edu/ads/coord_database.html"
+    },
+    {
+      "key": "mccrink2017",
+      "citation": "McCrink, M.H., and Gregory, J.W., 'Blade Element Momentum Modeling of Low-Reynolds Electric Propulsion Systems', Journal of Aircraft 54(1), 2017, pp. 163-176",
+      "doi": "10.2514/1.C033622",
+      "url": "https://arc.aiaa.org/doi/10.2514/1.C033622"
+    },
+    {
+      "key": "xfoil",
+      "citation": "Drela, M., 'XFOIL: An Analysis and Design System for Low Reynolds Number Airfoils', in Low Reynolds Number Aerodynamics, Lecture Notes in Engineering 54, Springer, 1989 (v6.97 used)",
+      "doi": "10.1007/978-3-642-84010-4_1"
+    }
+  ],
+  "notes": "Commercial APC propeller tested in UIUC Vol. 1 (Brandt 2005 / Brandt & Selig 2011, data ver. 3 with the 2015 motor-fixture drag correction). Geometry = APC's own design file (current release v2025-1001); APC revises designs, so the specimen tested in 2005-2008 may differ slightly: the UIUC PropellerScanner geometry of the tested specimen is in extraction/geometry_uiuc_scan.csv and is compared in extraction/check_uiuc_apce_10x7.png. Airfoils are KNOWN from the APC file (not assumed): APC file: AIRFOIL1 E63 at 1.10 in, AIRFOIL2 APC12 at 3.66 in; anchors: e63_t16p6 at r/R=0.220 (f=0.00, t/c=0.166); e63naca4412_f0p33_t11p4 at r/R=0.388 (f=0.33, t/c=0.114); e63naca4412_f0p66_t10p5 at r/R=0.559 (f=0.66, t/c=0.105); e63naca4412_f1p00_t10p1 at r/R=0.730 (f=1.00, t/c=0.101). ASSUMPTIONS in the airfoil model: (1) APC 'scales airfoils based on thickness ratio' - taken as thickness-only scaling (camber line kept); (2) the AIRFOIL1->AIRFOIL2 transition is a linear blend in r of camber line and thickness shape; (3) sections are modelled by a few XFOIL anchor sections with linear cl/cd transitions between them. Published BEM validations of APC thin-electric props used NACA 4412 outboard (McCrink & Gregory 2017: Clark-Y 0-5 % span, NACA 4412 elsewhere, from cutting the blades), consistent with APC's APC12 = NACA 4412. Polars: XFOIL Ncrit = 9 (UIUC tunnel Tu < 0.1 %), Ncrit = 5 alternatives listed. Rhub = first geometry station (0.15 R). Fluid: rho = 1.17 kg/m3, nu = 1.55e-5 m2/s assumed (UIUC lab, the database gives coefficients only). Chord Re at 0.75R ranges ~42k-69k (c75 = 17.1 mm, 0.75*Omega*R at the lowest/highest tested rpm)."
+}

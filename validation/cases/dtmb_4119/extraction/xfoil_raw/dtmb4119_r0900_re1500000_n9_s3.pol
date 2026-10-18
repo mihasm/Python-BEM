@@ -1,0 +1,15 @@
+  
+       XFOIL         Version 6.97
+  
+ Calculated polar for: DTMB4119 r/R=0.900 NACA66mod t/c=0.03321 a=0.8 f
+  
+ 1 1 Reynolds number fixed          Mach number fixed         
+  
+ xtrf =   1.000 (top)        1.000 (bottom)  
+ Mach =   0.000     Re =     1.500 e 6     Ncrit =   9.000
+  
+   alpha    CL        CD       CDp       CM     Top_Xtr  Bot_Xtr
+  ------ -------- --------- --------- -------- -------- --------
+   0.000   0.2416   0.00281   0.00051  -0.0587   0.9335   0.9999
+  -0.250   0.2154   0.00280   0.00054  -0.0591   0.9406   0.9999
+  -0.500   0.1933   0.00493   0.00051  -0.0596   0.9455   0.1925

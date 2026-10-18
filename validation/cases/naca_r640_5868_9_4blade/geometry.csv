@@ -1,0 +1,32 @@
+# NACA R-640 (Hartman & Biermann 1938) propeller 5868-9 (Navy drawing), Clark Y sections, D = 10 ft (R = 1.524 m)
+# Source: Fig. 2 'Blade-form curves for propellers 5868-9, 5868-R6 and 37-3647' (report p. 2), DIGITISED from the
+#   NTRS scan (300 dpi) by ridge tracing (extraction/fig2_final.py, overlay extraction/fig2_overlay.png).
+#   chord_m = (b/D) * D; twist_deg = beta = atan((P/D)/(pi r/R)) from the geometric-pitch curve 'P/D, set 15 deg at 0.75R'.
+#   => twist_deg is the blade angle from the plane of rotation AT THE 15 deg SETTING (beta(0.75R) = 15.0 deg).
+#   For a test at blade angle B at 0.75R the experiment files carry pitch_deg = B - 15.
+#   The 25 and 35 deg P/D curves of Fig. 2 give the same beta - beta(0.75R) within 0.3 deg for r/R >= 0.3.
+# Cross-check: UIUC Propeller Data Site vol. 2, NR640 design geometry (nr640_geom.txt, scaled replica of 5868-9 at 15 deg):
+#   chord agrees within 1 %, beta within 0.1 deg, t/c within 0.004 at all common stations (extraction/check_geometry.csv).
+# r/R = 1.00 row (chord, beta) is taken from that UIUC file (Fig. 2 curves stop at r/R ~0.95); tip shape rounded (Fig. 1).
+# thickness_ratio = h/b (Fig. 2, r/R 0.30-0.947); 0.0812 at r/R 0.95-1.0 (UIUC nr640_thick.txt at 0.95). Root r/R 0.20-0.25: blade shank
+#   (no h/b given, round/oval) -> 'circle'; r/R 0.30 (t/c 0.36) -> 'transition' circle -> clarky_t24.
+# airfoil = nearest member of the generated Clark Y family (t/c 0.08 ... 0.24); see case.json airfoils.
+# Digitising uncertainty: chord +-0.5 mm.. +-1.5 mm (+-0.0003 b/D), beta +-0.15 deg, h/b +-0.002.
+r_m,chord_m,twist_deg,airfoil,thickness_ratio
+0.3048,0.11536,36.132,circle,
+0.381,0.13791,34.169,circle,
+0.4572,0.16176,32.003,transition,0.3637
+0.5334,0.18694,29.59,clarky_t24,0.2423
+0.6096,0.2106,27.039,clarky_t18,0.1767
+0.6858,0.22608,24.346,clarky_t14,0.1379
+0.762,0.23196,22.069,clarky_t12,0.1193
+0.8382,0.22966,20.097,clarky_t10,0.1092
+0.9144,0.22341,18.523,clarky_t10,0.1027
+0.9906,0.21306,17.139,clarky_t10,0.097
+1.0668,0.20116,15.972,clarky_t09,0.0927
+1.143,0.18742,15.009,clarky_t09,0.0896
+1.2192,0.17184,14.135,clarky_t09,0.0869
+1.2954,0.15528,13.415,clarky_t09,0.0851
+1.3716,0.13656,12.742,clarky_t08,0.0833
+1.4478,0.1161,12.19,clarky_t08,0.0812
+1.524,0.0922,11.662,clarky_t08,0.0812

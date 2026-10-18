@@ -1,0 +1,45 @@
+# RISO-A1-21 polar, MEASURED: Fuglsang, Dahl & Antoniou 1999, "Wind tunnel tests of the Risoe-A1-18, Risoe-A1-21
+# and Risoe-A1-24 airfoils", Risoe-R-1112(EN), section 6.2, run005 "LER" = 90-deg zigzag trip tape (3 mm wide,
+# 0.35 mm thick) at the leading edge; VELUX open-jet tunnel, Re = 1.6e6, chord 0.6 m, tunnel-corrected.
+# This is the Re = 1.6e6 "rough" data set that Mexnext prescribes for RISO-A1-21 (ECN-E--18-003 App. C).
+# Extraction: the figure (Fig. 6-8, PDF page 39) is vector graphics; the filled-circle markers were read from
+# the PDF paths with PyMuPDF and the axes calibrated on the gridlines (residual < 0.001 in all three panels):
+# extraction/extract_risoe_A1_21_LER.py, overlay extraction/overlay_risoe_fig6-8.png. Uncertainty from
+# extraction: < 0.01 deg, < 0.002 in cl, < 0.0005 in cd. cm about 0.25c, nose-up positive (source convention).
+# Reynolds number of the rotor at the RISO section is only ~0.6-0.7e6; this data set is at 1.6e6 (no measured
+# low-Re data exist publicly; the coordinates are proprietary, so no XFOIL set was made either).
+re,alpha_deg,cl,cd,cm,source
+1.6e+06,-6.152,-0.3701,0.01893,-0.0395,"measured, VELUX tunnel, zigzag tape (LER), Re=1.6e6; Risoe-R-1112 Fig. 6-8 (vector extraction)"
+1.6e+06,-4.989,-0.2465,0.01633,-0.0452,"measured, VELUX tunnel, zigzag tape (LER), Re=1.6e6; Risoe-R-1112 Fig. 6-8 (vector extraction)"
+1.6e+06,-3.844,-0.1165,0.01484,-0.0508,"measured, VELUX tunnel, zigzag tape (LER), Re=1.6e6; Risoe-R-1112 Fig. 6-8 (vector extraction)"
+1.6e+06,-2.765,0.0052,0.01373,-0.0548,"measured, VELUX tunnel, zigzag tape (LER), Re=1.6e6; Risoe-R-1112 Fig. 6-8 (vector extraction)"
+1.6e+06,-1.706,0.1371,0.01354,-0.0588,"measured, VELUX tunnel, zigzag tape (LER), Re=1.6e6; Risoe-R-1112 Fig. 6-8 (vector extraction)"
+1.6e+06,-0.57,0.2644,0.01373,-0.0626,"measured, VELUX tunnel, zigzag tape (LER), Re=1.6e6; Risoe-R-1112 Fig. 6-8 (vector extraction)"
+1.6e+06,0.527,0.3898,0.01428,-0.0664,"measured, VELUX tunnel, zigzag tape (LER), Re=1.6e6; Risoe-R-1112 Fig. 6-8 (vector extraction)"
+1.6e+06,1.644,0.5105,0.01558,-0.0698,"measured, VELUX tunnel, zigzag tape (LER), Re=1.6e6; Risoe-R-1112 Fig. 6-8 (vector extraction)"
+1.6e+06,2.732,0.635,0.01614,-0.0731,"measured, VELUX tunnel, zigzag tape (LER), Re=1.6e6; Risoe-R-1112 Fig. 6-8 (vector extraction)"
+1.6e+06,3.839,0.7585,0.01707,-0.0762,"measured, VELUX tunnel, zigzag tape (LER), Re=1.6e6; Risoe-R-1112 Fig. 6-8 (vector extraction)"
+1.6e+06,4.917,0.8802,0.01781,-0.0796,"measured, VELUX tunnel, zigzag tape (LER), Re=1.6e6; Risoe-R-1112 Fig. 6-8 (vector extraction)"
+1.6e+06,6.005,0.9991,0.01874,-0.0825,"measured, VELUX tunnel, zigzag tape (LER), Re=1.6e6; Risoe-R-1112 Fig. 6-8 (vector extraction)"
+1.6e+06,7.093,1.0994,0.02116,-0.0847,"measured, VELUX tunnel, zigzag tape (LER), Re=1.6e6; Risoe-R-1112 Fig. 6-8 (vector extraction)"
+1.6e+06,8.191,1.2007,0.0245,-0.0878,"measured, VELUX tunnel, zigzag tape (LER), Re=1.6e6; Risoe-R-1112 Fig. 6-8 (vector extraction)"
+1.6e+06,9.288,1.1681,0.04549,-0.0995,"measured, VELUX tunnel, zigzag tape (LER), Re=1.6e6; Risoe-R-1112 Fig. 6-8 (vector extraction)"
+1.6e+06,10.348,1.0994,0.06351,-0.1039,"measured, VELUX tunnel, zigzag tape (LER), Re=1.6e6; Risoe-R-1112 Fig. 6-8 (vector extraction)"
+1.6e+06,11.521,0.948,0.08618,-0.1035,"measured, VELUX tunnel, zigzag tape (LER), Re=1.6e6; Risoe-R-1112 Fig. 6-8 (vector extraction)"
+1.6e+06,12.59,0.961,0.1029,-0.1048,"measured, VELUX tunnel, zigzag tape (LER), Re=1.6e6; Risoe-R-1112 Fig. 6-8 (vector extraction)"
+1.6e+06,13.621,1.0028,0.11646,-0.1062,"measured, VELUX tunnel, zigzag tape (LER), Re=1.6e6; Risoe-R-1112 Fig. 6-8 (vector extraction)"
+1.6e+06,14.709,0.9954,0.12853,-0.1065,"measured, VELUX tunnel, zigzag tape (LER), Re=1.6e6; Risoe-R-1112 Fig. 6-8 (vector extraction)"
+1.6e+06,15.873,1.0177,0.14488,-0.1108,"measured, VELUX tunnel, zigzag tape (LER), Re=1.6e6; Risoe-R-1112 Fig. 6-8 (vector extraction)"
+1.6e+06,16.895,1.0288,0.15826,-0.1123,"measured, VELUX tunnel, zigzag tape (LER), Re=1.6e6; Risoe-R-1112 Fig. 6-8 (vector extraction)"
+1.6e+06,18.049,0.9991,0.16457,-0.1075,"measured, VELUX tunnel, zigzag tape (LER), Re=1.6e6; Risoe-R-1112 Fig. 6-8 (vector extraction)"
+1.6e+06,19.147,1.001,0.17609,-0.1081,"measured, VELUX tunnel, zigzag tape (LER), Re=1.6e6; Risoe-R-1112 Fig. 6-8 (vector extraction)"
+1.6e+06,20.206,0.9972,0.18798,-0.1094,"measured, VELUX tunnel, zigzag tape (LER), Re=1.6e6; Risoe-R-1112 Fig. 6-8 (vector extraction)"
+1.6e+06,21.285,0.9917,0.20192,-0.1129,"measured, VELUX tunnel, zigzag tape (LER), Re=1.6e6; Risoe-R-1112 Fig. 6-8 (vector extraction)"
+1.6e+06,22.382,0.9861,0.21789,-0.1163,"measured, VELUX tunnel, zigzag tape (LER), Re=1.6e6; Risoe-R-1112 Fig. 6-8 (vector extraction)"
+1.6e+06,23.499,0.9879,0.23926,-0.1206,"measured, VELUX tunnel, zigzag tape (LER), Re=1.6e6; Risoe-R-1112 Fig. 6-8 (vector extraction)"
+1.6e+06,24.625,0.9731,0.25635,-0.1242,"measured, VELUX tunnel, zigzag tape (LER), Re=1.6e6; Risoe-R-1112 Fig. 6-8 (vector extraction)"
+1.6e+06,25.713,0.9814,0.28366,-0.1318,"measured, VELUX tunnel, zigzag tape (LER), Re=1.6e6; Risoe-R-1112 Fig. 6-8 (vector extraction)"
+1.6e+06,26.754,0.9471,0.3013,-0.1342,"measured, VELUX tunnel, zigzag tape (LER), Re=1.6e6; Risoe-R-1112 Fig. 6-8 (vector extraction)"
+1.6e+06,27.804,0.9285,0.32954,-0.1419,"measured, VELUX tunnel, zigzag tape (LER), Re=1.6e6; Risoe-R-1112 Fig. 6-8 (vector extraction)"
+1.6e+06,28.882,0.8951,0.36001,-0.1472,"measured, VELUX tunnel, zigzag tape (LER), Re=1.6e6; Risoe-R-1112 Fig. 6-8 (vector extraction)"
+1.6e+06,30.197,0.8988,0.41203,-0.1585,"measured, VELUX tunnel, zigzag tape (LER), Re=1.6e6; Risoe-R-1112 Fig. 6-8 (vector extraction)"

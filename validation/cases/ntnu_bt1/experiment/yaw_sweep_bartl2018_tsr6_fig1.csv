@@ -1,0 +1,20 @@
+# Yaw sweep at TSR = 6.0 (x = yaw_deg): measured CP and CT of the NTNU rotor (D = 0.894 m, LARS1/T1 rig of
+#   Bartl et al. 2018), pitch 0, U_ref = 10 m/s, inflow A = uniform, TI = 0.23 %. Positive yaw as defined in the paper.
+# Source: Bartl, Muehle, Schottler, ... Saetran (2018) Wind Energ. Sci. 3:489-502, doi:10.5194/wes-3-489-2018,
+#   Fig. 1 (a),(b), red series 'Inflow A'. DIGITISED from the raster figure (extraction/digitise_bartl2018b_fig1.py,
+#   overlay extraction/overlay_bartl2018b_fig1.png); digitising error +-0.004. Empty value: marker hidden by
+#   the inflow-B marker (cp at +40, ct at -40, -30, +10 deg); for those angles inflow A ~ inflow B within 0.005.
+# *_err = measurement uncertainty stated in the paper (CP 0.011..0.017, CT 0.013..0.018; the larger values used).
+# Cross-check Bartl et al. (2018a) Table 2 (file yaw_bartl2018a_table2_inflowA.csv): yaw 0: CP 0.468, CT 0.893 (other test
+#   series and D = 0.90 m normalisation) vs 0.467 / 0.833 here.
+# Thrust = force normal to the rotor plane, tower/nacelle drag subtracted. Not blockage-corrected (12.8 %).
+tsr,yaw_deg,cp,ct,v_ms,rpm,pitch_deg,cp_err,ct_err
+6,-40,0.2389,,10,1281.8,0,0.017,0.018
+6,-30,0.3313,,10,1281.8,0,0.017,0.018
+6,-20,0.4108,0.7578,10,1281.8,0,0.017,0.018
+6,-10,0.4581,0.8094,10,1281.8,0,0.017,0.018
+6,0,0.4669,0.8333,10,1281.8,0,0.017,0.018
+6,10,0.4504,,10,1281.8,0,0.017,0.018
+6,20,0.4066,0.761,10,1281.8,0,0.017,0.018
+6,30,0.3224,0.6776,10,1281.8,0,0.017,0.018
+6,40,,0.5646,10,1281.8,0,0.017,0.018

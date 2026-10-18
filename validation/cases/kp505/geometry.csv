@@ -1,0 +1,22 @@
+# KRISO KP505 (propeller of the KRISO Container Ship KCS) - 5 blades, model D = 0.250 m, hub d/D = 0.180,
+#   skew 32 deg (balanced, -7.8 deg at 0.3R .. +24.2 deg at the tip), no rake, AE/A0 = 0.800.
+# Source: KRISO/MOERI propgeom.txt (Tokyo 2015 / SIMMAN 2008 & 2014 / Gothenburg 2010 workshop archives),
+#   TABULATED, copied unchanged (r/R, P/D, skew, C/D, fo/C, to/D); identical in SIMMAN 2008 KCS propgeom NMRI.zip.
+# twist_deg = blade angle beta from the plane of rotation = atan( (P/D) / (pi r/R) ); no global pitch (FPP).
+# chord_m = (C/D) * 0.250 (expanded chord). thickness_ratio = (to/D)/(C/D). Tip row: C/D = 0.0001 and fo/C = 8.7
+#   in the source (meaningless at zero chord): airfoil and t/c of 0.95R used there, camber_ratio clipped.
+# Skew is NOT representable in BEM (sections are taken on the cylinder as if unskewed); it is kept as a column.
+# airfoil: NACA 66 thickness + a=0.8 mean line sections built at the named stations; 'transition' (0.25R) between.
+# Extra columns r_R, P_D, skew_deg, camber_ratio are documentation only.
+r_m,chord_m,twist_deg,airfoil,thickness_ratio,r_R,P_D,skew_deg,camber_ratio
+0.022500,0.057825,55.883422,kp505_r0180,0.198227,0.180000,0.834700,-4.720000,0.028448
+0.031250,0.065450,48.610866,transition,0.155500,0.250000,0.891200,-6.980000,0.029641
+0.037500,0.070225,44.522557,kp505_r0300,0.132147,0.300000,0.926900,-7.820000,0.029477
+0.050000,0.078450,37.900986,kp505_r0400,0.097100,0.400000,0.978300,-7.740000,0.026769
+0.062500,0.085075,32.686222,kp505_r0500,0.072260,0.500000,1.007900,-5.560000,0.022010
+0.075000,0.089325,28.254171,kp505_r0600,0.054492,0.600000,1.013000,-1.500000,0.017324
+0.087500,0.089750,24.381355,kp505_r0700,0.041560,0.700000,0.996700,4.110000,0.014039
+0.100000,0.084400,20.837778,kp505_r0800,0.031783,0.800000,0.956600,10.480000,0.011996
+0.112500,0.069925,17.667826,kp505_r0900,0.024777,0.900000,0.900600,17.170000,0.010440
+0.118750,0.055625,16.221575,kp505_r0950,0.023730,0.950000,0.868300,20.630000,0.010067
+0.125000,0.000025,14.852075,kp505_r0950,0.023730,1.000000,0.833100,24.180000,0.050000

@@ -1,0 +1,100 @@
+{
+  "id": "naca_r640_5868_9_4blade",
+  "name": "NACA 5868-9 propeller (Clark Y), 4 blades, 10 ft - NACA Report 640",
+  "turbine_type": 1,
+  "B": 4,
+  "R": 1.524,
+  "Rhub": 0.3048,
+  "fluid": {
+    "rho": 1.225,
+    "kin_viscosity": 1.4607e-05,
+    "medium": "air"
+  },
+  "geometry_file": "geometry.csv",
+  "airfoils": {
+    "clarky_t08": {
+      "coordinates": "airfoils/clarky_t08.dat",
+      "polars": "airfoils/clarky_t08_polars.csv",
+      "polar_source": "XFOIL 6.99, Ncrit=9, Re 0.5e6-3e6, incompressible; coordinates = UIUC Clark Y y-scaled to t/c 0.08"
+    },
+    "clarky_t09": {
+      "coordinates": "airfoils/clarky_t09.dat",
+      "polars": "airfoils/clarky_t09_polars.csv",
+      "polar_source": "XFOIL 6.99, Ncrit=9, Re 0.5e6-3e6, incompressible; coordinates = UIUC Clark Y y-scaled to t/c 0.09"
+    },
+    "clarky_t10": {
+      "coordinates": "airfoils/clarky_t10.dat",
+      "polars": "airfoils/clarky_t10_polars.csv",
+      "polar_source": "XFOIL 6.99, Ncrit=9, Re 0.5e6-3e6, incompressible; coordinates = UIUC Clark Y y-scaled to t/c 0.10"
+    },
+    "clarky_t12": {
+      "coordinates": "airfoils/clarky_t12.dat",
+      "polars": "airfoils/clarky_t12_polars.csv",
+      "polar_source": "XFOIL 6.99, Ncrit=9, Re 0.5e6-3e6, incompressible; coordinates = UIUC Clark Y y-scaled to t/c 0.12"
+    },
+    "clarky_t14": {
+      "coordinates": "airfoils/clarky_t14.dat",
+      "polars": "airfoils/clarky_t14_polars.csv",
+      "polar_source": "XFOIL 6.99, Ncrit=9, Re 0.5e6-3e6, incompressible; coordinates = UIUC Clark Y y-scaled to t/c 0.14"
+    },
+    "clarky_t18": {
+      "coordinates": "airfoils/clarky_t18.dat",
+      "polars": "airfoils/clarky_t18_polars.csv",
+      "polar_source": "XFOIL 6.99, Ncrit=9, Re 0.5e6-3e6, incompressible; coordinates = UIUC Clark Y y-scaled to t/c 0.18"
+    },
+    "clarky_t24": {
+      "coordinates": "airfoils/clarky_t24.dat",
+      "polars": "airfoils/clarky_t24_polars.csv",
+      "polar_source": "XFOIL 6.99, Ncrit=9, Re 0.5e6-3e6, incompressible; coordinates = UIUC Clark Y y-scaled to t/c 0.24"
+    },
+    "circle": {
+      "coordinates": "airfoils/circle.dat",
+      "polars": "airfoils/circle_polars.csv",
+      "polar_source": "blade shank r/R 0.20-0.25: cylinder, cl = 0, cd = 1.0 (subcritical circular cylinder, Re ~ 2e5-5e5)"
+    }
+  },
+  "experiments": [
+    {
+      "file": "experiment/performance.csv",
+      "kind": "performance",
+      "x": "J",
+      "y": [
+        "ct",
+        "cp",
+        "eta"
+      ],
+      "defaults": {
+        "rho": 1.225,
+        "kin_viscosity": 1.4607e-05
+      },
+      "conditions": "Full-scale 10-ft propeller ahead of a liquid-cooled engine nacelle (Curtiss Conqueror, geared 7:5), NACA 20-ft open-throat propeller-research tunnel, V up to ~115 mph (51 m/s); blade angles 15-45 deg at 0.75R (pitch_deg = angle - 15); rpm per row from the report schedule; thrust is EFFECTIVE thrust (shaft tension minus slipstream increment of nacelle drag); no tunnel-wall correction stated (open throat 20 ft, prop 10 ft).",
+      "source": "Hartman & Biermann 1938, NACA Report 640, Fig. 13 (C_T, p. 8) and Fig. 15 (C_P, p. 9) (digitised)",
+      "uncertainty": "digitising ct +-0.0015, cp +-0.003, J +-0.005; repeat tests within ~1 % (report p. 3)"
+    }
+  ],
+  "sources": [
+    {
+      "key": "hartman1938",
+      "citation": "Hartman, E.P., Biermann, D.: The aerodynamic characteristics of full-scale propellers having 2, 3, and 4 blades of Clark Y and R.A.F. 6 airfoil sections. NACA Report No. 640, 1938.",
+      "url": "https://ntrs.nasa.gov/citations/19930091715",
+      "ntrs": "19930091715"
+    },
+    {
+      "key": "uiuc_nr640",
+      "citation": "Deters, R.W., Ananda, G.K., Selig, M.S.: Reynolds number effects on the performance of small-scale propellers. AIAA 2014-2151 (NR640 = scaled 5868-9), and UIUC Propeller Data Site vol. 2, NR640 design geometry files nr640_geom.txt / nr640_thick.txt",
+      "doi": "10.2514/6.2014-2151",
+      "url": "https://m-selig.ae.illinois.edu/props/volume-2/propDB-volume-2.html"
+    },
+    {
+      "key": "uiuc_clarky",
+      "citation": "UIUC Airfoil Coordinates Database, clarky.dat",
+      "url": "https://m-selig.ae.illinois.edu/ads/coord/clarky.dat"
+    },
+    {
+      "key": "biermann1938_tr639",
+      "citation": "Biermann, D., Hartman, E.P.: The effect of compressibility on eight full-scale propellers operating in the take-off and climbing range. NACA Report 639, 1938 (tip-speed effects on these data).",
+      "url": "https://ntrs.nasa.gov/citations/19930091714"
+    }
+  ],
+  "notes": "Geometry digitised from R-640 Fig. 2 and cross-checked against the UIUC NR640 design table (agreement within 1 % chord, 0.1 deg beta). twist_deg = blade angle beta from the plane of rotation at the 15 deg setting (beta(0.75R) = 15 deg exactly); pitch_deg in the experiment = (blade angle at 0.75R) - 15, so a 30 deg test has pitch_deg = 15. Rhub = 0.2R = first tabulated station (blade shank, modelled as a cylinder with cd 1.0 to r/R 0.25, transition at 0.30); the propeller runs in front of a large nacelle (43 x 38 in, i.e. ~0.30-0.36 of D), no spinner, so the inner ~0.3R sits in the nacelle blockage - the measured thrust is EFFECTIVE thrust (minus slipstream drag increment on the nacelle) and eta is propulsive efficiency of the propeller-nacelle unit, both a little below isolated-propeller values. Airfoils: Clark Y family generated by y-scaling the UIUC Clark Y; polars are XFOIL (Ncrit 9, incompressible), no measured section data used (measured Clark Y: NACA TR 502 Silverstein, 11.7 % only, Re up to 8.6e6). Reynolds number at 0.75R ~1.2e6-2.0e6. COMPRESSIBILITY: tip speeds 600-1200 rpm -> helical tip Mach 0.29-0.6 (column tip_mach); the 2-blade 15/20 deg runs at 1200 rpm reach M_tip ~0.57-0.6 - per NACA TR 639 these coefficients are slightly lowered in the take-off range; the polars are incompressible, so add a Prandtl-Glauert correction if the solver has one. Low-J take-off parts of the charts are drawn dashed (faired/extrapolated) and are excluded. The report states the tabulated test points were only available on request (not published), so the faired chart curves are the data."
+}

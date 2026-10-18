@@ -1,0 +1,35 @@
+{
+  "id": "tum_g06",
+  "name": "TUM G06 scaled wind turbine (D = 0.6 m, RG-14, very low Reynolds number, pitch and wind-speed sweeps)",
+  "turbine_type": 0,
+  "B": 3,
+  "R": 0.3,
+  "Rhub": 0.018,
+  "fluid": {"rho": 1.18, "kin_viscosity": 1.55e-5, "medium": "air"},
+  "geometry_file": "geometry.csv",
+  "airfoils": {
+    "rg14": {"coordinates": "airfoils/rg14.dat", "polars": "airfoils/rg14_polars.csv",
+             "polar_source": "RG14 polars of the TUM G1 (TWEET-IE dataset section_10.dat, Re 47k-84k) reused; the tuned G06 polars of the paper are not published"}
+  },
+  "experiments": [
+    {"file": "experiment/performance_pitch_sweep_10ms.csv", "kind": "performance",
+     "x": "tsr", "y": ["cp", "ct"],
+     "defaults": {"v_ms": 10.0, "yaw_deg": 0.0, "rho": 1.18, "kin_viscosity": 1.55e-5},
+     "conditions": "UTD BLAST boundary-layer tunnel, 2.8 m x 2.1 m, blockage 4.8 % (uncorrected), TI 0.15 %, uniform inflow; U = 10 m/s; collective pitch 0/2/3/4/6 deg (column pitch_deg); rpm varied (tsr 4-8.5)",
+     "source": "Nanos et al. 2022, Fig. 8a (Cp) and 8b (Ct), digitised (extraction/digitise_fig8.py)",
+     "uncertainty": "digitising: tsr +-0.03, cp +-0.004, ct +-0.005 for 'marker' rows, about double for 'line' rows; measurement: loads ~1 %, pitch +-0.3 deg"},
+    {"file": "experiment/performance_speed_sweep_beta0.csv", "kind": "performance",
+     "x": "tsr", "y": ["cp", "ct"],
+     "defaults": {"pitch_deg": 0.0, "yaw_deg": 0.0, "rho": 1.18, "kin_viscosity": 1.55e-5},
+     "conditions": "same tunnel, pitch 0 deg, U = 6/7/8/9/10 m/s (column v_ms): Reynolds-number dependence of Cp/Ct",
+     "source": "Nanos et al. 2022, Fig. 8d (Cp) and 8e (Ct), digitised",
+     "uncertainty": "as above; several 6-9 m/s markers are hidden under the 10 m/s curve and are missing (only points that were visible are kept)"}
+  ],
+  "sources": [
+    {"key": "nanos2022", "citation": "Nanos E.M., Bottasso C.L., Manolas D.I., Riziotis V.A. (2022). Design, steady performance and wake characterization of a scaled wind turbine with pitch, torque and yaw actuation. Wind Energy Science 7, 1263-1287.",
+     "doi": "10.5194/wes-7-1263-2022", "url": "https://wes.copernicus.org/articles/7/1263/2022/"},
+    {"key": "tweetie_phase1", "citation": "TWEET-IE blind test Phase I dataset (TUM G1 model, RG14 polars). Zenodo, CC-BY-4.0.",
+     "doi": "10.5281/zenodo.13972361", "url": "https://zenodo.org/records/13972361"}
+  ],
+  "notes": "Very small rotor (D = 0.6 m) at chord Re ~2e4-6.5e4 (see extraction/check_tum_g06.png): the strongest low-Reynolds test of the suite, with Cp AND Ct for five pitch angles and five wind speeds. EVERYTHING IS DIGITISED: geometry from Fig. 2 (c/R and twist vs r/R), performance from Fig. 8 (see the overlays in extraction/). The blade is modelled from r/R = 0.06 (Rhub = 0.018 m); inboard of that the figure shows a cylindrical root (c/R 0.067) not modelled - its contribution is negligible. Twist is plotted as 'blade twist' and taken to be the solver convention (chord angle to the rotor plane without pitch, positive to feather) - the paper does not state the reference explicitly; the tip value ~0.5-2 deg and the stated optimum at beta = 0 support it. Polars: the paper tunes RG-14 polars from G06 measurements (Fig. 9) but does not publish them; the TUM G1 RG14 polars (Re 47k-84k, themselves identified from G1 rotor measurements) are reused, so below Re ~4.7e4 (outboard at U = 6-7 m/s, and the whole blade at low tsr) the solver extrapolates in Re - expect the 6-7 m/s curves to be the hardest to match. Density and viscosity are not given in the paper (UTD, Dallas, ~180 m a.s.l.): rho = 1.18, nu = 1.55e-5 assumed; cp/ct do not depend on rho directly. Blockage 4.8 %, no correction applied by the authors."
+}

@@ -1,0 +1,53 @@
+# TUM G06 scaled wind turbine (D = 0.6 m, 3 blades, RG-14 over the whole span) - blade planform
+# Source: Nanos E.M., Bottasso C.L., Manolas D.I., Riziotis V.A. (2022), Wind Energ. Sci. 7, 1263-1287, doi:10.5194/wes-7-1263-2022, Fig. 2 'Chord and twist distributions along the blade' (c/R and twist vs r/R).
+# DIGITISED from the embedded raster (2067x1400 px) with extraction/digitise_fig2.py; overlay: extraction/fig2_overlay.png.
+# Extraction uncertainty: c/R +-0.0015 (+-0.45 mm), twist +-0.2 deg (line width ~8 px = 0.0017 c/R).
+# r_m = r/R * 0.3; chord_m = c/R * 0.3. Twist as plotted ('Blade twist', positive = towards feather, i.e. the
+#   solver convention; pitch beta of Fig. 8 is added on top). The blade starts at r/R = 0.06: inboard the figure shows
+#   a cylindrical root (c/R = 0.067 for r/R < 0.04) and a jump to the maximum chord at r/R ~0.05, which is not modelled.
+# airfoil: RG-14 everywhere (paper Table 1 / Sect. 2.3.1); t/c of RG-14 = 0.0848.
+r_m,chord_m,twist_deg,airfoil,thickness_ratio
+0.018,0.07242,27.381,rg14,0.0848
+0.021,0.07003,26.217,rg14,0.0848
+0.024,0.06776,24.952,rg14,0.0848
+0.027,0.06555,23.632,rg14,0.0848
+0.03,0.06342,22.25,rg14,0.0848
+0.0375,0.05845,18.655,rg14,0.0848
+0.045,0.05389,15.134,rg14,0.0848
+0.0525,0.04963,11.949,rg14,0.0848
+0.06,0.04559,9.404,rg14,0.0848
+0.0675,0.04173,7.758,rg14,0.0848
+0.075,0.03804,7.328,rg14,0.0848
+0.0825,0.03561,7.164,rg14,0.0848
+0.09,0.03374,6.932,rg14,0.0848
+0.0975,0.03205,6.645,rg14,0.0848
+0.105,0.0305,6.287,rg14,0.0848
+0.1125,0.02906,5.923,rg14,0.0848
+0.12,0.02776,5.51,rg14,0.0848
+0.1275,0.02654,5.122,rg14,0.0848
+0.135,0.02544,4.711,rg14,0.0848
+0.1425,0.02441,4.35,rg14,0.0848
+0.15,0.02347,4.014,rg14,0.0848
+0.1575,0.0226,3.744,rg14,0.0848
+0.165,0.02179,3.507,rg14,0.0848
+0.1725,0.02103,3.287,rg14,0.0848
+0.18,0.02033,3.086,rg14,0.0848
+0.1875,0.01967,2.931,rg14,0.0848
+0.195,0.01907,2.815,rg14,0.0848
+0.2025,0.01852,2.729,rg14,0.0848
+0.21,0.018,2.673,rg14,0.0848
+0.2175,0.01751,2.648,rg14,0.0848
+0.225,0.01703,2.635,rg14,0.0848
+0.2325,0.01658,2.66,rg14,0.0848
+0.24,0.01613,2.686,rg14,0.0848
+0.2475,0.01568,2.712,rg14,0.0848
+0.255,0.01522,2.725,rg14,0.0848
+0.2625,0.01474,2.712,rg14,0.0848
+0.27,0.01426,2.657,rg14,0.0848
+0.2775,0.01374,2.544,rg14,0.0848
+0.285,0.01286,2.364,rg14,0.0848
+0.288,0.01218,2.268,rg14,0.0848
+0.291,0.01133,2.165,rg14,0.0848
+0.294,0.01025,1.973,rg14,0.0848
+0.297,0.00892,1.218,rg14,0.0848
+0.2985,0.0082,0.804,rg14,0.0848

@@ -1,0 +1,92 @@
+{
+  "id": "uiuc_da4022_9in_4b",
+  "name": "UIUC DA4022 9-in propeller, 4-blade hub (c/R = 0.23 rectangular, SDA1075)",
+  "turbine_type": 1,
+  "B": 4,
+  "R": 0.11557,
+  "Rhub": 0.017335,
+  "fluid": {
+    "rho": 1.17,
+    "kin_viscosity": 1.55e-05,
+    "medium": "air"
+  },
+  "geometry_file": "geometry.csv",
+  "alternative_geometry": {
+    "scan_raw": "extraction/geometry_scan_raw.csv",
+    "design": "extraction/geometry_design.csv"
+  },
+  "airfoils": {
+    "sda1075": {
+      "coordinates": "airfoils/sda1075.dat",
+      "polars": "airfoils/sda1075_polars.csv",
+      "polar_source": "XFOIL 6.97, Ncrit=9, Re 20k/30k/40k/60k/80k/100k/150k/200k (computed; no measured polar exists for this section)",
+      "thickness_ratio": 0.12,
+      "alternative_polars": {
+        "ncrit5": "airfoils/sda1075_ncrit5_polars.csv"
+      }
+    }
+  },
+  "experiments": [
+    {
+      "file": "experiment/performance.csv",
+      "kind": "performance",
+      "x": "J",
+      "y": [
+        "ct",
+        "cp",
+        "eta"
+      ],
+      "defaults": {
+        "pitch_deg": 0.0,
+        "rho": 1.17,
+        "kin_viscosity": 1.55e-05
+      },
+      "conditions": "UIUC 2.8x4.0 ft low-turbulence tunnel (Tu < 0.1 %), B=4, constant rpm per run (2034, 3044, 4036, 4054 rpm), tunnel speed varied; blade-angle offset +0 deg; tunnel corrections applied by UIUC.",
+      "source": "UIUC Propeller Database Vol. 2, files da4022_9x6.75_4b_1087ga_2034.txt, da4022_9x6.75_4b_1088ga_3044.txt, da4022_9x6.75_4b_1089ga_4036.txt, da4022_9x6.75_4b_1090ga_4054.txt (tabulated)",
+      "uncertainty": "not given by the source; ~+-3-5 % in CT/CP estimated from the published repeatability"
+    },
+    {
+      "file": "experiment/static.csv",
+      "kind": "performance",
+      "x": "rpm",
+      "y": [
+        "ct",
+        "cp"
+      ],
+      "defaults": {
+        "pitch_deg": 0.0,
+        "v_ms": 0.0,
+        "J": 0.0,
+        "rho": 1.17,
+        "kin_viscosity": 1.55e-05
+      },
+      "conditions": "static (J = 0, tunnel off), B=4, rpm swept 1505-4938; blade-angle offset +0 deg",
+      "source": "UIUC Propeller Database Vol. 2, file da4022_9x6.75_4b_static_1086ga.txt (tabulated)",
+      "uncertainty": "not given by the source"
+    }
+  ],
+  "sources": [
+    {
+      "key": "uiucpropdb",
+      "citation": "Brandt, J.B., Deters, R.W., Ananda, G.K., Dantsker, O.D., and Selig, M.S., UIUC Propeller Database, Vols 1-4, University of Illinois at Urbana-Champaign, Department of Aerospace Engineering (downloaded 2026-10-18, archive UIUC-propDB.zip md5 a41e484f1fd0fb6ff80b76e27410808b)",
+      "url": "https://m-selig.ae.illinois.edu/props/propDB.html"
+    },
+    {
+      "key": "deters2014",
+      "citation": "Deters, R.W., Ananda, G.K., and Selig, M.S., 'Reynolds Number Effects on the Performance of Small-Scale Propellers', AIAA Aviation 2014, AIAA Paper 2014-2151, Atlanta, GA, June 2014",
+      "doi": "10.2514/6.2014-2151",
+      "url": "https://m-selig.ae.illinois.edu/pubs/DetersAnandaSelig-2014-AIAA-2014-2151.pdf"
+    },
+    {
+      "key": "deters2014phd",
+      "citation": "Deters, R.W., 'Performance and Slipstream Characteristics of Small-Scale Propellers at Low Reynolds Numbers', PhD dissertation, University of Illinois at Urbana-Champaign, 2014",
+      "url": "https://m-selig.ae.illinois.edu/props/volume-2/propDB-volume-2.html"
+    },
+    {
+      "key": "xfoil",
+      "citation": "Drela, M., 'XFOIL: An Analysis and Design System for Low Reynolds Number Airfoils', in Low Reynolds Number Aerodynamics, Lecture Notes in Engineering 54, Springer, 1989 (v6.97 used)",
+      "doi": "10.1007/978-3-642-84010-4_1"
+    }
+  ],
+  "notes": "3D-printed UIUC research propeller (Deters 2014). Blades are inserted in interchangeable hubs: three extra hubs change the blade angle by -10, -5 and +5 deg (Deters et al. 2014 Sec. III, Table 2), which is how the 'pitched' data sets were produced; their offset is the experiment's pitch_deg (nominal hub value). Geometry = UIUC 'tested' PropellerScanner geometry (both blades averaged) with the tip artefact corrected (see geometry.csv header); PropellerScanner may underestimate twist (Uhlig, cited by Deters et al. 2014), and the scanned twist is 1-2 deg above design over the outer blade, so geometry_design.csv (in extraction/) is a useful sensitivity check. Root: r/R 0.15-0.25 is the blade neck between hub block and blade (chord drops to c/R ~0.11-0.14); the solver blade starts at the first station (Rhub = 0.15 R). Blade material: 3D-printed plastic, flexible at higher rpm (Deters et al. 2014 say the 12 % airfoils were chosen to stiffen the blades). Polars: XFOIL Ncrit = 9 (tunnel Tu < 0.1 %); Ncrit = 5 alternative files are listed in each airfoil entry. Chord Re at 0.75R ranges ~32k-63k (c75 = 26.6 mm, 0.75*Omega*R at the lowest/highest tested rpm). Fluid: UIUC lab air assumed rho = 1.17 kg/m3, nu = 1.55e-5 m2/s (Urbana, ~225 m altitude, ~22 C; the database gives coefficients only). This folder is the 4-blade configuration of the same blades (separate case because B is a case-level value in the runner)."
+}

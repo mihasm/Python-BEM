@@ -1,0 +1,34 @@
+# risoe_r5250: 2D polars for t/c = 17.6 % - linear interpolation in t/c between the columns 12/15/18/21/25 %
+#   of Tables G.3 (lift) and G.4 (drag), Schepers J.G. et al. (2002) Final report of IEA Annex XVIII 'Enhanced Field Rotor Aerodynamics Database', ECN-C--02-016, Appendix G (updated Aug 2003); data: Zenodo doi:10.5281/zenodo.10619556 (CC-BY-4.0), p. 294-295 (tabulated; typed copy in extraction/tables_G3_G4_typed.csv).
+# The tables are 'basically 2D data from Abbott & von Doenhoff with corrections for the actual Reynolds number'.
+# Only alpha = 0..30 deg is published with flow physics (40-90 deg rows dropped); NO negative alpha published:
+#   alpha -12..-1 deg are COMPUTED with XFOIL 6.97 (Ncrit 9, Re 1.5e6) on the generated section, cl shifted by
+#   +0.0047 and cd scaled by 0.546 to join the table at 0 deg (see 'source' column;
+#   raw XFOIL output in extraction/xfoil/). XFOIL gives cl(0) = 0.155-0.159 vs 0.16 in the table, i.e. consistent.
+# re = 1.5e6 is NOMINAL: the report does not state the Re; at 47.5 rpm the blade runs at Re ~1.1e6 (root) .. 1.7e6.
+re,alpha_deg,cl,cd,source
+1500000.0,-12.0,-0.9491,0.0114,"XFOIL 6.97, Ncrit=9, Re 1.5e6, generated t/c=17.6% section; cl+0.0047, cd*0.546 for continuity at 0 deg"
+1500000.0,-11.0,-0.9142,0.00956,"XFOIL 6.97, Ncrit=9, Re 1.5e6, generated t/c=17.6% section; cl+0.0047, cd*0.546 for continuity at 0 deg"
+1500000.0,-10.0,-0.8835,0.00826,"XFOIL 6.97, Ncrit=9, Re 1.5e6, generated t/c=17.6% section; cl+0.0047, cd*0.546 for continuity at 0 deg"
+1500000.0,-9.0,-0.8071,0.00742,"XFOIL 6.97, Ncrit=9, Re 1.5e6, generated t/c=17.6% section; cl+0.0047, cd*0.546 for continuity at 0 deg"
+1500000.0,-8.0,-0.7131,0.00677,"XFOIL 6.97, Ncrit=9, Re 1.5e6, generated t/c=17.6% section; cl+0.0047, cd*0.546 for continuity at 0 deg"
+1500000.0,-7.0,-0.6096,0.00631,"XFOIL 6.97, Ncrit=9, Re 1.5e6, generated t/c=17.6% section; cl+0.0047, cd*0.546 for continuity at 0 deg"
+1500000.0,-6.0,-0.5027,0.00592,"XFOIL 6.97, Ncrit=9, Re 1.5e6, generated t/c=17.6% section; cl+0.0047, cd*0.546 for continuity at 0 deg"
+1500000.0,-5.0,-0.3932,0.00555,"XFOIL 6.97, Ncrit=9, Re 1.5e6, generated t/c=17.6% section; cl+0.0047, cd*0.546 for continuity at 0 deg"
+1500000.0,-4.0,-0.2818,0.00531,"XFOIL 6.97, Ncrit=9, Re 1.5e6, generated t/c=17.6% section; cl+0.0047, cd*0.546 for continuity at 0 deg"
+1500000.0,-3.0,-0.1686,0.00516,"XFOIL 6.97, Ncrit=9, Re 1.5e6, generated t/c=17.6% section; cl+0.0047, cd*0.546 for continuity at 0 deg"
+1500000.0,-2.0,-0.0572,0.00523,"XFOIL 6.97, Ncrit=9, Re 1.5e6, generated t/c=17.6% section; cl+0.0047, cd*0.546 for continuity at 0 deg"
+1500000.0,-1.0,0.0507,0.00563,"XFOIL 6.97, Ncrit=9, Re 1.5e6, generated t/c=17.6% section; cl+0.0047, cd*0.546 for continuity at 0 deg"
+1500000.0,0.0,0.16,0.00572,"Risoe Tables G.3/G.4 (Abbott & von Doenhoff based, Re-corrected) interpolated to t/c=17.6%"
+1500000.0,2.0,0.38,0.00572,"Risoe Tables G.3/G.4 (Abbott & von Doenhoff based, Re-corrected) interpolated to t/c=17.6%"
+1500000.0,4.0,0.6,0.00606,"Risoe Tables G.3/G.4 (Abbott & von Doenhoff based, Re-corrected) interpolated to t/c=17.6%"
+1500000.0,6.0,0.82,0.008,"Risoe Tables G.3/G.4 (Abbott & von Doenhoff based, Re-corrected) interpolated to t/c=17.6%"
+1500000.0,8.0,1.0127,0.01083,"Risoe Tables G.3/G.4 (Abbott & von Doenhoff based, Re-corrected) interpolated to t/c=17.6%"
+1500000.0,10.0,1.1953,0.01543,"Risoe Tables G.3/G.4 (Abbott & von Doenhoff based, Re-corrected) interpolated to t/c=17.6%"
+1500000.0,12.0,1.2993,0.02257,"Risoe Tables G.3/G.4 (Abbott & von Doenhoff based, Re-corrected) interpolated to t/c=17.6%"
+1500000.0,14.0,1.3333,0.03627,"Risoe Tables G.3/G.4 (Abbott & von Doenhoff based, Re-corrected) interpolated to t/c=17.6%"
+1500000.0,16.0,1.2567,0.07,"Risoe Tables G.3/G.4 (Abbott & von Doenhoff based, Re-corrected) interpolated to t/c=17.6%"
+1500000.0,18.0,1.0933,0.15,"Risoe Tables G.3/G.4 (Abbott & von Doenhoff based, Re-corrected) interpolated to t/c=17.6%"
+1500000.0,20.0,0.98,0.22433,"Risoe Tables G.3/G.4 (Abbott & von Doenhoff based, Re-corrected) interpolated to t/c=17.6%"
+1500000.0,25.0,0.9673,0.35133,"Risoe Tables G.3/G.4 (Abbott & von Doenhoff based, Re-corrected) interpolated to t/c=17.6%"
+1500000.0,30.0,1.0087,0.46133,"Risoe Tables G.3/G.4 (Abbott & von Doenhoff based, Re-corrected) interpolated to t/c=17.6%"

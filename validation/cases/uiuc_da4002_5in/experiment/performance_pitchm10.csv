@@ -1,0 +1,25 @@
+# UIUC DA4002 5-in propeller (2 blades, c/R = 0.18 rectangular, SDA1075), B=2, blade-angle offset -10 deg (da4002_5x1.58), performance vs J at constant rpm (wind tunnel speed varied).
+# Source: UIUC Propeller Database Vol. 2 (Deters 2014 PhD / Deters et al. 2014), data files da4002_5x1.58_1139ga_4003.txt, da4002_5x1.58_1140ga_4970.txt, da4002_5x1.58_1141ga_5975.txt; tabulated (J, CT, CP, eta), copied without change, no digitising.
+# rpm = nominal value in the file name (the run's set speed); v_ms = J * rpm/60 * D with D = 0.1270 m (true diameter 5.00 in, coefficients in the database are based on it).
+# Coefficients: CT = T/(rho n^2 D^4), CP = P/(rho n^3 D^5), eta = J CT/CP; tunnel corrections already applied by UIUC (fairing blockage via source panels + Glauert closed-section correction, Deters et al. 2014 Sec. II.E).
+# pitch_deg = blade-angle offset relative to geometry.csv (the geometry holds the actual blade angles of the 0-deg configuration). pitch_deg_scan = mean (r/R 0.40-0.90) difference between the PropellerScanner geometry of this configuration (da4002_5x1.58_geom.txt) and of the 0-deg one: an alternative estimate of the real offset.
+# Uncertainty: not quantified by the source; repeatability tests (Deters et al. 2014 Figs. 3-4) and the UIUC/OSU comparison suggest roughly +-3-5 % in CT and CP; low-J points of each run carry the largest velocity uncertainty.
+J,ct,cp,eta,rpm,v_ms,pitch_deg,pitch_deg_scan,run
+0.286716,0.032311,0.026516,0.349382,4003,2.42935,-10,-8.29,da4002_5x1.58_1139ga_4003.txt
+0.357986,0.020442,0.022384,0.326932,4003,3.03322,-10,-8.29,da4002_5x1.58_1139ga_4003.txt
+0.430866,0.008189,0.018011,0.19589,4003,3.65073,-10,-8.29,da4002_5x1.58_1139ga_4003.txt
+0.506466,-0.005755,0.012275,-0.237456,4003,4.29129,-10,-8.29,da4002_5x1.58_1139ga_4003.txt
+0.230979,0.045336,0.029925,0.349929,4970,2.42986,-10,-8.29,da4002_5x1.58_1140ga_4970.txt
+0.291265,0.035402,0.026685,0.386409,4970,3.06406,-10,-8.29,da4002_5x1.58_1140ga_4970.txt
+0.347096,0.025419,0.023248,0.379525,4970,3.65139,-10,-8.29,da4002_5x1.58_1140ga_4970.txt
+0.405524,0.014772,0.019466,0.30772,4970,4.26604,-10,-8.29,da4002_5x1.58_1140ga_4970.txt
+0.46502,0.004476,0.015321,0.135857,4970,4.89193,-10,-8.29,da4002_5x1.58_1140ga_4970.txt
+0.519163,-0.007075,0.010239,-0.358742,4970,5.46151,-10,-8.29,da4002_5x1.58_1140ga_4970.txt
+0.190394,0.057046,0.032756,0.331588,5975,2.40793,-10,-8.29,da4002_5x1.58_1141ga_5975.txt
+0.24067,0.04892,0.030579,0.385031,5975,3.04377,-10,-8.29,da4002_5x1.58_1141ga_5975.txt
+0.289002,0.040103,0.027823,0.416547,5975,3.65503,-10,-8.29,da4002_5x1.58_1141ga_5975.txt
+0.339426,0.030846,0.0246,0.425594,5975,4.29275,-10,-8.29,da4002_5x1.58_1141ga_5975.txt
+0.383177,0.022681,0.021592,0.402502,5975,4.84607,-10,-8.29,da4002_5x1.58_1141ga_5975.txt
+0.432829,0.01387,0.018182,0.330172,5975,5.47402,-10,-8.29,da4002_5x1.58_1141ga_5975.txt
+0.481923,0.00343,0.013738,0.120288,5975,6.09492,-10,-8.29,da4002_5x1.58_1141ga_5975.txt
+0.533194,-0.008118,0.00855,-0.506276,5975,6.74335,-10,-8.29,da4002_5x1.58_1141ga_5975.txt

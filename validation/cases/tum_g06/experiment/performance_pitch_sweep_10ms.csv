@@ -1,0 +1,59 @@
+# TUM G06 - Fig. 8a,b: Cp, Ct vs tsr at U = 10 m/s for pitch beta = 0, 2, 3, 4, 6 deg
+# Source: Nanos E.M., Bottasso C.L., Manolas D.I., Riziotis V.A. (2022), Wind Energ. Sci. 7, 1263-1287, doi:10.5194/wes-7-1263-2022, Fig. 8. DIGITISED from the embedded raster (PDF p. 12, 2067x1279 px) with extraction/digitise_fig8.py
+#   (gridline calibration, colour masks per curve, marker detection; overlay extraction/fig8_overlay_final.png).
+# cp_read/ct_read: 'marker' = centre of the plotted marker found automatically; 'line' = marker hidden under other curves,
+#   value read from the curve line at the 0.5-spaced tsr set-point (line interpolation between neighbouring markers).
+# Extraction uncertainty: tsr +-0.03, cp +-0.004, ct +-0.005 ('marker'); about twice that for 'line'.
+# Test: UTD BLAST boundary-layer wind tunnel, 2.8 m x 2.1 m, blockage 4.8 % (uncorrected), low turbulence (TI 0.15 %),
+#   uniform inflow (shear exponent 0) - paper Table 2. Torque from shaft strain gauges, thrust from the tower-base load cell
+#   (paper Sect. 2.5). Cp = P/(0.5 rho U^3 pi R^2), R = 0.3 m. Published measurement uncertainty ~1 % on loads, pitch +-0.3 deg.
+# Rows with cp or ct empty: the marker was not visible/detected in that panel.
+pitch_deg,tsr,cp,ct,cp_read,ct_read,v_ms
+0.0,4.0338,0.1102,0.4259,marker,marker,10.0
+0.0,4.5046,0.1668,0.4741,marker,line,10.0
+0.0,4.9957,0.2326,0.5411,line,marker,10.0
+0.0,5.5047,0.2843,0.5913,line,marker,10.0
+0.0,6.0007,0.3569,0.6414,line,marker,10.0
+0.0,6.5011,0.3846,0.6858,line,marker,10.0
+0.0,7.016,0.4092,0.7193,marker,marker,10.0
+0.0,7.5037,0.4129,0.7476,marker,marker,10.0
+0.0,8.0172,0.4092,0.7695,marker,marker,10.0
+0.0,8.4683,0.4025,0.7875,marker,marker,10.0
+2.0,4.5511,,0.4716,,marker,10.0
+2.0,5.0259,,0.5185,,marker,10.0
+2.0,5.5266,,0.5597,,marker,10.0
+2.0,6.045,0.3588,0.606,marker,marker,10.0
+2.0,6.537,0.3822,0.6376,marker,marker,10.0
+2.0,7.0117,0.3895,0.6595,marker,marker,10.0
+2.0,7.5252,0.3883,0.6768,marker,marker,10.0
+2.0,8.0172,0.3791,0.6878,marker,marker,10.0
+2.0,8.4683,0.3643,0.6929,marker,marker,10.0
+3.0,4.0431,0.1514,,marker,,10.0
+3.0,4.4867,0.2031,0.4259,line,marker,10.0
+3.0,4.987,0.2579,0.4658,line,marker,10.0
+3.0,5.4831,0.2942,0.5031,line,marker,10.0
+3.0,5.9834,0.3446,0.5372,line,marker,10.0
+3.0,6.4509,0.3563,,marker,,10.0
+3.0,6.9946,0.3502,,marker,,10.0
+3.0,7.4434,0.3366,,marker,,10.0
+4.0,4.0547,,0.3686,,marker,10.0
+4.0,4.4906,,0.4072,,marker,10.0
+4.0,4.9919,0.2671,0.4413,marker,marker,10.0
+4.0,5.5314,0.3102,0.4741,marker,marker,10.0
+4.0,6.0018,0.3298,0.4902,marker,marker,10.0
+4.0,6.5412,0.3237,0.4909,marker,marker,10.0
+4.0,7.016,0.3034,0.4818,marker,marker,10.0
+4.0,7.5,0.2757,0.4658,line,line,10.0
+4.0,7.672,0.2646,0.4606,marker,marker,10.0
+4.0,8.0777,0.2332,0.4368,marker,marker,10.0
+4.0,8.4358,0.2018,0.413,marker,marker,10.0
+6.0,4.0036,0.184,0.3422,marker,marker,10.0
+6.0,4.487,0.2191,0.3686,marker,marker,10.0
+6.0,4.9876,0.2462,0.386,marker,marker,10.0
+6.0,5.484,0.2523,0.3847,marker,marker,10.0
+6.0,5.9716,0.2357,0.3699,marker,marker,10.0
+6.0,6.4592,0.2037,0.3467,marker,marker,10.0
+6.0,6.9426,0.16,0.3113,marker,marker,10.0
+6.0,7.4476,0.1071,0.2656,marker,marker,10.0
+6.0,7.9439,0.0542,0.2174,marker,marker,10.0
+6.0,8.3884,0.0025,0.1775,marker,marker,10.0

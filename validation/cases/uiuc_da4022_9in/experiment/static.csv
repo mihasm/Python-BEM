@@ -1,0 +1,25 @@
+# UIUC DA4022 9-in propeller (2 blades, c/R = 0.23 rectangular, SDA1075), B=2, blade-angle offset +0 deg: static performance (J = 0, tunnel off), CT and CP vs rpm.
+# Source: UIUC Propeller Database Vol. 2, file da4022_9x6.75_static_0767rd.txt; tabulated (RPM, CT, CP), copied without change.
+# Re in the database static plots is based on c(0.75R) and 0.75*Omega*R. No tunnel corrections needed.
+# Uncertainty: not quantified by the source; scatter between neighbouring rpm points ~+-0.002 in CT.
+rpm,J,v_ms,ct,cp,pitch_deg
+1326.67,0,0,0.146329,0.087607,0
+1433.33,0,0,0.150878,0.089766,0
+1700,0,0,0.152442,0.088946,0
+1953.33,0,0,0.146078,0.083298,0
+2210,0,0,0.146178,0.081402,0
+2530,0,0,0.147843,0.080288,0
+2686.67,0,0,0.147452,0.079276,0
+2943.33,0,0,0.146372,0.077756,0
+3256.67,0,0,0.146333,0.076829,0
+3493.33,0,0,0.145205,0.075765,0
+3710,0,0,0.147485,0.076383,0
+3950,0,0,0.149582,0.077088,0
+4200,0,0,0.149532,0.076649,0
+4450,0,0,0.150186,0.076846,0
+4693.33,0,0,0.150883,0.076885,0
+4933.33,0,0,0.151599,0.077399,0
+5183.33,0,0,0.153229,0.078077,0
+5463.33,0,0,0.153899,0.078517,0
+5710,0,0,0.15486,0.079018,0
+5940,0,0,0.156683,0.079983,0

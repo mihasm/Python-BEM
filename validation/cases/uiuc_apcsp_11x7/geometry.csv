@@ -1,0 +1,52 @@
+# APC Sport 11x7, UIUC Vol. 1 geometry: APC manufacturer geometry file 11x7-PERF.PE0 (11x7                              (11x7.dat) / v2025-1001), from PE0-FILES_WEB-202602.zipx; tabulated.
+# Columns used: STATION (in) -> r_m, CHORD (in) -> chord_m (x 0.0254), TWIST (deg) -> twist_deg, THICKNESS RATIO -> thickness_ratio. APC defines TWIST and CHORD with the mold LE and TE parting lines, i.e. the LE-TE chord line; TWIST = atan(quoted pitch / 2 pi r) = blade angle from the plane of rotation (solver convention).
+# Stations inboard of r = 0.15 R dropped (hub; APC HUBRAD = 0.50 in, HUBTRA (hub transition) = 1.40 in).
+# APC airfoil sections: AIRFOIL1 CLARK-Y at 2.00 in (transition start), AIRFOIL2 CLARK-Y at 3.00 in (transition end), 'scaled based on thickness ratio'; APC12 = NACA 4412 (APC note in the file).
+# Airfoil column: named XFOIL sections at anchor stations r/R = 0.153, 0.255, 0.442, 0.650, 0.858, 1.000 (blend fraction and t/c of the station, see case.json airfoils), 'transition' rows in between (solver interpolates cl/cd).
+# UIUC PropellerScanner geometry of the tested specimen (Vol. 1 file apcsp_11x7_geom.txt): extraction/geometry_uiuc_scan.csv
+r_m,chord_m,twist_deg,airfoil,thickness_ratio
+0.021336,0.0222529,25.6157,clarky_t28p2,0.2817
+0.024892,0.022672,30.4363,transition,0.2703
+0.028448,0.0231216,33.9271,transition,0.2595
+0.032004,0.0234163,35.769,transition,0.2493
+0.03556,0.0233985,35.6556,clarky_t24p0,0.2396
+0.0390982,0.0231851,34.2458,transition,0.2306
+0.0423443,0.0230556,32.9964,transition,0.2228
+0.0455701,0.022987,31.793,transition,0.2155
+0.0487985,0.0229641,30.62,transition,0.2087
+0.0520268,0.0229845,29.4707,transition,0.2023
+0.0552526,0.0230353,28.34,transition,0.1965
+0.058481,0.0231064,27.224,transition,0.1911
+0.0617093,0.0231902,26.1195,clarky_t18p6,0.1862
+0.0649376,0.0232766,25.0323,transition,0.1818
+0.0681634,0.0233578,24.0197,transition,0.1778
+0.0713918,0.0234239,23.0859,transition,0.1743
+0.0746201,0.0234645,22.223,transition,0.1713
+0.0778459,0.0234696,21.4239,transition,0.1687
+0.0810743,0.023434,20.6792,transition,0.1662
+0.0843026,0.0233426,19.9832,transition,0.1636
+0.0875284,0.0231927,19.3311,transition,0.1611
+0.0907567,0.0229692,18.7186,clarky_t15p8,0.1585
+0.0939851,0.0226644,18.142,transition,0.156
+0.0972109,0.0222682,17.5979,transition,0.1535
+0.100439,0.0217754,17.0834,transition,0.1509
+0.103668,0.0211709,16.5956,transition,0.1484
+0.106893,0.0204495,16.1321,transition,0.1458
+0.110122,0.0196012,15.6904,transition,0.1433
+0.11335,0.0186131,15.2682,transition,0.1407
+0.116578,0.0174803,14.8634,transition,0.1382
+0.119804,0.01619,14.4732,clarky_t13p6,0.1357
+0.123033,0.0147371,14.1216,transition,0.1331
+0.126261,0.0131166,13.8953,transition,0.1306
+0.129487,0.0113157,13.8295,transition,0.128
+0.132583,0.00940562,13.9322,transition,0.1256
+0.133421,0.00885952,13.987,transition,0.1249
+0.134127,0.00838708,14.0411,transition,0.1244
+0.134831,0.00790448,14.1015,transition,0.1238
+0.135537,0.00740918,14.167,transition,0.1233
+0.136243,0.00690626,14.2358,transition,0.1227
+0.136949,0.00634746,14.306,transition,0.1222
+0.137653,0.00560832,14.3913,transition,0.1216
+0.138359,0.0045847,14.4537,transition,0.1211
+0.139065,0.00281432,14.4823,transition,0.1205
+0.1397,0.00021082,11.451,clarky_t12p0,0.12

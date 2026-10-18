@@ -1,0 +1,23 @@
+# UIUC DA4052 9-in propeller, 3-blade hub (SDA1045/SDA1075/SDA1100), B=3, blade-angle offset +0 deg: static performance (J = 0, tunnel off), CT and CP vs rpm.
+# Source: UIUC Propeller Database Vol. 2, file da4052_9x6.75_3b_static_1080ga.txt; tabulated (RPM, CT, CP), copied without change.
+# Re in the database static plots is based on c(0.75R) and 0.75*Omega*R. No tunnel corrections needed.
+# Uncertainty: not quantified by the source; scatter between neighbouring rpm points ~+-0.002 in CT.
+rpm,J,v_ms,ct,cp,pitch_deg
+1508.89,0,0,0.147827,0.095074,0
+1780,0,0,0.150295,0.093499,0
+2006.67,0,0,0.149833,0.092185,0
+2264.45,0,0,0.149252,0.090853,0
+2520,0,0,0.147207,0.088323,0
+2804.45,0,0,0.146659,0.087026,0
+3002.22,0,0,0.148975,0.087885,0
+3220,0,0,0.150146,0.087975,0
+3491.11,0,0,0.148367,0.08616,0
+3720,0,0,0.148889,0.086006,0
+3962.22,0,0,0.148195,0.08523,0
+4191.11,0,0,0.14835,0.085083,0
+4420,0,0,0.148005,0.08448,0
+4695.56,0,0,0.14723,0.083572,0
+4946.67,0,0,0.147316,0.083534,0
+5182.22,0,0,0.147155,0.083114,0
+5437.78,0,0,0.146443,0.082245,0
+5700,0,0,0.145621,0.081547,0

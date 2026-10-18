@@ -1,0 +1,24 @@
+# UIUC DA4002 5-in propeller (2 blades, c/R = 0.18 rectangular, SDA1075) geometry: UIUC Propeller Database Vol. 2, file da4002_5x3.75_geom.txt ('Geometry (tested)': PropellerScanner measurement of the 3D-printed propeller, average of both blades; tabulated r/R, c/R, beta).
+# Converted: r_m = r/R * R, chord_m = c/R * R with R = 0.0635 m (true diameter 5.00 in from the database geometry plot); twist_deg = beta (blade angle from the plane of rotation, chord line) unchanged.
+# Tip correction (PropellerScanner artefact, square/designed tip visible in the photos): r/R=0.95: scan c/R=0.1555 beta=14.427 replaced by c/R=0.1793 (scan c/R at r/R=0.90, rectangular blade) and beta=16.090 (scan beta at r/R=0.90 + design twist change 0.90->0.95); r/R=1.00: scan c/R=0.0226 beta=15.523 replaced by c/R=0.1793 (scan c/R at r/R=0.90, rectangular blade) and beta=15.411 (scan beta at r/R=0.90 + design twist change 0.90->1.00)
+# Uncorrected scan: extraction/geometry_scan_raw.csv; design geometry (Deters 2014 Fig. 26): extraction/geometry_design.csv.
+# Airfoil: SDA1075 along the whole blade (Deters, Ananda & Selig 2014, Sec. III); t/c = 0.12 for all SDA airfoils.
+r_m,chord_m,twist_deg,airfoil,thickness_ratio
+0.009525,0.00795655,41.466,sda1075,0.12
+0.0127,0.00711835,44.054,sda1075,0.12
+0.015875,0.0087884,40.139,sda1075,0.12
+0.01905,0.0101219,36.43,sda1075,0.12
+0.022225,0.0108268,33.121,sda1075,0.12
+0.0254,0.011176,30.108,sda1075,0.12
+0.028575,0.011303,27.726,sda1075,0.12
+0.03175,0.011322,25.858,sda1075,0.12
+0.034925,0.0112903,24.093,sda1075,0.12
+0.0381,0.0113538,22.396,sda1075,0.12
+0.041275,0.0114364,20.921,sda1075,0.12
+0.04445,0.0114109,19.817,sda1075,0.12
+0.047625,0.0114554,18.933,sda1075,0.12
+0.0508,0.0114935,18.173,sda1075,0.12
+0.053975,0.0114046,17.534,sda1075,0.12
+0.05715,0.0113855,16.84,sda1075,0.12
+0.060325,0.0113855,16.09,sda1075,0.12
+0.0635,0.0113855,15.411,sda1075,0.12

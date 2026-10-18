@@ -1,0 +1,13 @@
+# MEXICO 2006, the same three datapoints: rotor thrust estimated from the 6-component balance.
+# Source: Bechmann, Sorensen & Zahle 2011, Table III (TABULATED): axial_force_balance_n = total axial force on the
+# balance at the tower foot, tower_drag_est_n = their COARSE tower-drag estimate (single Cd from the parked
+# run at 30 m/s, tower d ~0.5 m, h 5 m, Re near critical), thrust_n = difference; ct_source = their CT with
+# rho = 1.225 and the raw speed. v_ms = raw - 0.2 m/s (tunnel-speed correction, see mexico2006_spanwise_axial.csv);
+# rho column = MEXICO densities from ECN-E--14-048. Uncertainty: dominated by the tower drag estimate, of order
+# +-100..300 N (the authors call it "a very rough estimate").
+# Also known (not stored): ECN-E--07-042 Table 1 lists balance axial forces at pitch -1.2/-1.3 deg incl. tower
+# drag (1039/1979/2487/3285/4091 N at 10/15/18/24/30 m/s).
+v_ms,v_tunnel_raw_ms,tsr,rpm,pitch_deg,rho,thrust_n,axial_force_balance_n,tower_drag_est_n,ct_source
+9.77,9.97,10.238,424.5,-2.3,1.19,932,1106,174,0.96
+14.73,14.93,6.79,424.5,-2.3,1.19,1661,2051,390,0.77
+23.82,24.02,4.199,424.5,-2.3,1.2,2305,3315,1010,0.41

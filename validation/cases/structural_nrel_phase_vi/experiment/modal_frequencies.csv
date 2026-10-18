@@ -1,0 +1,10 @@
+# NREL UAE Phase VI blade - measured modal frequencies (kind: structural; for a future modal/deflection solver)
+# Source: Hand et al. 2001, Table A-10 (p. 79, pdf p. 89), tabulated. Blade on a dummy pitch shaft clamped at the
+#   bearing locations on a concrete block, trailing edge down, impact-hammer test (p. 77, Fig. A-10). Non-rotating.
+mode,frequency_hz,blade
+edge_1,9.062,non-instrumented
+edge_1,8.9,instrumented
+flap_1,7.313,non-instrumented
+flap_1,7.25,instrumented
+flap_2,30.062,non-instrumented
+flap_2,29.438,instrumented

@@ -1,0 +1,59 @@
+The data file t200101.iea contains 18 columms of data which are listed below.
+The measurements were carried out on January 20 1993 for the turbine in normal operation.
+
+Inflow was measured with a five hole pitot tube at radius 6.83 m and blade segment forces were measured at three
+stations, R1=3.555, R2=6.475, R3=9.275. 
+
+For derivation of the coefficients CN and CT at the different radial stations, the following velocties were used:
+
+V1=Vmeasured*(3.555/6.83)
+V2=Vmeasured*(6.475/6.83)
+V3=Vmeasured*(9.275/6.83)
+
+V2 is the velocity contained in the data file.
+
+The angle of attack is the measured angle in radius 6.83 relative to the chord but subtracted
+a constant 4.7 deg. in order to get coincidence between the measured power curve as function of
+angle of attack and the same curve computed with the BEM method.
+
+The scan frequency is 25 hz and all the data have been passed through a digital low pass band filter with a 
+cut off frequence between 3 and 3.5 hz.
+
+NOTE:
+
+The calibration of Flap1 and Flap2 is uncertain in the present data file.
+
+ 
+  
+Channel   Variable description                 Label         Units
+
+     1      Time                                 t             sec
+     2      Air Pressure                         p-a           mbar
+     3      Temperature                          T             deg. 
+     4      Wind speed                           Vw            m/s
+     5      Wind direction                       phi-y         deg.
+
+     6      Rotor azimuth                        phi-r         deg.
+     7      Rotor speed                          omega         rpm.
+     8      Electrical power                     Pow.          kW.
+     9      Flap1 (flap moment blade 1)          Flap1         kNm.
+    10      Flap2 (flap moment blade 2)          Flap2         kNm.
+
+    11      Flap3 (flap moment blade 3)          Flap3         kNm.
+    12      Normal coefficient seg. 1            CN1   
+    13      Normal coefficient seg. 2            CN2
+    14      Tangential coefficient seg. 2        CT2
+    15      Normal coefficient seg. 3            CN3
+
+    16      Tangential coefficient seg. 3        CT3
+    17      Measured angle of attack             alpha         deg.
+    18      Measured inflow velocity             V2           m/s
+
+Note Gerard Schepers: The number of records is 14913; 
+Record 1 is  header
+Record 2 is mean value
+Record 3 is standard deviation
+Record 4 is min-value
+Record 5 is max-value
+Data start at record 6.
+The measurement period is 596.3 seconds

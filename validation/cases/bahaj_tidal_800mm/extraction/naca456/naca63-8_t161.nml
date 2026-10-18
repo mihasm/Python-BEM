@@ -1,0 +1,9 @@
+naca63-8_t161: NACA 63-8xx at t/c = 0.161; 63-series thickness, a=1.0 mean line, cl_i = 0.8
+&NACA
+  name = 'naca63-8_t161',
+  profile = '63',
+  toc = 0.1610,
+  camber = '6',
+  cl = 0.8,
+  a = 1.0,
+  dencode = 1/

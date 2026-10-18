@@ -1,0 +1,181 @@
+{
+  "id": "uiuc_apcsp_11x7",
+  "name": "APC Sport 11x7, UIUC Vol. 1",
+  "turbine_type": 1,
+  "B": 2,
+  "R": 0.1397,
+  "Rhub": 0.021336,
+  "fluid": {
+    "rho": 1.17,
+    "kin_viscosity": 1.55e-05,
+    "medium": "air"
+  },
+  "geometry_file": "geometry.csv",
+  "alternative_geometry": {
+    "uiuc_scan": "extraction/geometry_uiuc_scan.csv"
+  },
+  "airfoils": {
+    "clarky_t28p2": {
+      "coordinates": "airfoils/clarky_t28p2.dat",
+      "polars": "airfoils/clarky_t28p2_polars.csv",
+      "polar_source": "XFOIL 6.97, Ncrit=9, Re 20k/30k/40k/60k/80k/100k/150k/200k (computed; no measured polar exists for this section)",
+      "thickness_ratio": 0.2817,
+      "alternative_polars": {
+        "ncrit5": "airfoils/clarky_t28p2_ncrit5_polars.csv"
+      },
+      "note": "APC section at r/R = 0.153 of 11x7-PERF.PE0: CLARKY thickness-scaled to t/c = 0.2817 (camber kept), APC 11x7-PERF.PE0 r/R = 0.153"
+    },
+    "clarky_t24p0": {
+      "coordinates": "airfoils/clarky_t24p0.dat",
+      "polars": "airfoils/clarky_t24p0_polars.csv",
+      "polar_source": "XFOIL 6.97, Ncrit=9, Re 20k/30k/40k/60k/80k/100k/150k/200k (computed; no measured polar exists for this section)",
+      "thickness_ratio": 0.2396,
+      "alternative_polars": {
+        "ncrit5": "airfoils/clarky_t24p0_ncrit5_polars.csv"
+      },
+      "note": "APC section at r/R = 0.255 of 11x7-PERF.PE0: CLARKY thickness-scaled to t/c = 0.2396 (camber kept), APC 11x7-PERF.PE0 r/R = 0.255"
+    },
+    "clarky_t18p6": {
+      "coordinates": "airfoils/clarky_t18p6.dat",
+      "polars": "airfoils/clarky_t18p6_polars.csv",
+      "polar_source": "XFOIL 6.97, Ncrit=9, Re 20k/30k/40k/60k/80k/100k/150k/200k (computed; no measured polar exists for this section)",
+      "thickness_ratio": 0.1862,
+      "alternative_polars": {
+        "ncrit5": "airfoils/clarky_t18p6_ncrit5_polars.csv"
+      },
+      "note": "APC section at r/R = 0.442 of 11x7-PERF.PE0: CLARKY thickness-scaled to t/c = 0.1862 (camber kept), APC 11x7-PERF.PE0 r/R = 0.442"
+    },
+    "clarky_t15p8": {
+      "coordinates": "airfoils/clarky_t15p8.dat",
+      "polars": "airfoils/clarky_t15p8_polars.csv",
+      "polar_source": "XFOIL 6.97, Ncrit=9, Re 20k/30k/40k/60k/80k/100k/150k/200k (computed; no measured polar exists for this section)",
+      "thickness_ratio": 0.1585,
+      "alternative_polars": {
+        "ncrit5": "airfoils/clarky_t15p8_ncrit5_polars.csv"
+      },
+      "note": "APC section at r/R = 0.650 of 11x7-PERF.PE0: CLARKY thickness-scaled to t/c = 0.1585 (camber kept), APC 11x7-PERF.PE0 r/R = 0.650"
+    },
+    "clarky_t13p6": {
+      "coordinates": "airfoils/clarky_t13p6.dat",
+      "polars": "airfoils/clarky_t13p6_polars.csv",
+      "polar_source": "XFOIL 6.97, Ncrit=9, Re 20k/30k/40k/60k/80k/100k/150k/200k (computed; no measured polar exists for this section)",
+      "thickness_ratio": 0.1357,
+      "alternative_polars": {
+        "ncrit5": "airfoils/clarky_t13p6_ncrit5_polars.csv"
+      },
+      "note": "APC section at r/R = 0.858 of 11x7-PERF.PE0: CLARKY thickness-scaled to t/c = 0.1357 (camber kept), APC 11x7-PERF.PE0 r/R = 0.858"
+    },
+    "clarky_t12p0": {
+      "coordinates": "airfoils/clarky_t12p0.dat",
+      "polars": "airfoils/clarky_t12p0_polars.csv",
+      "polar_source": "XFOIL 6.97, Ncrit=9, Re 20k/30k/40k/60k/80k/100k/150k/200k (computed; no measured polar exists for this section)",
+      "thickness_ratio": 0.12,
+      "alternative_polars": {
+        "ncrit5": "airfoils/clarky_t12p0_ncrit5_polars.csv"
+      },
+      "note": "APC section at r/R = 1.000 of 11x7-PERF.PE0: CLARKY thickness-scaled to t/c = 0.1200 (camber kept), APC 11x7-PERF.PE0 r/R = 1.000"
+    },
+    "clarky_uiuc_lsat": {
+      "coordinates": "airfoils/clarky_uiuc_lsat.dat",
+      "polars": "airfoils/clarky_uiuc_lsat_polars.csv",
+      "polar_source": "measured, UIUC LSAT Vol. 3 (Lyon et al. 1998), Clark-Y (B), t/c 11.7 %, Re 60k-400k",
+      "thickness_ratio": 0.117,
+      "note": "measured reference polar (nominal Clark-Y 11.7 %); geometry.csv uses thickness-scaled XFOIL sections",
+      "used_in_geometry": false
+    }
+  },
+  "experiments": [
+    {
+      "file": "experiment/performance.csv",
+      "kind": "performance",
+      "x": "J",
+      "y": [
+        "ct",
+        "cp",
+        "eta"
+      ],
+      "defaults": {
+        "pitch_deg": 0.0,
+        "rho": 1.17,
+        "kin_viscosity": 1.55e-05
+      },
+      "conditions": "UIUC 2.8x4.0 ft low-turbulence tunnel (Tu < 0.1 %), B=2, constant rpm per run (3997, 3014, 4994, 5000, 5989, 6002, 4003 rpm), tunnel speed varied; blade-angle offset +0 deg; tunnel corrections applied by UIUC.",
+      "source": "UIUC Propeller Database Vol. 1, files apcsp_11x7_jb0475_3997.txt, apcsp_11x7_jb0476_3014.txt, apcsp_11x7_jb0477_4994.txt, apcsp_11x7_jb0478_5000.txt, apcsp_11x7_jb0479_5989.txt, apcsp_11x7_jb0480_6002.txt, apcsp_11x7_kt0474_4003.txt (tabulated)",
+      "uncertainty": "not given by the source; ~+-3-5 % in CT/CP estimated from the published repeatability"
+    },
+    {
+      "file": "experiment/static.csv",
+      "kind": "performance",
+      "x": "rpm",
+      "y": [
+        "ct",
+        "cp"
+      ],
+      "defaults": {
+        "pitch_deg": 0.0,
+        "v_ms": 0.0,
+        "J": 0.0,
+        "rho": 1.17,
+        "kin_viscosity": 1.55e-05
+      },
+      "conditions": "static (J = 0, tunnel off), B=2, rpm swept 1583-6170; blade-angle offset +0 deg",
+      "source": "UIUC Propeller Database Vol. 1, file apcsp_11x7_static_kt0473.txt (tabulated)",
+      "uncertainty": "not given by the source"
+    }
+  ],
+  "sources": [
+    {
+      "key": "uiucpropdb",
+      "citation": "Brandt, J.B., Deters, R.W., Ananda, G.K., Dantsker, O.D., and Selig, M.S., UIUC Propeller Database, Vols 1-4, University of Illinois at Urbana-Champaign, Department of Aerospace Engineering (downloaded 2026-10-18, archive UIUC-propDB.zip md5 a41e484f1fd0fb6ff80b76e27410808b)",
+      "url": "https://m-selig.ae.illinois.edu/props/propDB.html"
+    },
+    {
+      "key": "apcpe0",
+      "citation": "APC Propellers (Landing Products Inc.), propeller geometry files PE0-FILES_WEB-202602.zipx (file version v2025-1001, simulation date 02/24/2026), downloaded 2026-10-18",
+      "url": "https://www.apcprop.com/technical-information/file-downloads/"
+    },
+    {
+      "key": "apceng",
+      "citation": "APC Propellers, 'Engineering' technical information page: the dominant basis of most APC airfoils is similar to NACA 4412 and Clark-Y",
+      "url": "https://www.apcprop.com/technical-information/engineering"
+    },
+    {
+      "key": "brandt2011",
+      "citation": "Brandt, J.B., and Selig, M.S., 'Propeller Performance Data at Low Reynolds Numbers', 49th AIAA Aerospace Sciences Meeting, AIAA Paper 2011-1255, Orlando, FL, January 2011",
+      "doi": "10.2514/6.2011-1255",
+      "url": "https://m-selig.ae.illinois.edu/pubs/BrandtSelig-2011-AIAA-2011-1255-LRN-Propellers.pdf"
+    },
+    {
+      "key": "brandt2005",
+      "citation": "Brandt, J.B., 'Small-Scale Propeller Performance at Low Speeds', MS thesis, University of Illinois at Urbana-Champaign, 2005",
+      "url": "https://m-selig.ae.illinois.edu/props/volume-1/Brandt_2005_UIUC-MS-Thesis.pdf"
+    },
+    {
+      "key": "selig2015corr",
+      "citation": "Selig, M.S., and Ananda, G.K., 'Low Reynolds Number Propeller Performance Data: Wind Tunnel Corrections for Motor Fixture Drag', UIUC report AE 15-01, January 22, 2015",
+      "url": "https://m-selig.ae.illinois.edu/props/volume-1/uiuc-props-wind-tunnel-correction-new.pdf"
+    },
+    {
+      "key": "uiucads",
+      "citation": "UIUC Airfoil Coordinates Database (Selig), files e63.dat and clarky.dat",
+      "url": "https://m-selig.ae.illinois.edu/ads/coord_database.html"
+    },
+    {
+      "key": "xfoil",
+      "citation": "Drela, M., 'XFOIL: An Analysis and Design System for Low Reynolds Number Airfoils', in Low Reynolds Number Aerodynamics, Lecture Notes in Engineering 54, Springer, 1989 (v6.97 used)",
+      "doi": "10.1007/978-3-642-84010-4_1"
+    },
+    {
+      "key": "lsat3",
+      "citation": "Lyon, C.A., Broeren, A.P., Giguere, P., Gopalarathnam, A., and Selig, M.S., Summary of Low-Speed Airfoil Data, Vol. 3, SoarTech Publications, Virginia Beach, VA, 1998 (UIUC LSAT data files volume03.zip, DRAG03.TXT 'Clark-Y (B)')",
+      "url": "https://m-selig.ae.illinois.edu/pd.html"
+    },
+    {
+      "key": "mccrink2017",
+      "citation": "McCrink, M.H., and Gregory, J.W., 'Blade Element Momentum Modeling of Low-Reynolds Electric Propulsion Systems', Journal of Aircraft 54(1), 2017, pp. 163-176",
+      "doi": "10.2514/1.C033622",
+      "url": "https://arc.aiaa.org/doi/10.2514/1.C033622"
+    }
+  ],
+  "notes": "Commercial APC propeller tested in UIUC Vol. 1 (Brandt 2005 / Brandt & Selig 2011, data ver. 3 with the 2015 motor-fixture drag correction). Geometry = APC's own design file (current release v2025-1001); APC revises designs, so the specimen tested in 2005-2008 may differ slightly: the UIUC PropellerScanner geometry of the tested specimen is in extraction/geometry_uiuc_scan.csv and is compared in extraction/check_uiuc_apcsp_11x7.png. Airfoils are KNOWN from the APC file (not assumed): APC file: AIRFOIL1 CLARK-Y at 2.00 in, AIRFOIL2 CLARK-Y at 3.00 in; anchors: clarky_t28p2 at r/R=0.153 (f=0.00, t/c=0.282); clarky_t24p0 at r/R=0.255 (f=0.00, t/c=0.240); clarky_t18p6 at r/R=0.442 (f=0.00, t/c=0.186); clarky_t15p8 at r/R=0.650 (f=0.00, t/c=0.159); clarky_t13p6 at r/R=0.858 (f=0.00, t/c=0.136); clarky_t12p0 at r/R=1.000 (f=0.00, t/c=0.120). ASSUMPTIONS in the airfoil model: (1) APC 'scales airfoils based on thickness ratio' - taken as thickness-only scaling (camber line kept); (2) the AIRFOIL1->AIRFOIL2 transition is a linear blend in r of camber line and thickness shape; (3) sections are modelled by a few XFOIL anchor sections with linear cl/cd transitions between them. Published BEM validations of APC thin-electric props used NACA 4412 outboard (McCrink & Gregory 2017: Clark-Y 0-5 % span, NACA 4412 elsewhere, from cutting the blades), consistent with APC's APC12 = NACA 4412. Polars: XFOIL Ncrit = 9 (UIUC tunnel Tu < 0.1 %), Ncrit = 5 alternatives listed. Rhub = first geometry station (0.15 R). Fluid: rho = 1.17 kg/m3, nu = 1.55e-5 m2/s assumed (UIUC lab, the database gives coefficients only). Chord Re at 0.75R ranges ~43k-85k (c75 = 20.9 mm, 0.75*Omega*R at the lowest/highest tested rpm)."
+}

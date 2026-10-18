@@ -1,0 +1,21 @@
+# Risoe 19 m test turbine - measured power curve at the 47.5 rpm (95 kW) setting, fixed pitch (stall regulated)
+# Source: IEA Annex XVIII database file 'PV_r' (Risoe data, plotted as Fig. G.5 of Schepers J.G. et al. (2002) Final report of IEA Annex XVIII 'Enhanced Field Rotor Aerodynamics Database', ECN-C--02-016, Appendix G (updated Aug 2003); data: Zenodo doi:10.5281/zenodo.10619556 (CC-BY-4.0)). Tabulated, copied.
+# power_w = 'P_mechanical' column (shaft power), power_elec_w = 'P_elec' column. Field measurement, binned;
+#   wind speed from the met mast (hub height 29.3 m); number of samples per bin and density normalisation NOT stated.
+# tsr, cp, torque_nm DERIVED here: tsr = Omega*R/v (R = 9.5 m, 47.5 rpm), cp = P_mech/(0.5*rho*v^3*pi*R^2) with rho = 1.25
+#   (assumption, see case.json notes), torque = P_mech/Omega.
+# Extraction uncertainty: none (tabulated). Measurement uncertainty not published; field data (turbulence, tilt 5 deg).
+v_ms,power_w,power_elec_w,tsr,cp,torque_nm
+4.675,4390.0,3380.0,10.108,0.2425,882.6
+5.534,12244.0,9550.0,8.539,0.4077,2461.5
+6.535,24312.0,20179.0,7.231,0.4916,4887.6
+7.545,36514.0,31767.0,6.2631,0.4797,7340.7
+8.448,48026.0,42743.0,5.5936,0.4495,9655.0
+9.471,61657.0,55491.0,4.9894,0.4096,12395.4
+10.444,72949.0,65654.0,4.5246,0.3614,14665.5
+11.497,86389.0,77750.0,4.1102,0.3208,17367.5
+12.06,97444.0,87700.0,3.9183,0.3135,19589.9
+13.76,105922.0,95330.0,3.4342,0.2294,21294.3
+14.532,106596.0,95936.0,3.2518,0.196,21429.8
+15.23,106222.0,95600.0,3.1027,0.1697,21354.6
+16.43,98641.0,88777.0,2.8761,0.1255,19830.6

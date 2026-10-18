@@ -1,0 +1,20 @@
+# Bahaj et al. 2007, Renewable Energy 32:407-426, Table 3 (p. 421) "Effect of gap width on power and thrust
+# coefficient interpolated at TSR = 7". TABULATED (typed); the table's columns CP/CT (static) and CP/CT (rotating) are
+# written as rows with dummy_rotating = False / True. Values interpolated by the authors to TSR = 7 (tsr = 7.0 exact).
+# Towing tank, deep immersion. ASSUMED as for Table 2: 20 deg hub pitch (pitch_deg = 5.0), 1.4 m/s.
+# cp_err/ct_err = RSS of dynamometer accuracy and the +-0.005 rounding (the interpolation error is not known).
+tsr,cp,ct,cp_err,ct_err,v_ms,pitch_deg,gap_over_R,gap_mm,dummy_rotating
+7.0000,0.4200,0.8800,0.0102,0.0113,1.4000,5.0000,0.0250,10,False
+7.0000,0.4200,0.8800,0.0102,0.0113,1.4000,5.0000,0.0625,25,False
+7.0000,0.4100,0.8800,0.0102,0.0113,1.4000,5.0000,0.1250,50,False
+7.0000,0.4200,0.8900,0.0102,0.0113,1.4000,5.0000,0.2500,100,False
+7.0000,0.4200,0.8800,0.0102,0.0113,1.4000,5.0000,0.3750,150,False
+7.0000,0.4200,0.8600,0.0102,0.0113,1.4000,5.0000,0.5000,200,False
+7.0000,0.4100,0.8800,0.0102,0.0113,1.4000,5.0000,1.0000,400,False
+7.0000,0.4000,0.8600,0.0102,0.0113,1.4000,5.0000,0.0250,10,True
+7.0000,0.4200,0.8800,0.0102,0.0113,1.4000,5.0000,0.0625,25,True
+7.0000,0.4000,0.8600,0.0102,0.0113,1.4000,5.0000,0.1250,50,True
+7.0000,0.4100,0.8800,0.0102,0.0113,1.4000,5.0000,0.2500,100,True
+7.0000,0.4100,0.8700,0.0102,0.0113,1.4000,5.0000,0.3750,150,True
+7.0000,0.4100,0.8800,0.0102,0.0113,1.4000,5.0000,0.5000,200,True
+7.0000,0.4200,0.8900,0.0102,0.0113,1.4000,5.0000,1.0000,400,True

@@ -1,0 +1,25 @@
+# Wageningen B-screw series B4-70, P/D = 1.0 (Z = 4, AE/A0 = 0.70), GENERATED from the series definition:
+#   Oosterveld & van Oossanen (1975) ISP 22(251) Table 1: c/D = K(r) (AE/A0)/Z, t/D = Ar - Br Z, b/c; Tables 2-3: V1, V2.
+#   Kuiper (1992) MARIN 92-001 Fig. 4.1/sect. 4.2: B4 pitch reduction to 82.2/88.7/95.0/99.2 % at 0.2/0.3/0.4/0.5R
+#   (the figure label at 0.5R reads "92.2%", an evident misprint for 99.2% - the curve is monotonic).
+# D = 0.24 m is an ASSUMED model size (dimensionless case; the experiment rows set rpm for Rn(0.75R) = 2e6).
+# Hub d/D = 1/6 (Kuiper 4.8) -> Rhub; blade data start at 0.2R. Rake 15 deg and the small B-series skew are ignored.
+# Tip: B-series contour is tabulated only to 0.9R (K = 1.582) and 0 at 1.0R; 0.95R/0.975R chords use the SHAPE of
+#   the BB-series contour (Oosterveld Table 4: K 1.798/1.434/1.122 at 0.9/0.95/0.975R) scaled to the B value at 0.9R.
+# twist_deg = beta_face + delta_chord: beta_face = atan(P_face/D / (pi r/R)) with the pitch defined on the FACE
+#   (pressure side reference line, Kuiper 4.5); delta_chord = angle of the nose-tail line relative to the face line
+#   of the generated section (non-zero only inside 0.6R, as Kuiper eq. 4.5 says; <= ~1.5 deg at 0.2R).
+# airfoil: B-series sections generated at each station (edge thickness 0, rounded nose, see extraction/build_b4_70.py);
+#   0.975R and 1.0R use the 0.95R section. Extra columns are documentation only.
+r_m,chord_m,twist_deg,airfoil,thickness_ratio,r_R,c_D,t_D,P_D_face,beta_face_deg,delta_chord_deg
+0.024000,0.069804,53.135706,b4_70_r0200,0.125838,0.200000,0.290850,0.036600,0.822000,52.606508,0.529198
+0.036000,0.079044,43.610841,b4_70_r0300,0.098376,0.300000,0.329350,0.032400,0.887000,43.263073,0.347768
+0.048000,0.086100,37.410338,b4_70_r0400,0.078606,0.400000,0.358750,0.028200,0.950000,37.088769,0.321568
+0.060000,0.090384,32.549549,b4_70_r0500,0.063728,0.500000,0.376600,0.024000,0.992000,32.273509,0.276040
+0.072000,0.091854,28.059918,b4_70_r0600,0.051734,0.600000,0.382725,0.019800,1.000000,27.946687,0.113231
+0.084000,0.090048,24.452642,b4_70_r0700,0.041578,0.700000,0.375200,0.015600,1.000000,24.452642,0.000000
+0.096000,0.082740,21.696984,b4_70_r0800,0.033067,0.800000,0.344750,0.011400,1.000000,21.696984,0.000000
+0.108000,0.066444,19.477549,b4_70_r0900,0.026007,0.900000,0.276850,0.007200,1.000000,19.477549,0.000000
+0.114000,0.052993,18.524097,b4_70_r0950,0.023098,0.950000,0.220803,0.005100,1.000000,18.524097,0.000000
+0.117000,0.041463,18.080394,b4_70_r0950,0.023098,0.975000,0.172762,0.004050,1.000000,18.080394,0.000000
+0.120000,0.000000,17.656787,b4_70_r0950,0.023098,1.000000,0.000000,0.003000,1.000000,17.656787,0.000000

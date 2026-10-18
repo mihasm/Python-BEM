@@ -1,0 +1,153 @@
+{
+  "id": "risoe_19m",
+  "name": "Risoe 19 m / 100 kW stall-regulated test turbine (LM 8.2 m blades, NACA 63-2xx), IEA Annex XIV/XVIII",
+  "turbine_type": 0,
+  "B": 3,
+  "R": 9.5,
+  "Rhub": 2.7,
+  "fluid": {
+    "rho": 1.25,
+    "kin_viscosity": 1.4e-05,
+    "medium": "air"
+  },
+  "geometry_file": "geometry.csv",
+  "airfoils": {
+    "risoe_r2700": {
+      "coordinates": "airfoils/risoe_r2700.dat",
+      "polars": "airfoils/risoe_r2700_polars.csv",
+      "polar_source": "Risoe Tables G.3/G.4 (Abbott & von Doenhoff 2D data, Re-corrected), interpolated to t/c 24.6 %; alpha -12..-1 deg from XFOIL 6.97 (Ncrit 9, Re 1.5e6) on the generated section, joined at 0 deg"
+    },
+    "risoe_r3550": {
+      "coordinates": "airfoils/risoe_r3550.dat",
+      "polars": "airfoils/risoe_r3550_polars.csv",
+      "polar_source": "Risoe Tables G.3/G.4, interpolated to t/c 20.7 %; alpha -12..-1 deg from XFOIL 6.97 (Ncrit 9, Re 1.5e6) on the generated section, joined at 0 deg"
+    },
+    "risoe_r4400": {
+      "coordinates": "airfoils/risoe_r4400.dat",
+      "polars": "airfoils/risoe_r4400_polars.csv",
+      "polar_source": "Risoe Tables G.3/G.4, interpolated to t/c 18.7 %; alpha -12..-1 deg from XFOIL 6.97 (Ncrit 9, Re 1.5e6) on the generated section, joined at 0 deg"
+    },
+    "risoe_r5250": {
+      "coordinates": "airfoils/risoe_r5250.dat",
+      "polars": "airfoils/risoe_r5250_polars.csv",
+      "polar_source": "Risoe Tables G.3/G.4, interpolated to t/c 17.6 %; alpha -12..-1 deg from XFOIL 6.97 (Ncrit 9, Re 1.5e6) on the generated section, joined at 0 deg"
+    },
+    "risoe_r6100": {
+      "coordinates": "airfoils/risoe_r6100.dat",
+      "polars": "airfoils/risoe_r6100_polars.csv",
+      "polar_source": "Risoe Tables G.3/G.4, interpolated to t/c 16.6 %; alpha -12..-1 deg from XFOIL 6.97 (Ncrit 9, Re 1.5e6) on the generated section, joined at 0 deg"
+    },
+    "risoe_r6950": {
+      "coordinates": "airfoils/risoe_r6950.dat",
+      "polars": "airfoils/risoe_r6950_polars.csv",
+      "polar_source": "Risoe Tables G.3/G.4, interpolated to t/c 15.6 %; alpha -12..-1 deg from XFOIL 6.97 (Ncrit 9, Re 1.5e6) on the generated section, joined at 0 deg"
+    },
+    "risoe_r7800": {
+      "coordinates": "airfoils/risoe_r7800.dat",
+      "polars": "airfoils/risoe_r7800_polars.csv",
+      "polar_source": "Risoe Tables G.3/G.4, interpolated to t/c 14.6 %; alpha -12..-1 deg from XFOIL 6.97 (Ncrit 9, Re 1.5e6) on the generated section, joined at 0 deg"
+    },
+    "risoe_r8650": {
+      "coordinates": "airfoils/risoe_r8650.dat",
+      "polars": "airfoils/risoe_r8650_polars.csv",
+      "polar_source": "Risoe Tables G.3/G.4, interpolated to t/c 13.6 %; alpha -12..-1 deg from XFOIL 6.97 (Ncrit 9, Re 1.5e6) on the generated section, joined at 0 deg"
+    },
+    "risoe_r9500": {
+      "coordinates": "airfoils/risoe_r9500.dat",
+      "polars": "airfoils/risoe_r9500_polars.csv",
+      "polar_source": "Risoe Tables G.3/G.4, interpolated to t/c 12.6 %; alpha -12..-1 deg from XFOIL 6.97 (Ncrit 9, Re 1.5e6) on the generated section, joined at 0 deg"
+    }
+  },
+  "experiments": [
+    {
+      "file": "experiment/power_curve.csv",
+      "kind": "power_curve",
+      "x": "v_ms",
+      "y": [
+        "power_w"
+      ],
+      "defaults": {
+        "rpm": 47.5,
+        "pitch_deg": 1.7,
+        "yaw_deg": 0.0,
+        "rho": 1.25,
+        "kin_viscosity": 1.4e-05
+      },
+      "conditions": "field measurement, Risoe test site, 47.5 rpm fixed, fixed pitch (tip angles 1.8/1.8/1.5 deg), stall regulated; v = 4.7-16.4 m/s -> tsr 10.1-2.9 (peak and deep stall); rotor tilt 5 deg; density normalisation not stated",
+      "source": "IEA Annex XVIII database file PV_r (Risoe), = Fig. G.5 of ECN-C--02-016 (tabulated); power_w = mechanical (shaft) power, power_elec_w also given; tsr/cp/torque derived",
+      "uncertainty": "tabulated (no extraction error); measurement uncertainty not published; density +-2 % (see notes)"
+    },
+    {
+      "file": "experiment/rotating_coefficients_37pct.csv",
+      "kind": "polar",
+      "x": "alpha_deg",
+      "y": [
+        "cn_chord"
+      ],
+      "defaults": {
+        "rpm": 47.5,
+        "pitch_deg": 1.7,
+        "rho": 1.25
+      },
+      "conditions": "rotating blade, segment at r = 3.555 m, Jan 1993 campaigns, normal operation",
+      "source": "IEA Annex XVIII database cna1_rot_r (updated Aug 2003; Risoe 'read from figure')",
+      "uncertainty": "no std given; values read from a figure by Risoe"
+    },
+    {
+      "file": "experiment/rotating_coefficients_68pct.csv",
+      "kind": "polar",
+      "x": "alpha_deg",
+      "y": [
+        "cn_chord",
+        "ct_chord"
+      ],
+      "defaults": {
+        "rpm": 47.5,
+        "pitch_deg": 1.7,
+        "rho": 1.25
+      },
+      "conditions": "rotating blade, segment at r = 6.475 m",
+      "source": "IEA Annex XVIII database cna2_rot_r, cta2_rot_r (tabulated)",
+      "uncertainty": "bin standard deviation in *_std; alpha has a BEM-calibrated offset (see file header)"
+    },
+    {
+      "file": "experiment/rotating_coefficients_98pct.csv",
+      "kind": "polar",
+      "x": "alpha_deg",
+      "y": [
+        "cn_chord",
+        "ct_chord"
+      ],
+      "defaults": {
+        "rpm": 47.5,
+        "pitch_deg": 1.7,
+        "rho": 1.25
+      },
+      "conditions": "rotating blade, segment at r = 9.275 m",
+      "source": "IEA Annex XVIII database cna3_rot_r, cta3_rot_r (tabulated)",
+      "uncertainty": "bin standard deviation in *_std; alpha has a BEM-calibrated offset (see file header)"
+    }
+  ],
+  "sources": [
+    {
+      "key": "iea18_db",
+      "citation": "Schepers J.G. (ed.) (2024 upload of the 2002 CD-ROM). A database of detailed aerodynamic measurements on wind turbines, generated in TCP Wind IEA Task 14 and IEA Task 18. Zenodo, CC-BY-4.0.",
+      "doi": "10.5281/zenodo.10619556",
+      "url": "https://zenodo.org/records/10619556"
+    },
+    {
+      "key": "iea18_report",
+      "citation": "Schepers J.G., Brand A.J., Bruining A., Graham J.M.R., Hand M.M., Infield D.G., Madsen H.A., Maeda T., Paynter J.H., van Rooij R., Shimizu Y., Simms D.A., Stefanatos N. (2002). Final report of IEA Annex XVIII: Enhanced Field Rotor Aerodynamics Database. ECN-C--02-016, Petten. Appendix G (Risoe turbine), updated August 2003 (update_appG_IEAVIIIreport.pdf in the same record).",
+      "url": "https://zenodo.org/records/10619556"
+    },
+    {
+      "key": "madsen1991",
+      "citation": "Madsen H.A. (1991). Aerodynamics of a horizontal-axis wind turbine in natural conditions. Risoe-M-2903, Risoe National Laboratory (primary description of the experiment; not obtained here)."
+    },
+    {
+      "key": "abbott1959",
+      "citation": "Abbott I.H., von Doenhoff A.E. (1959). Theory of Wing Sections. Dover (basis of the 2D polars)."
+    }
+  ],
+  "notes": "Mid-size FIELD turbine (19 m, 100 kW), fixed speed 47.5 rpm, fixed pitch, stall regulated: the power curve sweeps tsr 10.1 -> 2.9 at constant rpm, i.e. the Cp peak and a long deep-stall side at chord Re ~1.1e6-1.7e6 (complements the low-Re model rotors). Twist in Table G.2 is relative to the tip station and positive towards feather (report App. A.2.6), identical to the solver convention; the measured tip (pitch) angles 1.8/1.8/1.5 deg are averaged to pitch_deg = 1.7 (blade-to-blade spread 0.3 deg). Rhub = 2.7 m is the first profiled station: the inner 0.3-2.7 m (1 m root extension + 1.4 m non-profiled blade root, LM blade root at r = 1.3 m) is not described and is omitted; choose a smaller Rhub with a cylinder root if you want to model it. Polars: one 2D set per station (report tables 0-30 deg; the negative side -12..-1 deg computed with XFOIL 6.97, Ncrit 9, Re 1.5e6, on the generated section and joined continuously at 0 deg), linearly interpolated in t/c from the report tables for 12/15/18/21/25 %; Reynolds number not stated (re column 1.5e6 nominal). Airfoil coordinates are GENERATED (NACA 63(4)-221 camber + scaled thickness) - the exact LM sections are not published; they only matter for structural properties. AIR DENSITY: the report does not say whether PV_r is normalised; the January-1993 campaigns in the database had rho = 1.266-1.279 (from logged p, T), standard is 1.225 - rho = 1.25 is used as a midpoint (+-2 %); cp in power_curve.csv is derived with 1.25. Cross-check: 10-s block averages of electrical power from the five non-yawed Jan-1993 campaigns (sources/ny_r_*.zip) agree with PV_r electrical within ~4 % for 9-14 m/s and ~10 % at 7-8 m/s (extraction/crosscheck_timeseries.py). Mechanical power is about electrical/0.9 at rated (P_mech column as supplied by Risoe). Rotating cn/ct-alpha data use an alpha with a BEM-calibrated offset (-4.7 deg) - use them qualitatively (3D stall delay at 37 % span is very visible: cn up to 2.8)."
+}

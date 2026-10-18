@@ -1,0 +1,157 @@
+
+ ===================================================
+  XFOIL Version 6.97
+  Copyright (C) 2000   Mark Drela, Harold Youngren
+
+  This software comes with ABSOLUTELY NO WARRANTY,
+    subject to the GNU General Public License.
+
+  Caveat computor
+ ===================================================
+
+ File  xfoil.def  not found
+
+   QUIT    Exit program
+
+  .OPER    Direct operating point(s)
+  .MDES    Complex mapping design routine
+  .QDES    Surface speed design routine
+  .GDES    Geometry design routine
+
+   SAVE f  Write airfoil to labeled coordinate file
+   PSAV f  Write airfoil to plain coordinate file
+   ISAV f  Write airfoil to ISES coordinate file
+   MSAV f  Write airfoil to MSES coordinate file
+   REVE    Reverse written-airfoil node ordering
+   DELI i  Change written-airfoil file delimiters
+
+   LOAD f  Read buffer airfoil from coordinate file
+   NACA i  Set NACA 4,5-digit airfoil and buffer airfoil
+   INTE    Set buffer airfoil by interpolating two airfoils
+   NORM    Buffer airfoil normalization toggle
+   HALF    Halve the number of points in buffer airfoil
+   XYCM rr Change CM reference location, currently  0.25000 0.00000
+
+   BEND    Display structural properties of current airfoil
+
+   PCOP    Set current-airfoil panel nodes directly from buffer airfoil points
+   PANE    Set current-airfoil panel nodes ( 160 ) based on curvature
+  .PPAR    Show/change paneling
+
+  .PLOP    Plotting options
+
+   WDEF f  Write  current-settings file
+   RDEF f  Reread current-settings file
+   NAME s  Specify new airfoil name
+   NINC    Increment name version number
+
+   Z       Zoom    | (available in all menus)
+   U       Unzoom  | 
+
+ XFOIL   c>   ...............................................
+
+  G raphics-enable flag:        T
+  S ize of plot object          10.00"
+  A spect ratio of plot object   0.5500
+  P age dimensions              11.00 x  8.50"
+  M argins from page edges       0.00",  0.00"
+  F ont size (relative)          0.0150
+  W indow/screen size fraction   0.8000
+  B lowup input method:        Cursor    
+  O rientation of plot:        Landscape 
+  C olor PostScript output?     F
+
+      Option, Value   (or <Return>)    c>   ...............................................
+
+  G raphics-enable flag:        F
+  S ize of plot object          10.00"
+  A spect ratio of plot object   0.5500
+  P age dimensions              11.00 x  8.50"
+  M argins from page edges       0.00",  0.00"
+  F ont size (relative)          0.0150
+  W indow/screen size fraction   0.8000
+  B lowup input method:        Cursor    
+  O rientation of plot:        Landscape 
+  C olor PostScript output?     F
+
+      Option, Value   (or <Return>)    c>  
+ XFOIL   c>  
+ Labeled airfoil file.  Name:  NACA 0009                                       
+
+ Number of input coordinate points: 321
+ Counterclockwise ordering
+ Max thickness =     0.090026  at x =   0.300
+ Max camber    =     0.000000  at x =   0.014
+
+  LE  x,y  =   0.00000   0.00000  |   Chord =   1.00000
+  TE  x,y  =   1.00000   0.00000  |
+
+ Current airfoil nodes set from buffer airfoil nodes ( 321 )
+
+ XFOIL   c>  
+    Present paneling parameters...
+  N  i   Number of panel nodes       160
+  P  r   Panel bunching parameter    1.000
+  T  r   TE/LE panel density ratio   0.150
+  R  r   Refined area/LE  panel density ratio   0.200
+  XT rr  Top    side refined area x/c limits    1.000 1.000
+  XB rr  Bottom side refined area x/c limits    1.000 1.000
+  Z oom
+  U nzoom
+
+Change what ? (<cr> if nothing else)   c>  
+Change what ? (<cr> if nothing else)   c>  
+ Blunt trailing edge.  Gap =  0.00189
+
+ Maximum panel corner angle =  5.658   at  i,x,y  = 152   0.0001  -0.0013
+
+    Present paneling parameters...
+  N  i   Number of panel nodes       300
+  P  r   Panel bunching parameter    1.000
+  T  r   TE/LE panel density ratio   0.150
+  R  r   Refined area/LE  panel density ratio   0.200
+  XT rr  Top    side refined area x/c limits    1.000 1.000
+  XB rr  Bottom side refined area x/c limits    1.000 1.000
+  Z oom
+  U nzoom
+
+Change what ? (<cr> if nothing else)   c>  
+ XFOIL   c>  
+ Area =  0.616536E-01
+ Slen =   2.02626    
+
+ X-bending parameters(solid):
+         Xc =  0.420445    
+   max X-Xc =  0.579555    
+   min X-Xc = -0.420435    
+        Iyy =  0.340319E-02
+  Iyy/(X-Xc)=  0.587208E-02
+
+ Y-bending parameters(solid):
+         Yc =  0.442621E-17
+   max Y-Yc =  0.450122E-01
+   min Y-Yc = -0.450122E-01
+        Ixx =  0.287221E-04
+  Ixx/(Y-Yc)=  0.638096E-03
+
+        J   =  0.114888E-03
+
+
+ X-bending parameters(skin):
+          Xc =  0.495911    
+    max X-Xc =  0.504089    
+    min X-Xc = -0.495901    
+       Iyy/t =  0.172382    
+  Iyy/t(X-Xc)=  0.341967    
+
+ Y-bending parameters(skin):
+          Yc =  0.293456E-17
+    max Y-Yc =  0.450122E-01
+    min Y-Yc = -0.450122E-01
+       Ixx/t =  0.223688E-02
+  Ixx/t(Y-Yc)=  0.496949E-01
+
+       J/t   =  0.750380E-02
+
+ XFOIL   c>  
+ XFOIL   c>  

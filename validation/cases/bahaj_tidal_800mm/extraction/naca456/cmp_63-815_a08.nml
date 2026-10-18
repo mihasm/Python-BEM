@@ -1,0 +1,9 @@
+cmp_63-815_a08: NACA 63-8xx at t/c = 0.150; 63-series thickness, a=0.8 mean line, cl_i = 0.8
+&NACA
+  name = 'cmp_63-815_a08',
+  profile = '63',
+  toc = 0.1500,
+  camber = '6',
+  cl = 0.8,
+  a = 0.8,
+  dencode = 1/

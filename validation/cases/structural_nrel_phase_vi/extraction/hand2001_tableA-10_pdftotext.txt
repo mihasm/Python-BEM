@@ -1,0 +1,14 @@
+
+                                        78
+                          Table A-10. Blade modal frequencies
+                     First edgewise eigenfrequency
+                        Non-instrumented blade            9.062 Hz
+                           Instrumented blade              8.9 Hz
+                     First flapwise eigenfrequency
+                        Non-instrumented blade            7.313 Hz
+                           Instrumented blade             7.25 Hz
+                    Second flapwise eigenfrequency
+                        Non-instrumented blade           30.062 Hz
+                           Instrumented blade            29.438 Hz
+
+

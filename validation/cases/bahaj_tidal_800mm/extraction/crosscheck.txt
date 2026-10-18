@@ -1,0 +1,22 @@
+Fig7 20deg vs Fig8 tunnel 1.7 m/s (upper, de-shifted): 25 Cp pairs, max |dCp| = 0.0022; 25 Ct pairs, max |dCt| = 0.0005
+Fig7 25deg vs Fig9 tunnel 1.5 m/s: 15 Cp pairs, max |dCp| = 0.0003; 15 Ct pairs, max |dCt| = 0.0004
+Fig10 0deg yaw vs Fig8 deep tank: 11 Cp pairs, max |dCp| = 0.0001; 11 Ct pairs, max |dCt| = 0.0005
+Fig11 0deg yaw vs Fig9 deep tank: 12 Cp pairs, max |dCp| = 0.0002; 12 Ct pairs, max |dCt| = 0.0006
+Table2 static-dummy tsr 6.6: Cp 0.42 Ct 0.84  vs Fig.8 deep 20deg (interp) Cp 0.422 Ct 0.833
+Table2 static-dummy tsr 9.4: Cp 0.32 Ct 0.94  vs Fig.8 deep 20deg (interp) Cp 0.306 Ct 0.932
+Table2 static-dummy tsr 6.8: Cp 0.43 Ct 0.8  vs Fig.8 deep 20deg (interp) Cp 0.422 Ct 0.854
+Table2 static-dummy tsr 8.8: Cp 0.32 Ct 0.93  vs Fig.8 deep 20deg (interp) Cp 0.348 Ct 0.952
+Table2 static-dummy tsr 7.4: Cp 0.41 Ct 0.86  vs Fig.8 deep 20deg (interp) Cp 0.425 Ct 0.894
+upper-panel shift fig8 cp *: +0.3
+upper-panel shift fig8 cp x: +0.2
+upper-panel shift fig8 cp diamond: +0.1
+upper-panel shift fig8 cp square: +0.0
+upper-panel shift fig8 ct *: +0.6
+upper-panel shift fig8 ct x: +0.4
+upper-panel shift fig8 ct diamond: +0.2
+upper-panel shift fig8 ct square: +0.0
+upper-panel shift fig9 cp x: +0.2
+upper-panel shift fig9 cp diamond: +0.1
+upper-panel shift fig9 cp square: +0.0
+upper-panel shift fig9 ct x: +0.2
+upper-panel shift fig9 ct diamond: +0.0

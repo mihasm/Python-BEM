@@ -1,0 +1,92 @@
+# New MEXICO 2014, model configuration 3 = tape on r/R < 0.7 only, outboard 30% (NACA 64-418) CLEAN -
+# the configuration of the Mexnext-III axial cases.
+# TSR sweep in axial flow, 424 rpm (stored as 424.5), pitch -2.3 deg, yaw 0; v_ms = Omega R / tsr (derived).
+# ct = Cdax from the BALANCE: total axial force minus the estimated tower and nacelle drag (ECN-E--14-048 p. 45),
+#      i.e. the full rotor thrust; ECN-E--14-048 (Boorsma & Schepers 2014, "New MEXICO experiment, preliminary
+#      overview with initial validation") Fig. 30(a).
+# ct_pressure = Cdax from the pressure sections (5 sections, linear, zero at root/tip, +6% for the non-linear
+#      root/tip load: ECN-E--14-048 p. 45-46), Fig. 30(b). Not compared by the runner (extra column).
+# cp = Cp from the PRESSURE torque (pressure only, no skin friction -> too high), ECN-M--16-063 Fig. 4(b) filled
+#      markers (Boorsma & Schepers 2016, "Rotor experiments in controlled conditions continued: New MEXICO",
+#      J. Phys.: Conf. Ser. 753 022004). cp_generator = Cp from the generator torque, corrected for generator losses
+#      by the authors (open markers; includes friction; probably still contains drivetrain losses) - extra column.
+#      The true aerodynamic Cp lies between the two; the authors give no further reduction.
+# Extraction: DIGITISED from raster (Excel) charts embedded in the PDFs: colour masks + marker cores, axes from
+# gridlines; extraction/digitise_raster_markers.py, overlays *_overlay.png. Uncertainty +-0.05 in tsr,
+# +-0.006 in Cdax, +-0.003 in Cp; points hidden under markers of the other series are missing (4 rough Cp
+# pressure points were read by eye from the overlay: tsr 5.05/5.27/6.48/6.73, +-0.005).
+# Tunnel speed: New MEXICO uses the re-calibrated DNW tunnel speed (correct).
+# Rows hold one measured quantity each where the series were measured at different tsr; empty = not given.
+tsr,v_ms,rpm,pitch_deg,ct,ct_pressure,cp,cp_generator
+4.1585,24.052,424.5,-2.3,,,0.25865,
+4.1587,24.051,424.5,-2.3,,,,0.22126
+4.1666,24.005,424.5,-2.3,,0.42097,,
+4.1667,24.005,424.5,-2.3,0.41406,,,
+4.5291,22.084,424.5,-2.3,,,,0.24983
+4.5485,21.99,424.5,-2.3,,,0.29897,
+4.5558,21.954,424.5,-2.3,0.47454,,,
+4.559,21.939,424.5,-2.3,,0.48212,,
+5.0143,19.947,424.5,-2.3,,,,0.28777
+5.0275,19.895,424.5,-2.3,0.5583,,,
+5.0304,19.883,424.5,-2.3,,0.55365,,
+5.0332,19.872,424.5,-2.3,,,0.34715,
+5.2691,18.983,424.5,-2.3,,,0.37251,
+5.2691,18.982,424.5,-2.3,,,,0.30294
+5.2736,18.966,424.5,-2.3,,0.58991,,
+5.274,18.965,424.5,-2.3,0.59877,,,
+5.5462,18.034,424.5,-2.3,,,0.40412,
+5.5487,18.026,424.5,-2.3,,,,0.32461
+5.557,17.999,424.5,-2.3,0.65188,,,
+5.559,17.993,424.5,-2.3,,0.63768,,
+5.9332,16.858,424.5,-2.3,,0.6995,,
+5.9342,16.855,424.5,-2.3,,,,0.35036
+5.9344,16.854,424.5,-2.3,0.72606,,,
+5.9348,16.853,424.5,-2.3,,,0.44052,
+6.2803,15.926,424.5,-2.3,,,0.45626,
+6.2806,15.925,424.5,-2.3,,,,0.37373
+6.2948,15.889,424.5,-2.3,0.79084,,,
+6.2948,15.889,424.5,-2.3,,0.75734,,
+6.4867,15.419,424.5,-2.3,,,0.46515,
+6.4885,15.415,424.5,-2.3,,,,0.38266
+6.6178,15.114,424.5,-2.3,0.8425,,,
+6.6179,15.114,424.5,-2.3,,0.80413,,
+6.709,14.908,424.5,-2.3,,,0.46789,
+6.7181,14.888,424.5,-2.3,,,,0.38649
+6.8944,14.507,424.5,-2.3,0.87422,,,
+6.8962,14.504,424.5,-2.3,,0.83761,,
+6.931,14.431,424.5,-2.3,,,0.46522,
+6.9357,14.421,424.5,-2.3,,,,0.38611
+7.1785,13.933,424.5,-2.3,,0.85506,,
+7.1785,13.933,424.5,-2.3,0.90771,,,
+7.1819,13.927,424.5,-2.3,,,0.46724,
+7.1888,13.913,424.5,-2.3,,,,0.38668
+7.4107,13.497,424.5,-2.3,,,,0.38072
+7.416,13.487,424.5,-2.3,,,0.46247,
+7.4249,13.471,424.5,-2.3,,0.87205,,
+7.4269,13.467,424.5,-2.3,0.92486,,,
+7.7012,12.988,424.5,-2.3,,,,0.37808
+7.708,12.976,424.5,-2.3,,0.89837,,
+7.708,12.976,424.5,-2.3,0.9582,,,
+7.7098,12.973,424.5,-2.3,,,0.46301,
+8.3286,12.009,424.5,-2.3,,0.94131,,
+8.3306,12.006,424.5,-2.3,1.0085,,,
+8.332,12.004,424.5,-2.3,,,0.45006,
+8.336,11.999,424.5,-2.3,,,,0.36109
+9.0645,11.034,424.5,-2.3,,0.98678,,
+9.0664,11.032,424.5,-2.3,1.0539,,,
+9.9806,10.021,424.5,-2.3,1.1144,,,
+10.055,9.9473,424.5,-2.3,,1.0346,,
+10.076,9.9267,424.5,-2.3,,,0.38822,
+10.08,9.9228,424.5,-2.3,,,,0.26151
+11.048,9.0536,424.5,-2.3,,1.0779,,
+11.048,9.0536,424.5,-2.3,1.1664,,,
+11.802,8.4747,424.5,-2.3,1.1951,,,
+11.804,8.4735,424.5,-2.3,,1.0682,,
+12.329,8.1124,424.5,-2.3,,1.1207,,
+12.331,8.1116,424.5,-2.3,1.2023,,,
+12.859,7.7783,424.5,-2.3,,1.085,,
+12.859,7.7783,424.5,-2.3,1.2191,,,
+14.404,6.9441,424.5,-2.3,,1.1588,,
+14.406,6.9429,424.5,-2.3,1.2573,,,
+14.725,6.7926,424.5,-2.3,1.2716,,,
+14.727,6.7917,424.5,-2.3,,1.1162,,

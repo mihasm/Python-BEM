@@ -1,0 +1,31 @@
+# UIUC DA4052 9-in propeller (2 blades, PROPID minimum-induced-loss design, SDA1045/SDA1075/SDA1100), B=2, blade-angle offset -10 deg (da4052_9x2.85), performance vs J at constant rpm (wind tunnel speed varied).
+# Source: UIUC Propeller Database Vol. 2 (Deters 2014 PhD / Deters et al. 2014), data files da4052_9x2.85_1056rd_1980.txt, da4052_9x2.85_1057rd_3013.txt, da4052_9x2.85_1058rd_4029.txt, da4052_9x2.85_1059rd_5024.txt; tabulated (J, CT, CP, eta), copied without change, no digitising.
+# rpm = nominal value in the file name (the run's set speed); v_ms = J * rpm/60 * D with D = 0.2299 m (true diameter 9.05 in, coefficients in the database are based on it).
+# Coefficients: CT = T/(rho n^2 D^4), CP = P/(rho n^3 D^5), eta = J CT/CP; tunnel corrections already applied by UIUC (fairing blockage via source panels + Glauert closed-section correction, Deters et al. 2014 Sec. II.E).
+# pitch_deg = blade-angle offset relative to geometry.csv (the geometry holds the actual blade angles of the 0-deg configuration).
+# Uncertainty: not quantified by the source; repeatability tests (Deters et al. 2014 Figs. 3-4) and the UIUC/OSU comparison suggest roughly +-3-5 % in CT and CP; low-J points of each run carry the largest velocity uncertainty.
+J,ct,cp,eta,rpm,v_ms,pitch_deg,run
+0.312695,0.016494,0.016674,0.309328,1980,2.37201,-10,da4052_9x2.85_1056rd_1980.txt
+0.412632,-0.000923,0.010616,-0.035901,1980,3.13011,-10,da4052_9x2.85_1056rd_1980.txt
+0.208828,0.033083,0.020334,0.339759,3013,2.41057,-10,da4052_9x2.85_1057rd_3013.txt
+0.261226,0.024718,0.017917,0.360373,3013,3.01541,-10,da4052_9x2.85_1057rd_3013.txt
+0.31687,0.016362,0.015334,0.338082,3013,3.65773,-10,da4052_9x2.85_1057rd_3013.txt
+0.372178,0.00744,0.012514,0.221217,3013,4.29616,-10,da4052_9x2.85_1057rd_3013.txt
+0.419688,-0.002083,0.008807,-0.099307,3013,4.84459,-10,da4052_9x2.85_1057rd_3013.txt
+0.154736,0.041915,0.021567,0.300723,4029,2.38847,-10,da4052_9x2.85_1058rd_4029.txt
+0.193711,0.036112,0.02034,0.343908,4029,2.99008,-10,da4052_9x2.85_1058rd_4029.txt
+0.233276,0.029816,0.018695,0.372051,4029,3.60079,-10,da4052_9x2.85_1058rd_4029.txt
+0.275679,0.023154,0.01695,0.376588,4029,4.25532,-10,da4052_9x2.85_1058rd_4029.txt
+0.313874,0.016954,0.015011,0.35449,4029,4.84489,-10,da4052_9x2.85_1058rd_4029.txt
+0.357114,0.00924,0.012609,0.261674,4029,5.51233,-10,da4052_9x2.85_1058rd_4029.txt
+0.394628,0.001538,0.009755,0.062201,4029,6.09139,-10,da4052_9x2.85_1058rd_4029.txt
+0.124195,0.046148,0.024071,0.238098,5024,2.39048,-10,da4052_9x2.85_1059rd_5024.txt
+0.155126,0.042144,0.023333,0.280196,5024,2.98583,-10,da4052_9x2.85_1059rd_5024.txt
+0.189819,0.037548,0.022455,0.3174,5024,3.65359,-10,da4052_9x2.85_1059rd_5024.txt
+0.219778,0.032214,0.02086,0.339413,5024,4.23024,-10,da4052_9x2.85_1059rd_5024.txt
+0.252594,0.027167,0.019577,0.350521,5024,4.86187,-10,da4052_9x2.85_1059rd_5024.txt
+0.282983,0.021558,0.017495,0.348716,5024,5.44679,-10,da4052_9x2.85_1059rd_5024.txt
+0.315208,0.016021,0.014977,0.337281,5024,6.06705,-10,da4052_9x2.85_1059rd_5024.txt
+0.343922,0.010133,0.012174,0.286254,5024,6.61974,-10,da4052_9x2.85_1059rd_5024.txt
+0.37637,0.003565,0.011117,0.120687,5024,7.24429,-10,da4052_9x2.85_1059rd_5024.txt
+0.410047,-0.003386,0.009395,-0.147879,5024,7.89249,-10,da4052_9x2.85_1059rd_5024.txt

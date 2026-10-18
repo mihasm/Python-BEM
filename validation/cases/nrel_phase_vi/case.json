@@ -1,0 +1,155 @@
+{
+ "id": "nrel_phase_vi",
+ "name": "NREL Unsteady Aerodynamics Experiment (UAE) Phase VI rotor, NASA Ames 80 x 120 ft wind tunnel, sequence S",
+ "turbine_type": 0,
+ "B": 2,
+ "R": 5.029,
+ "Rhub": 0.508,
+ "fluid": {
+  "rho": 1.225,
+  "kin_viscosity": 1.5e-05,
+  "medium": "air"
+ },
+ "geometry_file": "geometry.csv",
+ "airfoils": {
+  "s809": {
+   "coordinates": "airfoils/s809.dat",
+   "polars": "airfoils/s809_polars.csv",
+   "polar_source": "experimental 2-D, TU Delft LST low-turbulence tunnel (Somers 1997, NREL/SR-440-6918), Re = 1.0/1.5/2.0/2.5/3.0e6, tabulated in Selig's PROPID/WTPREP 'airfoil1' data set; Re 1e6 cross-checked against Ahlund 2004 FOI-R--1243--SE Table 27 (identical). Measured range about -3 ... +17 deg.",
+   "alternative_polars": [
+    {
+     "polars": "airfoils/s809_osu_polars.csv",
+     "polar_source": "experimental 2-D, Ohio State University 3x5-ft tunnel, clean, Ramsay, Hoffmann & Gregorek 1995 NREL/TP-442-7817 Appendix B Tables B1-B4, Re = 0.75/1.0/1.25/1.5e6, -20 ... +40 deg (cd = wake drag where given, else pressure drag; cm included). Not angle-shifted (OSU is ~0.5-1 deg off Delft)."
+    }
+   ]
+  },
+  "circle": {
+   "coordinates": "airfoils/circle.dat",
+   "polars": "airfoils/circle_polars.csv",
+   "polar_source": "assumed: cylinder, cl = 0, cd = 1.0 constant (subcritical Re ~1e5-4e5; Lindenburg 2003 App. A.2.3 used 1.0)"
+  }
+ },
+ "experiments": [
+  {
+   "file": "experiment/power_curve.csv",
+   "kind": "power_curve",
+   "x": "v_ms",
+   "y": [
+    "torque_nm",
+    "power_w",
+    "cp"
+   ],
+   "defaults": {
+    "rpm": 72.0,
+    "pitch_deg": 3.0,
+    "yaw_deg": 0.0,
+    "rho": 1.225,
+    "kin_viscosity": 1.5e-05
+   },
+   "conditions": "Sequence S: upwind, rigid hub, 0 deg cone, 0 deg tilt, 0 deg yaw, tip pitch 3 deg, 72 rpm, five-hole probes removed. Mean low-speed-shaft torque from the LSS strain gauge (aerodynamic torque minus rotor bearing friction upstream of the gauge; not electrical power). rho per row (Lindenburg 2003 campaign table; interpolated for the 9 extra speeds). Tunnel speed not blockage-corrected (blockage estimated < 1% by Simms 2001 Fig. 2). power_w, tsr, cp derived from torque with Omega = 72 rpm.",
+   "source": "Simms et al. 2001 NREL/TP-500-29494 Fig. 8 (6 speeds) cross-checked with Sorensen et al. 2002 Fig. 3 and Lindenburg 2003 ECN-C--03-025 Fig. 6.2 (agree within 4 N m); 9 extra speeds (6-18 m/s) from Lindenburg 2003 Fig. 6.2 only. All read from vector PDF graphics (exact plotted coordinates).",
+   "uncertainty": "extraction/consistency +-3...5 N m (torque_nm_err); measured cyclic std 71-95 N m (torque_nm_std); measurement uncertainty not stated in the sources"
+  },
+  {
+   "file": "experiment/loads.csv",
+   "kind": "loads",
+   "x": "v_ms",
+   "y": [
+    "root_flap_moment_nm",
+    "root_edge_moment_nm"
+   ],
+   "defaults": {
+    "rpm": 72.0,
+    "pitch_deg": 3.0,
+    "yaw_deg": 0.0,
+    "rho": 1.225,
+    "kin_viscosity": 1.5e-05
+   },
+   "conditions": "Sequence S as above. Rotor-plane moments (root_flap_moment_nm / root_edge_moment_nm, converted from the measured gauge-axes values kept in *_gauge_axes_nm columns). Blade root strain gauges at r = 0.432 m on the pitch shaft, axes ROTATE WITH PITCH and are aligned with the TIP CHORD (3 deg from the rotor plane at pitch 3 deg): M_flap = M_oop cos(3 deg) + M_ip sin(3 deg), M_edge = M_ip cos(3 deg) - M_oop sin(3 deg), where M_oop / M_ip are the out-of-plane (downwind positive) and in-plane (direction of rotation positive) moments about r = 0.432 m. Mean values; no gravity contribution to the mean flap moment (0 deg cone/tilt); gravity edge moment averages out but dominates the edge std. Rigid blade, first flap frequency ~7.3 Hz (Hand 2001) vs 1.2 Hz rotation: the static/quasi-static assumption is fine.",
+   "source": "root_flap_moment_nm: Simms et al. 2001 Fig. 9 (cross-checked Sorensen 2002 Fig. 4, Lindenburg 2003 Fig. 6.3, agree within 4 N m); root_edge_moment_nm and the *_std columns: Sorensen et al. 2002 Figs. 4-5. Vector extraction.",
+   "uncertainty": "flap +-5 N m extraction, edge +-11 N m extraction; std over the record in *_std columns; no 13 m/s edge-moment point exists in the sources"
+  },
+  {
+   "file": "experiment/spanwise_cn_ct.csv",
+   "kind": "spanwise",
+   "x": "r_R",
+   "y": [
+    "cn_chord",
+    "ct_chord"
+   ],
+   "defaults": {
+    "rpm": 72.0,
+    "pitch_deg": 3.0,
+    "yaw_deg": 0.0,
+    "rho": 1.225,
+    "kin_viscosity": 1.5e-05
+   },
+   "conditions": "Sequence S, campaigns S0700000 ... S2500000 (7, 10, 13, 15, 20, 25 m/s), stations r = 1.510, 2.343, 3.185, 4.023, 4.780 m (r/R 0.30, 0.466, 0.633, 0.80, 0.95). cn normal to the chord, ct_local along the chord positive towards the leading edge, from integrated surface pressures only (no skin friction), normalised by the local stagnation-tap dynamic pressure q_local (NOT by 0.5 rho (v^2 + (Omega r)^2)): cn = cl cos(a) + cd sin(a), ct_local = cl sin(a) - cd cos(a). fn/ft per unit span (N/m) = coefficient * q_local * chord where q_local is available (0.30, 0.633, 0.95). For comparison with BEM, either compare cn/ct with the BEM cl/cd rotated by the BEM alpha, or compare fn/ft computed from the BEM relative velocity.",
+   "source": "cn, ct_local and their std: Sorensen, Michelsen & Schreck 2002 Wind Energy 5:151 Figs. 6-7 (all 5 stations); cm, q_local_pa and cross-check columns cn_simms2001/ct_simms2001: Simms et al. 2001 Figs. 10-21 (0.30/0.63/0.95 R). Vector extraction; the two sources agree within 0.002 in cn and 0.0004 in ct.",
+   "uncertainty": "extraction +-0.005 (cn), +-0.002 (ct_local); measured cyclic std in cn_std / ct_local_std"
+  }
+ ],
+ "sources": [
+  {
+   "key": "hand2001",
+   "citation": "Hand, M.M., Simms, D.A., Fingersh, L.J., Jager, D.W., Cotrell, J.R., Schreck, S., Larwood, S.M.: Unsteady Aerodynamics Experiment Phase VI: Wind Tunnel Test Configurations and Available Data Campaigns. NREL/TP-500-29955, December 2001. Geometry Table A-1 p.64, S809 coordinates Table A-2 p.65, gauge location p.34/p.54, coefficient definitions pp.51-53.",
+   "doi": "10.2172/15000240",
+   "url": "https://docs.nlr.gov/docs/fy02osti/29955.pdf (copy used: web.archive.org of www.nrel.gov/docs/fy02osti/29955.pdf)"
+  },
+  {
+   "key": "simms2001",
+   "citation": "Simms, D.A., Schreck, S., Hand, M., Fingersh, L.J.: NREL Unsteady Aerodynamics Experiment in the NASA-Ames Wind Tunnel: A Comparison of Predictions to Measurements. NREL/TP-500-29494, June 2001. Figs. 8-21 (measured curves).",
+   "doi": "10.2172/783409",
+   "url": "https://web.archive.org/web/20250324110041/https://www.nrel.gov/docs/fy01osti/29494.pdf"
+  },
+  {
+   "key": "sorensen2002",
+   "citation": "Sorensen, N.N., Michelsen, J.A., Schreck, S.: Navier-Stokes predictions of the NREL phase VI rotor in the NASA Ames 80 ft x 120 ft wind tunnel. Wind Energy 5 (2002) 151-169. Figs. 3-7 (measured mean +- std).",
+   "doi": "10.1002/we.64",
+   "url": ""
+  },
+  {
+   "key": "lindenburg2003",
+   "citation": "Lindenburg, C.: Investigation into Rotor Blade Aerodynamics. Analysis of the stationary measurements on the UAE phase-VI rotor in the NASA-Ames wind tunnel. ECN-C--03-025, ECN Petten, 2003. Campaign/air-density table p.62, Figs. 6.2-6.3 p.63, App. A (model description).",
+   "doi": "",
+   "url": "https://publications.tno.nl/publication/34628279/4XkI02/c03025.pdf"
+  },
+  {
+   "key": "somers1997",
+   "citation": "Somers, D.M.: Design and Experimental Results for the S809 Airfoil. NREL/SR-440-6918, January 1997 (work 1989; Delft tests 1986).",
+   "doi": "10.2172/437668",
+   "url": "https://web.archive.org/web/2022/https://www.nrel.gov/docs/legosti/old/6918.pdf"
+  },
+  {
+   "key": "selig_propid_s809",
+   "citation": "Selig, M.S. et al., PROPID / WTPREP polar data set 'airfoil1: S809 experimental data from Delft wind tunnel' (tabulation of Somers 1997 DUT data), University of Illinois.",
+   "doi": "",
+   "url": "https://m-selig.ae.illinois.edu/propid/raj/wtprep/polardata-html/airfoil1.html"
+  },
+  {
+   "key": "ramsay1995",
+   "citation": "Ramsay, R.R., Hoffmann, M.J., Gregorek, G.M.: Effects of Grit Roughness and Pitch Oscillations on the S809 Airfoil. NREL/TP-442-7817, December 1995 (revised 12/1999). Appendix B Tables B1-B4.",
+   "doi": "10.2172/205563",
+   "url": "https://www.nlr.gov/docs/libraries/wind-docs/s809.pdf"
+  },
+  {
+   "key": "ahlund2004",
+   "citation": "Ahlund, K.: Investigation of the NREL NASA/Ames Wind Turbine Aerodynamics Database. FOI-R--1243--SE, FOI Stockholm, 2004. Tables 26-27 (OSU and DUT S809 data), used as cross-check.",
+   "doi": "",
+   "url": "https://www.foi.se/rest-api/report/FOI-R--1243--SE"
+  },
+  {
+   "key": "openfast_rtest",
+   "citation": "OpenFAST regression tests, glue-codes/openfast/UAE_VI and UAE_Upwind_Rigid_WRamp_PwrCurve (AeroDyn blade file, S809 coordinates/polars, ElastoDyn BlPitch = 4.815 deg = 3 deg tip pitch + 1.815 deg tip twist). Used as cross-check of geometry and twist convention.",
+   "doi": "",
+   "url": "https://github.com/OpenFAST/r-test/tree/main/glue-codes/openfast/UAE_VI"
+  },
+  {
+   "key": "uae6_data",
+   "citation": "Fingersh, L.: UAE6 - Wind Tunnel Tests Data - UAE6 - Sequence S - Raw Data. Wind Data Hub / OEDI, 2018 (raw time series; download needs a Wind Data Hub login - not used).",
+   "doi": "10.21947/1483833",
+   "url": "https://wdh.energy.gov/data/uae6/uae6.z18.00"
+  }
+ ],
+ "notes": "TWIST CONVENTION: Hand 2001 Table A-1 gives twist positive towards feather and zero at r = 3.772 m; the operator's pitch angle is the TIP chord angle (Hand Fig. 19, '0 deg at tip'). geometry.csv twist_deg = twist_Hand - twist_Hand(r = 5.029 m) = twist_Hand + 1.8146 deg (twist relative to the tip chord, 0 at the tip, 21.85 deg at r = 1.2575 m); the tip pitch goes in pitch_deg (3.0 for sequence S). So the local chord angle to the rotor plane = twist_deg + pitch_deg (e.g. 24.85 deg at r = 1.2575 m, 3.0 deg at the tip). Equivalent to OpenFAST r-test (Hand's twist, BlPitch = 4.815 deg) and to Lindenburg 2003 (+1.775 deg referenced to r = 5.0 m). GEOMETRY: 2 blades, R = 5.029 m with the standard tip (tip piece from 4.938 m; real tip planform is rounded, chord at r = R by straight-taper extrapolation 0.355 m - Lindenburg notes the rounded tip removes 0.0016 m^2 of area). Hub/root: blade attaches at r = 0.508 m (Rhub here); strain gauges at r = 0.432 m (inboard of the aerodynamic root); cylinder 0.508-0.883 m (dia. 0.218 -> 0.183 m, airfoil 'circle', cd = 1.0 assumed), transition 0.883-1.257 m ('transition' rows, thickness ratio from Hand's thickness), S809 (t/c 20.95%) 1.257 m to tip. Pitch axis 30% chord. Cone 0 deg, tilt 0 deg, rigid hub, upwind, rotation counter-clockwise seen from upwind. OPERATION: 72 rpm (synchronous 71.63 rpm + slip; exact per-campaign rpm not obtained), tunnel speed 5-25 m/s, air density 1.220-1.246 kg/m^3 (Lindenburg 2003 table), kinematic viscosity ~1.5e-5 m^2/s (not given per campaign). Re at the pressure stations 0.7-1.1e6 (Lindenburg 2003 App. A). The rotor is stall-regulated; from ~10 m/s the inboard half is deeply stalled and rotational augmentation (stall delay) is strong at 0.30-0.47 R - 2-D polars plus a stall-delay model are expected to be needed; this is exactly what the case tests. Blockage: Simms 2001 estimates U_tunnel/U_free > 0.99 (negligible); data are not corrected. 2-D POLAR CHOICE: main = Delft (lowest Re 1e6, attached range to 17 deg); OSU (Re 0.75-1.5e6, -20...40 deg) as alternative file. Rotationally-augmented S809 tables (OpenFAST Mod_S809_129...800) were NOT copied. LOADS: flap/edge moments are in the TIP-CHORD frame (rotate with pitch), about r = 0.432 m - see the loads experiment entry. Pressure-derived cn/ct exclude skin friction and are normalised with the local stagnation pressure."
+}

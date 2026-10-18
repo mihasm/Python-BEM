@@ -1,0 +1,43 @@
+{
+  "id": "structural_nrel5mw",
+  "name": "NREL 5-MW reference wind turbine blade - geometry, airfoils and distributed structural properties (reference model, no measurement)",
+  "turbine_type": 0,
+  "B": 3,
+  "R": 63.0, "Rhub": 1.5,
+  "fluid": {"rho": 1.225, "kin_viscosity": 1.464e-5, "medium": "air"},
+  "geometry_file": "geometry.csv",
+  "airfoils": {
+    "circle": {"coordinates": "airfoils/circle.dat", "polars": "airfoils/circle_polars.csv", "polar_source": "Jonkman 2009 Cylinder1: cl = 0, cd = 0.50 (as defined by the reference model, not the README's 1.0-1.2)"},
+    "circle_cd035": {"coordinates": "airfoils/circle_cd035.dat", "polars": "airfoils/circle_cd035_polars.csv", "polar_source": "Jonkman 2009 Cylinder2: cl = 0, cd = 0.35"},
+    "du40": {"coordinates": "airfoils/du40.dat", "polars": "airfoils/du40_polars.csv", "polar_source": "DU 00-W2-401, Jonkman 2009 table DU40_A17 (DOWEC 2D data, AirfoilPrep 3D stall delay + Viterna), OpenFAST r-test"},
+    "du35": {"coordinates": "airfoils/du35.dat", "polars": "airfoils/du35_polars.csv", "polar_source": "DU 00-W2-350, as above (DU35_A17)"},
+    "du30": {"coordinates": "airfoils/du30.dat", "polars": "airfoils/du30_polars.csv", "polar_source": "DU 97-W-300, as above (DU30_A17)"},
+    "du25": {"coordinates": "airfoils/du25.dat", "polars": "airfoils/du25_polars.csv", "polar_source": "DU 91-W2-250, as above (DU25_A17)"},
+    "du21": {"coordinates": "airfoils/du21.dat", "polars": "airfoils/du21_polars.csv", "polar_source": "DU 93-W-210, as above (DU21_A17)"},
+    "naca64_618": {"coordinates": "airfoils/naca64_618.dat", "polars": "airfoils/naca64_618_polars.csv", "polar_source": "NACA 64-618, as above (NACA64_A17)"}
+  },
+  "experiments": [
+    {"file": "experiment/distributed_properties.csv", "kind": "structural",
+     "x": "r_m", "y": ["mass_per_length_kg_m", "ei_flap_nm2", "ei_edge_nm2", "gj_nm2", "ea_n"],
+     "validates": "order-of-magnitude/consistency check of the section model on a real (composite) blade: with an equivalent density and wall thickness (derived_equivalent_homogeneous.csv) the program's A*rho should follow mass_per_length; reference input for a future deflection/frequency solver",
+     "conditions": "reference-model data, composite blade - a homogeneous section reproduces it only with fitted rho/E/wall",
+     "source": "Jonkman et al. 2009, NREL/TP-500-38060, Table 2-1 (p. 5), tabulated; identical to the OpenFAST r-test ElastoDyn/BeamDyn blade files",
+     "uncertainty": "tabulated (exact); the model data themselves are design estimates (DOWEC), not measurements",
+     "defaults": {}},
+    {"file": "experiment/integrated_properties.csv", "kind": "structural",
+     "x": "quantity", "y": ["value", "midpoint_17_elements"],
+     "validates": "blade mass and centrifugal root force summation of Calculator.statical_analysis (lumped section mass at element centres) when fed mass_per_length x 1.04536",
+     "conditions": "17 elements of geometry.csv (r_m, dr_m); omega for the centrifugal row 12.1 rpm (rated), no precone",
+     "source": "Jonkman et al. 2009, Table 2-2 (p. 6), tabulated; integrations by extraction/build_case.py",
+     "uncertainty": "midpoint_17_elements reproduces Table 2-2 to < 1e-5", "defaults": {"rpm": 12.1}},
+    {"file": "experiment/derived_equivalent_homogeneous.csv", "kind": "structural",
+     "x": "r_m", "y": ["A_solid_m2", "Ix_solid_m4", "Iy_solid_m4", "rho_eq_solid_kg_m3", "E_eq_flap_solid_pa", "wall_eq_m_rho1850"],
+     "validates": "information only (derived here): solid-section A/Ix/Iy of the real airfoil outlines at the real chords, and the equivalent homogeneous density/modulus/shell wall that reproduce Table 2-1",
+     "source": "derived by extraction/build_case.py from geometry.csv, airfoils/*.dat and Table 2-1", "uncertainty": "derived", "defaults": {}}
+  ],
+  "sources": [
+    {"key": "jonkman2009", "citation": "Jonkman, J., Butterfield, S., Musial, W., Scott, G. (2009). Definition of a 5-MW Reference Wind Turbine for Offshore System Development. NREL/TP-500-38060.", "doi": "10.2172/947422", "url": "https://docs.nrel.gov/docs/fy09osti/38060.pdf", "file": "sources/jonkman2009_nrel5mw_TP-500-38060.pdf"},
+    {"key": "openfast_rtest", "citation": "OpenFAST r-test regression test models, glue-codes/openfast/5MW_Baseline (ElastoDyn, BeamDyn and AeroDyn blade files, Airfoils/*), main branch fetched 2026-10-18.", "url": "https://github.com/OpenFAST/r-test/tree/main/glue-codes/openfast/5MW_Baseline", "file": "sources/openfast_r-test/"}
+  ],
+  "notes": "geometry.csv is Table 3-1 (17 element centres from the apex, element lengths dr_m sum to 61.5 m; root 1.5 m, tip 63 m). Twist = AeroTwst = chord angle to the rotor plane at zero pitch (solver convention, no conversion). The real rotor has 2.5 deg precone and 5 deg shaft tilt (Jonkman Table 1-1) - not modelled by the program. Rated: 11.4 m/s, 12.1 rpm (Table 1-1); the blade pitch schedule above rated is in Jonkman Table 7-1 (not copied). Table 2-1 mass_per_length is as tabulated; the reference model multiplies it by 1.04536 (AdjBlMs) to reach the 17,740 kg blade mass. Polars are the model's own 3D-corrected tables (stored -20..30 deg; full +-180 tables in sources/openfast_r-test). EI_flap/EI_edge are about principal axes turned by the structural twist (= aero twist). No measured data exist for this turbine - the case is a reference for consistency/order of magnitude, not a validation of absolute accuracy."
+}

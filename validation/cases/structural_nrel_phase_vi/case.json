@@ -1,0 +1,32 @@
+{
+  "id": "structural_nrel_phase_vi",
+  "name": "NREL UAE Phase VI blade - mass, centre of gravity, modal frequencies (measured) and estimated distributed structural properties",
+  "turbine_type": 0,
+  "B": 2,
+  "R": 5.029, "Rhub": 0.508,
+  "fluid": {"rho": 1.225, "kin_viscosity": 1.5e-05, "medium": "air"},
+  "geometry_file": "../nrel_phase_vi/geometry.csv",
+  "airfoils": {},
+  "experiments": [
+    {"file": "experiment/integrated_properties.csv", "kind": "structural",
+     "x": "quantity", "y": ["value"],
+     "validates": "blade mass and first mass moment (-> centrifugal root force) of Calculator.statical_analysis when fed this blade's mass distribution (or an equivalent density/wall); the measured mass/CG check the estimate of Table A-9",
+     "conditions": "blade 3, standard tip, probe plugs inserted; weighed",
+     "source": "Hand et al. 2001, NREL/TP-500-29955, Appendix A p. 75, tabulated",
+     "uncertainty": "not stated in the source (weighing; assume +-0.1 kg, +-5 mm)", "defaults": {}},
+    {"file": "experiment/distributed_properties.csv", "kind": "structural",
+     "x": "r_m", "y": ["mass_per_length_kg_m", "ei_flap_nm2", "ei_edge_nm2", "gj_nm2", "ea_n"],
+     "validates": "reference input for a future deflection/frequency solver; order-of-magnitude check of the homogeneous section model (composite blade)",
+     "conditions": "ESTIMATED by NREL (code + material properties), not measured; integrates to 57.3 kg for r >= 0.508 m vs 60.2 kg weighed",
+     "source": "Hand et al. 2001, Table A-9 (p. 76), tabulated", "uncertainty": "estimate; the report notes the predicted frequencies did not match the measured ones (pitch-shaft modelling)", "defaults": {}},
+    {"file": "experiment/modal_frequencies.csv", "kind": "structural",
+     "x": "mode", "y": ["frequency_hz"],
+     "validates": "a future modal/deflection solver (not in the program yet)",
+     "conditions": "non-rotating, blade on a dummy pitch shaft clamped at the bearings",
+     "source": "Hand et al. 2001, Table A-10 (p. 79), tabulated", "uncertainty": "not stated", "defaults": {}}
+  ],
+  "sources": [
+    {"key": "hand2001", "citation": "Hand, M.M., Simms, D.A., Fingersh, L.J., Jager, D.W., Cotrell, J.R., Schreck, S., Larwood, S.M. (2001). Unsteady Aerodynamics Experiment Phase VI: Wind Tunnel Test Configurations and Available Data Campaigns. NREL/TP-500-29955.", "doi": "10.2172/15000240", "url": "https://www.nrel.gov/docs/fy02osti/29955.pdf", "file": "sources/hand2001_NREL-TP-500-29955.pdf"}
+  ],
+  "notes": "Structural companion of the aerodynamic case nrel_phase_vi (same rotor; geometry, airfoils and the MEASURED ROOT FLAP/EDGE MOMENTS vs wind speed are in ../nrel_phase_vi, experiment/loads.csv, gauge_r_m = 0.432 m - not duplicated here). Blade: carbon-fibre D-spar + fibreglass skin + aramid honeycomb (Fig. A-9), so a homogeneous solid/hollow section reproduces it only with fitted properties. r < 1.257 m in Table A-9 is the steel pitch shaft (80 mm cylinder at the gauges, r = 0.432 m), aluminium root insert and blade root cylinder. Other measured mass data on p. 75: rotor 577.3 kg, hub 237.8 kg, pitch-shaft hardware 38.6 kg per blade, tip plate +2.41 kg, blade extension +2.47 kg vs the standard tip."
+}

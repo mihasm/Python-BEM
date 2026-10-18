@@ -1,0 +1,14 @@
+  
+       XFOIL         Version 6.97
+  
+ Calculated polar for: KP505 r/R=0.800 NACA66mod t/c=0.03178 a=0.8 f/c=
+  
+ 1 1 Reynolds number fixed          Mach number fixed         
+  
+ xtrf =   1.000 (top)        1.000 (bottom)  
+ Mach =   0.000     Re =     1.500 e 6     Ncrit =   9.000
+  
+   alpha    CL        CD       CDp       CM     Top_Xtr  Bot_Xtr
+  ------ -------- --------- --------- -------- -------- --------
+   0.000   0.1646   0.00266   0.00040  -0.0400   0.9450   1.0000
+   1.000   0.2526   0.00618   0.00083  -0.0358   0.0051   1.0000

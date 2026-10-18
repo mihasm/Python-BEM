@@ -1,0 +1,73 @@
+# Cantilever closed forms (kind: structural) - case structural_analytical
+# Euler-Bernoulli cantilever clamped at r0_m, free at R_m, constant section: NACA 0012 solid, chord 0.1 m (Ix_m4 from
+# section_properties.csv row naca0012_c0.1_solid), E = 70 GPa (aluminium, assumed). Loads act normal to the rotor plane.
+# Formulas: Roark's Formulas for Stress and Strain (Young & Budynas, 7th ed. 2002), Table 8.1 cases 1a (tip load),
+#   2a (uniform load) and 2a with linearly increasing load (w_a=0, w_l=qt); re-derived and checked numerically in
+#   extraction/make_reference.py. s = r - r0, L = R - r0.
+#   B1 uniform q:   V = q(R-r), M = q(R-r)^2/2, w = q s^2 (6L^2 - 4Ls + s^2)/(24EI), tip w = qL^4/(8EI)
+#   B2 linear q(s)=qt s/L: M = qt/(6L)(2L^3 - 3L^2 s + s^3), w = qt s^2(20L^3 - 10L^2 s + s^3)/(120 L EI), tip 11qtL^4/(120EI)
+#   B3 tip load P:  M = P(R-r), w = P s^2 (3L - s)/(6EI), tip PL^3/(3EI)
+# Columns (structural column dictionary, see validation/structural_sources.md): shear_flap_n shear force, moment_flap_nm
+#   bending moment out of the rotor plane about the section at r_m from all load outboard (the program's Ms_n),
+#   stress_flap_pa = M*y_extreme/Ix (extreme-fibre flapwise bending stress, the program's stress_norm, here in Pa),
+#   deflection_flap_m, slope_flap_rad (out-of-plane deflection and slope; for a future deflection solver).
+# Note for comparing with the program: it sums discrete section forces dFn_j*(r_j - r_i); with a load given per element
+#   the discrete sum differs from the integral by O(dr) - use fine sections or apply the load as the exact element force.
+case_id,load_case,r_m,r0_m,R_m,shear_flap_n,moment_flap_nm,stress_flap_pa,deflection_flap_m,slope_flap_rad,E_pa,Ix_m4,y_extreme_m
+B1_uniform_q,uniform load q=100 N/m on r0..R (normal to rotor plane),0.1,0.1,1,90,40.5,35695143,0,0,7e+10,6.8096086e-09,0.0060017273
+B2_linear_q,load rising linearly from 0 at r0 to qt=200 N/m at R,0.1,0.1,1,90,54,47593524,0,0,7e+10,6.8096086e-09,0.0060017273
+B3_tip_load,point load P=50 N at the tip R,0.1,0.1,1,50,45,39661270,0,0,7e+10,6.8096086e-09,0.0060017273
+B1_uniform_q,uniform load q=100 N/m on r0..R (normal to rotor plane),0.15,0.1,1,85,36.125,31839186,0.00010232609,0.0040165584,7e+10,6.8096086e-09,0.0060017273
+B2_linear_q,load rising linearly from 0 at r0 to qt=200 N/m at R,0.15,0.1,1,89.722222,49.50463,43631478,0.00013767432,0.0054283755,7e+10,6.8096086e-09,0.0060017273
+B3_tip_load,point load P=50 N at the tip R,0.15,0.1,1,50,42.5,37457866,0.00011582024,0.0045891037,7e+10,6.8096086e-09,0.0060017273
+B1_uniform_q,uniform load q=100 N/m on r0..R (normal to rotor plane),0.2,0.1,1,80,32,28203570,0.00039422586,0.0075873181,7e+10,6.8096086e-09,0.0060017273
+B2_linear_q,load rising linearly from 0 at r0 to qt=200 N/m at R,0.2,0.1,1,88.888889,45.037037,39693913,0.00053499722,0.010386429,7e+10,6.8096086e-09,0.0060017273
+B3_tip_load,point load P=50 N at the tip R,0.2,0.1,1,50,40,35254463,0.00045453979,0.0089159729,7e+10,6.8096086e-09,0.0060017273
+B1_uniform_q,uniform load q=100 N/m on r0..R (normal to rotor plane),0.25,0.1,1,75,28.125,24788294,0.00085406497,0.010738503,7e+10,6.8096086e-09,0.0060017273
+B2_linear_q,load rising linearly from 0 at r0 to qt=200 N/m at R,0.25,0.1,1,87.5,40.625,35805314,0.0011685497,0.01487853,7e+10,6.8096086e-09,0.0060017273
+B3_tip_load,point load P=50 N at the tip R,0.25,0.1,1,50,37.5,33051059,0.0010030469,0.012980608,7e+10,6.8096086e-09,0.0060017273
+B1_uniform_q,uniform load q=100 N/m on r0..R (normal to rotor plane),0.3,0.1,1,70,24.5,21593358,0.0014615203,0.013496335,7e+10,6.8096086e-09,0.0060017273
+B2_linear_q,load rising linearly from 0 at r0 to qt=200 N/m at R,0.3,0.1,1,85.555556,36.296296,31990160,0.0020152041,0.018911963,7e+10,6.8096086e-09,0.0060017273
+B3_tip_load,point load P=50 N at the tip R,0.3,0.1,1,50,35,30847655,0.00174823,0.016783008,7e+10,6.8096086e-09,0.0060017273
+B1_uniform_q,uniform load q=100 N/m on r0..R (normal to rotor plane),0.35,0.1,1,65,21.125,18618763,0.0021975797,0.01588704,7e+10,6.8096086e-09,0.0060017273
+B2_linear_q,load rising linearly from 0 at r0 to qt=200 N/m at R,0.35,0.1,1,83.055556,32.078704,28272936,0.0030522699,0.022496927,7e+10,6.8096086e-09,0.0060017273
+B3_tip_load,point load P=50 N at the tip R,0.35,0.1,1,50,32.5,28644251,0.0026769771,0.020323173,7e+10,6.8096086e-09,0.0060017273
+B1_uniform_q,uniform load q=100 N/m on r0..R (normal to rotor plane),0.4,0.1,1,60,18,15864508,0.0030445425,0.01793684,7e+10,6.8096086e-09,0.0060017273
+B2_linear_q,load rising linearly from 0 at r0 to qt=200 N/m at R,0.4,0.1,1,80,28,24678124,0.0042576393,0.025646534,7e+10,6.8096086e-09,0.0060017273
+B3_tip_load,point load P=50 N at the tip R,0.4,0.1,1,50,30,26440847,0.0037761767,0.023601105,7e+10,6.8096086e-09,0.0060017273
+B1_uniform_q,uniform load q=100 N/m on r0..R (normal to rotor plane),0.45,0.1,1,55,15.125,13330594,0.003986019,0.019671958,7e+10,6.8096086e-09,0.0060017273
+B2_linear_q,load rising linearly from 0 at r0 to qt=200 N/m at R,0.45,0.1,1,76.388889,24.087963,21230205,0.0056099328,0.028376808,7e+10,6.8096086e-09,0.0060017273
+B3_tip_load,point load P=50 N at the tip R,0.45,0.1,1,50,27.5,24237443,0.005032717,0.026616801,7e+10,6.8096086e-09,0.0060017273
+B1_uniform_q,uniform load q=100 N/m on r0..R (normal to rotor plane),0.5,0.1,1,50,12.5,11017020,0.0050069306,0.021118618,7e+10,6.8096086e-09,0.0060017273
+B2_linear_q,load rising linearly from 0 at r0 to qt=200 N/m at R,0.5,0.1,1,72.222222,20.37037,17953661,0.0070886452,0.030706688,7e+10,6.8096086e-09,0.0060017273
+B3_tip_load,point load P=50 N at the tip R,0.5,0.1,1,50,25,22034039,0.0064334863,0.029370264,7e+10,6.8096086e-09,0.0060017273
+B1_uniform_q,uniform load q=100 N/m on r0..R (normal to rotor plane),0.55,0.1,1,45,10.125,8923785.8,0.0060935102,0.022303044,7e+10,6.8096086e-09,0.0060017273
+B2_linear_q,load rising linearly from 0 at r0 to qt=200 N/m at R,0.55,0.1,1,67.5,16.875,14872976,0.008674291,0.032658029,7e+10,6.8096086e-09,0.0060017273
+B3_tip_load,point load P=50 N at the tip R,0.55,0.1,1,50,22.5,19830635,0.0079653728,0.031861491,7e+10,6.8096086e-09,0.0060017273
+B1_uniform_q,uniform load q=100 N/m on r0..R (normal to rotor plane),0.6,0.1,1,40,8,7050892.5,0.0072333015,0.023251459,7e+10,6.8096086e-09,0.0060017273
+B2_linear_q,load rising linearly from 0 at r0 to qt=200 N/m at R,0.6,0.1,1,62.222222,13.62963,12012632,0.01034855,0.034255595,7e+10,6.8096086e-09,0.0060017273
+B3_tip_load,point load P=50 N at the tip R,0.6,0.1,1,50,20,17627231,0.0096152649,0.034090484,7e+10,6.8096086e-09,0.0060017273
+B1_uniform_q,uniform load q=100 N/m on r0..R (normal to rotor plane),0.65,0.1,1,35,6.125,5398339.6,0.0084151596,0.023990086,7e+10,6.8096086e-09,0.0060017273
+B2_linear_q,load rising linearly from 0 at r0 to qt=200 N/m at R,0.65,0.1,1,56.388889,10.662037,9397109.6,0.012094414,0.035527068,7e+10,6.8096086e-09,0.0060017273
+B3_tip_load,point load P=50 N at the tip R,0.65,0.1,1,50,17.5,15423827,0.011370051,0.036057243,7e+10,6.8096086e-09,0.0060017273
+B1_uniform_q,uniform load q=100 N/m on r0..R (normal to rotor plane),0.7,0.1,1,30,4.5,3966127,0.0096292507,0.024545149,7e+10,6.8096086e-09,0.0060017273
+B2_linear_q,load rising linearly from 0 at r0 to qt=200 N/m at R,0.7,0.1,1,50,8,7050892.5,0.01389633,0.036503042,7e+10,6.8096086e-09,0.0060017273
+B3_tip_load,point load P=50 N at the tip R,0.7,0.1,1,50,15,13220423,0.013216619,0.037761767,7e+10,6.8096086e-09,0.0060017273
+B1_uniform_q,uniform load q=100 N/m on r0..R (normal to rotor plane),0.75,0.1,1,25,3.125,2754254.9,0.010867052,0.024942871,7e+10,6.8096086e-09,0.0060017273
+B2_linear_q,load rising linearly from 0 at r0 to qt=200 N/m at R,0.75,0.1,1,43.055556,5.6712963,4998462.6,0.01574035,0.037217024,7e+10,6.8096086e-09,0.0060017273
+B3_tip_load,point load P=50 N at the tip R,0.75,0.1,1,50,12.5,11017020,0.015141857,0.039204057,7e+10,6.8096086e-09,0.0060017273
+B1_uniform_q,uniform load q=100 N/m on r0..R (normal to rotor plane),0.8,0.1,1,20,2,1762723.1,0.012121353,0.025209476,7e+10,6.8096086e-09,0.0060017273
+B2_linear_q,load rising linearly from 0 at r0 to qt=200 N/m at R,0.8,0.1,1,35.555556,3.7037037,3264302.1,0.017614272,0.037705436,7e+10,6.8096086e-09,0.0060017273
+B3_tip_load,point load P=50 N at the tip R,0.8,0.1,1,50,10,8813615.6,0.017132654,0.040384112,7e+10,6.8096086e-09,0.0060017273
+B1_uniform_q,uniform load q=100 N/m on r0..R (normal to rotor plane),0.85,0.1,1,15,1.125,991531.76,0.013386252,0.025371187,7e+10,6.8096086e-09,0.0060017273
+B2_linear_q,load rising linearly from 0 at r0 to qt=200 N/m at R,0.85,0.1,1,27.5,2.125,1872893.3,0.019507788,0.038007612,7e+10,6.8096086e-09,0.0060017273
+B3_tip_load,point load P=50 N at the tip R,0.85,0.1,1,50,7.5,6610211.7,0.019175898,0.041301933,7e+10,6.8096086e-09,0.0060017273
+B1_uniform_q,uniform load q=100 N/m on r0..R (normal to rotor plane),0.9,0.1,1,10,0.5,440680.78,0.01465716,0.025454228,7e+10,6.8096086e-09,0.0060017273
+B2_linear_q,load rising linearly from 0 at r0 to qt=200 N/m at R,0.9,0.1,1,18.888889,0.96296296,848718.54,0.021412632,0.038165803,7e+10,6.8096086e-09,0.0060017273
+B3_tip_load,point load P=50 N at the tip R,0.9,0.1,1,50,5,4406807.8,0.021258476,0.041957519,7e+10,6.8096086e-09,0.0060017273
+B1_uniform_q,uniform load q=100 N/m on r0..R (normal to rotor plane),0.95,0.1,1,5,0.125,110170.2,0.0159308,0.025484822,7e+10,6.8096086e-09,0.0060017273
+B2_linear_q,load rising linearly from 0 at r0 to qt=200 N/m at R,0.95,0.1,1,9.7222222,0.24537037,216260.01,0.02332272,0.03822517,7e+10,6.8096086e-09,0.0060017273
+B3_tip_load,point load P=50 N at the tip R,0.95,0.1,1,50,2.5,2203403.9,0.023367279,0.042350871,7e+10,6.8096086e-09,0.0060017273
+B1_uniform_q,uniform load q=100 N/m on r0..R (normal to rotor plane),1,0.1,1,0,0,0,0.017205205,0.025489193,7e+10,6.8096086e-09,0.0060017273
+B2_linear_q,load rising linearly from 0 at r0 to qt=200 N/m at R,1,0.1,1,0,0,0,0.025234301,0.03823379,7e+10,6.8096086e-09,0.0060017273
+B3_tip_load,point load P=50 N at the tip R,1,0.1,1,50,0,0,0.025489193,0.042481988,7e+10,6.8096086e-09,0.0060017273

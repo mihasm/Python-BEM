@@ -1,0 +1,29 @@
+# MEXICO 2006, run 11 datapoints 92 / 93 / 95: axial flow, pitch -2.3 deg, 424.5 rpm (paper: 425.5 rpm and
+# Omega = 44.44 rad/s, which is 424.4 rpm), full-span zig-zag tape.
+# Source: Bechmann, Sorensen & Zahle 2011, "CFD simulations of the MEXICO rotor", Wind Energy 14:677-689,
+# doi:10.1002/we.450, Table IV (TABULATED): cn_source, ct_source = normal / tangential force coefficients from the
+# pressure distributions, normalised by 0.5 rho (W^2 + (Omega r)^2) c (paper eq. 2, no induction), ct_source
+# positive towards the TRAILING edge (negative = driving). Tunnel speeds as given there (9.97/14.93/24.02 m/s) are
+# the RAW 2006 values -> column v_tunnel_raw_ms; v_ms = raw - 0.2 m/s (correction used in ECN-E--14-048 p. 42;
+# Mexnext-III found the 2006 tunnel speed wrongly calibrated). The 2006 pressures are NOT re-calibrated here
+# (the 2013 calibration raises Fn by +4..6 %, Ft by +1..15 %, ECN-E--14-048 Table 2).
+# Conversion to forces: fn_chord = cn_source*q*c, ft_chord = -ct_source*q*c (TE->LE positive), q with the raw
+# speed, Omega = 44.44 rad/s and rho = 1.19/1.19/1.20 kg/m3 (MEXICO densities in ECN-E--14-048 Fig. 19-21);
+# rotor-plane fn/ft as in newmexico2014_spanwise_axial.csv. Uncertainty: tabulated to 4 digits; the
+# normalisation assumption (rho, Omega) adds ~1 %. Sensor accuracy: ECN-E--14-048 Table 1.
+r_m,r_R,v_ms,v_tunnel_raw_ms,rpm,pitch_deg,yaw_deg,rho,fn_n_per_m,ft_n_per_m,fn_chord_n_per_m,ft_chord_n_per_m,cn_source,ct_source,chord_m,local_blade_angle_deg
+0.5625,0.25,9.77,9.97,424.5,-2.3,0,1.19,52.431,12.436,53.87,1.3099,0.5593,-0.0136,0.2235,11.95
+0.7875,0.35,9.77,9.97,424.5,-2.3,0,1.19,101.43,17.964,102.94,3.8523,0.6787,-0.0254,0.1925,7.9
+1.35,0.6,9.77,9.97,424.5,-2.3,0,1.19,155.1,9.6497,155.38,2.875,0.4972,-0.0092,0.142,2.5
+1.845,0.82,9.77,9.97,424.5,-2.3,0,1.19,247.2,8.662,247.21,8.3168,0.538,-0.0181,0.1132,0.08
+2.07,0.92,9.77,9.97,424.5,-2.3,0,1.19,275.65,4.4263,275.52,9.5112,0.5475,-0.0189,0.098786,-1.057
+0.5625,0.25,14.73,14.93,424.5,-2.3,0,1.19,121.41,46.369,128.38,20.226,1.1387,-0.1794,0.2235,11.95
+0.7875,0.35,14.73,14.93,424.5,-2.3,0,1.19,189.73,44.155,194,17.659,1.17,-0.1065,0.1925,7.9
+1.35,0.6,14.73,14.93,424.5,-2.3,0,1.19,297.01,45.519,298.72,32.52,0.925,-0.1007,0.142,2.5
+1.845,0.82,14.73,14.93,424.5,-2.3,0,1.19,394.45,37.18,394.51,36.63,0.8433,-0.0783,0.1132,0.08
+2.07,0.92,14.73,14.93,424.5,-2.3,0,1.19,417.64,32.425,416.97,40.125,0.8168,-0.0786,0.098786,-1.057
+0.5625,0.25,23.82,24.02,424.5,-2.3,0,1.2,282.17,143.49,305.76,81.953,1.8972,-0.5085,0.2235,11.95
+0.7875,0.35,23.82,24.02,424.5,-2.3,0,1.2,313.41,103.72,324.7,59.662,1.5603,-0.2867,0.1925,7.9
+1.35,0.6,23.82,24.02,424.5,-2.3,0,1.2,437.52,118.61,442.28,99.415,1.243,-0.2794,0.142,2.5
+1.845,0.82,23.82,24.02,424.5,-2.3,0,1.2,509.46,80.881,509.57,80.169,1.0278,-0.1617,0.1132,0.08
+2.07,0.92,23.82,24.02,424.5,-2.3,0,1.2,500.44,69.805,499.07,79.026,0.9315,-0.1475,0.098786,-1.057

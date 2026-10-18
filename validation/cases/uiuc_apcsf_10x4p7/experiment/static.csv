@@ -1,0 +1,21 @@
+# APC Slow Flyer 10x4.7 (10x4.7SF), UIUC Vol. 1, B=2, blade-angle offset +0 deg: static performance (J = 0, tunnel off), CT and CP vs rpm.
+# Source: UIUC Propeller Database Vol. 1, file apcsf_10x4.7_static_kt0835.txt; tabulated (RPM, CT, CP), copied without change.
+# Re in the database static plots is based on c(0.75R) and 0.75*Omega*R. No tunnel corrections needed.
+# Uncertainty: not quantified by the source; scatter between neighbouring rpm points ~+-0.002 in CT.
+rpm,J,v_ms,ct,cp,pitch_deg
+2377,0,0,0.1059,0.0431,0
+2676,0,0,0.1079,0.0437,0
+2947,0,0,0.1079,0.0437,0
+3234,0,0,0.1104,0.0444,0
+3494,0,0,0.1117,0.045,0
+3762,0,0,0.1143,0.046,0
+4029,0,0,0.1158,0.0466,0
+4319,0,0,0.1177,0.0474,0
+4590,0,0,0.12,0.0484,0
+4880,0,0,0.1223,0.0494,0
+5147,0,0,0.1237,0.05,0
+5417,0,0,0.1252,0.0508,0
+5715,0,0,0.1263,0.0513,0
+5960,0,0,0.1278,0.052,0
+6226,0,0,0.1286,0.0524,0
+6528,0,0,0.1299,0.0531,0

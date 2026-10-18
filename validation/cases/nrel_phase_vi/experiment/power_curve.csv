@@ -1,0 +1,35 @@
+# NREL UAE Phase VI, NASA Ames 80x120 ft, sequence S: upwind, rigid hub, 0 deg cone, 0 deg yaw, tip pitch 3 deg,
+# 72 rpm, no five-hole probes (plugs taped). Mean LOW-SPEED SHAFT TORQUE (strain gauge LSSTQ, N m) vs tunnel speed.
+# Sources (all measured data, read from VECTOR figures with PyMuPDF -> exact plotted coordinates, not raster):
+#   Simms et al. 2001 NREL/TP-500-29494 Fig. 8 p.21 (6 points, value = mean of the 4 identical panel copies,
+#     panel spread <= 2.1 N m) -> torque_nm for 7/10/13/15/20/25 m/s;
+#   Sorensen, Michelsen & Schreck 2002 Wind Energy 5:151 Fig. 3 (same 6 points with +-1 std over a revolution)
+#     -> torque_nm_std and the column torque_sorensen2002_nm (cross-check);
+#   Lindenburg 2003 ECN-C--03-025 Fig. 6.2 p.63 (15 points, 6-25 m/s) -> torque_lindenburg2003_nm, and the ONLY
+#     source for the extra speeds 6, 8, 9, 11, 12.1, 14.1, 16.1, 17.1, 18.1 m/s (assumed to be sequence S, 0 deg
+#     yaw, as the chapter states; their campaign names and densities are not given).
+# The three sources agree within 4 N m at the six common speeds.
+# v_ms: tunnel speed as plotted by Simms (6 main points; Lindenburg's table rounds them to 7.0/10.0/13.1/15.1/20.1/25.1)
+# or by Lindenburg (extra points). rho: Lindenburg 2003 p.62 campaign table (main points); interpolated for extras.
+# torque_nm_err: +-(max of the three-source disagreement, 3 N m) = extraction/consistency uncertainty, NOT the
+# measurement uncertainty (not stated in the sources). torque_nm_std: +-1 std of the 30-s record (Sorensen Fig. 3).
+# power_w = torque_nm * Omega, Omega = 72 rpm (DERIVED, aerodynamic shaft power, not electrical).
+# tsr = Omega R / v and cp = P / (0.5 rho v^3 pi R^2) with R = 5.029 m (DERIVED).
+# Blockage: not corrected; Simms 2001 Fig. 2 estimates U_tunnel/U_free > 0.99 (negligible), Lindenburg <= 3%.
+# rpm: nominal 72 (synchronous 71.63 rpm + slip; per-campaign rpm not available here).
+v_ms,v_nominal,campaign,rpm,pitch_deg,yaw_deg,rho,torque_nm,torque_nm_err,torque_nm_std,power_w,power_w_err,tsr,cp,rho_source,torque_source,torque_sorensen2002_nm,torque_lindenburg2003_nm
+6.0,6,,72.0,3.0,0.0,1.246,595.9,4.7,,4493.0,35.4,6.3196,0.4202,ASSUMED: interpolated from Lindenburg2003 campaign table (not given),Lindenburg2003 Fig.6.2 'Measured' (vector); only source for this wind speed,,595.9
+7.01,7,S0700000,72.0,3.0,0.0,1.246,800.9,3.0,71.4,6038.6,22.6,5.4091,0.3541,Lindenburg2003 p.62 table (per campaign),"Simms2001 Fig.8 (vector, 4 panels mean); checked vs Sorensen2002 Fig.3 and Lindenburg2003 Fig.6.2",801.2,801.2
+8.0,8,,72.0,3.0,0.0,1.246,1090.9,4.7,,8225.2,35.4,4.7397,0.3245,ASSUMED: interpolated from Lindenburg2003 campaign table (not given),Lindenburg2003 Fig.6.2 'Measured' (vector); only source for this wind speed,,1090.9
+9.0,9,,72.0,3.0,0.0,1.246,1303.6,4.7,,9828.9,35.4,4.2131,0.2724,ASSUMED: interpolated from Lindenburg2003 campaign table (not given),Lindenburg2003 Fig.6.2 'Measured' (vector); only source for this wind speed,,1303.6
+10.04,10,S1000000,72.0,3.0,0.0,1.246,1341.2,3.0,73.0,10112.4,22.6,3.7767,0.2019,Lindenburg2003 p.62 table (per campaign),"Simms2001 Fig.8 (vector, 4 panels mean); checked vs Sorensen2002 Fig.3 and Lindenburg2003 Fig.6.2",1341.0,1340.3
+11.0,11,,72.0,3.0,0.0,1.24,1305.5,4.7,,9843.2,35.4,3.4471,0.1501,ASSUMED: interpolated from Lindenburg2003 campaign table (not given),Lindenburg2003 Fig.6.2 'Measured' (vector); only source for this wind speed,,1305.5
+12.1,12,,72.0,3.0,0.0,1.233,1318.3,4.7,,9939.7,35.4,3.1337,0.1145,ASSUMED: interpolated from Lindenburg2003 campaign table (not given),Lindenburg2003 Fig.6.2 'Measured' (vector); only source for this wind speed,,1318.3
+13.07,13,S1300000,72.0,3.0,0.0,1.227,1309.5,3.0,75.3,9873.4,22.6,2.9011,0.0907,Lindenburg2003 p.62 table (per campaign),"Simms2001 Fig.8 (vector, 4 panels mean); checked vs Sorensen2002 Fig.3 and Lindenburg2003 Fig.6.2",1308.7,1309.1
+14.1,14,,72.0,3.0,0.0,1.226,1259.6,4.7,,9497.2,35.4,2.6892,0.0696,ASSUMED: interpolated from Lindenburg2003 campaign table (not given),Lindenburg2003 Fig.6.2 'Measured' (vector); only source for this wind speed,,1259.6
+15.1,15,S1500000,72.0,3.0,0.0,1.224,1171.6,3.0,94.7,8833.7,22.6,2.5111,0.0528,Lindenburg2003 p.62 table (per campaign),"Simms2001 Fig.8 (vector, 4 panels mean); checked vs Sorensen2002 Fig.3 and Lindenburg2003 Fig.6.2",1172.1,1171.6
+16.1,16,,72.0,3.0,0.0,1.223,1120.3,4.7,,8446.9,35.4,2.3551,0.0417,ASSUMED: interpolated from Lindenburg2003 campaign table (not given),Lindenburg2003 Fig.6.2 'Measured' (vector); only source for this wind speed,,1120.3
+17.1,17,,72.0,3.0,0.0,1.223,1109.3,4.7,,8363.9,35.4,2.2174,0.0344,ASSUMED: interpolated from Lindenburg2003 campaign table (not given),Lindenburg2003 Fig.6.2 'Measured' (vector); only source for this wind speed,,1109.3
+18.1,18,,72.0,3.0,0.0,1.222,1125.8,4.7,,8488.3,35.4,2.0949,0.0295,ASSUMED: interpolated from Lindenburg2003 campaign table (not given),Lindenburg2003 Fig.6.2 'Measured' (vector); only source for this wind speed,,1125.8
+20.13,20,S2000000,72.0,3.0,0.0,1.221,1109.8,3.0,74.8,8367.7,22.6,1.8836,0.0211,Lindenburg2003 p.62 table (per campaign),"Simms2001 Fig.8 (vector, 4 panels mean); checked vs Sorensen2002 Fig.3 and Lindenburg2003 Fig.6.2",1109.7,1109.3
+25.07,25,S2500000,72.0,3.0,0.0,1.22,1482.0,3.0,88.5,11174.0,22.6,1.5125,0.0146,Lindenburg2003 p.62 table (per campaign),"Simms2001 Fig.8 (vector, 4 panels mean); checked vs Sorensen2002 Fig.3 and Lindenburg2003 Fig.6.2",1481.8,1481.5

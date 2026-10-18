@@ -1,0 +1,8 @@
+# circle_cd035 polar from OpenFAST r-test 5MW_Baseline/Airfoils/Cylinder2.dat (the NREL 5-MW model's own table, Jonkman 2009
+# §3: 2D DOWEC data corrected for rotational stall delay and with Viterna drag; cylinders cl=0, cd 0.50
+# (Cylinder1) / 0.35 (Cylinder2)). Re as stated in the file (0.75e6, nominal). Full -180..180 table in
+# sources/openfast_r-test/.
+re,alpha_deg,cl,cd,cm,source
+750000,-180,0,0.35,0,"Jonkman 2009 airfoil table Cylinder2.dat (DOWEC 2D data + AirfoilPrep 3D stall-delay and Viterna corrections), OpenFAST r-test copy; -20..30 deg kept"
+750000,0,0,0.35,0,"Jonkman 2009 airfoil table Cylinder2.dat (DOWEC 2D data + AirfoilPrep 3D stall-delay and Viterna corrections), OpenFAST r-test copy; -20..30 deg kept"
+750000,180,0,0.35,0,"Jonkman 2009 airfoil table Cylinder2.dat (DOWEC 2D data + AirfoilPrep 3D stall-delay and Viterna corrections), OpenFAST r-test copy; -20..30 deg kept"

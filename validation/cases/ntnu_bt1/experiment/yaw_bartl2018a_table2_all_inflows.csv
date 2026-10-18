@@ -1,0 +1,16 @@
+# CP and CT at TSR = 6.0 and yaw 0, +30, -30 deg for three inflows: A uniform TI 0.23 % (compare with the solver),
+#   B uniform grid turbulence TI 10 %, C sheared (power-law alpha = 0.11) TI 10 %. Pitch 0, U_ref = 10 m/s.
+# Source: Bartl, Muehle, Schottler, Saetran, Peinke, Adaramola, Hoelling (2018) Wind Energ. Sci. 3:329-343,
+#   doi:10.5194/wes-3-329-2018, Table 2 (TABULATED). Rotor D = 0.90 m as stated there (rpm = 6*U/0.45).
+# Only the inflow-A rows correspond to the uniform low-turbulence inflow the solver assumes.
+# Values AS PUBLISHED (normalised with D = 0.90 m); this file is not listed in case.json.
+tsr,yaw_deg,cp,ct,inflow,ti_percent,v_ms,rpm,pitch_deg
+6,-30,0.328,0.711,A,0.23,10,1273.2,0
+6,0,0.468,0.893,A,0.23,10,1273.2,0
+6,30,0.322,0.707,A,0.23,10,1273.2,0
+6,-30,0.331,0.713,B,10,10,1273.2,0
+6,0,0.467,0.87,B,10,10,1273.2,0
+6,30,0.324,0.706,B,10,10,1273.2,0
+6,-30,0.327,0.679,C,10,10,1273.2,0
+6,0,0.459,0.83,C,10,10,1273.2,0
+6,30,0.321,0.667,C,10,10,1273.2,0

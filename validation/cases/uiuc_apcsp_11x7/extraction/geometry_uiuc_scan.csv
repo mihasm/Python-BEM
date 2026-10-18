@@ -1,0 +1,20 @@
+# UIUC propDB Vol. 1 PropellerScanner geometry, file apcsp_11x7_geom.txt (tabulated r/R, c/R, beta), R = 0.1397 m; thickness_ratio interpolated from the APC PE0 file; airfoil names as in geometry.csv
+r_m,chord_m,twist_deg,airfoil,thickness_ratio
+0.020955,0.0233299,31.46,clarky_t28p2,0.2817
+0.02794,0.0231902,36.57,transition,0.261043
+0.034925,0.0233299,39.02,clarky_t24p0,0.241332
+0.04191,0.0229108,37.25,transition,0.223844
+0.048895,0.0226314,34.15,transition,0.208509
+0.05588,0.0224917,31.09,transition,0.195451
+0.062865,0.0226314,28.14,clarky_t18p6,0.184625
+0.06985,0.0227711,25.58,transition,0.175972
+0.076835,0.0227711,23.49,transition,0.169515
+0.08382,0.0226314,21.58,transition,0.163989
+0.090805,0.0222123,19.88,clarky_t15p8,0.158463
+0.09779,0.0213741,18.28,transition,0.153034
+0.104775,0.0199771,16.85,transition,0.147507
+0.11176,0.0180213,15.4,transition,0.141981
+0.118745,0.015367,14.01,clarky_t13p6,0.136521
+0.12573,0.0117348,12.65,transition,0.131011
+0.132715,0.0071247,11.03,transition,0.12549
+0.1397,0.0023749,9.39,clarky_t12p0,0.12

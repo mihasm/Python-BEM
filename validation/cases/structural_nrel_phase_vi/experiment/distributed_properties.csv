@@ -1,0 +1,42 @@
+# NREL UAE Phase VI blade - ESTIMATED distributed structural properties (kind: structural; computed by NREL, not measured)
+# Source: Hand et al. 2001, NREL/TP-500-29955, Appendix A, Table A-9 'Estimated blade structural properties' (p. 76,
+#   pdf p. 86), tabulated (pdftotext, extraction/hand2001_tableA-9_pdftotext.txt), rows sorted root -> tip.
+# The report says: estimates made 'with an experimental code that computes blade properties using the material properties',
+#   'validated with hand calculations for the blade portion', but 'a satisfactory match between blade frequencies predicted
+#   with the structural estimates and the measured frequencies has not been achieved' (pitch-shaft modelling).
+# Blade construction: carbon-fibre D-spar (tapering thickness), fibreglass skin, aramid honeycomb, PVC tube (Fig. A-9) -
+#   composite, so no single E/rho; r < 1.257 m is the steel pitch shaft / aluminium root insert / cylinder (axisymmetric
+#   rows with zero offsets).
+# Columns (structural column dictionary, validation/structural_sources.md): r_m distance from the rotor axis;
+#   mass_per_length_kg_m; edge_inertia_kg_m = mass moment of inertia per length about the out-of-plane (y) axis
+#   [source header says kgm4 - read as kg*m (kg m^2 per m), consistent with the magnitudes]; flap_inertia_kg_m about the
+#   chordwise (x) axis; gj_nm2; ea_n [source header says Nm - read as N]; ei_edge_nm2; ei_flap_nm2;
+#   cg_offset_m / ea_offset_m: chordwise distance of the section mass centre / elastic axis from the pitch-and-twist axis
+#   (30 % chord), POSITIVE TOWARD THE TRAILING EDGE (the source gives them positive toward the leading edge - sign flipped).
+r_m,mass_per_length_kg_m,edge_inertia_kg_m,flap_inertia_kg_m,gj_nm2,ea_n,ei_edge_nm2,ei_flap_nm2,cg_offset_m,ea_offset_m
+0.369,34.784,6.99e-05,6.99e-05,316000,1.04e+09,416000,416000,0,0
+0.483,223.973,0.0187,0.0187,1.31e+07,6.69e+09,1.72e+07,1.72e+07,0,0
+0.508,39.557,0.000626,0.000626,3e+06,1.01e+09,4.06e+06,4.06e+06,0,0
+0.559,50.797,0.0673,0.0673,3.68e+06,1.48e+09,6.85e+06,6.85e+06,0,0
+0.61,44.797,0.0673,0.0673,3.12e+06,1.33e+09,6.1e+06,6.1e+06,0,0
+0.66,33.797,0.0673,0.0673,2.14e+06,1.03e+09,4.77e+06,4.77e+06,0,0
+0.883,9.973,0.0398,0.0398,402000,3.95e+08,1.65e+06,1.65e+06,0,0
+1.257,16.265,0.488,0.038,3.18e+06,4.07e+08,7.22e+06,1.35e+06,0.081,0.023
+1.343,16.134,0.478,0.0368,3.09e+06,4.04e+08,7.2e+06,1.3e+06,0.078,0.019
+1.51,15.623,0.451,0.034,2.89e+06,3.84e+08,6.92e+06,1.17e+06,0.075,0.016
+1.648,15.21,0.429,0.0317,2.74e+06,3.67e+08,6.69e+06,1.07e+06,0.073,0.013
+1.952,14.741,0.394,0.0277,2.45e+06,3.57e+08,6.49e+06,916000,0.064,0.002
+2.257,14.379,0.359,0.0244,2.19e+06,3.52e+08,6.23e+06,805000,0.057,-0.004
+2.343,12.38,0.277,0.0199,1.63e+06,3.21e+08,5.02e+06,720000,0.047,-0.01
+2.562,11.705,0.245,0.0172,1.45e+06,2.92e+08,4.38e+06,608000,0.048,-0.008
+2.867,10.853,0.204,0.0141,1.22e+06,2.56e+08,3.59e+06,479000,0.049,-0.005
+3.172,10.279,0.17,0.012,1.03e+06,2.36e+08,2.99e+06,407000,0.049,-0.001
+3.185,10.253,0.169,0.0119,1.03e+06,2.35e+08,2.97e+06,403000,0.049,-0.001
+3.476,9.585,0.14,0.00974,856000,2.1e+08,2.44e+06,320000,0.049,0.001
+3.781,8.935,0.114,0.00785,707000,1.85e+08,1.97e+06,249000,0.048,0.002
+4.023,8.416,0.0956,0.0065,597000,1.66e+08,1.63e+06,200000,0.048,0.004
+4.086,8.291,0.0915,0.0062,573000,1.61e+08,1.56e+06,189000,0.048,0.004
+4.391,7.672,0.0721,0.00481,457000,1.38e+08,1.21e+06,140000,0.047,0.006
+4.696,7.043,0.0554,0.00364,357000,1.15e+08,914000,99700,0.046,0.009
+4.78,6.882,0.0516,0.00337,334000,1.09e+08,845000,90500,0.046,0.009
+5,6.44,0.0416,0.00268,273000,9.36e+07,671000,68000,0.046,0.011

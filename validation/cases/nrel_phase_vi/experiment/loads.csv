@@ -1,0 +1,31 @@
+# NREL UAE Phase VI, sequence S (upwind, rigid, 0 deg cone, 0 deg yaw, tip pitch 3 deg, 72 rpm).
+# Mean BLADE ROOT BENDING MOMENTS [N m] from the blade-root strain gauges (channels B1RFB/B1REB/B3RFB/B3REB),
+# located on the 80-mm pitch shaft at r = 0.432 m from the rotor axis (Hand 2001 p.34; Lindenburg 2003 p.62)
+# -> column gauge_r_m = 0.432.
+# COLUMNS: root_flap_moment_nm / root_edge_moment_nm are the canonical ROTOR-PLANE moments (out-of-plane,
+# downwind positive / in-plane, direction of rotation positive) about r = gauge_r_m, CONVERTED from the measured
+# gauge-axes values *_gauge_axes_nm (the figures' values, kept unchanged). At 13 m/s the edge moment needed for
+# the conversion is interpolated between 10 and 15 m/s (effect ~1 N m; +5 N m added to root_flap_moment_nm_err).
+# GAUGE AXES: the gauges rotate with blade pitch and are aligned with the TIP CHORD (Hand 2001 p.34), i.e. with
+# pitch 3 deg the 'flap' axis is 3 deg off the rotor plane (Lindenburg 2003 p.62 says the same).
+# With theta = tip pitch (3 deg, towards feather), M_oop = out-of-plane (thrust-direction) moment, M_ip = in-plane
+# (rotation-direction) moment, both about r = 0.432 m:  M_flap = M_oop cos(theta) + M_ip sin(theta),
+# M_edge = M_ip cos(theta) - M_oop sin(theta).  Signs (Hand 2001 p.34): flap positive for a DOWNWIND force,
+# edge positive for a force in the DIRECTION OF ROTATION, for the upwind configuration.
+# Gravity/centrifugal: 0 deg cone and tilt -> no mean gravity flap moment; gravity edge moment averages to zero
+# over a revolution (it is the large +-std of the edge moment).
+# Sources (measured, read from VECTOR figures with PyMuPDF):
+#   flap_moment_gauge_axes_nm: Simms et al. 2001 NREL/TP-500-29494 Fig. 9 p.22 (mean of 4 identical panel copies);
+#   cross-checks: Sorensen et al. 2002 Fig. 4 (no 13 m/s point) and Lindenburg 2003 Fig. 6.3 - agree within 4 N m;
+#   flap_moment_gauge_axes_nm_std, edge_moment_gauge_axes_nm(_std): Sorensen et al. 2002 Figs. 4 and 5
+#   (mean = '+' marker, std = half error bar). Root edge moment has NO 13 m/s point in any source found (empty).
+# _err = extraction/consistency uncertainty (flap: max source disagreement, min 5 N m; edge: single source,
+# half a point of plot resolution + marker/bar-centre offset, min 5 N m), NOT measurement uncertainty.
+# _std = +-1 standard deviation over the record (cyclic variation incl. gravity for the edge moment).
+v_ms,v_nominal,campaign,rpm,pitch_deg,yaw_deg,rho,gauge_r_m,root_flap_moment_nm,root_flap_moment_nm_err,root_edge_moment_nm,root_edge_moment_nm_err,flap_moment_gauge_axes_nm,flap_moment_gauge_axes_nm_err,flap_moment_gauge_axes_nm_std,edge_moment_gauge_axes_nm,edge_moment_gauge_axes_nm_err,edge_moment_gauge_axes_nm_std,root_flap_sorensen2002_nm,root_flap_lindenburg2003_nm
+7.01,7,S0700000,72.0,3.0,0.0,1.246,0.432,1430.8,5.0,422.3,6.0,1450.9,5.0,62.6,346.8,6.0,840.1,1452.4,1454.7
+10.04,10,S1000000,72.0,3.0,0.0,1.246,0.432,2084.7,5.0,693.8,6.0,2118.2,5.0,122.7,583.7,6.0,844.1,2121.1,2122.1
+13.07,13,S1300000,72.0,3.0,0.0,1.227,0.432,2466.6,10.0,,,2497.9,5.0,,,,,,2496.1
+15.1,15,S1500000,72.0,3.0,0.0,1.224,0.432,2721.1,5.0,642.7,5.7,2751.0,5.0,259.8,499.4,5.7,856.3,2750.5,2749.2
+20.12,20,S2000000,72.0,3.0,0.0,1.221,0.432,3634.4,5.0,583.4,6.0,3660.0,5.0,232.9,392.4,6.0,840.7,3658.4,3658.6
+25.07,25,S2500000,72.0,3.0,0.0,1.22,0.432,4721.2,5.0,731.6,5.7,4753.0,5.0,229.8,483.5,5.7,834.1,4756.7,4755.1

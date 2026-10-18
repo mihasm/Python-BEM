@@ -1,0 +1,24 @@
+figure,quantity,v_ms,value,legend,calib_resid_x,calib_resid_y,n_xticks,n_yticks,value_per_pt
+Fig. 6.2,lss_torque_knm,6.001,0.59587,False,0.0088,0.00071,11,5,0.009368
+Fig. 6.2,lss_torque_knm,7.001,0.80123,False,0.0088,0.00071,11,5,0.009368
+Fig. 6.2,lss_torque_knm,8.001,1.09093,False,0.0088,0.00071,11,5,0.009368
+Fig. 6.2,lss_torque_knm,9.001,1.30363,False,0.0088,0.00071,11,5,0.009368
+Fig. 6.2,lss_torque_knm,10.001,1.3403,False,0.0088,0.00071,11,5,0.009368
+Fig. 6.2,lss_torque_knm,11.001,1.30546,False,0.0088,0.00071,11,5,0.009368
+Fig. 6.2,lss_torque_knm,12.095,1.3183,False,0.0088,0.00071,11,5,0.009368
+Fig. 6.2,lss_torque_knm,13.095,1.30913,False,0.0088,0.00071,11,5,0.009368
+Fig. 6.2,lss_torque_knm,14.095,1.25962,False,0.0088,0.00071,11,5,0.009368
+Fig. 6.2,lss_torque_knm,15.096,1.17161,False,0.0088,0.00071,11,5,0.009368
+Fig. 6.2,lss_torque_knm,16.096,1.12027,False,0.0088,0.00071,11,5,0.009368
+Fig. 6.2,lss_torque_knm,17.096,1.10927,False,0.0088,0.00071,11,5,0.009368
+Fig. 6.2,lss_torque_knm,18.096,1.12577,False,0.0088,0.00071,11,5,0.009368
+Fig. 6.2,lss_torque_knm,20.096,1.10927,False,0.0088,0.00071,11,5,0.009368
+Fig. 6.2,lss_torque_knm,25.107,1.48148,False,0.0088,0.00071,11,5,0.009368
+Fig. 6.2,lss_torque_knm,9.741,0.83607,True,0.0088,0.00071,11,5,0.009368
+Fig. 6.3,root_flap_moment_knm,7.001,1.45466,False,0.0088,0.00142,11,5,0.018736
+Fig. 6.3,root_flap_moment_knm,10.001,2.12207,False,0.0088,0.00142,11,5,0.018736
+Fig. 6.3,root_flap_moment_knm,13.095,2.49612,False,0.0088,0.00142,11,5,0.018736
+Fig. 6.3,root_flap_moment_knm,15.096,2.74915,False,0.0088,0.00142,11,5,0.018736
+Fig. 6.3,root_flap_moment_knm,20.096,3.6586,False,0.0088,0.00142,11,5,0.018736
+Fig. 6.3,root_flap_moment_knm,25.097,4.75507,False,0.0088,0.00142,11,5,0.018736
+Fig. 6.3,root_flap_moment_knm,8.251,4.63771,True,0.0088,0.00142,11,5,0.018736

@@ -1,0 +1,10 @@
+# CP and CT at TSR = 6.0, yaw 0 / +30 / -30 deg, uniform low-turbulence inflow A (TI 0.23 %), pitch 0, U_ref = 10 m/s.
+# Source: Bartl et al. (2018) Wind Energ. Sci. 3:329-343, doi:10.5194/wes-3-329-2018, Table 2, inflow-A columns
+#   (TABULATED). Rotor D = 0.90 m as stated there (rpm = 6*U/0.45). CONVERTED to this case's R = 0.447 m (D = 0.894 m): tsr = tsr_src*0.447/0.45, cp = cp_src*(0.45/0.447)^2, ct = ct_src*(0.45/0.447)^2 (factor 1.0135); tsr_src/cp_src/ct_src = values as published (R = 0.45 m).
+# Uncertainty CP +-0.011..0.017, CT +-0.013..0.018
+#   (same rig, Bartl et al. 2018, WES 3:489). Thrust = force normal to the rotor plane, tower/nacelle drag subtracted.
+# The inflow B (TI 10 %) and C (shear) rows are in yaw_bartl2018a_table2_all_inflows.csv (not listed in case.json).
+tsr,yaw_deg,cp,ct,v_ms,rpm,pitch_deg,tsr_src,cp_src,ct_src
+5.96,-30,0.33242,0.72058,10,1273.2,0,6,0.328,0.711
+5.96,0,0.4743,0.90503,10,1273.2,0,6,0.468,0.893
+5.96,30,0.32634,0.71652,10,1273.2,0,6,0.322,0.707

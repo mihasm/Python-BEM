@@ -1,0 +1,5 @@
+# circle: blade shank, cl = 0, constant cd = 1.0 (subcritical cylinder; the shank carries almost no load)
+re,alpha_deg,cl,cd
+1000000,-180,0.0,1.0
+1000000,0,0.0,1.0
+1000000,180,0.0,1.0

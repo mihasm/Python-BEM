@@ -1,0 +1,178 @@
+# DEFAULT polar set of the case: NREL S826 measured at NTNU (closed-return tunnel 2.7 x 1.8 m), 2D wing
+#   c = 0.45 m between end dummies, TI(Re=70k) = 0.7 %. Re = 0.5e5 ... 6.0e5.
+# Source: Bartl, Sagmo, Bracchi, Saetran (2019) Eur. J. Mech. B/Fluids 75:180-192, doi:10.1016/j.euromechflu.2018.10.002,
+#   Fig. 4 (a) lift, (b) drag - DIGITISED from the raster figure (script extraction/digitise_bartl2019_fig4.py,
+#   overlay extraction/overlay_bartl2019_fig4.png). cd: wake rake for alpha < 13 deg, force balance for alpha >= 13 deg
+#   (as recommended by the paper p.16). Stored range -10..20 deg (curves are crowded beyond).
+# Uncertainty from digitising: cl +-0.01 (visible markers), +-0.03 (hidden markers); cd +-0.002 below 12 deg,
+#   +-0.01..0.03 between 13 and 20 deg where 16 lines overlap. Paper: lift uncertainty up to 3.5 %, drag up to 20 %.
+# Re = 0.5e5 shows laminar-separation effects (lift collapse 2..8 deg).
+re,alpha_deg,cl,cd,source
+5e+04,-10,-0.47,0.2326,exp NTNU Bartl 2019 Fig.4 digitised; cd wake rake (marker hidden: mean of overlying curves)
+5e+04,-8,-0.412,0.1905,exp NTNU Bartl 2019 Fig.4 digitised; cd wake rake
+5e+04,-6,-0.302,0.0621,exp NTNU Bartl 2019 Fig.4 digitised; cd wake rake
+5e+04,-4,-0.097,0.0321,exp NTNU Bartl 2019 Fig.4 digitised; cd wake rake
+5e+04,-2,0.2,0.0249,exp NTNU Bartl 2019 Fig.4 digitised; cd wake rake
+5e+04,0,0.458,0.0249,exp NTNU Bartl 2019 Fig.4 digitised; cd wake rake
+5e+04,2,0.592,0.0341,exp NTNU Bartl 2019 Fig.4 digitised; cd wake rake
+5e+04,4,0.735,0.0458,exp NTNU Bartl 2019 Fig.4 digitised; cd wake rake
+5e+04,6,0.871,0.0625,exp NTNU Bartl 2019 Fig.4 digitised; cd wake rake
+5e+04,8,1.28,0.0587,exp NTNU Bartl 2019 Fig.4 digitised; cd wake rake
+5e+04,9,1.378,0.0458,exp NTNU Bartl 2019 Fig.4 digitised; cd wake rake
+5e+04,10,1.425,0.0543,exp NTNU Bartl 2019 Fig.4 digitised; cd wake rake
+5e+04,11,1.404,0.0622,exp NTNU Bartl 2019 Fig.4 digitised; cd wake rake
+5e+04,12,1.364,0.0746,exp NTNU Bartl 2019 Fig.4 digitised; cd wake rake
+5e+04,13,1.328,0.1168,exp NTNU Bartl 2019 Fig.4 digitised; cd force balance
+5e+04,14,1.3,0.1093,exp NTNU Bartl 2019 Fig.4 digitised; cd force balance
+5e+04,15,1.133,0.138,exp NTNU Bartl 2019 Fig.4 digitised; cd force balance
+5e+04,16,0.931,0.18,exp NTNU Bartl 2019 Fig.4 digitised; cd force balance
+5e+04,17,0.956,0.2174,exp NTNU Bartl 2019 Fig.4 digitised; cd force balance
+5e+04,18,0.989,0.3609,exp NTNU Bartl 2019 Fig.4 digitised; cd force balance
+5e+04,20,1.064,0.4139,exp NTNU Bartl 2019 Fig.4 digitised; cd force balance
+7e+04,-10,-0.47,0.2145,exp NTNU Bartl 2019 Fig.4 digitised; cd wake rake (marker hidden: mean of overlying curves)
+7e+04,-8,-0.42,0.167,exp NTNU Bartl 2019 Fig.4 digitised; cd wake rake
+7e+04,-6,-0.28,0.0596,exp NTNU Bartl 2019 Fig.4 digitised; cd wake rake
+7e+04,-4,-0.002,0.0356,exp NTNU Bartl 2019 Fig.4 digitised; cd wake rake
+7e+04,-2,0.242,0.028,exp NTNU Bartl 2019 Fig.4 digitised; cd wake rake
+7e+04,0,0.475,0.0246,exp NTNU Bartl 2019 Fig.4 digitised; cd wake rake
+7e+04,2,0.728,0.0249,exp NTNU Bartl 2019 Fig.4 digitised; cd wake rake
+7e+04,4,0.953,0.0263,exp NTNU Bartl 2019 Fig.4 digitised; cd wake rake
+7e+04,6,1.117,0.0273,exp NTNU Bartl 2019 Fig.4 digitised; cd wake rake
+7e+04,8,1.304,0.0283,exp NTNU Bartl 2019 Fig.4 digitised; cd wake rake
+7e+04,9,1.377,0.0307,exp NTNU Bartl 2019 Fig.4 digitised; cd wake rake
+7e+04,10,1.441,0.0354,exp NTNU Bartl 2019 Fig.4 digitised; cd wake rake
+7e+04,11,1.487,0.04,exp NTNU Bartl 2019 Fig.4 digitised; cd wake rake
+7e+04,12,1.518,0.0444,exp NTNU Bartl 2019 Fig.4 digitised; cd wake rake
+7e+04,13,1.548,0.0982,exp NTNU Bartl 2019 Fig.4 digitised; cd force balance (marker hidden: mean of overlying curves)
+7e+04,14,1.539,0.1076,exp NTNU Bartl 2019 Fig.4 digitised; cd force balance (marker hidden: mean of overlying curves)
+7e+04,15,1.517,0.1201,exp NTNU Bartl 2019 Fig.4 digitised; cd force balance (marker hidden: mean of overlying curves)
+7e+04,16,1.481,0.1743,exp NTNU Bartl 2019 Fig.4 digitised; cd force balance (marker hidden: mean of overlying curves)
+7e+04,17,1.424,0.2609,exp NTNU Bartl 2019 Fig.4 digitised; cd force balance (marker hidden: mean of overlying curves)
+7e+04,18,1.298,0.3449,exp NTNU Bartl 2019 Fig.4 digitised; cd force balance
+7e+04,20,1.293,0.3975,exp NTNU Bartl 2019 Fig.4 digitised; cd force balance
+1e+05,-10,-0.497,0.1707,exp NTNU Bartl 2019 Fig.4 digitised; cd wake rake
+1e+05,-8,-0.444,0.0949,exp NTNU Bartl 2019 Fig.4 digitised; cd wake rake
+1e+05,-6,-0.241,0.0425,exp NTNU Bartl 2019 Fig.4 digitised; cd wake rake
+1e+05,-4,0.026,0.0263,exp NTNU Bartl 2019 Fig.4 digitised; cd wake rake
+1e+05,-2,0.292,0.0145,exp NTNU Bartl 2019 Fig.4 digitised; cd wake rake (marker hidden: mean of overlying curves)
+1e+05,0,0.521,0.0134,exp NTNU Bartl 2019 Fig.4 digitised; cd wake rake (marker hidden: mean of overlying curves)
+1e+05,2,0.751,0.0152,exp NTNU Bartl 2019 Fig.4 digitised; cd wake rake (marker hidden: mean of overlying curves)
+1e+05,4,0.966,0.0161,exp NTNU Bartl 2019 Fig.4 digitised; cd wake rake (marker hidden: mean of overlying curves)
+1e+05,6,1.147,0.0176,exp NTNU Bartl 2019 Fig.4 digitised; cd wake rake (marker hidden: mean of overlying curves)
+1e+05,8,1.324,0.0142,exp NTNU Bartl 2019 Fig.4 digitised; cd wake rake (marker hidden: mean of overlying curves)
+1e+05,9,1.391,0.0277,exp NTNU Bartl 2019 Fig.4 digitised; cd wake rake
+1e+05,10,1.447,0.0314,exp NTNU Bartl 2019 Fig.4 digitised; cd wake rake
+1e+05,11,1.489,0.0369,exp NTNU Bartl 2019 Fig.4 digitised; cd wake rake
+1e+05,12,1.519,0.037,exp NTNU Bartl 2019 Fig.4 digitised; cd wake rake (marker hidden: mean of overlying curves)
+1e+05,13,1.548,0.0782,exp NTNU Bartl 2019 Fig.4 digitised; cd force balance (marker hidden: mean of overlying curves)
+1e+05,14,1.539,0.0977,exp NTNU Bartl 2019 Fig.4 digitised; cd force balance (marker hidden: mean of overlying curves)
+1e+05,15,1.517,0.1082,exp NTNU Bartl 2019 Fig.4 digitised; cd force balance (marker hidden: mean of overlying curves)
+1e+05,16,1.481,0.127,exp NTNU Bartl 2019 Fig.4 digitised; cd force balance (marker hidden: mean of overlying curves)
+1e+05,17,1.42,0.1963,exp NTNU Bartl 2019 Fig.4 digitised; cd force balance
+1e+05,18,1.306,0.3217,exp NTNU Bartl 2019 Fig.4 digitised; cd force balance
+1e+05,20,1.291,0.3845,exp NTNU Bartl 2019 Fig.4 digitised; cd force balance
+2e+05,-10,-0.493,0.1431,exp NTNU Bartl 2019 Fig.4 digitised; cd wake rake (marker hidden: mean of overlying curves)
+2e+05,-8,-0.392,0.0608,exp NTNU Bartl 2019 Fig.4 digitised; cd wake rake (marker hidden: mean of overlying curves)
+2e+05,-6,-0.141,0.0361,exp NTNU Bartl 2019 Fig.4 digitised; cd wake rake
+2e+05,-4,0.127,0.0225,exp NTNU Bartl 2019 Fig.4 digitised; cd wake rake
+2e+05,-2,0.354,0.0178,exp NTNU Bartl 2019 Fig.4 digitised; cd wake rake
+2e+05,0,0.57,0.0134,exp NTNU Bartl 2019 Fig.4 digitised; cd wake rake (marker hidden: mean of overlying curves)
+2e+05,2,0.783,0.0191,exp NTNU Bartl 2019 Fig.4 digitised; cd wake rake
+2e+05,4,0.99,0.0198,exp NTNU Bartl 2019 Fig.4 digitised; cd wake rake
+2e+05,6,1.174,0.0208,exp NTNU Bartl 2019 Fig.4 digitised; cd wake rake
+2e+05,8,1.336,0.0142,exp NTNU Bartl 2019 Fig.4 digitised; cd wake rake (marker hidden: mean of overlying curves)
+2e+05,9,1.4,0.028,exp NTNU Bartl 2019 Fig.4 digitised; cd wake rake
+2e+05,10,1.449,0.0307,exp NTNU Bartl 2019 Fig.4 digitised; cd wake rake
+2e+05,11,1.492,0.0321,exp NTNU Bartl 2019 Fig.4 digitised; cd wake rake (marker hidden: mean of overlying curves)
+2e+05,12,1.519,0.037,exp NTNU Bartl 2019 Fig.4 digitised; cd wake rake (marker hidden: mean of overlying curves)
+2e+05,13,1.525,0.0533,exp NTNU Bartl 2019 Fig.4 digitised; cd force balance
+2e+05,14,1.514,0.07,exp NTNU Bartl 2019 Fig.4 digitised; cd force balance
+2e+05,15,1.517,0.0925,exp NTNU Bartl 2019 Fig.4 digitised; cd force balance (marker hidden: mean of overlying curves)
+2e+05,16,1.481,0.111,exp NTNU Bartl 2019 Fig.4 digitised; cd force balance (marker hidden: mean of overlying curves)
+2e+05,17,1.419,0.1858,exp NTNU Bartl 2019 Fig.4 digitised; cd force balance
+2e+05,18,1.282,0.3213,exp NTNU Bartl 2019 Fig.4 digitised; cd force balance
+2e+05,20,1.239,0.3786,exp NTNU Bartl 2019 Fig.4 digitised; cd force balance (marker hidden: mean of overlying curves)
+3e+05,-10,-0.48,0.1564,exp NTNU Bartl 2019 Fig.4 digitised; cd wake rake
+3e+05,-8,-0.346,0.0693,exp NTNU Bartl 2019 Fig.4 digitised; cd wake rake
+3e+05,-6,-0.088,0.028,exp NTNU Bartl 2019 Fig.4 digitised; cd wake rake
+3e+05,-4,0.165,0.0178,exp NTNU Bartl 2019 Fig.4 digitised; cd wake rake (marker hidden: mean of overlying curves)
+3e+05,-2,0.384,0.0167,exp NTNU Bartl 2019 Fig.4 digitised; cd wake rake (marker hidden: mean of overlying curves)
+3e+05,0,0.604,0.0154,exp NTNU Bartl 2019 Fig.4 digitised; cd wake rake (marker hidden: mean of overlying curves)
+3e+05,2,0.793,0.0167,exp NTNU Bartl 2019 Fig.4 digitised; cd wake rake
+3e+05,4,1.002,0.0174,exp NTNU Bartl 2019 Fig.4 digitised; cd wake rake
+3e+05,6,1.19,0.0195,exp NTNU Bartl 2019 Fig.4 digitised; cd wake rake
+3e+05,8,1.347,0.0142,exp NTNU Bartl 2019 Fig.4 digitised; cd wake rake (marker hidden: mean of overlying curves)
+3e+05,9,1.405,0.027,exp NTNU Bartl 2019 Fig.4 digitised; cd wake rake
+3e+05,10,1.453,0.0297,exp NTNU Bartl 2019 Fig.4 digitised; cd wake rake
+3e+05,11,1.496,0.0341,exp NTNU Bartl 2019 Fig.4 digitised; cd wake rake
+3e+05,12,1.527,0.037,exp NTNU Bartl 2019 Fig.4 digitised; cd wake rake (marker hidden: mean of overlying curves)
+3e+05,13,1.534,0.0499,exp NTNU Bartl 2019 Fig.4 digitised; cd force balance
+3e+05,14,1.521,0.0676,exp NTNU Bartl 2019 Fig.4 digitised; cd force balance
+3e+05,15,1.498,0.0881,exp NTNU Bartl 2019 Fig.4 digitised; cd force balance
+3e+05,16,1.468,0.1113,exp NTNU Bartl 2019 Fig.4 digitised; cd force balance
+3e+05,17,1.403,0.1813,exp NTNU Bartl 2019 Fig.4 digitised; cd force balance
+3e+05,18,1.266,0.3165,exp NTNU Bartl 2019 Fig.4 digitised; cd force balance
+3e+05,20,1.184,0.3855,exp NTNU Bartl 2019 Fig.4 digitised; cd force balance
+4e+05,-10,-0.463,0.135,exp NTNU Bartl 2019 Fig.4 digitised; cd wake rake
+4e+05,-8,-0.304,0.0615,exp NTNU Bartl 2019 Fig.4 digitised; cd wake rake
+4e+05,-6,-0.088,0.026,exp NTNU Bartl 2019 Fig.4 digitised; cd wake rake
+4e+05,-4,0.178,0.0181,exp NTNU Bartl 2019 Fig.4 digitised; cd wake rake
+4e+05,-2,0.396,0.0167,exp NTNU Bartl 2019 Fig.4 digitised; cd wake rake
+4e+05,0,0.617,0.0164,exp NTNU Bartl 2019 Fig.4 digitised; cd wake rake
+4e+05,2,0.802,0.0171,exp NTNU Bartl 2019 Fig.4 digitised; cd wake rake (marker hidden: mean of overlying curves)
+4e+05,4,1.005,0.0178,exp NTNU Bartl 2019 Fig.4 digitised; cd wake rake
+4e+05,6,1.196,0.0191,exp NTNU Bartl 2019 Fig.4 digitised; cd wake rake
+4e+05,8,1.352,0.0142,exp NTNU Bartl 2019 Fig.4 digitised; cd wake rake (marker hidden: mean of overlying curves)
+4e+05,9,1.405,0.0273,exp NTNU Bartl 2019 Fig.4 digitised; cd wake rake
+4e+05,10,1.456,0.0304,exp NTNU Bartl 2019 Fig.4 digitised; cd wake rake
+4e+05,11,1.501,0.0346,exp NTNU Bartl 2019 Fig.4 digitised; cd wake rake
+4e+05,12,1.534,0.0396,exp NTNU Bartl 2019 Fig.4 digitised; cd wake rake
+4e+05,13,1.545,0.0461,exp NTNU Bartl 2019 Fig.4 digitised; cd force balance
+4e+05,14,1.532,0.0632,exp NTNU Bartl 2019 Fig.4 digitised; cd force balance
+4e+05,15,1.502,0.085,exp NTNU Bartl 2019 Fig.4 digitised; cd force balance
+4e+05,16,1.487,0.1106,exp NTNU Bartl 2019 Fig.4 digitised; cd force balance (marker hidden: mean of overlying curves)
+4e+05,17,1.438,0.1461,exp NTNU Bartl 2019 Fig.4 digitised; cd force balance (marker hidden: mean of overlying curves)
+4e+05,18,1.348,0.2066,exp NTNU Bartl 2019 Fig.4 digitised; cd force balance
+4e+05,20,1.166,0.3828,exp NTNU Bartl 2019 Fig.4 digitised; cd force balance
+5e+05,-10,-0.449,0.139,exp NTNU Bartl 2019 Fig.4 digitised; cd wake rake
+5e+05,-8,-0.287,0.0594,exp NTNU Bartl 2019 Fig.4 digitised; cd wake rake
+5e+05,-6,-0.056,0.0225,exp NTNU Bartl 2019 Fig.4 digitised; cd wake rake
+5e+05,-4,0.169,0.016,exp NTNU Bartl 2019 Fig.4 digitised; cd wake rake
+5e+05,-2,0.389,0.0137,exp NTNU Bartl 2019 Fig.4 digitised; cd wake rake
+5e+05,0,0.607,0.014,exp NTNU Bartl 2019 Fig.4 digitised; cd wake rake
+5e+05,2,0.796,0.0147,exp NTNU Bartl 2019 Fig.4 digitised; cd wake rake
+5e+05,4,1.012,0.0157,exp NTNU Bartl 2019 Fig.4 digitised; cd wake rake
+5e+05,6,1.203,0.0171,exp NTNU Bartl 2019 Fig.4 digitised; cd wake rake
+5e+05,8,1.346,0.012,exp NTNU Bartl 2019 Fig.4 digitised; cd wake rake
+5e+05,9,1.407,0.0242,exp NTNU Bartl 2019 Fig.4 digitised; cd wake rake
+5e+05,10,1.463,0.028,exp NTNU Bartl 2019 Fig.4 digitised; cd wake rake
+5e+05,11,1.513,0.0276,exp NTNU Bartl 2019 Fig.4 digitised; cd wake rake (marker hidden: mean of overlying curves)
+5e+05,12,1.549,0.0345,exp NTNU Bartl 2019 Fig.4 digitised; cd wake rake (marker hidden: mean of overlying curves)
+5e+05,13,1.562,0.041,exp NTNU Bartl 2019 Fig.4 digitised; cd force balance
+5e+05,14,1.556,0.0591,exp NTNU Bartl 2019 Fig.4 digitised; cd force balance
+5e+05,15,1.521,0.082,exp NTNU Bartl 2019 Fig.4 digitised; cd force balance
+5e+05,16,1.478,0.1086,exp NTNU Bartl 2019 Fig.4 digitised; cd force balance
+5e+05,17,1.43,0.1405,exp NTNU Bartl 2019 Fig.4 digitised; cd force balance
+5e+05,18,1.375,0.1782,exp NTNU Bartl 2019 Fig.4 digitised; cd force balance
+5e+05,20,1.203,0.3794,exp NTNU Bartl 2019 Fig.4 digitised; cd force balance
+6e+05,-10,-0.435,0.142,exp NTNU Bartl 2019 Fig.4 digitised; cd wake rake
+6e+05,-8,-0.269,0.0529,exp NTNU Bartl 2019 Fig.4 digitised; cd wake rake
+6e+05,-6,-0.075,0.0164,exp NTNU Bartl 2019 Fig.4 digitised; cd wake rake
+6e+05,-4,0.148,0.0106,exp NTNU Bartl 2019 Fig.4 digitised; cd wake rake
+6e+05,-2,0.368,0.0079,exp NTNU Bartl 2019 Fig.4 digitised; cd wake rake
+6e+05,0,0.588,0.0079,exp NTNU Bartl 2019 Fig.4 digitised; cd wake rake
+6e+05,2,0.808,0.0085,exp NTNU Bartl 2019 Fig.4 digitised; cd wake rake
+6e+05,4,1.023,0.0099,exp NTNU Bartl 2019 Fig.4 digitised; cd wake rake
+6e+05,6,1.216,0.0116,exp NTNU Bartl 2019 Fig.4 digitised; cd wake rake
+6e+05,8,1.359,0.0164,exp NTNU Bartl 2019 Fig.4 digitised; cd wake rake
+6e+05,9,1.42,0.0191,exp NTNU Bartl 2019 Fig.4 digitised; cd wake rake
+6e+05,10,1.48,0.0229,exp NTNU Bartl 2019 Fig.4 digitised; cd wake rake
+6e+05,11,1.53,0.0276,exp NTNU Bartl 2019 Fig.4 digitised; cd wake rake
+6e+05,12,1.567,0.0345,exp NTNU Bartl 2019 Fig.4 digitised; cd wake rake
+6e+05,13,1.575,0.0359,exp NTNU Bartl 2019 Fig.4 digitised; cd force balance
+6e+05,14,1.574,0.0478,exp NTNU Bartl 2019 Fig.4 digitised; cd force balance
+6e+05,15,1.545,0.0673,exp NTNU Bartl 2019 Fig.4 digitised; cd force balance
+6e+05,16,1.496,0.1024,exp NTNU Bartl 2019 Fig.4 digitised; cd force balance
+6e+05,17,1.446,0.1407,exp NTNU Bartl 2019 Fig.4 digitised; cd force balance
+6e+05,18,1.396,0.1863,exp NTNU Bartl 2019 Fig.4 digitised; cd force balance
+6e+05,20,1.263,0.3667,exp NTNU Bartl 2019 Fig.4 digitised; cd force balance

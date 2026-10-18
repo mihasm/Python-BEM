@@ -1,0 +1,53 @@
+# TUM G1 - Upstream G1 turbine alone at the upstream position (paper symbol: red circle). Cp AND Ct.
+# Raw file: 'Single_Upstream turbine_upstream position.dat'
+# Data: TWEET-IE blind test Phase I, Zenodo doi:10.5281/zenodo.13972361 (CC-BY-4.0), folder 'CASE 0 (Single Wind Turbines)'. Tabulated, copied unchanged
+#   (power, cp, ct and their combined standard uncertainties = the '_err' columns; rpm).
+# Test: TUM closed-loop boundary-layer wind tunnel, test section 2.7 m (W) x 1.8 m (H); single G1 turbine;
+#   constant tunnel speed, rotor speed varied. U_inf = 5.74 m/s from a Pitot tube 4D upstream, UNCORRECTED.
+#   Blockage ratio A_rotor/A_tunnel = 20 %; NO blockage correction applied (Phase I documentation p. 4).
+#   Cp = P/(0.5 rho U^3 pi R^2), Ct = T/(0.5 rho U^2 pi R^2) with R = 0.55 m (D = 1.1 m). Inflow is a
+#   low-turbulence boundary-layer profile (hub height 0.82 m); see raw inflow profiles in the Zenodo record.
+# tsr: recomputed = (rpm*2*pi/60)*0.55/5.74 (the source gives TSR rounded to 0.1; tsr_source keeps that value;
+#   it agrees within 0.015 with the set-points 3.0, 3.5, ... 5.25, 5.5, 5.75, ... 8.25, 8.75 ..., which the source
+#   prints rounded, e.g. 5.25 -> 5.3).
+# rho: not tabulated; rho = P/(cp*0.5*U^3*A) gives 1.13-1.17 (cp rounded to 3 decimals) -> defaults rho = 1.145.
+# pitch_deg: 0.4 deg (Phase I documentation: 'blade pitch ~0.4 deg'; OpenFAST BlPitch = 0.4; CAD 'pitch_0d4').
+# Ct: thrust from the tower-base load cell. Its type-A uncertainty grows strongly above tsr ~ 8.5
+#   (ct_err = 0.6 at tsr 9.5 and 2.25 at tsr 10.0 in the source) - treat those Ct points as unreliable.
+# Extraction uncertainty: none (tabulated). Measurement uncertainty: the *_err columns (combined, as published).
+tsr,cp,cp_err,ct,ct_err,power_w,power_w_err,rpm,tsr_source
+2.9902,0.056,0.003,0.317,0.033,5.989,0.227,298.0,3.0
+3.4919,0.078,0.004,0.365,0.06,8.291,0.271,348.0,3.5
+3.9936,0.11,0.005,0.42,0.041,11.639,0.289,398.0,4.0
+4.4953,0.169,0.009,0.483,0.047,17.782,0.758,448.0,4.5
+4.987,0.267,0.01,0.556,0.054,27.869,0.52,497.0,5.0
+5.2378,0.305,0.011,0.587,0.093,31.767,0.407,522.0,5.3
+5.4887,0.354,0.013,0.622,0.075,36.791,0.517,547.0,5.5
+5.7395,0.406,0.015,0.657,0.06,42.041,0.401,572.0,5.8
+5.9904,0.439,0.016,0.686,0.059,45.348,0.382,597.0,6.0
+6.0907,0.447,0.016,0.695,0.061,46.217,0.38,607.0,6.1
+6.1509,0.452,0.016,0.701,0.062,46.64,0.383,613.0,6.2
+6.2914,0.46,0.017,0.712,0.067,47.48,0.404,627.0,6.3
+6.3917,0.466,0.017,0.72,0.073,48.053,0.408,637.0,6.4
+6.4921,0.471,0.017,0.727,0.079,48.51,0.416,647.0,6.5
+6.5924,0.476,0.017,0.735,0.085,48.96,0.45,657.0,6.6
+6.6928,0.479,0.017,0.742,0.09,49.392,0.483,667.0,6.7
+6.7931,0.483,0.018,0.75,0.095,49.769,0.471,677.0,6.8
+6.8834,0.487,0.018,0.757,0.102,50.092,0.483,686.0,6.9
+6.9837,0.49,0.018,0.764,0.111,50.371,0.493,696.0,7.0
+7.0841,0.493,0.018,0.771,0.117,50.565,0.504,706.0,7.1
+7.1844,0.495,0.018,0.777,0.118,50.807,0.501,716.0,7.2
+7.2948,0.496,0.018,0.783,0.12,51.016,0.499,727.0,7.3
+7.3851,0.498,0.018,0.789,0.124,51.131,0.519,736.0,7.4
+7.4855,0.5,0.018,0.796,0.13,51.306,0.532,746.0,7.5
+7.5858,0.5,0.018,0.801,0.137,51.39,0.574,756.0,7.6
+7.6861,0.502,0.019,0.807,0.145,51.497,0.637,766.0,7.7
+7.7865,0.503,0.019,0.813,0.154,51.552,0.671,776.0,7.8
+7.8868,0.503,0.019,0.818,0.164,51.607,0.735,786.0,7.9
+7.9872,0.504,0.019,0.824,0.175,51.648,0.734,796.0,8.0
+8.238,0.505,0.019,0.837,0.207,51.7,0.788,821.0,8.3
+8.4889,0.504,0.019,0.848,0.248,51.674,0.773,846.0,8.5
+8.7397,0.502,0.019,0.859,0.304,51.386,0.826,871.0,8.8
+8.9805,0.499,0.019,0.868,0.374,51.121,0.8,895.0,9.0
+9.4822,0.49,0.019,0.883,0.602,50.131,0.729,945.0,9.5
+10.004,0.457,0.019,0.89,2.25,46.721,0.999,997.0,10.0

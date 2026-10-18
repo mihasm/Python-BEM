@@ -1,0 +1,226 @@
+{
+  "id": "bahaj_tidal_800mm",
+  "name": "Southampton 800 mm marine current (tidal) turbine model, NACA 63-8xx (Bahaj et al. 2007)",
+  "turbine_type": 0,
+  "B": 3,
+  "R": 0.4,
+  "Rhub": 0.05,
+  "fluid": {
+    "rho": 999.1,
+    "kin_viscosity": 1.14e-06,
+    "medium": "water"
+  },
+  "geometry_file": "geometry.csv",
+  "airfoils": {
+    "naca63-8_t240": {
+      "coordinates": "airfoils/naca63-8_t240.dat",
+      "polars": "airfoils/naca63-8_t240_polars.csv",
+      "polar_source": "XFOIL 6.97, Ncrit=9, Re 5e4-5e5 (computed; Ncrit=5 set in naca63-8_t240_polars_ncrit5.csv)"
+    },
+    "naca63-8_t225": {
+      "coordinates": "airfoils/naca63-8_t225.dat",
+      "polars": "airfoils/naca63-8_t225_polars.csv",
+      "polar_source": "XFOIL 6.97, Ncrit=9, Re 5e4-5e5 (computed; Ncrit=5 set in naca63-8_t225_polars_ncrit5.csv)"
+    },
+    "naca63-8_t207": {
+      "coordinates": "airfoils/naca63-8_t207.dat",
+      "polars": "airfoils/naca63-8_t207_polars.csv",
+      "polar_source": "XFOIL 6.97, Ncrit=9, Re 5e4-5e5 (computed; Ncrit=5 set in naca63-8_t207_polars_ncrit5.csv)"
+    },
+    "naca63-8_t195": {
+      "coordinates": "airfoils/naca63-8_t195.dat",
+      "polars": "airfoils/naca63-8_t195_polars.csv",
+      "polar_source": "XFOIL 6.97, Ncrit=9, Re 5e4-5e5 (computed; Ncrit=5 set in naca63-8_t195_polars_ncrit5.csv)"
+    },
+    "naca63-8_t187": {
+      "coordinates": "airfoils/naca63-8_t187.dat",
+      "polars": "airfoils/naca63-8_t187_polars.csv",
+      "polar_source": "XFOIL 6.97, Ncrit=9, Re 5e4-5e5 (computed; Ncrit=5 set in naca63-8_t187_polars_ncrit5.csv)"
+    },
+    "naca63-8_t181": {
+      "coordinates": "airfoils/naca63-8_t181.dat",
+      "polars": "airfoils/naca63-8_t181_polars.csv",
+      "polar_source": "XFOIL 6.97, Ncrit=9, Re 5e4-5e5 (computed; Ncrit=5 set in naca63-8_t181_polars_ncrit5.csv)"
+    },
+    "naca63-8_t176": {
+      "coordinates": "airfoils/naca63-8_t176.dat",
+      "polars": "airfoils/naca63-8_t176_polars.csv",
+      "polar_source": "XFOIL 6.97, Ncrit=9, Re 5e4-5e5 (computed; Ncrit=5 set in naca63-8_t176_polars_ncrit5.csv)"
+    },
+    "naca63-8_t171": {
+      "coordinates": "airfoils/naca63-8_t171.dat",
+      "polars": "airfoils/naca63-8_t171_polars.csv",
+      "polar_source": "XFOIL 6.97, Ncrit=9, Re 5e4-5e5 (computed; Ncrit=5 set in naca63-8_t171_polars_ncrit5.csv)"
+    },
+    "naca63-8_t166": {
+      "coordinates": "airfoils/naca63-8_t166.dat",
+      "polars": "airfoils/naca63-8_t166_polars.csv",
+      "polar_source": "XFOIL 6.97, Ncrit=9, Re 5e4-5e5 (computed; Ncrit=5 set in naca63-8_t166_polars_ncrit5.csv)"
+    },
+    "naca63-8_t161": {
+      "coordinates": "airfoils/naca63-8_t161.dat",
+      "polars": "airfoils/naca63-8_t161_polars.csv",
+      "polar_source": "XFOIL 6.97, Ncrit=9, Re 5e4-5e5 (computed; Ncrit=5 set in naca63-8_t161_polars_ncrit5.csv)"
+    },
+    "naca63-8_t156": {
+      "coordinates": "airfoils/naca63-8_t156.dat",
+      "polars": "airfoils/naca63-8_t156_polars.csv",
+      "polar_source": "XFOIL 6.97, Ncrit=9, Re 5e4-5e5 (computed; Ncrit=5 set in naca63-8_t156_polars_ncrit5.csv)"
+    },
+    "naca63-8_t151": {
+      "coordinates": "airfoils/naca63-8_t151.dat",
+      "polars": "airfoils/naca63-8_t151_polars.csv",
+      "polar_source": "XFOIL 6.97, Ncrit=9, Re 5e4-5e5 (computed; Ncrit=5 set in naca63-8_t151_polars_ncrit5.csv)"
+    },
+    "naca63-8_t146": {
+      "coordinates": "airfoils/naca63-8_t146.dat",
+      "polars": "airfoils/naca63-8_t146_polars.csv",
+      "polar_source": "XFOIL 6.97, Ncrit=9, Re 5e4-5e5 (computed; Ncrit=5 set in naca63-8_t146_polars_ncrit5.csv)"
+    },
+    "naca63-8_t141": {
+      "coordinates": "airfoils/naca63-8_t141.dat",
+      "polars": "airfoils/naca63-8_t141_polars.csv",
+      "polar_source": "XFOIL 6.97, Ncrit=9, Re 5e4-5e5 (computed; Ncrit=5 set in naca63-8_t141_polars_ncrit5.csv)"
+    },
+    "naca63-8_t136": {
+      "coordinates": "airfoils/naca63-8_t136.dat",
+      "polars": "airfoils/naca63-8_t136_polars.csv",
+      "polar_source": "XFOIL 6.97, Ncrit=9, Re 5e4-5e5 (computed; Ncrit=5 set in naca63-8_t136_polars_ncrit5.csv)"
+    },
+    "naca63-8_t131": {
+      "coordinates": "airfoils/naca63-8_t131.dat",
+      "polars": "airfoils/naca63-8_t131_polars.csv",
+      "polar_source": "XFOIL 6.97, Ncrit=9, Re 5e4-5e5 (computed; Ncrit=5 set in naca63-8_t131_polars_ncrit5.csv)"
+    },
+    "naca63-8_t126": {
+      "coordinates": "airfoils/naca63-8_t126.dat",
+      "polars": "airfoils/naca63-8_t126_polars.csv",
+      "polar_source": "XFOIL 6.97, Ncrit=9, Re 5e4-5e5 (computed; Ncrit=5 set in naca63-8_t126_polars_ncrit5.csv)"
+    }
+  },
+  "experiments": [
+    {
+      "file": "experiment/tunnel_performance.csv",
+      "kind": "performance",
+      "x": "tsr",
+      "y": [
+        "cp",
+        "ct"
+      ],
+      "defaults": {
+        "yaw_deg": 0.0,
+        "rho": 999.1,
+        "kin_viscosity": 1.14e-06
+      },
+      "conditions": "QinetiQ Haslar cavitation tunnel 2.4 m x 1.2 m (A/C = 0.175), zero yaw, rotor near the tunnel centre, constant tunnel speed per series, rpm varied. Five settings: hub pitch 15/20/25/27/30 deg (pitch_deg column = hub pitch - 15 = 0/5/10/12/15 deg) at 1.40/1.73/1.54/1.30/1.54 m/s (Fig. 7), plus 20 deg at 1.0 m/s (Fig. 8). BLOCKAGE-CORRECTED by the authors (Barnsley & Wellicome actuator-disc method, up to -18 % Cp / -11 % Ct): compare with unbounded BEM directly.",
+      "source": "Bahaj et al. 2007, Fig. 7 (all five pitch settings) and Fig. 8 upper panels (1.0 m/s set, de-shifted); vector-extracted from the PDF",
+      "uncertainty": "extraction +-0.005 TSR, +-0.003 Cp/Ct; cp_err/ct_err columns = RSS with the dynamometer accuracy (+-0.25 N m, +-5 N); scatter of repeated points ~+-0.01"
+    },
+    {
+      "file": "experiment/tank_yaw_deep_immersion.csv",
+      "kind": "performance",
+      "x": "tsr",
+      "y": [
+        "cp",
+        "ct"
+      ],
+      "defaults": {
+        "v_ms": 1.4,
+        "rho": 999.1,
+        "kin_viscosity": 1.14e-06
+      },
+      "conditions": "Southampton Institute towing tank 3.7 m x 1.8 m (A/C = 0.0755), carriage 1.4 m/s, deep tip immersion 0.55D (inferred), yaw 0/15/22.5/30 deg at 20 deg hub pitch (pitch_deg 5) and 0/15/30 deg at 25 deg hub pitch (pitch_deg 10). Cp/Ct referred to the full carriage speed and full disc area. Blockage-corrected (tank, up to -8 % Cp / -5 % Ct).",
+      "source": "Bahaj et al. 2007, Figs. 10 and 11 (vector-extracted); the yaw-0 sets are also the deep-immersion tank data of Figs. 8/9",
+      "uncertainty": "extraction +-0.005 TSR, +-0.003 Cp/Ct; cp_err/ct_err = RSS with dynamometer accuracy; carriage speed 1.4 vs 1.5 m/s inconsistency between Fig. 8 legend and Fig. 10 caption (Re only)"
+    },
+    {
+      "file": "experiment/tank_shallow_immersion.csv",
+      "kind": "performance",
+      "x": "tsr",
+      "y": [
+        "cp",
+        "ct"
+      ],
+      "defaults": {
+        "yaw_deg": 0.0,
+        "rho": 999.1,
+        "kin_viscosity": 1.14e-06
+      },
+      "conditions": "Towing tank, SHALLOW tip immersion 0.19D (free-surface effect: Cp 10-15 % and Ct ~5 % below deep immersion), 20 deg hub pitch at 1.5 m/s and 25 deg at 1.2 m/s (Ct only for 20 deg). Not expected to match an unbounded BEM; documents the free-surface effect.",
+      "source": "Bahaj et al. 2007, Figs. 8 and 9 upper panels, square markers (vector-extracted)",
+      "uncertainty": "extraction +-0.005 TSR, +-0.003 Cp/Ct; cp_err/ct_err = RSS with dynamometer accuracy"
+    },
+    {
+      "file": "experiment/tank_twin_rotor_table2.csv",
+      "kind": "performance",
+      "x": "tsr",
+      "y": [
+        "cp",
+        "ct"
+      ],
+      "defaults": {
+        "yaw_deg": 0.0,
+        "rho": 999.1,
+        "kin_viscosity": 1.14e-06
+      },
+      "conditions": "Towing tank, deep immersion, instrumented rotor beside an identical dummy rotor (static or rotating, gaps 0.25-1.0 R); no measurable interference per the authors, so effectively single-rotor points. Hub pitch (20 deg -> pitch_deg 5) and speed (1.4 m/s) ASSUMED - not stated in the paper.",
+      "source": "Bahaj et al. 2007, Table 2 (tabulated)",
+      "uncertainty": "tsr +-0.1 (as tabulated); Cp/Ct rounded to 0.01; cp_err/ct_err include rounding and dynamometer accuracy"
+    },
+    {
+      "file": "experiment/tank_twin_rotor_gap_table3.csv",
+      "kind": "performance",
+      "x": "tsr",
+      "y": [
+        "cp",
+        "ct"
+      ],
+      "defaults": {
+        "yaw_deg": 0.0,
+        "rho": 999.1,
+        "kin_viscosity": 1.14e-06
+      },
+      "conditions": "As Table 2: twin-rotor towing-tank tests, values interpolated by the authors to TSR = 7 for gaps 0.025-1.0 R, dummy static/rotating; 20 deg hub pitch and 1.4 m/s ASSUMED.",
+      "source": "Bahaj et al. 2007, Table 3 (tabulated)",
+      "uncertainty": "Cp/Ct rounded to 0.01; interpolation error unknown"
+    }
+  ],
+  "sources": [
+    {
+      "key": "bahaj2007",
+      "citation": "Bahaj A.S., Molland A.F., Chaplin J.R., Batten W.M.J. (2007). Power and thrust measurements of marine current turbines under various hydrodynamic flow conditions in a cavitation tunnel and a towing tank. Renewable Energy 32(3), 407-426. (Table 1 geometry; Figs. 7-11 performance; Tables 2-3 twin rotor; App. A blockage correction)",
+      "doi": "10.1016/j.renene.2006.01.012",
+      "url": "https://www.sciencedirect.com/science/article/pii/S0960148106000516"
+    },
+    {
+      "key": "batten2008",
+      "citation": "Batten W.M.J., Bahaj A.S., Molland A.F., Chaplin J.R. (2008). The prediction of the hydrodynamic performance of marine current turbines. Renewable Energy 33(5), 1085-1096. (BEM of the same rotor with XFOIL 63-8xx polars, Snel stall delay, Viterna post-stall; Table 1 geometry check; Figs. 5-6 BEM vs. experiment; Fig. 4 spanwise alpha/a/a' at 20 deg used to confirm the pitch convention)",
+      "doi": "10.1016/j.renene.2007.05.043"
+    },
+    {
+      "key": "batten2007oe",
+      "citation": "Batten W.M.J., Bahaj A.S., Molland A.F., Chaplin J.R. (2007). Experimentally validated numerical method for the hydrodynamic design of horizontal axis tidal turbines. Ocean Engineering 34(7), 1013-1020. (hub pitch defined at 20 % radius, where the section is interpolated to a circle at the hub)",
+      "doi": "10.1016/j.oceaneng.2006.04.008"
+    },
+    {
+      "key": "batten2006",
+      "citation": "Batten W.M.J., Bahaj A.S., Molland A.F., Chaplin J.R. (2006). Hydrodynamics of marine current turbines. Renewable Energy 31(2), 249-256. (63-8xx = NACA 63-215 family with four times the camber)",
+      "doi": "10.1016/j.renene.2005.08.020"
+    },
+    {
+      "key": "molland2004",
+      "citation": "Molland A.F., Bahaj A.S., Chaplin J.R., Batten W.M.J. (2004). Measurements and predictions of forces, pressures and cavitation on 2-D sections suitable for marine current turbines. Proc. IMechE Part M: J. Engineering for the Maritime Environment 218(2), 127-138. (measured NACA 63-815 at Re 0.8e6, used only to check the section shape / mean line)",
+      "doi": "10.1243/1475090041651412"
+    },
+    {
+      "key": "naca456",
+      "citation": "Carmichael R.L. (2001). Algorithm for calculating coordinates of cambered NACA airfoils at specified chord locations. AIAA 2001-5235; program naca456 v1.1, Public Domain Aeronautical Software (source in extraction/naca456/src).",
+      "url": "https://www.pdas.com/naca456.html"
+    },
+    {
+      "key": "bahaj2005report",
+      "citation": "Bahaj A.S., Batten W.M.J., Molland A.F., Chaplin J.R. (2005). Experimental investigation into the hydrodynamic performance of marine current turbines. Sustainable Energy Series Report 3, University of Southampton (tables of all results - NOT obtained, not online)."
+    }
+  ],
+  "notes": "PITCH CONVENTION: the paper's 'hub pitch angle' is the nose-tail (chord) angle of the section at r = 80 mm (0.2R) measured from the rotor plane (set with an inclinometer on a template, Bahaj 2007 Sec. 3.1). Table 1's 'pitch distribution' is 15.0 deg at 0.2R decreasing to 0 at the tip, i.e. twist relative to the tip chord. geometry.csv twist_deg = that distribution (solver twist without pitch); the experiment column pitch_deg = hub pitch - 15 deg (= the tip chord angle to the rotor plane): 20 deg hub pitch (design, Cp,max 0.46) -> pitch_deg 5. The source value is kept in the extra column hub_pitch_deg. Confirmed against the authors' BEM: with pitch_deg = 5 this solver (buhl_prandtl) gives alpha = 18/14/10/7.4 deg at TSR 4 and 10/4.3/2.8/2.0 deg at TSR 6 for r/R = 0.2/0.4/0.6/0.8, vs. ~16/14/10.5/7.5 and ~7.8/4.5/3/2 deg read from Batten 2008 Fig. 4a (20 deg hub pitch); the opposite sign (pitch_deg = -5) gives 22-24 deg, i.e. clearly wrong. GEOMETRY: Table 1 (17 stations 0.2R-1.0R), tabulated; the blade root inboard of 0.2R blends into a circular shank clamped in a 100 mm diameter hub - not tabulated, not modelled (as in the authors' BEM, x = 0.2-1.0). SECTIONS: NACA 63-8xx at each station's exact t/c (24 % root -> 12.6 % tip), generated with naca456 (63-series thickness, a = 1.0 mean line, cl_i = 0.8; a = 1.0 is the NACA default for an unlabelled 6-series designation and matches the 63-815 profile drawn in Molland et al. 2004 Fig. 2, extraction/overlay_molland2004_fig2.png). POLARS: XFOIL 6.97 (as used by the authors), Ncrit 9, Re 50k/100k/150k/200k/300k/500k, -12..+22 deg; an Ncrit 5 set is provided in *_polars_ncrit5.csv for transition sensitivity (water tunnel turbulence unknown). The authors' own BEM added Snel stall delay and Viterna post-stall. Operating chord Re ~0.5e5 (root, 1.0 m/s, low TSR) to ~3.5e5 (tip, 1.73 m/s, TSR 11); at the design point (TSR 6, 1.73 m/s) ~2e5 at 0.7R. XFOIL at Re 5e4 is bubble-dominated and noisy; a few (section, Re) sets where XFOIL failed above ~3 deg are omitted (stated in the polar headers). No measured polars exist at these Re (Abbott & von Doenhoff Re >= 3e6; Molland 2004 measured 63-815 at 8e5 and found XFOIL drag far too low near/after stall). FLUID: fresh water, temperature not reported; rho 999.1 kg/m3 and nu 1.14e-6 m2/s (15 deg C) ASSUMED - nu only enters the Reynolds number. BLOCKAGE: all published Cp/Ct/TSR are blockage-corrected to equivalent open-water conditions by the authors (Bahaj 2007 Sec. 6.2, App. A); v_ms is the nominal (uncorrected) tunnel/carriage speed, a few % above the corrected U_F, which only affects Re. CT is rotor thrust measured by the in-hub dynamometer (no nacelle/support drag). Cavitation: all performance data are non-cavitating (tunnel at normal pressure; inception only at sigma < ~0.9). Known BEM behaviour (Batten 2008): their BEM matched Cp up to TSR ~7 and over-predicted above; under-predicted Ct by 5-15 %; failed for 15 deg hub pitch above TSR ~5. Data NOT obtained: the 2005 Southampton report with the tables of all results (not online); the paper gives no spanwise or blade-root loads. FIRST SOLVER RUN (2026-10-18, buhl_prandtl, 16 sections, Ncrit 9 polars, tunnel file): 20 deg hub (pitch_deg 5) Cp 0.406/0.436/0.392/0.326 vs exp 0.430/0.451/0.389/0.258 at TSR 4.4/6.1/8.2/9.9, Ct 4-8 % low below TSR 7; 25 deg Ct 10-15 % low; 30 deg hub (pitch_deg 15) Cp far too low at TSR 4.6 (0.17 vs 0.30) - the same pattern the authors report for their BEM (Batten 2008 Sec. 3)."
+}

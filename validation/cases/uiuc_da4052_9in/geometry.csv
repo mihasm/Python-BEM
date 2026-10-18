@@ -1,0 +1,24 @@
+# UIUC DA4052 9-in propeller (2 blades, PROPID minimum-induced-loss design, SDA1045/SDA1075/SDA1100) geometry: UIUC Propeller Database Vol. 2, file da4052_9x6.75_geom.txt ('Geometry (tested)': PropellerScanner measurement of the 3D-printed propeller, average of both blades; tabulated r/R, c/R, beta).
+# Converted: r_m = r/R * R, chord_m = c/R * R with R = 0.1149 m (true diameter 9.05 in from the database geometry plot); twist_deg = beta (blade angle from the plane of rotation, chord line) unchanged.
+# Tip correction (PropellerScanner artefact, square/designed tip visible in the photos): r/R=1.00: scan c/R=0.0150 beta=12.073 replaced by c/R=0.0416 (design c/R) and beta=16.138 (scan beta at r/R=0.95 + design twist change 0.95->1.00)
+# Uncorrected scan: extraction/geometry_scan_raw.csv; design geometry (Deters 2014 Fig. 22): extraction/geometry_design.csv.
+# Airfoil: SDA1045 at r/R <= 0.45, SDA1075 at 0.75, SDA1100 at the tip, linear transitions in between (Deters, Ananda & Selig 2014, Sec. III); t/c = 0.12 for all SDA airfoils.
+r_m,chord_m,twist_deg,airfoil,thickness_ratio
+0.0172403,0.0138037,43.597,sda1045,0.12
+0.022987,0.0167575,44.647,sda1045,0.12
+0.0287338,0.0301819,40.856,sda1045,0.12
+0.0344805,0.0401583,38.623,sda1045,0.12
+0.0402272,0.0426639,35.889,sda1045,0.12
+0.045974,0.0418823,32.831,sda1045,0.12
+0.0517208,0.0400778,30.158,sda1045,0.12
+0.0574675,0.0375493,28.126,transition,0.12
+0.0632143,0.0341817,26.423,transition,0.12
+0.068961,0.0304003,24.606,transition,0.12
+0.0747078,0.0269523,22.675,transition,0.12
+0.0804545,0.0240214,21.162,transition,0.12
+0.0862013,0.021263,20.031,sda1075,0.12
+0.091948,0.0183551,19.09,transition,0.12
+0.0976948,0.0152404,18.222,transition,0.12
+0.103442,0.0119532,17.376,transition,0.12
+0.109188,0.00850519,16.81,transition,0.12
+0.114935,0.0047813,16.138,sda1100,0.12
