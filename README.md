@@ -344,25 +344,25 @@ $$
 
 ### 11. Rotational Augmentation Correction
 
-If enabled, the solver modifies lift using a potential-flow target lift
+If enabled, the solver adds lift towards the linear attached-flow lift
 
 $$
-C_{l,pot} = C_{l,\alpha}\sin(\alpha - \alpha_0)
+C_{l,lin} = C_{l,\alpha}(\alpha - \alpha_0)
 $$
 
-where $C_{l,\alpha}$ is the lift slope of the airfoil's own polar at the zero-lift angle (the thin-airfoil value would be $2\pi$), and then computes
+where $C_{l,\alpha}$ is the lift slope of the airfoil's own polar at the zero-lift angle, and computes
 
 $$
-C_{l,3D} = C_l + f_l(C_{l,pot} - C_l)
+\Delta C_l = f_l\,(C_{l,lin} - C_l)\,w(\alpha), \qquad C_{l,3D} = C_l + \Delta C_l
 $$
 
 $$
-C_{d,3D} = C_d + f_d(C_d - C_{d,0})
+C_{d,3D} = C_d + \Delta C_l\,\frac{\sin\alpha - 0.12\cos\alpha}{\cos\alpha + 0.12\sin\alpha}
 $$
 
-where $C_{d,0}$ is the drag at $\alpha = 0$. Rotational augmentation is delayed separation: it recovers at most the lift lost to separation, so the correction acts only where $C_{l,pot} - C_l$ has the sign of $C_{l,pot}$, with $0 \le f_l \le 1$ and $|f_d| \le 1$ (Gur & Rosen keeps its own sign convention).
+The drag term is Eggers et al. (2003), as in AirfoilPrep / WISDEM: it turns the added force almost normal to the chord, because delayed separation raises the normal force, not the leading-edge suction (pressure measurements on rotating blades, NREL Phase VI and MEXICO). The weight $w$ blends the correction out in deep stall, where there is no attached flow left to delay: $w = 1$ for $|\alpha| \le 25^\circ$, falling linearly to $0$ at $45^\circ$ (AirfoilPrep "linear_25_45").
 
-The functions $f_l$ and $f_d$ depend on the selected model; $f_d = 0$ unless stated.
+Rotational augmentation is delayed separation, so it recovers at most the lift lost to separation: the correction acts only where $C_{l,lin} - C_l$ has the sign of $C_{l,lin}$, with $0 \le f_l \le 1$, and not on sections without a lift slope ($C_{l,\alpha} < 1$/rad, e.g. cylinder roots). Gur & Rosen keeps its own sign convention. The function $f_l$ depends on the selected model:
 
 #### Snel et al.
 
@@ -386,9 +386,7 @@ $$
 f_l = \frac{1}{2\pi}\left[\frac{1.6\,c/r}{0.1267}\,\frac{1 - (c/r)^{R/(\Lambda r)}}{1 + (c/r)^{R/(\Lambda r)}} - 1\right]
 $$
 
-$$
-f_d = -\frac{1}{2\pi}\left[\frac{1.6\,c/r}{0.1267}\,\frac{1 - (c/r)^{R/(2\Lambda r)}}{1 + (c/r)^{R/(2\Lambda r)}} - 1\right]
-$$
+(The model's own drag factor $f_d$ is not used; see the drag term above.)
 
 #### Chaviaropoulos And Hansen
 
@@ -396,9 +394,7 @@ $$
 f_l = a_h\left(\frac{c}{r}\right)^h\cos^n\theta
 $$
 
-$$
-f_d = f_l
-$$
+(The model's own drag factor $f_d = f_l$ is not used; see the drag term above.)
 
 with $a_h=2.2$, $h=1$, $n=4$.
 

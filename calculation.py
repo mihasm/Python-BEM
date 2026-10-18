@@ -581,12 +581,22 @@ class Calculator:
         # are singular there, so the section is not iterated
         zero_load_section = (tip_loss_mode in (1, 2, 3) and _r >= R) or (hub_loss_mode in (1, 2) and _r <= Rhub)
 
-        def func(inp, last_iteration=False, evaluate_only=False):
+        # Wind components in the blade coordinate system (CCBlade, Ning 2014,
+        # https://pdfs.semanticscholar.org/5e7d/9c6408b7dd8841692d950d08bce90c676dc1.pdf):
+        # yaw, tilt, precone (psi) and blade azimuth; Vy includes the rotation
+        sa, ca = sin(_azimuth), cos(_azimuth)
+        Vx = v * ((cos(yaw_angle) * sin(tilt_angle) * ca + sin(yaw_angle) * sa) * sin(psi) +
+                  cos(yaw_angle) * cos(tilt_angle) * cos(psi))
+        Vy = omega * _r * cos(psi) + v * (cos(yaw_angle) * sin(tilt_angle) * sa - sin(yaw_angle) * ca)
+
+        def func(inp, last_iteration=False, evaluate_only=False, phi_given=None, re_given=None):
             """
 
             :param inp: (a, a')
             :param last_iteration: minimization solver: return the results instead of the residual
             :param evaluate_only: compute the section state for the given (a, a') without updating them
+            :param phi_given: inflow angle [rad] to use instead of the one from (a, a') (inflow-angle solver)
+            :param re_given: Reynolds number to use with phi_given
             :return:
             """
             if print_all:
@@ -600,13 +610,6 @@ class Calculator:
 
             # for pretty-printing only
             prepend = ""
-            # Wind components in the blade coordinate system (CCBlade, Ning 2014,
-            # https://pdfs.semanticscholar.org/5e7d/9c6408b7dd8841692d950d08bce90c676dc1.pdf):
-            # yaw, tilt, precone (psi) and blade azimuth; Vy includes the rotation
-            sa, ca = sin(_azimuth), cos(_azimuth)
-            Vx = v * ((cos(yaw_angle) * sin(tilt_angle) * ca + sin(yaw_angle) * sa) * sin(psi) +
-                      cos(yaw_angle) * cos(tilt_angle) * cos(psi))
-            Vy = omega * _r * cos(psi) + v * (cos(yaw_angle) * sin(tilt_angle) * sa - sin(yaw_angle) * ca)
 
             # wind components
             if turbine_type == 1:  # propeller
@@ -621,8 +624,16 @@ class Calculator:
 
             Vrel_norm = sqrt(Un ** 2 + Ut ** 2)
 
+            if phi_given is not None:
+                # inflow-angle solver: the relative speed follows from the Reynolds number of the outer loop
+                phi = phi_given
+                if re_given is not None:
+                    Vrel_norm = re_given * kin_viscosity / _c
+
             if fix_reynolds:
                 Re = reynolds
+            elif re_given is not None:
+                Re = re_given
             else:
                 Re = Vrel_norm * _c / kin_viscosity
 
@@ -717,16 +728,15 @@ class Calculator:
                     """
                     return self.airfoils[_airfoil_next]["interp_function_cl"](Re, alpha)
 
-                # zero-lift angle, lift slope and zero-angle drag: needed by the rotational augmentation only
+                # zero-lift angle and lift slope: needed by the rotational augmentation only
                 alpha_zero = 0.0
                 if rotational_augmentation_correction:
                     alpha_zero_1 = optimize.bisect(zero_finding_function1, -10, 10, xtol=1e-3, rtol=1e-3)
                     alpha_zero_2 = optimize.bisect(zero_finding_function2, -10, 10, xtol=1e-3, rtol=1e-3)
                     alpha_zero = alpha_zero_1 * (1 - transition_coefficient) + alpha_zero_2 * transition_coefficient
-                    Cl_alpha_1, Cd_zero_1 = self.attached_lift_slope_and_cd0(_airfoil_prev, Re, alpha_zero_1)
-                    Cl_alpha_2, Cd_zero_2 = self.attached_lift_slope_and_cd0(_airfoil_next, Re, alpha_zero_2)
+                    Cl_alpha_1 = self.attached_lift_slope(_airfoil_prev, Re, alpha_zero_1)
+                    Cl_alpha_2 = self.attached_lift_slope(_airfoil_next, Re, alpha_zero_2)
                     Cl_alpha = Cl_alpha_1 * (1 - transition_coefficient) + Cl_alpha_2 * transition_coefficient
-                    Cd_zero = Cd_zero_1 * (1 - transition_coefficient) + Cd_zero_2 * transition_coefficient
 
                 alpha_zero = radians(alpha_zero)
 
@@ -763,11 +773,11 @@ class Calculator:
                     """
                     return self.airfoils[_airfoil]["interp_function_cl"](Re, alpha)
 
-                # zero-lift angle, lift slope and zero-angle drag: needed by the rotational augmentation only
+                # zero-lift angle and lift slope: needed by the rotational augmentation only
                 alpha_zero = 0.0
                 if rotational_augmentation_correction:
                     alpha_zero = optimize.bisect(zero_finding_function, -10, 10, xtol=1e-2, rtol=1e-3)
-                    Cl_alpha, Cd_zero = self.attached_lift_slope_and_cd0(_airfoil, Re, alpha_zero)
+                    Cl_alpha = self.attached_lift_slope(_airfoil, Re, alpha_zero)
 
                 alpha_zero = radians(alpha_zero)
 
@@ -788,8 +798,7 @@ class Calculator:
                                                                  c=_c, theta=_theta, v=v, Vrel_norm=Vrel_norm,
                                                                  method=rotational_augmentation_correction_method,
                                                                  alpha_zero=alpha_zero, printer=printer,
-                                                                 print_all=print_all, Cl_alpha=Cl_alpha,
-                                                                 Cd_zero=Cd_zero)
+                                                                 print_all=print_all, Cl_alpha=Cl_alpha)
 
                 if print_all:
                     p.print("             Cl_cor:", Cl, "Cd_cor:", Cd)
@@ -978,6 +987,71 @@ class Calculator:
             out["F"] = 0.0
             return out
 
+        def propeller_inflow_angle_solution():
+            """
+            Propeller section solved for the inflow angle phi (Ning 2014, CCBlade) instead of by fixed-point
+            iteration on (a, a'). With k = sigma Cn / (4 F sin^2 phi) and k' = sigma Ct / (4 F sin phi cos phi)
+            the propeller momentum equations (method 0) give 1 + a = 1 / (1 - k) and 1 - a' = 1 / (1 + k'), and
+            phi = atan2(Vx (1 + a), Vy (1 - a')) becomes the residual
+                R(phi) = sin(phi) (1 - k) - Vx / Vy cos(phi) (1 + k'),
+            which is continuous where a itself is singular (k = 1). A bracketed root is always found, while the
+            fixed-point iteration can settle on the spurious root a = -1, a' = 1 (no relative flow, no load)
+            at high loading. The Reynolds number is updated in an outer loop.
+            :return: section results, or None when no root is bracketed (the caller falls back to iterating)
+            """
+            if Vx <= 0.0 or Vy <= 0.0:
+                return None
+            state = {"re": sqrt(Vx ** 2 + Vy ** 2) * _c / kin_viscosity}
+
+            def k_factors(phi):
+                o = func((a_initial, aprime_initial), evaluate_only=True, phi_given=phi, re_given=state["re"])
+                if o is None or o["F"] <= 0.0:
+                    return None
+                k = sigma * o["Cn"] / (4 * o["F"] * sin(phi) ** 2)
+                kp = sigma * o["Ct"] / (4 * o["F"] * sin(phi) * cos(phi))
+                return k, kp
+
+            def residual(phi):
+                kk = k_factors(phi)
+                if kk is None:
+                    return float("nan")
+                k, kp = kk
+                return sin(phi) * (1 - k) - Vx / Vy * cos(phi) * (1 + kp)
+
+            eps = 1e-6
+            # the normal propeller working range first, then the windmill-brake and the reversed ranges
+            intervals = [(eps, pi / 2 - eps), (-pi / 4, -eps), (pi / 2 + eps, pi - eps)]
+            out = None
+            for _ in range(4):
+                root = None
+                for lo, hi in intervals:
+                    grid = np.linspace(lo, hi, 25)
+                    values = [residual(x) for x in grid]
+                    for j in range(len(grid) - 1):
+                        if np.isfinite(values[j]) and np.isfinite(values[j + 1]) and values[j] * values[j + 1] <= 0:
+                            root = optimize.brentq(residual, grid[j], grid[j + 1], xtol=1e-10)
+                            break
+                    if root is not None:
+                        break
+                if root is None:
+                    return None
+                k, kp = k_factors(root)
+                if abs(1 - k) < 1e-12:
+                    return None
+                out = func((k / (1 - k), kp / (1 + kp)), evaluate_only=True)
+                if out is None or fix_reynolds or abs(out["Re"] - state["re"]) <= 1e-3 * state["re"]:
+                    break
+                state["re"] = out["Re"]
+            if out is not None:
+                out["iterations"] = 0
+                out["criterion_value"] = abs(residual(root))
+            return out
+
+        if turbine_type == 1 and method == 0 and not use_minimization_solver and not invert_alpha:
+            out = propeller_inflow_angle_solution()
+            if out is not None:
+                return out
+
         if use_minimization_solver:
             bounds = [(0, 1.0), (0, 1.0)]
             initial_guess = [a_initial, aprime_initial]
@@ -1073,17 +1147,12 @@ class Calculator:
                 averaged[key] = float(np.mean([o[key] for o in outs]))
         return averaged
 
-    def attached_lift_slope_and_cd0(self, airfoil, Re, alpha_zero_deg, delta_deg=2.0):
+    def attached_lift_slope(self, airfoil, Re, alpha_zero_deg, delta_deg=2.0):
         """
-        Lift slope of the attached flow at the zero-lift angle [1/rad] and drag at zero angle of attack,
-        from the airfoil's own polar.
+        Lift slope of the attached flow at the zero-lift angle [1/rad], from the airfoil's own polar.
         """
         f_cl = self.airfoils[airfoil]["interp_function_cl"]
-        f_cd = self.airfoils[airfoil]["interp_function_cd"]
-        Cl_alpha = (f_cl(Re, alpha_zero_deg + delta_deg) - f_cl(Re, alpha_zero_deg - delta_deg)) / radians(
-            2 * delta_deg)
-        Cd_zero = f_cd(Re, 0.0)
-        return Cl_alpha, Cd_zero
+        return (f_cl(Re, alpha_zero_deg + delta_deg) - f_cl(Re, alpha_zero_deg - delta_deg)) / radians(2 * delta_deg)
 
     @staticmethod
     def to_rotor_frame(x, y, angle, turbine_type):

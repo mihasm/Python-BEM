@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from math import sin, cos, acos, pi, exp, sqrt, atan2, tan, degrees, tanh
+from math import sin, cos, acos, pi, exp, sqrt, atan2, tan, degrees, radians, tanh
 
 METHODS_STRINGS = {"0": "Classic BEM",
                    "1": "Spera Correction",
@@ -341,30 +341,37 @@ def cascadeEffectsCorrection(alpha, v, omega, r, R, c, B, a, aprime, max_thickne
 
 def calc_rotational_augmentation_correction(
         alpha, alpha_zero, Cl, Cd, omega, r, R, c, theta, v, Vrel_norm, method,
-        printer, print_all, Cl_alpha=2 * pi, Cd_zero=None):
+        printer, print_all, Cl_alpha=2 * pi):
     """
     METHODS FROM http://orbit.dtu.dk/files/86307371/A_Detailed_Study_of_the_Rotational.pdf
 
-    Cl_3D = Cl + fl * (Cl_pot - Cl), Cl_pot = Cl_alpha * sin(alpha - alpha_zero) is the attached-flow lift
-    with the airfoil's own lift slope Cl_alpha [1/rad] (2*pi for the thin-airfoil value).
-    Cd_3D = Cd + fd * (Cd - Cd_zero): rotation acts on the separation (pressure) part of the drag; Cd_zero is
-    the drag at zero angle of attack (Du & Selig 1998; Chaviaropoulos & Hansen 2000). fd < 0 lowers the drag.
+    Cl_3D = Cl + fl * (Cl_lin - Cl) * w, Cl_lin = Cl_alpha * (alpha - alpha_zero) is the linear attached-flow lift
+    of the published models, with the airfoil's own lift slope Cl_alpha [1/rad].
 
-    Rotational augmentation is delayed separation: it recovers at most the lift lost to separation, so it acts
-    only where the 2D lift lies below the attached-flow lift (|Cl| < |Cl_pot|, same sign), and fl, |fd| are
-    limited to 1 (the Gur & Rosen propeller model keeps its own sign convention).
+    Drag that goes with the added lift (Eggers et al. 2003, as in AirfoilPrep / WISDEM):
+    dCd = dCl * (sin(alpha) - 0.12 cos(alpha)) / (cos(alpha) + 0.12 sin(alpha)), which turns the added force
+    almost normal to the chord: delayed separation raises the normal force, not the leading-edge suction, as the
+    pressure measurements on rotating blades show (NREL Phase VI, MEXICO). The own drag factors of Du & Selig
+    (fd < 0, lower drag) and Chaviaropoulos & Hansen (fd = fl, Cd - Cd0) both gave a far too large torque and edge
+    moment on the Phase VI rotor in stall (validation/run_validation.py, 2026-10-18), so they are not used.
+
+    Limits:
+    - rotational augmentation is delayed separation: it recovers at most the lift lost to separation, so it acts
+      only where the 2D lift lies below the linear lift (same sign), with 0 <= fl <= 1;
+    - w blends the correction out in deep stall: 1 for |alpha| <= 25 deg, linearly to 0 at 45 deg
+      (AirfoilPrep / WISDEM "linear_25_45"); there is no attached flow left to delay;
+    - sections without a lift slope (cylinder roots, Cl_alpha < 1/rad) are not corrected.
+    The Gur & Rosen propeller model keeps its own sign convention.
     """
     p = printer
 
     fl = 0
-    fd = 0
 
     if method == 0:
         # Snel et al.
         a_s = 3
         h = 2
         fl = a_s * (c / r) ** h
-        fd = 0
 
     if method == 1:
         # Du & Selig
@@ -382,18 +389,6 @@ def calc_rotational_augmentation_correction(
                         - 1
                 )
         )
-        fd = (
-                -1
-                / (2 * pi)
-                * (
-                        1.6
-                        * (c / r)
-                        / 0.1267
-                        * (ad - (c / r) ** (dd * R / gama / r / 2))
-                        / (bd + (c / r) ** (dd * R / gama / r / 2))
-                        - 1
-                )
-        )
 
     if method == 2:
         # Chaviaropoulos and Hansen
@@ -401,20 +396,17 @@ def calc_rotational_augmentation_correction(
         h = 1.0
         n = 4
         fl = ah * (c / r) ** h * cos(theta) ** n
-        fd = fl
 
     if method == 3:
         # Lindenburg
         al = 3.1
         h = 2
         fl = al * (omega * R / Vrel_norm) ** 2 * (c / r) ** h
-        fd = 0
 
     if method == 4:
         # Dumitrescu and Cardos
         gd = 1.25
         fl = 1 - exp(-gd / (r / c - 1))
-        fd = 0
 
     if method == 5:
         # Snel et al. for propellers
@@ -431,27 +423,43 @@ def calc_rotational_augmentation_correction(
         else:
             fl = -tanh(10.73 * (c / r))
 
-    Cl_pot = Cl_alpha * sin(alpha - alpha_zero)
+    Cl_lin = Cl_alpha * (alpha - alpha_zero)
+    w = rotational_augmentation_blending(alpha)
 
+    if Cl_alpha < 1.0:
+        fl = 0.0
     if method != 6:
-        separated = (Cl_pot - Cl) * Cl_pot > 0
+        separated = (Cl_lin - Cl) * Cl_lin > 0
         if not separated:
-            fl, fd = 0.0, 0.0
+            fl = 0.0
         fl = min(max(fl, 0.0), 1.0)
-        fd = min(max(fd, -1.0), 1.0)
+
+    dCl = fl * (Cl_lin - Cl) * w
+    dCd = dCl * (sin(alpha) - 0.12 * cos(alpha)) / (cos(alpha) + 0.12 * sin(alpha))
 
     if print_all:
         p.print("             Rotational augmentation:")
-        p.print("               Cl_pot", Cl_pot)
+        p.print("               Cl_lin", Cl_lin)
         p.print("               fl", fl)
-        p.print("               fd", fd)
+        p.print("               w", w)
         p.print("               c/r", c / r)
-    Cl_3D = Cl + fl * (Cl_pot - Cl)
-    if fd != 0 and Cd_zero is not None:
-        Cd_3D = Cd + fd * (Cd - Cd_zero)
-    else:
-        Cd_3D = Cd
-    return Cl_3D, Cd_3D
+    return Cl + dCl, Cd + dCd
+
+
+def rotational_augmentation_blending(alpha):
+    """
+    Weight of the rotational augmentation: 1 for |alpha| <= 25 deg, linearly to 0 at |alpha| = 45 deg
+    (AirfoilPrep / WISDEM Polar.correction3D, blending "linear_25_45").
+
+    :param alpha: angle of attack [rad]
+    :return: weight 0..1
+    """
+    a = abs(alpha)
+    if a <= radians(25):
+        return 1.0
+    if a >= radians(45):
+        return 0.0
+    return (radians(45) - a) / radians(20)
 
 
 def skewed_wake_correction_calculate(yaw_angle, a, r, R, azimuth=0.0):

@@ -659,29 +659,29 @@ def get_curves_functions(input_arguments):
         cl = data[:, 3].flatten()
         cd = data[:, 4].flatten()
 
-        def interpolation_function_cl(re_in, alpha_in, re=re, alpha=alpha, cl=cl):
+        # split the polar table by Reynolds number once, not on every lookup
+        table_cl = polar_table(re, alpha, cl)
+        table_cd = polar_table(re, alpha, cd)
+
+        def interpolation_function_cl(re_in, alpha_in, table=table_cl):
             """
 
             :param re_in:
             :param alpha_in:
-            :param re:
-            :param alpha:
-            :param cl:
+            :param table: polar_table of cl
             :return:
             """
-            return interp(re_in, alpha_in, re, alpha, cl)
+            return interp_table(re_in, alpha_in, table)
 
-        def interpolation_function_cd(re_in, alpha_in, re=re, alpha=alpha, cd=cd):
+        def interpolation_function_cd(re_in, alpha_in, table=table_cd):
             """
 
             :param re_in:
             :param alpha_in:
-            :param re:
-            :param alpha:
-            :param cd:
+            :param table: polar_table of cd
             :return:
             """
-            return interp(re_in, alpha_in, re, alpha, cd)
+            return interp_table(re_in, alpha_in, table)
 
         airfoils[blade_name]["interp_function_cl"] = interpolation_function_cl
         airfoils[blade_name]["interp_function_cd"] = interpolation_function_cd
@@ -1050,41 +1050,45 @@ def interp(re_in, alpha_in, re, alpha, cl):
     In cases that re_in is too large, or too small, the function returns the closest available valid Reynolds data.
     """
 
-    re_list, alpha_list, cl_list = np.unique(
-        re), np.unique(alpha), np.unique(cl)
+    return interp_table(re_in, alpha_in, polar_table(re, alpha, cl))
 
-    # print("For itnerpolation:",alpha,cl)
 
-    if re_in >= re_list.max():
-        # print("Reyonlds is bigger")
-        indexes = np.where(re == re_list.max())
-        alpha_selected = alpha[indexes]
-        cl_selected = cl[indexes]
+def polar_table(re, alpha, cl):
+    """
+    Splits a polar given as flat arrays (re, alpha, value) into one (alpha, value) curve per Reynolds number.
+
+    :return: (sorted array of Reynolds numbers, list of (alpha, value) array pairs in the same order)
+    """
+    re, alpha, cl = np.asarray(re), np.asarray(alpha), np.asarray(cl)
+    re_list = np.unique(re)
+    curves = []
+    for _re in re_list:
+        indexes = np.where(re == _re)
+        curves.append((alpha[indexes], cl[indexes]))
+    return re_list, curves
+
+
+def interp_table(re_in, alpha_in, table):
+    """
+    Interpolates a polar_table at (re_in, alpha_in): linear in alpha, then linear in Reynolds number.
+    Outside the tabulated Reynolds range the closest Reynolds curve is used.
+    """
+    re_list, curves = table
+
+    if re_in >= re_list[-1]:
+        alpha_selected, cl_selected = curves[-1]
         return np.interp(alpha_in, alpha_selected, cl_selected, left=False, right=False)
 
-    if re_in <= re_list.min():
-        # print("Reynolds is smaller")
-        # print("Alpha_in",alpha_in)
-        indexes = np.where(re == re_list.min())
-        alpha_selected = alpha[indexes]
-        cl_selected = cl[indexes]
-        # print("alpha_selected:",alpha_selected)
-        oo = np.interp(alpha_in, alpha_selected, cl_selected, left=False, right=False)
-        # print(oo)
-        return oo
+    if re_in <= re_list[0]:
+        alpha_selected, cl_selected = curves[0]
+        return np.interp(alpha_in, alpha_selected, cl_selected, left=False, right=False)
 
-    re_bottom_index = np.where(re_list <= re_in)[0][-1]
+    re_bottom_index = np.searchsorted(re_list, re_in, side="right") - 1
     re_bottom = re_list[re_bottom_index]
     re_top = re_list[re_bottom_index + 1]
 
-    indexes_bottom = np.where(re == re_bottom)
-    indexes_top = np.where(re == re_top)
-
-    alpha_bottom = alpha[indexes_bottom]
-    cl_bottom = cl[indexes_bottom]
-
-    alpha_top = alpha[indexes_top]
-    cl_top = cl[indexes_top]
+    alpha_bottom, cl_bottom = curves[re_bottom_index]
+    alpha_top, cl_top = curves[re_bottom_index + 1]
 
     _cl_1 = np.interp(alpha_in, alpha_bottom, cl_bottom, left=False, right=False)
     _cl_2 = np.interp(alpha_in, alpha_top, cl_top, left=False, right=False)
