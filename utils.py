@@ -26,6 +26,9 @@ import scipy
 from PyQt5.QtGui import QPalette, QColor
 from scipy import interpolate
 
+# numpy 2 renamed trapz to trapezoid
+trapezoid = getattr(np, "trapezoid", None) or np.trapz
+
 # determine if application is a script file or frozen exe
 if getattr(sys, 'frozen', False):
     application_path = os.path.dirname(sys.executable)
@@ -387,17 +390,20 @@ def get_centroid_coordinates(x, y):
     :return: 
     """
 
+    n = len(x)
     A = 0
-    for i in range(0, len(x) - 1):
-        A = A + (x[i] * y[i + 1] - x[i + 1] * y[i])
+    for i in range(n):
+        j = (i + 1) % n
+        A = A + (x[i] * y[j] - x[j] * y[i])
     A = A * 1 / 2
 
     Cx = 0
     Cy = 0
 
-    for i in range(0, len(x) - 1):
-        Cx = Cx + (x[i] + x[i + 1]) * (x[i] * y[i + 1] - x[i + 1] * y[i])
-        Cy = Cy + (y[i] + y[i + 1]) * (x[i] * y[i + 1] - x[i + 1] * y[i])
+    for i in range(n):
+        j = (i + 1) % n
+        Cx = Cx + (x[i] + x[j]) * (x[i] * y[j] - x[j] * y[i])
+        Cy = Cy + (y[i] + y[j]) * (x[i] * y[j] - x[j] * y[i])
 
     Cx = Cx * 1 / (6 * A)
     Cy = Cy * 1 / (6 * A)
@@ -446,13 +452,13 @@ def generate_v_and_rpm_from_J(J_list, R, v=None, rpm=None, printer=None):
         # rpm is fixed
         out_rpm.append(rpm)
         for J in J_list:
-            _v = J * (rpm / 60) * (2 * R * geometry_scale)
+            _v = J * (rpm / 60) * (2 * R)
             out_v.append(_v)
     elif rpm == None:
         # v is fixed
         out_v.append(v)
         for J in J_list:
-            _rpm = 60 * v / J / (2 * R * geometry_scale)
+            _rpm = 60 * v / J / (2 * R)
             out_rpm.append(_rpm)
     return out_v, out_rpm
 
@@ -722,8 +728,8 @@ def get_curves_functions(input_arguments):
             _airfoil_next = transition_foils[n][1]
             transition_coefficient = transition_foils[n][2]
 
-            max_thickness = airfoils[_airfoil_prev]["max_thickness"] * _c * transition_coefficient + \
-                            airfoils[_airfoil_next]["max_thickness"] * _c * (1 - transition_coefficient)
+            max_thickness = airfoils[_airfoil_prev]["max_thickness"] * _c * (1 - transition_coefficient) + \
+                            airfoils[_airfoil_next]["max_thickness"] * _c * transition_coefficient
 
             transition_array.append(True)
         else:
@@ -772,9 +778,11 @@ def generate_twists_schmitz(radiuses, R, TSR, alpha_d):
     return thetas
 
 
-def generate_propeller_larabee(radiuses, R, B, RPM, drag_lift_ratio, v, T, rho, cl):
+def generate_propeller_larabee(radiuses, R, B, RPM, drag_lift_ratio, v, T, rho, cl, alpha_d=0.0):
     """
     Source: Larabee, 1979
+
+    The returned blade angle is the flow angle phi plus the design angle of attack alpha_d [deg].
     """
     radiuses = np.array(radiuses)
     xi = radiuses / R
@@ -788,15 +796,15 @@ def generate_propeller_larabee(radiuses, R, B, RPM, drag_lift_ratio, v, T, rho, 
     dxi = np.diff(_xi)
     y = G * (1 - drag_lift_ratio / x) * xi
     y2 = G * (1 - drag_lift_ratio / x) * xi / (x ** 2 + 1)
-    I1 = 4 * np.trapz(y, x=xi)
-    I2 = 2 * np.trapz(y2, x=xi)
+    I1 = 4 * trapezoid(y, x=xi)
+    I2 = 2 * trapezoid(y2, x=xi)
     thrust_coeff = 2 * T / (rho * v ** 2 * np.pi * R ** 2)
     zeta = I1 / (2 * I2) * (1 - np.sqrt(1 - (4 * I2 * thrust_coeff) / I1 ** 2))
     vprime = zeta * v
     c_R = 4 * np.pi / B * TSR * G / (np.sqrt(1 + x ** 2)) * zeta / cl
     c = c_R * R
-    theta = np.arctan(TSR / xi * (1 + 0.5 * zeta))
-    theta = np.rad2deg(theta)
+    phi = np.arctan(TSR / xi * (1 + 0.5 * zeta))
+    theta = np.rad2deg(phi) + alpha_d
     return c, theta
 
 
@@ -1003,10 +1011,10 @@ def generate_propeller_adkins(inp):
         print("J1p", J1p)
         print("J2p", J2p)
 
-        I1 = np.trapz(I1p, x=xi)
-        I2 = np.trapz(I2p, x=xi)
-        J1 = np.trapz(J1p, x=xi)
-        J2 = np.trapz(J2p, x=xi)
+        I1 = trapezoid(I1p, x=xi)
+        I2 = trapezoid(I2p, x=xi)
+        J1 = trapezoid(J1p, x=xi)
+        J2 = trapezoid(J2p, x=xi)
 
         if use_power_constraint:
             print("Power")
@@ -1018,7 +1026,7 @@ def generate_propeller_adkins(inp):
             zeta_new = (I1 / (2 * I2)) - ((I1 / (2 * I2)) ** 2 - T_c / I2) ** 0.5
 
         print("zeta_new", zeta_new)
-        if abs(abs(zeta - zeta_new) * zeta_new) < convergence_criterion_adkins:
+        if abs(zeta - zeta_new) / abs(zeta_new) < convergence_criterion_adkins:
             print("converged")
             print(c, np.rad2deg(beta))
             return c, np.rad2deg(beta)

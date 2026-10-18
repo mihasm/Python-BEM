@@ -197,7 +197,7 @@ class WindTurbineProperties(QWidget):
         self.hideable_widgets.append([
             self.fbox.itemAt(self.fbox.rowCount() - 1, 0),
             self.fbox.itemAt(self.fbox.rowCount() - 1, 1),
-            ["Betz", "Schmitz"]])
+            ["Betz", "Schmitz", "Larrabee"]])
         self.settings["design_aoa"] = self.design_aoa
 
         self._design_cl = QLabel("Design Cl")
@@ -568,7 +568,8 @@ class WindTurbineProperties(QWidget):
 
         elif method == 2:
             chords, thetas = generate_propeller_larabee(radiuses=radiuses, R=R, B=B, RPM=RPM,
-                                                        drag_lift_ratio=drag_lift_ratio, v=v, T=T, rho=rho, cl=cl_des)
+                                                        drag_lift_ratio=drag_lift_ratio, v=v, T=T, rho=rho, cl=cl_des,
+                                                        alpha_d=design_aoa)
 
         elif method == 3:
             input_data = self.main.get_all_settings()

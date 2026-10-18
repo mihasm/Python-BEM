@@ -50,6 +50,7 @@ class Analysis(QWidget):
                          "mach_number_correction": False,
                          "rho": 1.225,
                          "kin_viscosity": 1.4207E-5,
+                         "speed_of_sound": 343.0,
                          "method": 6,
                          "variable_selection": ["RPM and v", "TSR", "J", "pitch", "pitch+TSR", "pitch+J"],
                          "constant_selection": ["speed", "rpm"],
@@ -80,7 +81,8 @@ class Analysis(QWidget):
                          "print_out": False,
                          "reynolds": 50000,
                          "fix_reynolds": False,
-                         "yaw_angle": 0}
+                         "yaw_angle": 0,
+                         "num_azimuth": 16}
 
         self.settings_to_name = {"print_out": "Print final iteration data",
                                  "invert_alpha": "Invert alpha",
@@ -89,6 +91,8 @@ class Analysis(QWidget):
                                  "cascade_correction": "Cascade correction",
                                  "rho": "Air density [kg/m^3]",
                                  "kin_viscosity": "Kinematic viscosity [m^2/s]",
+                                 "speed_of_sound": "Speed of sound [m/s]",
+                                 "num_azimuth": "Azimuth positions (yaw)",
                                  "method": "Calculation method",
                                  "variable_selection": "Variable parameter",
                                  "constant_selection": "Constant variable",
@@ -131,6 +135,8 @@ class Analysis(QWidget):
             "cascade_correction": "Kaskadni popravki",
             "rho": "Gostota fluida [kg/m^3]",
             "kin_viscosity": "Kinematična viskoznost fluida [m^2/s]",
+            "speed_of_sound": "Hitrost zvoka v fluidu [m/s] za lokalno Machovo število (zrak pri 20 °C: 343 m/s, voda: ~1480 m/s)",
+            "num_azimuth": "Število leg lopatice v enem obratu, po katerih se povpreči izračun pri kotu zasuka (yaw) različnem od 0",
             "method": "Metoda za preračun. Privzeta je e) Aerodyn (Buhl).",
             "variable_selection": "Izbira spremenljivega parametra",
             "constant_selection": "Konstantna spremenljivka",
@@ -429,6 +435,14 @@ class Analysis(QWidget):
             self.forms_dict["reynolds"][2].hide()
 
     def refresh_methods(self):
+        # cascade and skewed-wake corrections are formulated for wind turbines only
+        for key in ("cascade_correction", "skewed_wake_correction"):
+            form = self.forms_dict[key][0]
+            if self.turbine_type.currentIndex() == 0:
+                form.setEnabled(True)
+            else:
+                form.setChecked(False)
+                form.setEnabled(False)
         if self.turbine_type.currentIndex() == 0:
             for i in range(self.forms_dict["method"][0].count()):
                 self.forms_dict["method"][0].model().item(i).setEnabled(True)
@@ -447,7 +461,8 @@ class Analysis(QWidget):
         """
         try:
             s = self.get_settings()
-            R = float(self.main.wind_turbine_properties.R.text())
+            R = float(self.main.wind_turbine_properties.R.text()) * float(
+                self.main.wind_turbine_properties.geometry_scale.text())
             tsr_min = 2 * np.pi * float(s["rpm_min"]) * R / 60 / float(s["v_max"])
             tsr_max = 2 * np.pi * float(s["rpm_max"]) * R / 60 / float(s["v_min"])
             self.tsr_string.setText("%.2f - %.2f" % (tsr_min, tsr_max))

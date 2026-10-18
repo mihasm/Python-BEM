@@ -20,6 +20,32 @@ from numpy import pi as PI
 import numpy as np
 
 
+def thickness_and_camber(x, y):
+    """
+    Maximum thickness and maximum camber of an airfoil, relative to the chord, from its coordinates
+    (one surface from the trailing edge to the leading edge, the other back, in either order).
+
+    :return: (thickness, camber); camber keeps its sign (positive for a positively cambered airfoil)
+    """
+    x, y = np.asarray(x, dtype=float), np.asarray(y, dtype=float)
+    i_le = int(np.argmin(x))
+    chord = np.max(x) - x[i_le]
+    if chord <= 0 or i_le == 0 or i_le == len(x) - 1:
+        return None
+    xa, ya = x[:i_le + 1], y[:i_le + 1]
+    xb, yb = x[i_le:], y[i_le:]
+    oa, ob = np.argsort(xa), np.argsort(xb)
+    grid = np.linspace(x[i_le], np.minimum(np.max(xa), np.max(xb)), 201)
+    y_a = np.interp(grid, xa[oa], ya[oa])
+    y_b = np.interp(grid, xb[ob], yb[ob])
+    if np.mean(y_a - y_b) < 0:
+        y_a, y_b = y_b, y_a  # y_a is the upper surface
+    thickness = np.max(y_a - y_b) / chord
+    mean_line = (y_a + y_b) / 2 - y[i_le]
+    camber = mean_line[np.argmax(np.abs(mean_line))] / chord
+    return thickness, camber
+
+
 class POLAR_CLASS:
     """
 
@@ -54,12 +80,13 @@ class Montgomerie:
         self.m_pctrlAm = Am  # 1-80
         self.m_pctrlBm = Bm  # 1-70
 
-        if len(y) > 0:
-            self.m_fThickness = np.max(y)-np.min(y)
+        # relative thickness and camber of the airfoil (used in CD90)
+        shape = thickness_and_camber(x, y) if len(x) > 4 and len(y) > 4 else None
+        if shape is not None:
+            self.m_fThickness, self.m_fCamber = shape
         else:
             self.m_fThickness = 0.1
-
-        self.m_fCamber = 0.043
+            self.m_fCamber = 0.0
 
         self.m_pCurPolar = POLAR_CLASS(x, y, alpha, Cl, Cd)
         self.posalphamax = np.argmax(self.m_pCurPolar.m_Cl)
@@ -229,10 +256,9 @@ class Montgomerie:
                 delta = am - alpha
 
             f = 1 / (1 + k * delta ** 4)
-            self.deltaCD = 0.13 * ((f - 1) * self.PotFlow(self.CLzero, self.slope, alpha) - (1 - f) * self.PlateFlow(
+            # extra drag from the lift lost to separation: 0.13 * |Cl_pot - Cl|, with Cl = f*Pot + (1-f)*Plate
+            self.deltaCD = 0.13 * (1 - f) * abs(self.PotFlow(self.CLzero, self.slope, alpha) - self.PlateFlow(
                 self.alphazero, self.CLzero, alpha))
-            if self.deltaCD <= 0:
-                self.deltaCD = 0
             # tukaj nisem preprican kaj pomeni self.m_fThickness, je to v procentih tetive ali kaj?
             m_Cd.append(
                 f * (self.deltaCD + 0.006 + 1.25 * self.m_fThickness ** 2 / 180 * abs(alpha)) + (1 - f) * self.CDPlate(
@@ -308,12 +334,9 @@ class Montgomerie:
             else:
                 delta = am - alpha
             f = 1 / (1 + k * delta ** 4)
-            self.deltaCD = 0.13 * (
-                self.PotFlow(self.CLzero, self.slope, alpha) - f * self.PotFlow(self.CLzero, self.slope, alpha) - (
-                    1 - f) * self.PlateFlow(self.alphazero, self.CLzero, alpha))
-
-            if self.deltaCD <= 0:
-                self.deltaCD = 0
+            # extra drag from the lift lost to separation: 0.13 * |Cl_pot - Cl|, with Cl = f*Pot + (1-f)*Plate
+            self.deltaCD = 0.13 * (1 - f) * abs(self.PotFlow(self.CLzero, self.slope, alpha) - self.PlateFlow(
+                self.alphazero, self.CLzero, alpha))
             m_Cd.append(
                 f * (self.deltaCD + 0.006 + 1.25 * self.m_fThickness ** 2 / 180 * abs(alpha)) + (1 - f) * self.CDPlate(
                     alpha) + 0.006)

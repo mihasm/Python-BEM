@@ -49,13 +49,15 @@ def calculate_coefficients(method, input_arguments):
 
 def machNumberCorrection(Cl, Cd, M):
     """
+    Prandtl-Glauert compressibility correction. It scales the pressure-driven lift only;
+    the (mostly viscous) drag coefficient is left unchanged.
 
     :param Cl: Lift coefficient
-    :param M: Mach number
-    :return: Lift coefficient
+    :param Cd: Drag coefficient
+    :param M: local (relative) Mach number, must be < 1
+    :return: Lift coefficient, drag coefficient
     """
     Cl = Cl / sqrt(1 - M ** 2)
-    Cd = Cd / sqrt(1 - M ** 2)
     return Cl, Cd
 
 
@@ -90,14 +92,15 @@ def fHubLoss(B, r, Rhub, phi):
     return F
 
 
-def newTipLoss(B, r, R, phi, lambda_r):
+def newTipLoss(B, r, R, phi, tsr):
     """
-    Prandtl tip loss with correction.
+    Prandtl tip loss with the correction of Shen et al. (2005):
+    g = exp(-0.125 * (B * lambda - 21)) + 0.1, where lambda is the rotor tip speed ratio.
     :param B: number of blades
     :param r: section radius [m]
     :param R: tip radius [m]
     :param phi: angle of relative wind [rad]
-    :param lambda_r: local speed ratio [float]
+    :param tsr: tip speed ratio of the rotor [float]
     :return: returns tip loss factor [float]
     """
     F = 1
@@ -106,16 +109,16 @@ def newTipLoss(B, r, R, phi, lambda_r):
     Flt = (
             2
             / pi
-            * acos(exp(-B / 2 * abs(g / f) * (exp(-0.15 * (B * lambda_r - 21)) + 0.1)))
+            * acos(exp(-B / 2 * abs(g / f) * (exp(-0.125 * (B * tsr - 21)) + 0.1)))
     )
     F = F * Flt
     return F
 
 
-def newHubLoss(B, r, Rhub, phi, lambda_r):
+def newHubLoss(B, r, Rhub, phi, tsr):
     """
-    Prandtl hub loss.
-    :param lambda_r: local speed ratio [float]
+    Prandtl hub loss with the correction of Shen et al. (2005).
+    :param tsr: tip speed ratio of the rotor [float]
     :param B: number of blades [int]
     :param r: section radius [m]
     :param Rhub: hub radius [m]
@@ -128,7 +131,7 @@ def newHubLoss(B, r, Rhub, phi, lambda_r):
     Flt = (
             2
             / pi
-            * acos(exp(-B / 2 * abs(g / f) * (exp(-0.15 * (B * lambda_r - 21)) + 0.1)))
+            * acos(exp(-B / 2 * abs(g / f) * (exp(-0.125 * (B * tsr - 21)) + 0.1)))
     )
     F = F * Flt
     return F
@@ -136,13 +139,17 @@ def newHubLoss(B, r, Rhub, phi, lambda_r):
 
 def fAdkinsTipLoss(B, r, R, phi):
     """
+    Tip loss of Adkins and Liebeck (1994): f = B/2 * (1 - xi) / sin(phi_t),
+    with the flow angle at the tip tan(phi_t) = xi * tan(phi) and xi = r/R.
     :param B: number of blades [int]
     :param r: section radius [m]
-    :param Rhub: hub radius [m]
+    :param R: tip radius [m]
     :param phi: angle of relative wind [rad]
-    :return: returns hub loss factor [float]
+    :return: returns tip loss factor [float]
     """
-    F = 2 / pi * acos(exp(-B / 2 * abs((R - r) / r / sin(phi))))
+    xi = r / R
+    phi_t = atan2(xi * sin(phi), cos(phi))
+    F = 2 / pi * acos(exp(-B / 2 * abs((1 - xi) / sin(phi_t))))
     return F
 
 
@@ -219,13 +226,17 @@ def fInductionCoefficients2(a_last, F, phi, sigma, C_norm, C_tang, Cl, Ct_r, *ar
 
 
 # noinspection PyUnusedLocal,PyUnusedLocal,PyUnusedLocal
-def fInductionCoefficients3(a_last, F, lambda_r, phi, sigma, C_norm, Ct_r, *args, **kwargs):
+def fInductionCoefficients3(a_last, F, lambda_r, phi, sigma, C_norm, C_tang, Ct_r, *args, **kwargs):
     """
     Calculates induction coefficients using Buhl correction (QBlade implementation).
 
     NAME: QBLADE (Buhl)
     SOURCE: QBlade/src/XBEM/BData.cpp
     AUTHOR: Buhl
+
+    The tangential induction follows from the tangential momentum balance (with drag), not from the
+    drag-free orthogonality relation a'(1+a')lambda_r^2 = a(1-a) QBlade uses; the high-thrust correction
+    only replaces the axial momentum balance. With this, the method equals method 2.
     """
 
     if Ct_r <= 0.96 * F:
@@ -236,7 +247,7 @@ def fInductionCoefficients3(a_last, F, lambda_r, phi, sigma, C_norm, Ct_r, *args
                                           12 * F * (3 * F - 4)) ** 0.5
             ) / (36 * F - 50)
 
-    aprime = 0.5 * (abs(1 + 4 / (lambda_r ** 2) * a * (1 - a)) ** 0.5 - 1)
+    aprime = (sigma * C_tang) / (4 * F * sin(phi) * cos(phi) - sigma * C_tang)
 
     return a, aprime
 
@@ -264,12 +275,15 @@ def fInductionCoefficients4(a_last, F, phi, Cl, C_tang, C_norm, sigma, Ct_r, *ar
     return a, aprime
 
 
-def fInductionCoefficients5(a_last, F, phi, Cl, C_norm, sigma, lambda_r, Ct_r, *args, **kwargs):
+def fInductionCoefficients5(a_last, F, phi, Cl, C_norm, C_tang, sigma, lambda_r, Ct_r, *args, **kwargs):
     """
     NAME: Modified ABS model
     Method from Pratumnopharat,2010
 
     Modified advanced brake state model
+
+    The tangential induction follows from the tangential momentum balance (with drag); the ABS
+    correction only replaces the axial momentum balance.
 
     :param lambda_r: local speed ratio
     :param C_norm: normal coefficient
@@ -285,11 +299,7 @@ def fInductionCoefficients5(a_last, F, phi, Cl, C_norm, sigma, lambda_r, Ct_r, *
         a = (1 - sqrt(1 - Ct_r / F)) / 2
     else:
         a = 0.1432 + sqrt(-0.55106 + 0.6427 * Ct_r / F)
-    aprimeprime = (4 * a * F * (1 - a)) / (lambda_r ** 2)
-    if (1 + aprimeprime) < 0:
-        aprime = 0
-    else:
-        aprime = (sqrt(1 + aprimeprime) - 1) / 2
+    aprime = (sigma * C_tang) / (4 * F * sin(phi) * cos(phi) - sigma * C_tang)
 
     return a, aprime
 
@@ -331,9 +341,18 @@ def cascadeEffectsCorrection(alpha, v, omega, r, R, c, B, a, aprime, max_thickne
 
 def calc_rotational_augmentation_correction(
         alpha, alpha_zero, Cl, Cd, omega, r, R, c, theta, v, Vrel_norm, method,
-        printer, print_all):
+        printer, print_all, Cl_alpha=2 * pi, Cd_zero=None):
     """
     METHODS FROM http://orbit.dtu.dk/files/86307371/A_Detailed_Study_of_the_Rotational.pdf
+
+    Cl_3D = Cl + fl * (Cl_pot - Cl), Cl_pot = Cl_alpha * sin(alpha - alpha_zero) is the attached-flow lift
+    with the airfoil's own lift slope Cl_alpha [1/rad] (2*pi for the thin-airfoil value).
+    Cd_3D = Cd + fd * (Cd - Cd_zero): rotation acts on the separation (pressure) part of the drag; Cd_zero is
+    the drag at zero angle of attack (Du & Selig 1998; Chaviaropoulos & Hansen 2000). fd < 0 lowers the drag.
+
+    Rotational augmentation is delayed separation: it recovers at most the lift lost to separation, so it acts
+    only where the 2D lift lies below the attached-flow lift (|Cl| < |Cl_pot|, same sign), and fl, |fd| are
+    limited to 1 (the Gur & Rosen propeller model keeps its own sign convention).
     """
     p = printer
 
@@ -349,7 +368,7 @@ def calc_rotational_augmentation_correction(
 
     if method == 1:
         # Du & Selig
-        gama = omega * R / sqrt(abs(v ** 2 - (omega * R) ** 2))
+        gama = omega * R / sqrt(v ** 2 + (omega * R) ** 2)
         ad, dd, bd = 1, 1, 1
         fl = (
                 1
@@ -412,26 +431,46 @@ def calc_rotational_augmentation_correction(
         else:
             fl = -tanh(10.73 * (c / r))
 
-    Cl_pot = 2 * pi * sin(alpha - alpha_zero)
+    Cl_pot = Cl_alpha * sin(alpha - alpha_zero)
+
+    if method != 6:
+        separated = (Cl_pot - Cl) * Cl_pot > 0
+        if not separated:
+            fl, fd = 0.0, 0.0
+        fl = min(max(fl, 0.0), 1.0)
+        fd = min(max(fd, -1.0), 1.0)
+
     if print_all:
         p.print("             Rotational augmentation:")
         p.print("               Cl_pot", Cl_pot)
         p.print("               fl", fl)
+        p.print("               fd", fd)
         p.print("               c/r", c / r)
     Cl_3D = Cl + fl * (Cl_pot - Cl)
-    Cd_3D = Cd
+    if fd != 0 and Cd_zero is not None:
+        Cd_3D = Cd + fd * (Cd - Cd_zero)
+    else:
+        Cd_3D = Cd
     return Cl_3D, Cd_3D
 
 
-def skewed_wake_correction_calculate(yaw_angle, a, r, R):
+def skewed_wake_correction_calculate(yaw_angle, a, r, R, azimuth=0.0):
     """
+    Pitt and Peters skewed-wake correction (as in AeroDyn), applied to the converged induction:
+    a_skew = a * (1 + 15*pi/32 * r/R * tan(chi/2) * cos(psi_dw)), chi = (0.6*a + 1) * yaw (Burton et al.),
+    where psi_dw is the azimuth measured from the most downwind blade position. Averaged over one
+    revolution the correction is zero; it redistributes the induction over the rotor disc.
 
-    :param yaw_angle:
-    :param a:
-    :param r:
-    :param R:
-    :return:
+    With the solver's azimuth convention (0 = blade up, the in-plane wind V*sin(yaw) blows radially outward
+    along the blade at azimuth 90 deg), cos(psi_dw) = sin(azimuth).
+
+    :param yaw_angle: yaw angle [rad]
+    :param a: axial induction factor
+    :param r: section radius [m]
+    :param R: tip radius [m]
+    :param azimuth: blade azimuth [rad]
+    :return: corrected axial induction factor
     """
     chi = (0.6 * a + 1) * yaw_angle
-    a_skew = a * (1 + 15 * pi / 64 * r / R * tan(chi / 2))
+    a_skew = a * (1 + 15 * pi / 32 * r / R * tan(chi / 2) * sin(azimuth))
     return a_skew

@@ -121,7 +121,7 @@ def optimize_section_by_section(inp_args, queue_pyqtgraph, p, C):
 
             args = {**inp_args, **section_inp_args}
 
-            d = C.calculate_section(**args, printer=p)
+            d = C.calculate_section_averaged(**args, printer=p)
             if d is None or d is False:
                 return 1e10
 

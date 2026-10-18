@@ -20,10 +20,10 @@ import numpy as np
 import scipy.optimize as optimize
 from numpy import radians, degrees
 
-from bending_inertia import generate_hollow_foil, calculate_bending_inertia_2
+from bending_inertia import generate_hollow_foil, calculate_bending_inertia_2, calculate_centroid
 from popravki import *
 from utils import Printer, get_curves_functions
-from visualization import scale_and_normalize, rotate_array
+from visualization import interpolate_foils
 
 numpy.seterr(all="raise")
 numpy.seterr(invalid="raise")
@@ -54,7 +54,7 @@ OUTPUT_VARIABLES_LIST = {
     "foils": {"post_processed": True, "type": "string_array", "name": "Airfoil name", "symbol": "airfoil_name",
               "unit": ""},
     "dT": {"type": "array", "name": "Incremental thrust", "symbol": "dT", "unit": "N"},
-    "dQ": {"type": "array", "name": "Incremental torque", "symbol": "dM", "unit": "N"},
+    "dQ": {"type": "array", "name": "Incremental torque", "symbol": "dM", "unit": "Nm"},
     "Re": {"type": "array", "name": "Reynolds number", "symbol": "Re", "unit": ""},
     "U1": {"type": "array", "name": "Far-upwind speed", "symbol": "U1", "unit": "m/s"},
     "U2": {"type": "array", "name": "Near-upwind speed", "symbol": "U2", "unit": "m/s"},
@@ -97,7 +97,7 @@ OUTPUT_VARIABLES_LIST = {
     "ct": {"type": "float", "name": "Thrust coefficient", "symbol": r"$C_T$", "unit": ""},
     "TSR": {"type": "float", "name": "Tip speed ratio", "symbol": r"$\lambda$", "unit": ""},
     "Ft": {"type": "float", "name": "Tangential force", "symbol": r"$F_t$", "unit": "N"},
-    "omega": {"type": "float", "name": "Rotational velocity", "symbol": r"$\Omega$", "unit": r"$rad^{-1}$"},
+    "omega": {"type": "float", "name": "Rotational velocity", "symbol": r"$\Omega$", "unit": "rad/s"},
     "M": {"type": "float", "name": "Torque sum", "symbol": r"$M_Sum$", "unit": "Nm"},
     "Q": {"type": "float", "name": "Aerodynamic torque", "symbol": "Q", "unit": "Nm"},
     "power": {"type": "float", "name": "Power", "symbol": "P", "unit": "W"},
@@ -179,7 +179,8 @@ class Calculator:
                   fix_reynolds, reynolds, yaw_angle, skewed_wake_correction, blade_design, blade_thickness,
                   mass_density, use_minimization_solver, invert_alpha,
                   a_initial, aprime_initial,
-                  print_progress=False, return_print=None, return_results=None, *args, **kwargs):
+                  print_progress=False, return_print=None, return_results=None, num_azimuth=16,
+                  speed_of_sound=343.0, *args, **kwargs):
         """
         Calculates induction factors using standard iteration methods.
 
@@ -223,6 +224,8 @@ class Calculator:
         :param R: outer (tip) radius [m]
         :param Rhub: hub radius [m]
         :param B: number of blades
+        :param num_azimuth: blade positions per revolution over which a yawed rotor is averaged
+        :param speed_of_sound: speed of sound in the fluid [m/s]
         :return: dictionary with results
         """
 
@@ -272,7 +275,7 @@ class Calculator:
             _locals = locals()
             del _locals["self"]
 
-            out_results = self.calculate_section(**_locals, printer=p)
+            out_results = self.calculate_section_averaged(**_locals, printer=p)
 
             randomize_parameters = False
 
@@ -340,7 +343,7 @@ class Calculator:
                 results[a] = numpy.append(results[a], out_results[a])
 
         self.statical_analysis(blade_design, blade_thickness, c, dr, foils, mass_density, num_sections, omega, r,
-                               results, theta)
+                               results, theta, pitch=pitch, turbine_type=turbine_type)
 
         dFt = results["dFt"]
         Ft = numpy.sum(dFt)
@@ -369,6 +372,7 @@ class Calculator:
         ct_p = T / (rho * (2 * R) ** 4 * (rpm / 60) ** 2)
 
         cq_p = Q / (rho * (2 * R) ** 5 * (rpm / 60) ** 2)
+        cq_w = Q / (0.5 * rho * v ** 2 * pi * R ** 3)
 
         eff = J / 2 / pi * ct_p / cq_p
 
@@ -381,6 +385,8 @@ class Calculator:
         if turbine_type == 1:  # if propeller
             results["cp"] = cp_p
             results["ct"] = ct_p
+            results["cq"] = cq_p
+            results["power"] = power_p
             if results["ct"] < 0.0:
                 p.print("    ct < 0, excluding...")
                 return None
@@ -390,14 +396,14 @@ class Calculator:
         else:
             results["cp"] = cp_w
             results["ct"] = ct_w
-        results["cq"] = cq_p
+            results["cq"] = cq_w
+            results["power"] = power
 
         results["TSR"] = TSR
         results["Ft"] = Ft
         results["omega"] = omega
         results["M"] = M
         results["Q"] = Q
-        results["power"] = power
         results["thrust"] = T
         results["Rhub"] = Rhub
         results["B"] = B
@@ -416,132 +422,101 @@ class Calculator:
         return results
 
     def statical_analysis(self, blade_design, blade_thickness, c, dr, foils, mass_density, num_sections, omega, r,
-                          results, theta):
+                          results, theta, pitch=0.0, turbine_type=0):
         """
+        Beam-theory stresses of one blade (Euler-Bernoulli, no shear, no torsion).
 
-        :param blade_design:
-        :param blade_thickness:
-        :param c:
-        :param dr:
-        :param foils:
-        :param mass_density:
-        :param num_sections:
-        :param omega:
-        :param r:
-        :param results:
-        :param theta:
+        The section is oriented in the rotor frame by its blade angle (twist + pitch): X points in the direction
+        of rotation, Y downwind for a wind turbine and in the thrust direction (upstream) for a propeller. The
+        distributed aerodynamic loads q_X, q_Y outboard of a section give the bending moments
+        m_X(r) = int_r^R q_X (rho - r) d rho, m_Y(r) = int_r^R q_Y (rho - r) d rho, and the normal stress of
+        unsymmetric bending about the centroid is sigma = a*X + b*Y with
+        a*Iyy + b*Ixy = -m_X and a*Ixy + b*Ixx = -m_Y (Ixx = int Y^2 dA, Iyy = int X^2 dA, Ixy = int XY dA).
+        The centrifugal force of the outboard blade adds the axial stress F_c/A. All three act along the span, so
+        the equivalent (von Mises) stress is the largest |sigma| over the section outline.
+
+        Each section carries its strip of width dr; loads and mass of a strip act at the section radius, and the
+        outboard half of the section's own strip is included.
+
+        :param pitch: blade pitch [deg]
+        :param turbine_type: 0 = wind turbine, 1 = propeller
         """
-        blade_mass = 0
-        ### STATICAL ANALYSIS
+        dFn = numpy.asarray(results["dFn"], dtype=float)
+        dFt = numpy.asarray(results["dFt"], dtype=float)
+        # forces in the rotor frame: a propeller's tangential force opposes the rotation
+        q_X = dFt if turbine_type == 0 else -dFt
+        q_Y = dFn
+
+        sections = []
         for i in range(num_sections):
+            sections.append(self.get_section_airfoil_data(i, foils[i], c[i], theta[i] + pitch, blade_design,
+                                                          blade_thickness, turbine_type))
 
-            ### BENDING INTERTIA AND STRESS CALCULATION
-            _c = c[i]
-            _theta = theta[i]
-            _dr = dr[i]
+        masses = numpy.array([s["A"] * dr[i] * mass_density for i, s in enumerate(sections)])
 
-            transition = self.transition_array[i]
-            _airfoil = foils[i]
-            _airfoil_prev = self.transition_foils[i][0]
-            _airfoil_next = self.transition_foils[i][1]
-            transition_coefficient = self.transition_foils[i][2]
+        for i in range(num_sections):
+            s = sections[i]
+            Ixx, Iyy, Ixy, A = s["Ix"], s["Iy"], s["Ixy"], s["A"]
 
-            A, Ix, Ixy, Iy, norm_dist, tang_dist = self.get_section_airfoil_data(_airfoil, _airfoil_next, _airfoil_prev,
-                                                                                 _c, _theta, blade_design,
-                                                                                 blade_thickness,
-                                                                                 transition_coefficient)
+            # bending moments from the loads outboard of r[i], including the outer half of the own strip
+            m_X = numpy.sum(q_X[i + 1:] * (r[i + 1:] - r[i])) + q_X[i] * dr[i] / 8
+            m_Y = numpy.sum(q_Y[i + 1:] * (r[i + 1:] - r[i])) + q_Y[i] * dr[i] / 8
 
-            section_mass = A * _dr * mass_density
-            blade_mass += section_mass
+            # centrifugal force of the blade outboard of r[i]
+            F_centrifugal = numpy.sum(masses[i + 1:] * omega ** 2 * r[i + 1:]) + \
+                            masses[i] / 2 * omega ** 2 * (r[i] + dr[i] / 4)
+            stress_cent = F_centrifugal / A / 1e6  # MPa
 
-            # BENDING MOMENT CALCULATION
-            Ms_n = 0
-            Ms_t = 0
-            for j in range(i, num_sections):
-                Ms_n = Ms_n + results["dFn"][j] * \
-                       (r[j] - r[i])
-                Ms_t = Ms_t + results["dFt"][j] * \
-                       (r[j] - r[i])
+            D = Ixx * Iyy - Ixy ** 2
+            X, Y = s["X"], s["Y"]
 
-            results["Ms_t"] = numpy.append(results["Ms_t"], Ms_t)
-            results["Ms_n"] = numpy.append(results["Ms_n"], Ms_n)
-            results["Ix"] = numpy.append(results["Ix"], Ix * 1e12)  # to mm4
-            results["Iy"] = numpy.append(results["Iy"], Iy * 1e12)  # to mm4
+            def bending_stress(mX, mY):
+                a_coef = (-mX * Ixx + mY * Ixy) / D
+                b_coef = (-mY * Iyy + mX * Ixy) / D
+                return (a_coef * X + b_coef * Y) / 1e6  # MPa
+
+            stress_norm = numpy.max(numpy.abs(bending_stress(0.0, m_Y)))
+            stress_tang = numpy.max(numpy.abs(bending_stress(m_X, 0.0)))
+            stress_von_mises = numpy.max(numpy.abs(bending_stress(m_X, m_Y) + stress_cent))
+
+            results["Ms_n"] = numpy.append(results["Ms_n"], m_Y)
+            results["Ms_t"] = numpy.append(results["Ms_t"], m_X if turbine_type == 0 else -m_X)
+            results["Ix"] = numpy.append(results["Ix"], Ixx * 1e12)  # to mm4
+            results["Iy"] = numpy.append(results["Iy"], Iyy * 1e12)  # to mm4
             results["Ixy"] = numpy.append(results["Ixy"], Ixy * 1e12)  # to mm4
             results["A"] = numpy.append(results["A"], A * 1e6)  # to mm2
-
-            # STRESS CALCULATION
-            max_tang_dist = numpy.max(numpy.abs(tang_dist))
-            max_norm_dist = numpy.max(numpy.abs(norm_dist))
-            stress_norm = max_norm_dist * Ms_n / Ix / 1e6  # MPa
-            stress_tang = max_tang_dist * Ms_t / Iy / 1e6  # MPa
-
             results["stress_norm"] = numpy.append(results["stress_norm"], stress_norm)
             results["stress_tang"] = numpy.append(results["stress_tang"], stress_tang)
-
-        # CENTRIFUGAL FORCE CALCULATION
-        for i in range(num_sections):
-            F_centrifugal = 0
-            _A_section = results["A"][i]  # mm2 !
-            for j in range(i, num_sections):
-                _dr = dr[j]
-                _r = r[j]
-                _A = results["A"][j]  # mm2 !
-                v_tan = _r * omega
-                section_mass = _A * 1e-6 * _dr * mass_density
-                F_centrifugal_section = section_mass * v_tan ** 2 / _r
-                F_centrifugal += F_centrifugal_section
-            stress_cent = F_centrifugal / _A_section  # MPa
             results["dFc"] = numpy.append(results["dFc"], F_centrifugal)
             results["stress_cent"] = numpy.append(results["stress_cent"], stress_cent)
-
-        # VON MISES STRESS CALCULATION
-        for i in range(num_sections):
-            sigma_1 = results["stress_norm"][i]
-            sigma_2 = results["stress_tang"][i]
-            sigma_3 = results["stress_cent"][i]
-            stress_von_mises = numpy.sqrt(
-                0.5 * (sigma_1 - sigma_2) ** 2 + (sigma_2 - sigma_3) ** 2 + (sigma_3 - sigma_1) ** 2)
             results["stress_von_mises"] = numpy.append(results["stress_von_mises"], stress_von_mises)
 
-    def get_section_airfoil_data(self, _airfoil, _airfoil_next, _airfoil_prev, _c, _theta, blade_design,
-                                 blade_thickness, transition_coefficient):
+    def get_section_airfoil_data(self, i, _airfoil, _c, _angle, blade_design, blade_thickness, turbine_type):
         """
+        Cross-section of section i in the rotor frame (cached: it depends only on the geometry).
+        A transition section is the interpolated airfoil shape between the previous and the next airfoil.
 
-        :param _airfoil:
-        :param _airfoil_next:
-        :param _airfoil_prev:
-        :param _c:
-        :param _theta:
-        :param blade_design:
-        :param blade_thickness:
-        :param transition_coefficient:
-        :return:
+        :param _angle: blade angle (twist + pitch) [deg]
+        :return: dict with Ix, Iy, Ixy [m^4], A [m^2] and the outline X, Y [m] about the centroid
         """
+        key = (i, _airfoil, float(_c), float(_angle), blade_design, float(blade_thickness), turbine_type)
+        if not hasattr(self, "_section_cache"):
+            self._section_cache = {}
+        if key in self._section_cache:
+            return self._section_cache[key]
 
         if _airfoil != "transition":
-            Ix, Iy, Ixy, A, tang_dist, norm_dist = self.get_crossection_data(_c, _theta, _airfoil, blade_design,
-                                                                             blade_thickness)
-            _centroid_x, _centroid_y = self.airfoils[_airfoil]["centroid_x"], self.airfoils[_airfoil]["centroid_y"]
+            foil_x, foil_y = self.airfoils[_airfoil]["x"], self.airfoils[_airfoil]["y"]
         else:
-            Ix1, Iy1, Ixy1, A1, tang_dist1, norm_dist1 = self.get_crossection_data(_c, _theta, _airfoil_prev,
-                                                                                   blade_design, blade_thickness)
-            Ix2, Iy2, Ixy2, A2, tang_dist2, norm_dist2 = self.get_crossection_data(_c, _theta, _airfoil_next,
-                                                                                   blade_design, blade_thickness)
-            _centroid_x1, _centroid_y1 = self.airfoils[_airfoil_prev]["centroid_x"], self.airfoils[_airfoil_prev][
-                "centroid_y"]
-            _centroid_x2, _centroid_y2 = self.airfoils[_airfoil_next]["centroid_x"], self.airfoils[_airfoil_next][
-                "centroid_y"]
-            _centroid_x = _centroid_x1 * transition_coefficient + _centroid_x2 * (1 - transition_coefficient)
-            _centroid_y = _centroid_y1 * transition_coefficient + _centroid_y2 * (1 - transition_coefficient)
-            tang_dist = tang_dist1 * transition_coefficient + tang_dist2 * (1 - transition_coefficient)
-            norm_dist = norm_dist1 * transition_coefficient + norm_dist2 * (1 - transition_coefficient)
+            _airfoil_prev, _airfoil_next, transition_coefficient = self.transition_foils[i]
+            # transition_coefficient is the relative position between the previous (0) and the next (1) airfoil
+            foil_x, foil_y = interpolate_foils(self.airfoils[_airfoil_prev]["x"], self.airfoils[_airfoil_prev]["y"],
+                                               self.airfoils[_airfoil_next]["x"], self.airfoils[_airfoil_next]["y"],
+                                               transition_coefficient)
 
-            Ix = Ix1 * transition_coefficient + Ix2 * (1 - transition_coefficient)
-            Iy = Iy1 * transition_coefficient + Iy2 * (1 - transition_coefficient)
-            Ixy = Ixy1 * transition_coefficient + Ixy2 * (1 - transition_coefficient)
-            A = A1 * transition_coefficient + A2 * (1 - transition_coefficient)
-        return A, Ix, Ixy, Iy, norm_dist, tang_dist
+        data = self.get_crossection_data(_c, _angle, foil_x, foil_y, blade_design, blade_thickness, turbine_type)
+        self._section_cache[key] = data
+        return data
 
     def calculate_section(self, v, omega, _r, _c, _theta, _dr, B, R, _airfoil, max_thickness, Rhub,
                           turbine_type=0, pitch=0.0, psi=0.0, fix_reynolds=False, reynolds=1e6, tip_loss_mode=0,
@@ -555,12 +530,15 @@ class Calculator:
                           lambda_r_array=None, invert_alpha=False,
                           transition=False, _airfoil_prev=None, _airfoil_next=None, transition_coefficient=1.0,
                           num_sections=0, use_minimization_solver=False,
-                          a_initial=0.3, aprime_initial=0.01,
+                          a_initial=0.3, aprime_initial=0.01, azimuth=0.0, speed_of_sound=343.0,
                           *args, **kwargs):
         """
         Function that calculates each section of the blade using the optimization function way seen in
         https://www.tandfonline.com/doi/pdf/10.1080/20464177.2011.11020241
         https://github.com/kegiljarhus/pyBEMT/blob/master/pybemt/rotor.py
+
+        :param azimuth: blade azimuth [deg], 0 = blade pointing up; only matters in yawed or tilted inflow
+        :param speed_of_sound: speed of sound in the fluid [m/s]
         """
 
         if lambda_r_array is None:
@@ -569,6 +547,9 @@ class Calculator:
 
         # local speed ratio
         lambda_r = omega * _r / v
+
+        # tip speed ratio of the rotor
+        TSR = omega * R / v
 
         # solidity
         sigma = _c * B / (2 * pi * _r)
@@ -581,7 +562,7 @@ class Calculator:
         i = 0
 
         # tip mach number
-        Mach_number = omega * R / 343
+        Mach_number = omega * R / speed_of_sound
         if Mach_number >= 1.0:
             p.print("\nTip mach 1.0 exceeded")
 
@@ -594,12 +575,18 @@ class Calculator:
         tilt_angle = radians(tilt_angle)  # [Radians]
         lambda_r_array = np.array(lambda_r_array)
         _theta = radians(_theta)
+        _azimuth = radians(azimuth)
 
-        def func(inp, last_iteration=False):
+        # loads vanish where the loss factor is zero (tip with tip loss, hub with hub loss): the BEM equations
+        # are singular there, so the section is not iterated
+        zero_load_section = (tip_loss_mode in (1, 2, 3) and _r >= R) or (hub_loss_mode in (1, 2) and _r <= Rhub)
+
+        def func(inp, last_iteration=False, evaluate_only=False):
             """
 
-            :param inp:
-            :param last_iteration:
+            :param inp: (a, a')
+            :param last_iteration: minimization solver: return the results instead of the residual
+            :param evaluate_only: compute the section state for the given (a, a') without updating them
             :return:
             """
             if print_all:
@@ -613,10 +600,13 @@ class Calculator:
 
             # for pretty-printing only
             prepend = ""
-            # Equations for Vx and Vy from https://pdfs.semanticscholar.org/5e7d/9c6408b7dd8841692d950d08bce90c676dc1.pdf
-            Vx = v * ((cos(yaw_angle) * sin(tilt_angle) + sin(yaw_angle)) * sin(psi) + cos(yaw_angle) * cos(psi) * cos(
-                tilt_angle))
-            Vy = omega * _r * cos(psi) + v * (cos(yaw_angle) * sin(tilt_angle) - sin(yaw_angle))
+            # Wind components in the blade coordinate system (CCBlade, Ning 2014,
+            # https://pdfs.semanticscholar.org/5e7d/9c6408b7dd8841692d950d08bce90c676dc1.pdf):
+            # yaw, tilt, precone (psi) and blade azimuth; Vy includes the rotation
+            sa, ca = sin(_azimuth), cos(_azimuth)
+            Vx = v * ((cos(yaw_angle) * sin(tilt_angle) * ca + sin(yaw_angle) * sa) * sin(psi) +
+                      cos(yaw_angle) * cos(tilt_angle) * cos(psi))
+            Vy = omega * _r * cos(psi) + v * (cos(yaw_angle) * sin(tilt_angle) * sa - sin(yaw_angle) * ca)
 
             # wind components
             if turbine_type == 1:  # propeller
@@ -636,14 +626,18 @@ class Calculator:
             else:
                 Re = Vrel_norm * _c / kin_viscosity
 
+            # F: loss factor of the momentum balance; F1: Shen et al. (2005) factor on the blade-element
+            # force coefficients (Cn, Ct), used together with the Prandtl factor in momentum
             F = 1
+            F1 = 1
 
             if tip_loss_mode == 1:
                 # Prandtl tip loss
                 F = F * fTipLoss(B, _r, R, phi)
             elif tip_loss_mode == 2:
-                # New tip loss
-                F = F * newTipLoss(B, _r, R, phi, lambda_r)
+                # Shen tip loss
+                F = F * fTipLoss(B, _r, R, phi)
+                F1 = F1 * newTipLoss(B, _r, R, phi, TSR)
             elif tip_loss_mode == 3:
                 # Adkins tip loss
                 F = F * fAdkinsTipLoss(B, _r, R, phi)
@@ -652,8 +646,9 @@ class Calculator:
                 # Prandtl hub loss
                 F = F * fHubLoss(B, _r, Rhub, phi)
             elif hub_loss_mode == 2:
-                # New hub loss
-                F = F * newHubLoss(B, _r, R, phi, lambda_r)
+                # Shen hub loss
+                F = F * fHubLoss(B, _r, Rhub, phi)
+                F1 = F1 * newHubLoss(B, _r, Rhub, phi, TSR)
 
             # angle of attack
             if turbine_type == 1:  # propeller
@@ -669,24 +664,30 @@ class Calculator:
             if invert_alpha:
                 alpha = -alpha
 
-            if transition:
-                Cl1, Cd1 = self.airfoils[_airfoil_prev]["interp_function_cl"](Re, degrees(alpha)), \
-                           self.airfoils[_airfoil_prev][
-                               "interp_function_cd"](Re, degrees(alpha))
-                Cl2, Cd2 = self.airfoils[_airfoil_next]["interp_function_cl"](Re, degrees(alpha)), \
-                           self.airfoils[_airfoil_next][
-                               "interp_function_cd"](Re, degrees(alpha))
+            # polars are defined on [-180, 180] degrees
+            alpha_deg = (degrees(alpha) + 180.0) % 360.0 - 180.0
 
-                if Cl1 == False and Cd1 == False:
-                    return {"finished": False, "iterations": i, "criterion_value": abs(a - inp[0])}
-                if Cl2 == False and Cd2 == False:
-                    return {"finished": False, "iterations": i, "criterion_value": abs(a - inp[0])}
+            if transition:
+                Cl1, Cd1 = self.airfoils[_airfoil_prev]["interp_function_cl"](Re, alpha_deg), \
+                           self.airfoils[_airfoil_prev][
+                               "interp_function_cd"](Re, alpha_deg)
+                Cl2, Cd2 = self.airfoils[_airfoil_next]["interp_function_cl"](Re, alpha_deg), \
+                           self.airfoils[_airfoil_next][
+                               "interp_function_cd"](Re, alpha_deg)
+
+                if (Cl1 == False and Cd1 == False) or (Cl2 == False and Cd2 == False):
+                    p.print("\na:", a, "a':", aprime)
+                    p.print("No Cl or CD")
+                    p.print("Re:", Re)
+                    p.print("alpha:", degrees(alpha))
+                    return None
 
                 if invert_alpha:
                     Cl1, Cl2 = -Cl1, -Cl2
 
-                Cl = Cl1 * transition_coefficient + Cl2 * (1 - transition_coefficient)
-                Cd = Cd1 * transition_coefficient + Cd2 * (1 - transition_coefficient)
+                # transition_coefficient is the relative position between the previous (0) and the next (1) airfoil
+                Cl = Cl1 * (1 - transition_coefficient) + Cl2 * transition_coefficient
+                Cd = Cd1 * (1 - transition_coefficient) + Cd2 * transition_coefficient
 
                 # determine min and max angle of attack for attached region
                 aoa_min_stall_1 = self.airfoils[_airfoil_prev]["interpolation_function_stall_min"](Re)
@@ -695,10 +696,10 @@ class Calculator:
                 aoa_min_stall_2 = self.airfoils[_airfoil_next]["interpolation_function_stall_min"](Re)
                 aoa_max_stall_2 = self.airfoils[_airfoil_next]["interpolation_function_stall_max"](Re)
 
-                aoa_min_stall = aoa_min_stall_1 * transition_coefficient + aoa_min_stall_2 * (
-                        1 - transition_coefficient)
-                aoa_max_stall = aoa_max_stall_1 * transition_coefficient + aoa_max_stall_2 * (
-                        1 - transition_coefficient)
+                aoa_min_stall = aoa_min_stall_1 * (1 - transition_coefficient) + \
+                                aoa_min_stall_2 * transition_coefficient
+                aoa_max_stall = aoa_max_stall_1 * (1 - transition_coefficient) + \
+                                aoa_max_stall_2 * transition_coefficient
 
                 def zero_finding_function1(alpha):
                     """
@@ -708,8 +709,6 @@ class Calculator:
                     """
                     return self.airfoils[_airfoil_prev]["interp_function_cl"](Re, alpha)
 
-                alpha_zero_1 = optimize.bisect(zero_finding_function1, -10, 10, xtol=1e-3, rtol=1e-3)
-
                 def zero_finding_function2(alpha):
                     """
 
@@ -718,9 +717,17 @@ class Calculator:
                     """
                     return self.airfoils[_airfoil_next]["interp_function_cl"](Re, alpha)
 
-                alpha_zero_2 = optimize.bisect(zero_finding_function2, -10, 10, xtol=1e-3, rtol=1e-3)
+                # zero-lift angle, lift slope and zero-angle drag: needed by the rotational augmentation only
+                alpha_zero = 0.0
+                if rotational_augmentation_correction:
+                    alpha_zero_1 = optimize.bisect(zero_finding_function1, -10, 10, xtol=1e-3, rtol=1e-3)
+                    alpha_zero_2 = optimize.bisect(zero_finding_function2, -10, 10, xtol=1e-3, rtol=1e-3)
+                    alpha_zero = alpha_zero_1 * (1 - transition_coefficient) + alpha_zero_2 * transition_coefficient
+                    Cl_alpha_1, Cd_zero_1 = self.attached_lift_slope_and_cd0(_airfoil_prev, Re, alpha_zero_1)
+                    Cl_alpha_2, Cd_zero_2 = self.attached_lift_slope_and_cd0(_airfoil_next, Re, alpha_zero_2)
+                    Cl_alpha = Cl_alpha_1 * (1 - transition_coefficient) + Cl_alpha_2 * transition_coefficient
+                    Cd_zero = Cd_zero_1 * (1 - transition_coefficient) + Cd_zero_2 * transition_coefficient
 
-                alpha_zero = alpha_zero_1 * transition_coefficient + alpha_zero_2 * (1 - transition_coefficient)
                 alpha_zero = radians(alpha_zero)
 
                 if print_all:
@@ -732,13 +739,7 @@ class Calculator:
                     p.print("Cl=", transition_coefficient, "*Cl1+", (1 - transition_coefficient), "*Cl2=", Cl)
                     p.print("Cd=", transition_coefficient, "*Cd1+", (1 - transition_coefficient), "*Cd2=", Cd)
             else:
-                alpha_deg = degrees(alpha)
-                if alpha_deg > 180:
-                    alpha_deg = 180
-                if alpha_deg < -180:
-                    alpha_deg = -180
-
-                Cl, Cd = self.airfoils[_airfoil]["interp_function_cl"](Re, degrees(alpha)), self.airfoils[_airfoil][
+                Cl, Cd = self.airfoils[_airfoil]["interp_function_cl"](Re, alpha_deg), self.airfoils[_airfoil][
                     "interp_function_cd"](Re, alpha_deg)
                 if Cl == False and Cd == False:
                     p.print("\na:", a, "a':", aprime)
@@ -762,7 +763,12 @@ class Calculator:
                     """
                     return self.airfoils[_airfoil]["interp_function_cl"](Re, alpha)
 
-                alpha_zero = optimize.bisect(zero_finding_function, -10, 10, xtol=1e-2, rtol=1e-3)
+                # zero-lift angle, lift slope and zero-angle drag: needed by the rotational augmentation only
+                alpha_zero = 0.0
+                if rotational_augmentation_correction:
+                    alpha_zero = optimize.bisect(zero_finding_function, -10, 10, xtol=1e-2, rtol=1e-3)
+                    Cl_alpha, Cd_zero = self.attached_lift_slope_and_cd0(_airfoil, Re, alpha_zero)
+
                 alpha_zero = radians(alpha_zero)
 
             stall = 0
@@ -782,13 +788,17 @@ class Calculator:
                                                                  c=_c, theta=_theta, v=v, Vrel_norm=Vrel_norm,
                                                                  method=rotational_augmentation_correction_method,
                                                                  alpha_zero=alpha_zero, printer=printer,
-                                                                 print_all=print_all)
+                                                                 print_all=print_all, Cl_alpha=Cl_alpha,
+                                                                 Cd_zero=Cd_zero)
 
                 if print_all:
                     p.print("             Cl_cor:", Cl, "Cd_cor:", Cd)
 
             if mach_number_correction:
-                Cl, Cd = machNumberCorrection(Cl, Cd, Mach_number)
+                # local Mach number of the relative flow at the section
+                Mach_number_local = Vrel_norm / speed_of_sound
+                if Mach_number_local < 1.0:
+                    Cl, Cd = machNumberCorrection(Cl, Cd, Mach_number_local)
 
             # circulation gamma
             Gamma_B = 0.5 * Vrel_norm * _c * Cl
@@ -801,13 +811,19 @@ class Calculator:
                 C_norm = Cl * cos(phi) + Cd * sin(phi)
                 C_tang = Cl * sin(phi) - Cd * cos(phi)
 
-            # force calculation
-            dFL = Cl * 0.5 * rho * Vrel_norm ** 2 * _c * _dr  # lift force
-            dFD = Cd * 0.5 * rho * Vrel_norm ** 2 * _c * _dr  # drag force
-            dFt = dFL * sin(phi) - dFD * cos(phi)  # tangential force
-            dFn = dFL * cos(phi) + dFD * sin(phi)  # normal force
+            # Shen et al. (2005): the blade-element forces go to zero at the tip
+            C_norm = F1 * C_norm
+            C_tang = F1 * C_tang
 
-            Ct_r = (sigma * (1 - a) ** 2 * C_norm) / (sin(phi) ** 2) # BT
+            # force calculation (per blade); C_norm and C_tang already carry the sign of drag
+            # for the selected turbine type
+            dFn = C_norm * 0.5 * rho * Vrel_norm ** 2 * _c * _dr  # normal force
+            dFt = C_tang * 0.5 * rho * Vrel_norm ** 2 * _c * _dr  # tangential force
+
+            if turbine_type == 1:
+                Ct_r = (sigma * (1 + a) ** 2 * C_norm) / (sin(phi) ** 2)
+            else:
+                Ct_r = (sigma * (1 - a) ** 2 * C_norm) / (sin(phi) ** 2)
 
             dFn_norm = dFn / _dr
             dFt_norm = dFt / _dr
@@ -838,11 +854,11 @@ class Calculator:
                     p.print("            ", argument, input_arguments[argument])
                 p.print("             --------")
 
-            if not use_minimization_solver:
+            if not use_minimization_solver and not evaluate_only:
                 # calculate new induction coefficients
                 coeffs = calculate_coefficients(method, input_arguments)
                 if coeffs == None:
-                    return {"finished": False, "iterations": i, "criterion_value": abs(a - inp[0])}
+                    return None
 
                 # save old values
                 a_last = a
@@ -856,43 +872,38 @@ class Calculator:
             aprime_vct = k / (4 * lambda_r ** 2)
             relevant_radiuses = lambda_r_array[np.nonzero(lambda_r_array >= lambda_r)]
 
-            if skewed_wake_correction:
-                a_skewed = skewed_wake_correction_calculate(yaw_angle, a, _r, R)
-                a = a_skewed
-
-            # thrust and torque - Wiley, WE 2nd, p.124
-            dT_MT = F * 4 * pi * _r * rho * v ** 2 * a * (1 - a) * _dr
+            # thrust and torque - Wiley, WE 2nd, p.124; the momentum balance uses the axial wind component Vx
+            # (equal to v without yaw), consistent with Un = Vx(1 -+ a) in the blade-element equations
+            dT_MT = F * 4 * pi * _r * rho * Vx ** 2 * a * (1 - a) * _dr
             dT_BET = 0.5 * rho * B * _c * Vrel_norm ** 2 * \
                      C_norm * _dr
             dQ_MT = F * 4 * aprime * (1 - a) * rho * \
-                    v * pi * _r ** 3 * omega * _dr
+                    Vx * pi * _r ** 3 * omega * _dr
             dQ_BET = B * 0.5 * rho * Vrel_norm ** 2 * \
                      C_tang * _c * _dr * _r
 
             # thrust and torque - propeller
-            dT_MT_p = 4 * pi * _r * rho * v ** 2 * (1 + a) * a * _dr
-            dQ_MT_p = 4 * pi * _r ** 3 * rho * v * omega * (1 + a) * aprime * _dr
-            dT_BET_p = 0.5 * rho * v ** 2 * _c * B * (1 + a) ** 2 / (sin(phi) ** 2) * C_norm * _dr
-            dQ_BET_p = 0.5 * rho * v * _c * B * omega * _r ** 2 * (1 + a) * (1 - aprime) / (
+            dT_MT_p = F * 4 * pi * _r * rho * Vx ** 2 * (1 + a) * a * _dr
+            dQ_MT_p = F * 4 * pi * _r ** 3 * rho * Vx * omega * (1 + a) * aprime * _dr
+            dT_BET_p = 0.5 * rho * Vx ** 2 * _c * B * (1 + a) ** 2 / (sin(phi) ** 2) * C_norm * _dr
+            dQ_BET_p = 0.5 * rho * Vx * _c * B * omega * _r ** 2 * (1 + a) * (1 - aprime) / (
                     sin(phi) * cos(phi)) * C_tang * _dr
 
-            if turbine_type == 1:  # propeller
-                dT = dT_MT_p
-                dQ = dQ_MT_p
-            else:
-                dT = dT_BET
-                dQ = dQ_BET
+            # blade element forces (C_norm and C_tang are defined per turbine type)
+            dT = dT_BET
+            dQ = dQ_BET
 
-            # wind after
+            # wind after (actuator disc: the speed is continuous through the rotor, U2 == U3)
+            # (axial components)
             if turbine_type == 1:  # propeller
-                U1 = v
-                U2 = None
-                U3 = U1 * (1 + a)
+                U1 = Vx
+                U2 = U1 * (1 + a)
+                U3 = U2
                 U4 = U1 * (1 + 2 * a)
             else:
-                U1 = v
+                U1 = Vx
                 U2 = U1 * (1 - a)
-                U3 = None
+                U3 = U2
                 U4 = U1 * (1 - 2 * a)
 
             if a_last == None:
@@ -929,6 +940,10 @@ class Calculator:
                 "criterion_value": abs(a - a_last)
             }
 
+            if evaluate_only:
+                out["finished"] = True
+                return out
+
             if use_minimization_solver:
                 if turbine_type == 1:  # propeller
                     g = ((dT_BET_p - dT_MT_p) ** 2 + 100 * (dQ_BET_p - dQ_MT_p) ** 2)
@@ -950,8 +965,18 @@ class Calculator:
                 a = a_last * (1 - relaxation_factor) + a * relaxation_factor
                 aprime = aprime_last * (1 - relaxation_factor) + aprime * relaxation_factor
                 out["a"] = a
+                out["a'"] = aprime
                 out["finished"] = False
                 return out
+
+        if zero_load_section:
+            out = func((0.0, 0.0), evaluate_only=True)
+            if out is None:
+                return None
+            for key in ("dFt", "dFn", "dFt/n", "dFn/n", "dT", "dQ", "Ct_r", "a", "a'"):
+                out[key] = 0.0
+            out["F"] = 0.0
+            return out
 
         if use_minimization_solver:
             bounds = [(0, 1.0), (0, 1.0)]
@@ -960,6 +985,9 @@ class Calculator:
                                        options={"xtol": convergence_limit,
                                                 'ftol': convergence_limit,
                                                 'maxiter': max_iterations})
+            out = func(result.x, True)
+            if out is not None:
+                out["finished"] = bool(result.success)
         else:
             i = 0
             while True:
@@ -967,10 +995,10 @@ class Calculator:
                 out = func((a, aprime))
 
                 if out == None:
-                    return
+                    return None
 
                 if out["finished"] == True:
-                    return out
+                    break
                 else:
                     a, aprime = out["a"], out["a'"]
 
@@ -981,47 +1009,152 @@ class Calculator:
                                     " aprime",
                                     aprime, )
                             prepend = "|"
-                        return out
+                        break
 
         ############ END ITERATION ############
-        out = func(result.x, True)
+
+        if out is None:
+            return None
+
+        # Pitt and Peters skewed-wake correction, applied to the converged induction (as in AeroDyn); the loads
+        # follow from the corrected inflow
+        if skewed_wake_correction and yaw_angle != 0.0:
+            a_skew = skewed_wake_correction_calculate(yaw_angle, out["a"], _r, R, _azimuth)
+            out_skew = func((a_skew, out["a'"]), evaluate_only=True)
+            if out_skew is None:
+                return None
+            for key in ("iterations", "finished", "criterion_value"):
+                out_skew[key] = out[key]
+            out = out_skew
+
         return out
 
-    def get_crossection_data(self, _c, _theta, _airfoil, blade_design, blade_thickness):
+    def calculate_section_averaged(self, num_azimuth=16, yaw_angle=0.0, tilt_angle=0.0, turbine_type=0, method=0,
+                                   cascade_correction=False, skewed_wake_correction=False, *args, **kwargs):
         """
-        :param _c:
-        :param _theta: in degrees
-        :param _airfoil:
-        :param blade_design:
-        :param blade_thickness:
-        :return:
-        """
-        _airfoil_x, _airfoil_y = self.airfoils[_airfoil]["x"], self.airfoils[_airfoil]["y"]
-        _centroid_x, _centroid_y = self.airfoils[_airfoil]["centroid_x"], self.airfoils[_airfoil]["centroid_y"]
-        _centroid = (_centroid_x, _centroid_y)
-        _airfoil_x, _airfoil_y = scale_and_normalize(_airfoil_x, _airfoil_y, _c, _centroid)  # outer foil
+        Solves one blade section. In axial inflow (no yaw, no tilt) the flow is the same at every azimuth and the
+        section is solved once. In yawed or tilted inflow the inflow seen by the blade changes over one revolution,
+        so the section is solved at num_azimuth equally spaced blade positions and the results are averaged over
+        the revolution (time average of the rotor loads).
 
+        Takes the same arguments as calculate_section.
+        """
+        if turbine_type == 1:
+            if method != 0:
+                raise ValueError("Propellers are calculated with method 0 (Classic BEM) only: the high-thrust "
+                                 "corrections of methods 1-5 describe the turbulent wake state of wind turbines.")
+            if cascade_correction:
+                raise ValueError("The cascade correction is formulated for wind turbines only.")
+            if skewed_wake_correction:
+                raise ValueError("The skewed-wake correction is formulated for wind turbines only.")
+
+        common = dict(yaw_angle=yaw_angle, tilt_angle=tilt_angle, turbine_type=turbine_type, method=method,
+                      cascade_correction=cascade_correction, skewed_wake_correction=skewed_wake_correction)
+
+        if (yaw_angle == 0.0 and tilt_angle == 0.0) or int(num_azimuth) <= 1:
+            return self.calculate_section(*args, azimuth=0.0, **common, **kwargs)
+
+        outs = []
+        for k in range(int(num_azimuth)):
+            out = self.calculate_section(*args, azimuth=360.0 * k / int(num_azimuth), **common, **kwargs)
+            if out is None:
+                return None
+            outs.append(out)
+
+        averaged = {}
+        for key, value in outs[0].items():
+            if key == "finished":
+                averaged[key] = all(o[key] for o in outs)
+            elif key == "criterion_value":
+                averaged[key] = max(o[key] for o in outs)
+            elif isinstance(value, (bool, str)) or value is None:
+                averaged[key] = value
+            else:
+                averaged[key] = float(np.mean([o[key] for o in outs]))
+        return averaged
+
+    def attached_lift_slope_and_cd0(self, airfoil, Re, alpha_zero_deg, delta_deg=2.0):
+        """
+        Lift slope of the attached flow at the zero-lift angle [1/rad] and drag at zero angle of attack,
+        from the airfoil's own polar.
+        """
+        f_cl = self.airfoils[airfoil]["interp_function_cl"]
+        f_cd = self.airfoils[airfoil]["interp_function_cd"]
+        Cl_alpha = (f_cl(Re, alpha_zero_deg + delta_deg) - f_cl(Re, alpha_zero_deg - delta_deg)) / radians(
+            2 * delta_deg)
+        Cd_zero = f_cd(Re, 0.0)
+        return Cl_alpha, Cd_zero
+
+    @staticmethod
+    def to_rotor_frame(x, y, angle, turbine_type):
+        """
+        Airfoil coordinates (x from leading to trailing edge, y towards the suction side) to the rotor frame:
+        X in the direction of rotation, Y downwind (wind turbine) or in the thrust direction (propeller).
+        At blade angle 0 the chord lies in the rotor plane with the leading edge pointing in the direction of
+        rotation; a positive blade angle turns the leading edge towards the incoming flow.
+
+        :param angle: blade angle (twist + pitch) [deg]
+        """
+        b = numpy.radians(angle)
+        x, y = numpy.asarray(x, dtype=float), numpy.asarray(y, dtype=float)
+        X = -numpy.cos(b) * x - numpy.sin(b) * y
+        if turbine_type == 1:
+            Y = -numpy.sin(b) * x + numpy.cos(b) * y
+        else:
+            Y = numpy.sin(b) * x - numpy.cos(b) * y
+        return X, Y
+
+    def get_crossection_data(self, _c, _angle, foil_x, foil_y, blade_design, blade_thickness, turbine_type=0):
+        """
+        Section properties about the centroid, in the rotor frame.
+
+        :param _c: chord [m]
+        :param _angle: blade angle (twist + pitch) [deg]
+        :param foil_x: airfoil x coordinates (chord 1)
+        :param foil_y: airfoil y coordinates (chord 1)
+        :param blade_design: 0 = solid, 1 = hollow with wall thickness blade_thickness [m]
+        :param blade_thickness: wall thickness [m]
+        :param turbine_type: 0 = wind turbine, 1 = propeller
+        :return: dict with Ix (int Y^2 dA), Iy (int X^2 dA), Ixy (int XY dA) [m^4], A [m^2], outline X, Y [m]
+        """
+        _airfoil_x, _airfoil_y = numpy.asarray(foil_x, dtype=float) * _c, numpy.asarray(foil_y, dtype=float) * _c
+
+        # the formulas assume counter-clockwise points (positive area, inward offset of the hollow foil)
+        if calculate_centroid(_airfoil_x, _airfoil_y)[0] < 0:
+            _airfoil_x, _airfoil_y = _airfoil_x[::-1], _airfoil_y[::-1]
+
+        polygons = [(_airfoil_x, _airfoil_y)]
         if blade_design == 1:
             _airfoil_x2, _airfoil_y2 = generate_hollow_foil(_airfoil_x, _airfoil_y, blade_thickness)  # inner foil
+            if len(_airfoil_x2) >= 3:  # otherwise too thin for the wall thickness: solid
+                polygons.append((numpy.array(_airfoil_x2), numpy.array(_airfoil_y2)))
 
-            _airfoil_x, _airfoil_y = rotate_array(_airfoil_x, _airfoil_y, (0, 0), _theta)  # outer foil
-            _airfoil_x2, _airfoil_y2 = rotate_array(_airfoil_x2, _airfoil_y2, (0, 0), _theta)  # inner foil
+        # rotor frame; a mirroring transform reverses the point order, which is restored
+        frame = []
+        for px, py in polygons:
+            X, Y = self.to_rotor_frame(px, py, _angle, turbine_type)
+            if calculate_centroid(X, Y)[0] < 0:
+                X, Y = X[::-1], Y[::-1]
+            frame.append((X, Y))
 
-            Ix1, Iy1, Ixy1, A1 = calculate_bending_inertia_2(_airfoil_x, _airfoil_y)  # outer foil
-            Ix2, Iy2, Ixy2, A2 = calculate_bending_inertia_2(_airfoil_x2, _airfoil_y2)  # inner foil
+        # move the origin to the centroid of the (hollow) section, so that the inertia is centroidal
+        A_sum, Sx, Sy = 0.0, 0.0, 0.0
+        for k, (X, Y) in enumerate(frame):
+            A_k, Cx_k, Cy_k = calculate_centroid(X, Y)
+            sign = 1.0 if k == 0 else -1.0
+            A_sum += sign * A_k
+            Sx += sign * A_k * Cx_k
+            Sy += sign * A_k * Cy_k
+        Cx, Cy = Sx / A_sum, Sy / A_sum
 
-            Ix = Ix1 - Ix2
-            Iy = Iy1 - Iy2
-            Ixy = Ixy1 - Ixy2
-            A = A1 - A2
+        Ix, Iy, Ixy, A = 0.0, 0.0, 0.0, 0.0
+        for k, (X, Y) in enumerate(frame):
+            sign = 1.0 if k == 0 else -1.0
+            Ix_k, Iy_k, Ixy_k, A_k = calculate_bending_inertia_2(X - Cx, Y - Cy)
+            Ix += sign * Ix_k
+            Iy += sign * Iy_k
+            Ixy += sign * Ixy_k
+            A += sign * A_k
 
-        else:
-            _airfoil_x, _airfoil_y = rotate_array(_airfoil_x, _airfoil_y, (0, 0), _theta)  # outer foil
-            Ix, Iy, Ixy, A = calculate_bending_inertia_2(_airfoil_x, _airfoil_y)
-
-        min_x = numpy.min(_airfoil_x)
-        max_x = numpy.max(_airfoil_x)
-        min_y = numpy.min(_airfoil_y)
-        max_y = numpy.max(_airfoil_y)
-
-        return Ix, Iy, Ixy, A, numpy.abs(numpy.array((min_x, max_x))), numpy.abs(numpy.array((min_y, max_y)))
+        X_outer, Y_outer = frame[0]
+        return {"Ix": Ix, "Iy": Iy, "Ixy": Ixy, "A": A, "X": X_outer - Cx, "Y": Y_outer - Cy}

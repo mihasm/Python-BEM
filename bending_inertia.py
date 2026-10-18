@@ -63,7 +63,8 @@ def interpolate_airfoil(x, y, num_interp=100):
 
 def calculate_bending_inertia_2(x, y):
     """
-    Calculates the bending intertia (second moment of area) for a given set of points.
+    Calculates the bending intertia (second moment of area) for a given set of points,
+    about the axes through the origin. The polygon is closed (last point joined to the first).
     Any polygon equations: https://en.wikipedia.org/wiki/Second_moment_of_area
     Area equation: https://en.wikipedia.org/wiki/Polygon#Area
     :param x: list of floats: x coordinates
@@ -74,13 +75,37 @@ def calculate_bending_inertia_2(x, y):
     Ix = 0
     Ixy = 0
     A = 0
-    for i in range(len(x) - 1):
-        Iy += 1 / 12 * (x[i] * y[i + 1] - x[i + 1] * y[i]) * (x[i] ** 2 + x[i] * x[i + 1] + x[i + 1] ** 2)
-        Ix += 1 / 12 * (x[i] * y[i + 1] - x[i + 1] * y[i]) * (y[i] ** 2 + y[i] * y[i + 1] + y[i + 1] ** 2)
-        Ixy += 1 / 24 * (x[i] * y[i + 1] - x[i + 1] * y[i]) * (
-                x[i] * y[i + 1] + 2 * x[i] * y[i] + 2 * x[i + 1] * y[i + 1] + x[i + 1] * y[i])
-        A += 0.5 * (x[i] * y[i + 1] - x[i + 1] * y[i])
+    n = len(x)
+    for i in range(n):
+        j = (i + 1) % n
+        cross = x[i] * y[j] - x[j] * y[i]
+        Iy += 1 / 12 * cross * (x[i] ** 2 + x[i] * x[j] + x[j] ** 2)
+        Ix += 1 / 12 * cross * (y[i] ** 2 + y[i] * y[j] + y[j] ** 2)
+        Ixy += 1 / 24 * cross * (x[i] * y[j] + 2 * x[i] * y[i] + 2 * x[j] * y[j] + x[j] * y[i])
+        A += 0.5 * cross
     return Ix, Iy, Ixy, A
+
+
+def calculate_centroid(x, y):
+    """
+    Calculates the signed area and the centroid of a closed polygon.
+    :param x: list of floats: x coordinates
+    :param y: list of floats: y coordinates
+    :return: tuple: (A,Cx,Cy)
+    """
+    A = 0
+    Cx = 0
+    Cy = 0
+    n = len(x)
+    for i in range(n):
+        j = (i + 1) % n
+        cross = x[i] * y[j] - x[j] * y[i]
+        A += 0.5 * cross
+        Cx += (x[i] + x[j]) * cross
+        Cy += (y[i] + y[j]) * cross
+    Cx = Cx / (6 * A)
+    Cy = Cy / (6 * A)
+    return A, Cx, Cy
 
 
 def generate_hollow_foil(x, y, thickness):

@@ -140,14 +140,14 @@ Parameters:
 
 ### 3. Velocity Components Used By The Code
 
-The code allows yaw, tilt, and coning through the intermediate velocities $V_x$ and $V_y$:
+The wind is resolved in the blade coordinate system (Ning, CCBlade) with yaw, tilt, coning and the blade azimuth $\psi_b$ ($0$ = blade pointing up):
 
 $$
-V_x = v\left[\left(\cos\gamma\sin\tau + \sin\gamma\right)\sin\psi + \cos\gamma\cos\psi\cos\tau\right]
+V_x = v\left[\left(\cos\gamma\sin\tau\cos\psi_b + \sin\gamma\sin\psi_b\right)\sin\psi + \cos\gamma\cos\psi\cos\tau\right]
 $$
 
 $$
-V_y = \Omega r\cos\psi + v\left(\cos\gamma\sin\tau - \sin\gamma\right)
+V_y = \Omega r\cos\psi + v\left(\cos\gamma\sin\tau\sin\psi_b - \sin\gamma\cos\psi_b\right)
 $$
 
 where:
@@ -155,8 +155,13 @@ where:
 - $\gamma$: yaw angle
 - $\tau$: tilt angle
 - $\psi$: coning angle
+- $\psi_b$: blade azimuth
 
-In the current implementation, the section-loop sets $\psi = 0$ by default.
+In the current implementation, the section-loop sets $\psi = 0$ and $\tau = 0$.
+
+#### Yawed Inflow: Azimuthal Averaging
+
+In axial inflow every blade position sees the same flow and each section is solved once. In yawed inflow the in-plane wind component $v\sin\gamma$ adds to or subtracts from the rotational speed depending on where the blade is, so each section is solved at `num_azimuth` equally spaced blade positions (default 16) and every result is averaged over the revolution; the rotor loads are the time averages. The momentum balance uses the axial component $V_x$, consistent with $U_n = V_x(1\mp a)$.
 
 ### 4. Induced Velocity Components
 
@@ -220,22 +225,36 @@ $$
 
 #### Prandtl Hub Loss
 
-The current code implements hub loss as
+The vortex sheets of the root vortex have the same helix pitch as at the tip ($r\tan\phi = R_{hub}\tan\phi_{hub}$), so with the same small-angle step as for the tip ($R_{hub}\sin\phi_{hub} \approx r\sin\phi$) the hub loss is
 
 $$
 F_{hub} = \frac{2}{\pi}\cos^{-1}\left[\exp\left(-\frac{B}{2}\left|\frac{(r-R_{hub})/r}{\sin\phi}\right|\right)\right]
 $$
 
-#### Modified Tip Loss
+#### Modified Tip Loss (Shen et al., 2005)
+
+Shen's correction has two factors. The Prandtl factor $F_{tip}$ above stays in the momentum balance, and a second factor
 
 $$
-F_{tip,new} = \frac{2}{\pi}\cos^{-1}\left[\exp\left(-\frac{B}{2}\left|\frac{(R-r)/r}{\sin\phi}\right|\left(e^{-0.15(B\lambda_r-21)}+0.1\right)\right)\right]
+F_1 = \frac{2}{\pi}\cos^{-1}\left[\exp\left(-\frac{B}{2}\left|\frac{(R-r)/r}{\sin\phi}\right|\left(e^{-0.125(B\lambda-21)}+0.1\right)\right)\right]
 $$
+
+multiplies the blade-element force coefficients, $C_n \leftarrow F_1C_n$ and $C_t \leftarrow F_1C_t$, so that the loads go to zero at the tip. $\lambda = \Omega R / v$ is the tip speed ratio of the rotor.
 
 #### Modified Hub Loss
 
+Analogous to the tip: the Prandtl hub factor stays in the momentum balance and
+
 $$
-F_{hub,new} = \frac{2}{\pi}\cos^{-1}\left[\exp\left(-\frac{B}{2}\left|\frac{(R_{hub}-r)/r}{\sin\phi}\right|\left(e^{-0.15(B\lambda_r-21)}+0.1\right)\right)\right]
+F_{1,hub} = \frac{2}{\pi}\cos^{-1}\left[\exp\left(-\frac{B}{2}\left|\frac{(R_{hub}-r)/r}{\sin\phi}\right|\left(e^{-0.125(B\lambda-21)}+0.1\right)\right)\right]
+$$
+
+#### Adkins Tip Loss (Adkins and Liebeck, 1994)
+
+$$
+F_{tip,Adkins} = \frac{2}{\pi}\cos^{-1}\left[\exp\left(-\frac{B}{2}\frac{1-\xi}{\sin\phi_t}\right)\right],
+\quad \tan\phi_t = \xi\tan\phi,
+\quad \xi = \frac{r}{R}
 $$
 
 ### 7. Angle Of Attack
@@ -254,7 +273,13 @@ $$
 
 where $\theta$ and $p$ are converted to radians inside the solver before use.
 
+#### Sections Where The Loss Factor Is Zero
+
+With tip loss, $F = 0$ at $r = R$; with hub loss, $F = 0$ at $r = R_{hub}$. The bound circulation and the loads vanish there, and the BEM equations are singular, so such a section is not iterated: its loads, $F$, $a$ and $a'$ are zero.
+
 ### 8. Cascade Correction
+
+This correction is formulated for wind turbines only; the solver refuses it for a propeller.
 
 If enabled, the angle of attack is corrected as
 
@@ -292,14 +317,14 @@ $$
 If the section is marked as a transition between two airfoils, the code blends them linearly:
 
 $$
-C_l = kC_{l,1} + (1-k)C_{l,2}
+C_l = (1-k)C_{l,1} + kC_{l,2}
 $$
 
 $$
-C_d = kC_{d,1} + (1-k)C_{d,2}
+C_d = (1-k)C_{d,1} + kC_{d,2}
 $$
 
-where $k$ is the transition coefficient.
+where $k$ is the transition coefficient, the relative position of the section between the previous airfoil 1 ($k=0$) and the next airfoil 2 ($k=1$).
 
 The same linear blending is used for stall bounds and the zero-lift angle.
 
@@ -322,20 +347,22 @@ $$
 If enabled, the solver modifies lift using a potential-flow target lift
 
 $$
-C_{l,pot} = 2\pi\sin(\alpha - \alpha_0)
+C_{l,pot} = C_{l,\alpha}\sin(\alpha - \alpha_0)
 $$
 
-and then computes
+where $C_{l,\alpha}$ is the lift slope of the airfoil's own polar at the zero-lift angle (the thin-airfoil value would be $2\pi$), and then computes
 
 $$
 C_{l,3D} = C_l + f_l(C_{l,pot} - C_l)
 $$
 
 $$
-C_{d,3D} = C_d
+C_{d,3D} = C_d + f_d(C_d - C_{d,0})
 $$
 
-The function $f_l$ depends on the selected model.
+where $C_{d,0}$ is the drag at $\alpha = 0$. Rotational augmentation is delayed separation: it recovers at most the lift lost to separation, so the correction acts only where $C_{l,pot} - C_l$ has the sign of $C_{l,pot}$, with $0 \le f_l \le 1$ and $|f_d| \le 1$ (Gur & Rosen keeps its own sign convention).
+
+The functions $f_l$ and $f_d$ depend on the selected model; $f_d = 0$ unless stated.
 
 #### Snel et al.
 
@@ -350,15 +377,27 @@ with $a_s=3$, $h=2$.
 The code uses
 
 $$
-\gamma_* = \frac{\Omega R}{\sqrt{|v^2-(\Omega R)^2|}}
+\Lambda = \frac{\Omega R}{\sqrt{v^2+(\Omega R)^2}}
 $$
 
-and then evaluates the hard-coded expression in `calc_rotational_augmentation_correction(...)` for $f_l$ and $f_d$.
+and
+
+$$
+f_l = \frac{1}{2\pi}\left[\frac{1.6\,c/r}{0.1267}\,\frac{1 - (c/r)^{R/(\Lambda r)}}{1 + (c/r)^{R/(\Lambda r)}} - 1\right]
+$$
+
+$$
+f_d = -\frac{1}{2\pi}\left[\frac{1.6\,c/r}{0.1267}\,\frac{1 - (c/r)^{R/(2\Lambda r)}}{1 + (c/r)^{R/(2\Lambda r)}} - 1\right]
+$$
 
 #### Chaviaropoulos And Hansen
 
 $$
 f_l = a_h\left(\frac{c}{r}\right)^h\cos^n\theta
+$$
+
+$$
+f_d = f_l
 $$
 
 with $a_h=2.2$, $h=1$, $n=4$.
@@ -407,21 +446,21 @@ $$
 
 ### 12. Mach Number Correction
 
-If enabled, the code applies
+If enabled, the code applies the Prandtl-Glauert correction to lift
 
 $$
 C_l \leftarrow \frac{C_l}{\sqrt{1-M^2}}
 $$
 
-$$
-C_d \leftarrow \frac{C_d}{\sqrt{1-M^2}}
-$$
-
-with the tip Mach number approximated as
+with the local Mach number of the relative flow at the section
 
 $$
-M = \frac{\Omega R}{343}
+M = \frac{W}{a_s}
 $$
+
+where $a_s$ is the speed of sound (`speed_of_sound`, default 343 m/s for air at 20 °C).
+
+The drag coefficient is not scaled, and the correction is skipped where $M \ge 1$.
 
 ### 13. Circulation Proxy
 
@@ -477,15 +516,17 @@ $$
 dF_D = \frac{1}{2}\rho W^2 c\,dr\,C_d
 $$
 
-The code then resolves them as
+The code resolves them with the normal and tangential coefficients of the selected turbine type:
 
 $$
-dF_t = dF_L\sin\phi - dF_D\cos\phi
+dF_n = \frac{1}{2}\rho W^2 c\,dr\,C_n
 $$
 
 $$
-dF_n = dF_L\cos\phi + dF_D\sin\phi
+dF_t = \frac{1}{2}\rho W^2 c\,dr\,C_t
 $$
+
+For a wind turbine this is $dF_n = dF_L\cos\phi + dF_D\sin\phi$, $dF_t = dF_L\sin\phi - dF_D\cos\phi$; for a propeller $dF_n = dF_L\cos\phi - dF_D\sin\phi$, $dF_t = dF_L\sin\phi + dF_D\cos\phi$.
 
 The per-unit-length outputs stored as `dFt/n` and `dFn/n` are
 
@@ -499,8 +540,16 @@ $$
 
 The local thrust coefficient used by the induction models is
 
+For wind turbines:
+
 $$
 C_{T,r} = \frac{\sigma(1-a)^2 C_n}{\sin^2\phi}
+$$
+
+For propellers:
+
+$$
+C_{T,r} = \frac{\sigma(1+a)^2 C_n}{\sin^2\phi}
 $$
 
 ### 16. Induction-Factor Models
@@ -593,11 +642,13 @@ $$
 a = \frac{18F - 20 - 3\sqrt{|C_{T,r}(50 - 36F) + 12F(3F-4)|}}{36F - 50}
 $$
 
-The code then sets
+The tangential induction follows from the tangential momentum balance:
 
 $$
-a' = \frac{1}{2}\left(\sqrt{\left|1 + \frac{4a(1-a)}{\lambda_r^2}\right|} - 1\right)
+a' = \frac{\sigma C_t}{4F\sin\phi\cos\phi - \sigma C_t}
 $$
+
+QBlade uses the drag-free relation $a'(1+a')\lambda_r^2 = a(1-a)$ instead. It does not hold with drag, while the high-thrust correction replaces only the axial momentum balance, so with the tangential balance this method gives the same result as method 2.
 
 #### Method 4: Wilson And Walker
 
@@ -647,19 +698,13 @@ $$
 a = 0.1432 + \sqrt{-0.55106 + 0.6427\frac{C_{T,r}}{F}}
 $$
 
-Then the code computes
+The tangential induction follows from the tangential momentum balance, as in method 3:
 
 $$
-a'' = \frac{4aF(1-a)}{\lambda_r^2}
+a' = \frac{\sigma C_t}{4F\sin\phi\cos\phi - \sigma C_t}
 $$
 
-and
-
-$$
-a' = \frac{\sqrt{1+a''} - 1}{2}
-$$
-
-If $1+a'' < 0$, the implementation sets $a'=0$.
+Propellers are calculated with method 0 only: the flow tube of a propeller only accelerates, so plain momentum theory holds for every $a > 0$, while the high-thrust corrections of methods 1–5 describe the turbulent-wake state of a wind turbine.
 
 ### 17. Relaxation And Convergence
 
@@ -689,17 +734,17 @@ where $f_r$ is `relaxation_factor`.
 
 ### 18. Optional Skewed-Wake Correction
 
-The code uses
+The Pitt and Peters correction (as in AeroDyn) is applied once to the converged induction of each blade position, and the loads are then evaluated with the corrected inflow:
 
 $$
 \chi = (0.6a+1)\gamma
 $$
 
 $$
-a_{skew} = a\left(1 + \frac{15\pi}{64}\frac{r}{R}\tan\frac{\chi}{2}\right)
+a_{skew} = a\left(1 + \frac{15\pi}{32}\frac{r}{R}\tan\frac{\chi}{2}\cos\psi_{dw}\right)
 $$
 
-where $\gamma$ is the yaw angle in radians.
+where $\gamma$ is the yaw angle and $\psi_{dw}$ the blade azimuth measured from the most downwind blade position ($\cos\psi_{dw} = \sin\psi_b$ in the solver's convention). Over one revolution the correction averages to zero; it moves induction to the downwind half of the disc. Formulated for wind turbines only.
 
 ### 19. Thrust And Torque Equations In The Code
 
@@ -728,11 +773,11 @@ $$
 #### Propeller Momentum-Theory Forms
 
 $$
-dT_{MT,p} = 4\pi r\rho v^2 (1+a)a\,dr
+dT_{MT,p} = F\,4\pi r\rho v^2 (1+a)a\,dr
 $$
 
 $$
-dQ_{MT,p} = 4\pi r^3 \rho v\Omega (1+a)a'\,dr
+dQ_{MT,p} = F\,4\pi r^3 \rho v\Omega (1+a)a'\,dr
 $$
 
 #### Propeller Blade-Element Forms
@@ -747,10 +792,11 @@ $$
 
 #### Which Equations Are Returned
 
-- for wind turbines, the implementation returns `dT = dT_BET` and `dQ = dQ_BET`
-- for propellers, the implementation returns `dT = dT_MT_p` and `dQ = dQ_MT_p`
+- for both turbine types, the implementation returns the blade-element forces `dT = dT_BET` and `dQ = dQ_BET`, with $C_n$ and $C_t$ of the selected turbine type (for a propeller these equal `dT_BET_p` and `dQ_BET_p`, and at convergence the momentum forms)
 
 ### 20. Wake Speeds Stored In Results
+
+The speed is continuous through the actuator disc, so $U_2 = U_3$.
 
 For propellers:
 
@@ -759,7 +805,7 @@ U_1 = v
 $$
 
 $$
-U_3 = U_1(1+a)
+U_2 = U_3 = U_1(1+a)
 $$
 
 $$
@@ -773,7 +819,7 @@ U_1 = v
 $$
 
 $$
-U_2 = U_1(1-a)
+U_2 = U_3 = U_1(1-a)
 $$
 
 $$
@@ -814,11 +860,19 @@ $$
 P_M = M\Omega
 $$
 
-The stored output `power` is
+For wind turbines, the stored output `power` is
 
 $$
 P = M\Omega
 $$
+
+For propellers, the stored output `power` is
+
+$$
+P = Q\Omega
+$$
+
+Both are equal, because $dQ = B\,dF_t\,r = dM$.
 
 ### Wind-Turbine Power Coefficient
 
@@ -860,6 +914,12 @@ $$
 C_q = \frac{Q}{\rho (2R)^5 (rpm/60)^2}
 $$
 
+For wind turbines the stored `cq` is the torque coefficient
+
+$$
+C_{Q,wind} = \frac{Q}{0.5\rho v^2 \pi R^3} = \frac{C_{P,wind}}{\lambda}
+$$
+
 ### Propeller Efficiency
 
 The reported efficiency is
@@ -880,7 +940,7 @@ where `stall_i` is 1 for a stalled section and 0 otherwise.
 
 ## Structural Post-Processing
 
-`Calculator.statical_analysis(...)` performs simple beam-style post-processing.
+`Calculator.statical_analysis(...)` computes the normal stresses of one blade with Euler-Bernoulli beam theory (no shear, no torsion).
 
 ### Section Mass
 
@@ -892,46 +952,46 @@ $$
 
 where $\rho_m$ is the blade material density.
 
+### Section In The Rotor Frame
+
+Each section (for a transition section, the interpolated airfoil shape) is scaled by the chord and turned by its blade angle $\theta + p$ (twist plus pitch) into the rotor frame: $X$ in the direction of rotation, $Y$ downwind for a wind turbine and in the thrust direction for a propeller. Area, centroid and the second moments of area about the centroid,
+
+$$
+I_{xx} = \int Y^2 dA, \quad I_{yy} = \int X^2 dA, \quad I_{xy} = \int XY\,dA
+$$
+
+are computed with the polygon formulas (a hollow section subtracts the inner outline). The outputs `Ix`, `Iy`, `Ixy` are $I_{xx}$, $I_{yy}$, $I_{xy}$ in mm⁴.
+
 ### Section Bending Moments
 
-For section $i$, the code accumulates loads from section $i$ to the tip:
+Each section carries the loads of its strip $dr$. For section $i$ the moments of the loads outboard of $r_i$ (the outer half of its own strip included, with its centre at $dr_i/4$) are
 
 $$
-M_{s,n}(i) = \sum_{j=i}^{N} dF_n(j)\,[r(j)-r(i)]
-$$
-
-$$
-M_{s,t}(i) = \sum_{j=i}^{N} dF_t(j)\,[r(j)-r(i)]
-$$
-
-### Bending Stress
-
-With extreme-fiber distances from the section centroid:
-
-$$
-\sigma_n = \frac{y_{max} M_{s,n}}{I_x}
+m_Y(i) = \sum_{j>i} dF_n(j)\,[r(j)-r(i)] + dF_n(i)\frac{dr_i}{8}
 $$
 
 $$
-\sigma_t = \frac{x_{max} M_{s,t}}{I_y}
+m_X(i) = \sum_{j>i} dF_X(j)\,[r(j)-r(i)] + dF_X(i)\frac{dr_i}{8}
 $$
 
-The code converts these to MPa by dividing by $10^6$ after using SI inertias.
+where $dF_X = dF_t$ for a wind turbine and $-dF_t$ for a propeller (its tangential force opposes the rotation). `Ms_n` is $m_Y$ and `Ms_t` the moment of $dF_t$.
+
+### Bending Stress (Unsymmetric Bending)
+
+An airfoil section has no symmetry axis in the rotor frame ($I_{xy} \ne 0$), so the normal stress at a point $(X, Y)$ of the section is
+
+$$
+\sigma_b = aX + bY, \qquad a\,I_{yy} + b\,I_{xy} = -m_X, \qquad a\,I_{xy} + b\,I_{xx} = -m_Y
+$$
+
+`stress_norm` and `stress_tang` are the largest $|\sigma_b|$ over the outline from $m_Y$ alone and from $m_X$ alone.
 
 ### Centrifugal Force And Axial Stress
 
-For each inboard section $i$, the code sums centrifugal contributions from section $i$ to the tip:
+The centrifugal force at section $i$ is that of the blade outboard of $r_i$:
 
 $$
-v_{tan} = r\Omega
-$$
-
-$$
-F_{c,sec} = m_{sec}\frac{v_{tan}^2}{r}
-$$
-
-$$
-F_c(i) = \sum_{j=i}^{N} F_{c,sec}(j)
+F_c(i) = \sum_{j>i} m_j\,\Omega^2 r_j + \frac{m_i}{2}\Omega^2\left(r_i + \frac{dr_i}{4}\right), \qquad m_j = A_j\,dr_j\,\rho_m
 $$
 
 $$
@@ -940,20 +1000,10 @@ $$
 
 ### Von Mises Stress
 
-The code uses the three normal stresses
+Bending and centrifugal stresses are normal stresses along the span, so the stress state is uniaxial (shear and torsion are not modelled) and the equivalent stress is the largest combined stress over the section outline:
 
 $$
-\sigma_1 = \sigma_n,
-\quad
-\sigma_2 = \sigma_t,
-\quad
-\sigma_3 = \sigma_c
-$$
-
-and computes
-
-$$
-\sigma_{vm} = \sqrt{0.5(\sigma_1-\sigma_2)^2 + (\sigma_2-\sigma_3)^2 + (\sigma_3-\sigma_1)^2}
+\sigma_{vm} = \max_{(X,Y)}\left|\sigma_b(X,Y) + \sigma_c\right|
 $$
 
 ## Airfoil Data Interpolation
@@ -990,8 +1040,8 @@ $$
 
 where:
 
-- $t$: airfoil thickness proxy from the coordinate set,
-- $f_c$: hard-coded camber proxy in the implementation,
+- $t$: maximum relative thickness of the airfoil, from its coordinates,
+- $f_c$: maximum relative camber of the airfoil, from its coordinates,
 - `m_CD90` is the user-configurable base drag-at-90-deg value.
 
 ### Potential-Flow And Plate-Flow Forms
@@ -1042,13 +1092,13 @@ or, in the rear-side regions, uses the same idea with a shifted potential-flow b
 
 ### Drag During Extrapolation
 
-The code adds an extra drag term
+The code adds the extra drag of the lift lost to separation, $C_{L,pot} - C_l = (1-f)(C_{L,pot} - C_{L,plate})$:
 
 $$
-\Delta C_D = 0.13\left[(f-1)C_{L,pot} - (1-f)C_{L,plate}\right]
+\Delta C_D = 0.13\,(1-f)\left|C_{L,pot} - C_{L,plate}\right|
 $$
 
-for the positive branch and the analogous signed expression for the negative branch, then evaluates
+on both branches (QBlade's form of this term is non-positive in stall and is clipped to zero, so it never adds drag), then evaluates
 
 $$
 C_d = f\left(\Delta C_D + 0.006 + 1.25\frac{t^2}{180}|\alpha|\right) + (1-f)C_{D,plate} + 0.006
@@ -1153,10 +1203,14 @@ c = R\frac{c}{R}
 $$
 
 $$
-\theta = \tan^{-1}\left(\frac{TSR}{\xi}\left(1+\frac{\zeta}{2}\right)\right)
+\phi = \tan^{-1}\left(\frac{TSR}{\xi}\left(1+\frac{\zeta}{2}\right)\right)
 $$
 
-where $\epsilon$ is the drag-to-lift ratio passed into the function.
+$$
+\theta = \phi + \alpha_d
+$$
+
+where $\epsilon$ is the drag-to-lift ratio passed into the function and $\alpha_d$ the design angle of attack.
 
 ### Adkins Propeller Generator
 
@@ -1279,7 +1333,7 @@ $$
 and converges when the code-level condition
 
 $$
-|\zeta-\zeta_{new}|\,|\zeta_{new}| < \varepsilon
+\frac{|\zeta-\zeta_{new}|}{|\zeta_{new}|} < \varepsilon
 $$
 
 is satisfied.

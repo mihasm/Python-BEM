@@ -511,7 +511,8 @@ class Optimization(QWidget):
         """
         try:
             s = self.get_settings()
-            R = float(self.main.wind_turbine_properties.R.text())
+            R = float(self.main.wind_turbine_properties.R.text()) * float(
+                self.main.wind_turbine_properties.geometry_scale.text())
             tsr = 2 * np.pi * float(s["target_rpm"]) * R / 60 / float(s["target_speed"])
             self.tsr_string.setText("%.2f" % tsr)
             J = float(s["target_speed"]) / (float(s["target_rpm"]) / 60 * 2 * R)
