@@ -15,47 +15,47 @@
     "dtmb4119_r0200": {
       "coordinates": "airfoils/dtmb4119_r0200.dat",
       "polars": "airfoils/dtmb4119_r0200_polars.csv",
-      "polar_source": "XFOIL 6.99 (repository binary), Ncrit = 9, free transition, computed (no measured polars exist); NACA 66 (TMB mod.) thickness + a=0.8 mean line, Brockett 1966 ordinates, t/c and f/c of the station"
+      "polar_source": "computed (no measured polars exist): XFOIL 6.99 (repository binary, Ncrit = 9, free transition) where it converges over -4..+8 deg, else parametric (thin-airfoil lift, transitional friction drag; see the polar file header); NACA 66 (TMB mod.) thickness + a=0.8 mean line, Brockett 1966 ordinates, t/c and f/c of the station"
     },
     "dtmb4119_r0300": {
       "coordinates": "airfoils/dtmb4119_r0300.dat",
       "polars": "airfoils/dtmb4119_r0300_polars.csv",
-      "polar_source": "XFOIL 6.99 (repository binary), Ncrit = 9, free transition, computed (no measured polars exist); NACA 66 (TMB mod.) thickness + a=0.8 mean line, Brockett 1966 ordinates, t/c and f/c of the station"
+      "polar_source": "computed (no measured polars exist): XFOIL 6.99 (repository binary, Ncrit = 9, free transition) where it converges over -4..+8 deg, else parametric (thin-airfoil lift, transitional friction drag; see the polar file header); NACA 66 (TMB mod.) thickness + a=0.8 mean line, Brockett 1966 ordinates, t/c and f/c of the station"
     },
     "dtmb4119_r0400": {
       "coordinates": "airfoils/dtmb4119_r0400.dat",
       "polars": "airfoils/dtmb4119_r0400_polars.csv",
-      "polar_source": "XFOIL 6.99 (repository binary), Ncrit = 9, free transition, computed (no measured polars exist); NACA 66 (TMB mod.) thickness + a=0.8 mean line, Brockett 1966 ordinates, t/c and f/c of the station"
+      "polar_source": "computed (no measured polars exist): XFOIL 6.99 (repository binary, Ncrit = 9, free transition) where it converges over -4..+8 deg, else parametric (thin-airfoil lift, transitional friction drag; see the polar file header); NACA 66 (TMB mod.) thickness + a=0.8 mean line, Brockett 1966 ordinates, t/c and f/c of the station"
     },
     "dtmb4119_r0500": {
       "coordinates": "airfoils/dtmb4119_r0500.dat",
       "polars": "airfoils/dtmb4119_r0500_polars.csv",
-      "polar_source": "XFOIL 6.99 (repository binary), Ncrit = 9, free transition, computed (no measured polars exist); NACA 66 (TMB mod.) thickness + a=0.8 mean line, Brockett 1966 ordinates, t/c and f/c of the station"
+      "polar_source": "computed (no measured polars exist): XFOIL 6.99 (repository binary, Ncrit = 9, free transition) where it converges over -4..+8 deg, else parametric (thin-airfoil lift, transitional friction drag; see the polar file header); NACA 66 (TMB mod.) thickness + a=0.8 mean line, Brockett 1966 ordinates, t/c and f/c of the station"
     },
     "dtmb4119_r0600": {
       "coordinates": "airfoils/dtmb4119_r0600.dat",
       "polars": "airfoils/dtmb4119_r0600_polars.csv",
-      "polar_source": "XFOIL 6.99 (repository binary), Ncrit = 9, free transition, computed (no measured polars exist); NACA 66 (TMB mod.) thickness + a=0.8 mean line, Brockett 1966 ordinates, t/c and f/c of the station"
+      "polar_source": "computed (no measured polars exist): XFOIL 6.99 (repository binary, Ncrit = 9, free transition) where it converges over -4..+8 deg, else parametric (thin-airfoil lift, transitional friction drag; see the polar file header); NACA 66 (TMB mod.) thickness + a=0.8 mean line, Brockett 1966 ordinates, t/c and f/c of the station"
     },
     "dtmb4119_r0700": {
       "coordinates": "airfoils/dtmb4119_r0700.dat",
       "polars": "airfoils/dtmb4119_r0700_polars.csv",
-      "polar_source": "XFOIL 6.99 (repository binary), Ncrit = 9, free transition, computed (no measured polars exist); NACA 66 (TMB mod.) thickness + a=0.8 mean line, Brockett 1966 ordinates, t/c and f/c of the station"
+      "polar_source": "computed (no measured polars exist): XFOIL 6.99 (repository binary, Ncrit = 9, free transition) where it converges over -4..+8 deg, else parametric (thin-airfoil lift, transitional friction drag; see the polar file header); NACA 66 (TMB mod.) thickness + a=0.8 mean line, Brockett 1966 ordinates, t/c and f/c of the station"
     },
     "dtmb4119_r0800": {
       "coordinates": "airfoils/dtmb4119_r0800.dat",
       "polars": "airfoils/dtmb4119_r0800_polars.csv",
-      "polar_source": "XFOIL 6.99 (repository binary), Ncrit = 9, free transition, computed (no measured polars exist); NACA 66 (TMB mod.) thickness + a=0.8 mean line, Brockett 1966 ordinates, t/c and f/c of the station"
+      "polar_source": "computed (no measured polars exist): XFOIL 6.99 (repository binary, Ncrit = 9, free transition) where it converges over -4..+8 deg, else parametric (thin-airfoil lift, transitional friction drag; see the polar file header); NACA 66 (TMB mod.) thickness + a=0.8 mean line, Brockett 1966 ordinates, t/c and f/c of the station"
     },
     "dtmb4119_r0900": {
       "coordinates": "airfoils/dtmb4119_r0900.dat",
       "polars": "airfoils/dtmb4119_r0900_polars.csv",
-      "polar_source": "XFOIL 6.99 (repository binary), Ncrit = 9, free transition, computed (no measured polars exist); NACA 66 (TMB mod.) thickness + a=0.8 mean line, Brockett 1966 ordinates, t/c and f/c of the station"
+      "polar_source": "computed (no measured polars exist): XFOIL 6.99 (repository binary, Ncrit = 9, free transition) where it converges over -4..+8 deg, else parametric (thin-airfoil lift, transitional friction drag; see the polar file header); NACA 66 (TMB mod.) thickness + a=0.8 mean line, Brockett 1966 ordinates, t/c and f/c of the station"
     },
     "dtmb4119_r0950": {
       "coordinates": "airfoils/dtmb4119_r0950.dat",
       "polars": "airfoils/dtmb4119_r0950_polars.csv",
-      "polar_source": "XFOIL 6.99 (repository binary), Ncrit = 9, free transition, computed (no measured polars exist); NACA 66 (TMB mod.) thickness + a=0.8 mean line, Brockett 1966 ordinates, t/c and f/c of the station"
+      "polar_source": "computed (no measured polars exist): XFOIL 6.99 (repository binary, Ncrit = 9, free transition) where it converges over -4..+8 deg, else parametric (thin-airfoil lift, transitional friction drag; see the polar file header); NACA 66 (TMB mod.) thickness + a=0.8 mean line, Brockett 1966 ordinates, t/c and f/c of the station"
     }
   },
   "experiments": [

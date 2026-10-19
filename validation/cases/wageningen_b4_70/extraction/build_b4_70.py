@@ -8,7 +8,8 @@ Sources (copies in ../sources/):
   Kuiper G. (1992). The Wageningen Propeller Series. MARIN Publ. 92-001: sect. 4.2 + Fig. 4.1 (four-bladed pitch
     reduction 82.2/88.7/95/99.2 % at 0.2/0.3/0.4/0.5R), sect. 4.5 (pitch defined on the face), 4.7 (rake 15 deg),
     4.8 (hub d/D = 1/6), Tables 4.7-4.12 (same section data, cross-check).
-Run: python3 build_b4_70.py [--xfoil]
+Run: python3 build_b4_70.py [--xfoil]   (--xfoil runs XFOIL for missing combinations; without it the polars are
+     rebuilt from the .pol files in extraction/xfoil_raw)
 """
 import os
 import sys
@@ -19,7 +20,8 @@ from scipy.interpolate import PchipInterpolator
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
-from marine_common import write_selig, run_xfoil_set, write_csv, propeller_beta_deg  # noqa
+from marine_common import (write_selig, run_xfoil_set, write_csv, propeller_beta_deg,  # noqa
+                           complete_polars, polar_header_lines)
 
 CASE = os.path.dirname(HERE)
 REPO = os.path.abspath(os.path.join(CASE, '..', '..', '..'))
@@ -185,7 +187,7 @@ def main(do_xfoil):
             name = fname(x)
             p = os.path.join(CASE, 'airfoils', name + '.dat')
             write_selig(p, f'Wageningen B-series section r/R={x:.3f} t/c={t_c:.5f} (face-referenced, chord-rotated)', X, Y)
-            foils[name] = (p, t_c, delta, camber)
+            foils[name] = (p, t_c, delta, camber, X, Y)
             foil, dl, tc_out = name, delta, t_c
         else:
             foil = fname(0.95)
@@ -209,20 +211,22 @@ def main(do_xfoil):
         'airfoil: B-series sections generated at each station (edge thickness 0, rounded nose, see extraction/build_b4_70.py);',
         '  0.975R and 1.0R use the 0.95R section. Extra columns are documentation only.'], geo, float_format='%.6f')
 
-    if do_xfoil:
-        pol = run_xfoil_set(XFOIL, os.path.join(HERE, 'xfoil_raw'), {k: v[0] for k, v in foils.items()}, RES, ncrit=NCRIT)
-        for name, df in pol.items():
-            df['source'] = f'XFOIL 6.99 Ncrit={NCRIT}, 200 panels, free transition'
-            p, tc, dl, cam = foils[name]
-            write_csv(os.path.join(CASE, 'airfoils', name + '_polars.csv'), [
-                f'{name}: Wageningen B-series section, t/c = {tc:.5f}, max camber of the generated section {cam:.5f} c,',
-                f'  nose-tail line rotated by {dl:.3f} deg from the face reference line (included in twist_deg).',
-                'COMPUTED polar: XFOIL 6.99 (repository binary), viscous, free transition, Ncrit = 9, 200 panels, ITER 150-300,',
-                '  sweeps 0 -> +18 and 0 -> -10 deg (0.5 deg); only converged points. No measured polars of these sections exist.',
-                '  The B-series polynomials are faired to Rn = 2e6 assuming turbulent friction (ITTC-57 line; Oosterveld eq. 8-10);',
-                '  free-transition XFOIL gives lower drag than that. Script: extraction/build_b4_70.py --xfoil.'], df,
-                float_format='%.5f')
-            print(name, df.groupby('re').alpha_deg.agg(['count', 'min', 'max']).to_dict('index'))
+    pol = run_xfoil_set(XFOIL, os.path.join(HERE, 'xfoil_raw'), {k: v[0] for k, v in foils.items()}, RES, ncrit=NCRIT,
+                        run=do_xfoil)
+    for name, xf in pol.items():
+        p, tc, dl, cam, X, Y = foils[name]
+        # turbulent friction: the series polynomials are faired to Rn = 2e6 with the ITTC-57 line (Oosterveld eq. 8-10)
+        df, kinds = complete_polars(xf, X, Y, tc, RES, NCRIT, friction='turbulent')
+        write_csv(os.path.join(CASE, 'airfoils', name + '_polars.csv'), [
+            f'{name}: Wageningen B-series section, t/c = {tc:.5f}, max camber of the generated section {cam:.5f} c,',
+            f'  nose-tail line rotated by {dl:.3f} deg from the face reference line (included in twist_deg).',
+            '  No measured polars of these sections exist. Script: extraction/build_b4_70.py.',
+            'XFOIL rows: XFOIL 6.99 (repository binary), viscous, free transition, Ncrit = 9, 200 panels, ITER 300,',
+            '  sweeps 0 -> +12 and 0 -> -6 deg (0.25 deg); only converged points (raw output in extraction/xfoil_raw).',
+            '  The B-series polynomials are faired to Rn = 2e6 assuming turbulent friction (ITTC-57 line; Oosterveld eq. 8-10),',
+            '  so the parametric rows use the ITTC-57 line.',
+            *polar_header_lines(kinds, 'turbulent')], df, float_format='%.5f')
+        print(name, kinds)
 
     # performance from the Rn = 2e6 polynomials, rpm per row so that Rn(0.75R) = 2e6 (Oosterveld eq. 7)
     c075 = float(np.interp(0.75, geo.r_R, geo.chord_m))

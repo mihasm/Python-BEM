@@ -15,47 +15,47 @@
     "b4_70_r0200": {
       "coordinates": "airfoils/b4_70_r0200.dat",
       "polars": "airfoils/b4_70_r0200_polars.csv",
-      "polar_source": "XFOIL 6.99 (repository binary), Ncrit = 9, free transition, computed (no measured polars exist); Wageningen B-series section generated from Oosterveld & van Oossanen 1975 Tables 2-3 (V1, V2) at the station t/c"
+      "polar_source": "computed (no measured polars exist): XFOIL 6.99 (repository binary, Ncrit = 9, free transition) where it converges over -4..+8 deg, else parametric (thin-airfoil lift, ITTC-57 turbulent friction drag; see the polar file header); Wageningen B-series section generated from Oosterveld & van Oossanen 1975 Tables 2-3 (V1, V2) at the station t/c"
     },
     "b4_70_r0300": {
       "coordinates": "airfoils/b4_70_r0300.dat",
       "polars": "airfoils/b4_70_r0300_polars.csv",
-      "polar_source": "XFOIL 6.99 (repository binary), Ncrit = 9, free transition, computed (no measured polars exist); Wageningen B-series section generated from Oosterveld & van Oossanen 1975 Tables 2-3 (V1, V2) at the station t/c"
+      "polar_source": "computed (no measured polars exist): XFOIL 6.99 (repository binary, Ncrit = 9, free transition) where it converges over -4..+8 deg, else parametric (thin-airfoil lift, ITTC-57 turbulent friction drag; see the polar file header); Wageningen B-series section generated from Oosterveld & van Oossanen 1975 Tables 2-3 (V1, V2) at the station t/c"
     },
     "b4_70_r0400": {
       "coordinates": "airfoils/b4_70_r0400.dat",
       "polars": "airfoils/b4_70_r0400_polars.csv",
-      "polar_source": "XFOIL 6.99 (repository binary), Ncrit = 9, free transition, computed (no measured polars exist); Wageningen B-series section generated from Oosterveld & van Oossanen 1975 Tables 2-3 (V1, V2) at the station t/c"
+      "polar_source": "computed (no measured polars exist): XFOIL 6.99 (repository binary, Ncrit = 9, free transition) where it converges over -4..+8 deg, else parametric (thin-airfoil lift, ITTC-57 turbulent friction drag; see the polar file header); Wageningen B-series section generated from Oosterveld & van Oossanen 1975 Tables 2-3 (V1, V2) at the station t/c"
     },
     "b4_70_r0500": {
       "coordinates": "airfoils/b4_70_r0500.dat",
       "polars": "airfoils/b4_70_r0500_polars.csv",
-      "polar_source": "XFOIL 6.99 (repository binary), Ncrit = 9, free transition, computed (no measured polars exist); Wageningen B-series section generated from Oosterveld & van Oossanen 1975 Tables 2-3 (V1, V2) at the station t/c"
+      "polar_source": "computed (no measured polars exist): XFOIL 6.99 (repository binary, Ncrit = 9, free transition) where it converges over -4..+8 deg, else parametric (thin-airfoil lift, ITTC-57 turbulent friction drag; see the polar file header); Wageningen B-series section generated from Oosterveld & van Oossanen 1975 Tables 2-3 (V1, V2) at the station t/c"
     },
     "b4_70_r0600": {
       "coordinates": "airfoils/b4_70_r0600.dat",
       "polars": "airfoils/b4_70_r0600_polars.csv",
-      "polar_source": "XFOIL 6.99 (repository binary), Ncrit = 9, free transition, computed (no measured polars exist); Wageningen B-series section generated from Oosterveld & van Oossanen 1975 Tables 2-3 (V1, V2) at the station t/c"
+      "polar_source": "computed (no measured polars exist): XFOIL 6.99 (repository binary, Ncrit = 9, free transition) where it converges over -4..+8 deg, else parametric (thin-airfoil lift, ITTC-57 turbulent friction drag; see the polar file header); Wageningen B-series section generated from Oosterveld & van Oossanen 1975 Tables 2-3 (V1, V2) at the station t/c"
     },
     "b4_70_r0700": {
       "coordinates": "airfoils/b4_70_r0700.dat",
       "polars": "airfoils/b4_70_r0700_polars.csv",
-      "polar_source": "XFOIL 6.99 (repository binary), Ncrit = 9, free transition, computed (no measured polars exist); Wageningen B-series section generated from Oosterveld & van Oossanen 1975 Tables 2-3 (V1, V2) at the station t/c"
+      "polar_source": "computed (no measured polars exist): XFOIL 6.99 (repository binary, Ncrit = 9, free transition) where it converges over -4..+8 deg, else parametric (thin-airfoil lift, ITTC-57 turbulent friction drag; see the polar file header); Wageningen B-series section generated from Oosterveld & van Oossanen 1975 Tables 2-3 (V1, V2) at the station t/c"
     },
     "b4_70_r0800": {
       "coordinates": "airfoils/b4_70_r0800.dat",
       "polars": "airfoils/b4_70_r0800_polars.csv",
-      "polar_source": "XFOIL 6.99 (repository binary), Ncrit = 9, free transition, computed (no measured polars exist); Wageningen B-series section generated from Oosterveld & van Oossanen 1975 Tables 2-3 (V1, V2) at the station t/c"
+      "polar_source": "computed (no measured polars exist): XFOIL 6.99 (repository binary, Ncrit = 9, free transition) where it converges over -4..+8 deg, else parametric (thin-airfoil lift, ITTC-57 turbulent friction drag; see the polar file header); Wageningen B-series section generated from Oosterveld & van Oossanen 1975 Tables 2-3 (V1, V2) at the station t/c"
     },
     "b4_70_r0900": {
       "coordinates": "airfoils/b4_70_r0900.dat",
       "polars": "airfoils/b4_70_r0900_polars.csv",
-      "polar_source": "XFOIL 6.99 (repository binary), Ncrit = 9, free transition, computed (no measured polars exist); Wageningen B-series section generated from Oosterveld & van Oossanen 1975 Tables 2-3 (V1, V2) at the station t/c"
+      "polar_source": "computed (no measured polars exist): XFOIL 6.99 (repository binary, Ncrit = 9, free transition) where it converges over -4..+8 deg, else parametric (thin-airfoil lift, ITTC-57 turbulent friction drag; see the polar file header); Wageningen B-series section generated from Oosterveld & van Oossanen 1975 Tables 2-3 (V1, V2) at the station t/c"
     },
     "b4_70_r0950": {
       "coordinates": "airfoils/b4_70_r0950.dat",
       "polars": "airfoils/b4_70_r0950_polars.csv",
-      "polar_source": "XFOIL 6.99 (repository binary), Ncrit = 9, free transition, computed (no measured polars exist); Wageningen B-series section generated from Oosterveld & van Oossanen 1975 Tables 2-3 (V1, V2) at the station t/c"
+      "polar_source": "computed (no measured polars exist): XFOIL 6.99 (repository binary, Ncrit = 9, free transition) where it converges over -4..+8 deg, else parametric (thin-airfoil lift, ITTC-57 turbulent friction drag; see the polar file header); Wageningen B-series section generated from Oosterveld & van Oossanen 1975 Tables 2-3 (V1, V2) at the station t/c"
     }
   },
   "experiments": [
@@ -94,5 +94,5 @@
       "url": "https://www.marinepropulsors.com/proceedings/2019/MA2-2.pdf"
     }
   ],
-  "notes": "A family benchmark: the geometry is generated exactly from the series definition (contour K(r), t/D = Ar - Br Z, max-thickness position, V1/V2 section functions) and the performance is the series' own Rn = 2e6 polynomial - so the case tests BEM against 'what the B-series charts say'. Other P/D (0.5-1.4), AE/A0 or Z can be produced by editing PD/EAR/Z in extraction/build_b4_70.py (twist changes non-uniformly with P/D, so a P/D change is NOT a global pitch offset). ASSUMPTIONS: D = 0.24 m (dimensionless case); section edge thickness 0 with a rounded nose over the first 5 % of the LE-to-max-thickness distance (the series tables end in a wedge; Kuiper mentions ~0.2 tmax edge thickness on the models); four-bladed pitch reduction at 0.2-0.5R included (as tested; Kuiper: effect negligible); 15 deg rake and the small skew ignored; tip contour 0.9-1.0R shaped like the BB-series. Twist = face-pitch angle + nose-tail-line angle of the generated section (<= 0.53 deg, inside 0.6R only). Hub d/D = 1/6 (Rhub = 0.02 m), blade data from 0.2R. The polynomials assume turbulent-friction scaling to Rn = 2e6; XFOIL free-transition polars (Ncrit 9) give lower section drag, so BEM KQ is expected slightly low."
+  "notes": "A family benchmark: the geometry is generated exactly from the series definition (contour K(r), t/D = Ar - Br Z, max-thickness position, V1/V2 section functions) and the performance is the series' own Rn = 2e6 polynomial - so the case tests BEM against 'what the B-series charts say'. Other P/D (0.5-1.4), AE/A0 or Z can be produced by editing PD/EAR/Z in extraction/build_b4_70.py (twist changes non-uniformly with P/D, so a P/D change is NOT a global pitch offset). ASSUMPTIONS: D = 0.24 m (dimensionless case); section edge thickness 0 with a rounded nose over the first 5 % of the LE-to-max-thickness distance (the series tables end in a wedge; Kuiper mentions ~0.2 tmax edge thickness on the models); four-bladed pitch reduction at 0.2-0.5R included (as tested; Kuiper: effect negligible); 15 deg rake and the small skew ignored; tip contour 0.9-1.0R shaped like the BB-series. Twist = face-pitch angle + nose-tail-line angle of the generated section (<= 0.53 deg, inside 0.6R only). Hub d/D = 1/6 (Rhub = 0.02 m), blade data from 0.2R. The polynomials assume turbulent-friction scaling to Rn = 2e6; XFOIL converges on almost none of these sections, so the polars are nearly all parametric with ITTC-57 turbulent friction drag (see the polar file headers)."
 }

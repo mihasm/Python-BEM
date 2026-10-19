@@ -483,8 +483,15 @@ def main(argv=None):
     a = ap.parse_args(argv)
 
     aero = ("performance", "power_curve", "spanwise", "loads")
-    case_paths = [p for p in bv.list_cases(a.cases, a.cases_dir)
-                  if any(e.kind in aero for e in bv.load_case(p).experiments)]
+    case_paths = []
+    for p in bv.list_cases(a.cases, a.cases_dir):
+        try:
+            c = bv.load_case(p)
+        except Exception as e:  # noqa: BLE001 - one broken case must not stop the others
+            print("skipping %s: %s" % (p.name, e), file=sys.stderr)
+            continue
+        if any(e.kind in aero for e in c.experiments):
+            case_paths.append(p)
     if a.list:
         for p in case_paths:
             c = bv.load_case(p)

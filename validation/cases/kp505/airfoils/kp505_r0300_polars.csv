@@ -1,283 +1,303 @@
 # kp505_r0300: NACA 66 thickness t/c = 0.13215 (KRISO: "NACA66 thickness form"; built with the DTMB-modified
-#   ordinates of Brockett 1966), NACA a=0.8 mean line f/c = 0.02948.
-# COMPUTED polar: XFOIL 6.99 (repository binary), viscous, free transition, Ncrit = 9, 200 panels, ITER 150-300,
-#   sweeps 0 -> +18 and 0 -> -10 deg (0.5 deg); only converged points. No measured polars exist.
-#   Script: extraction/build_kp505.py --xfoil (helpers extraction/marine_common.py).
+#   ordinates of Brockett 1966), NACA a=0.8 mean line f/c = 0.02948. No measured polars exist.
+# XFOIL rows: XFOIL 6.99 (repository binary), viscous, free transition, Ncrit = 9, 200 panels, ITER 150-300,
+#   sweeps 0 -> +18 and 0 -> -10 deg (0.5 deg) plus 0 -> +12 / -6 deg (0.25 deg); only converged points
+#   (raw output in extraction/xfoil_raw). Script: extraction/build_kp505.py (helpers extraction/marine_common.py).
+# Per Reynolds number (column source): XFOIL where its converged points cover -4..+8 deg without gaps
+#   (5 of 6 here), else a PARAMETRIC polar (XROTOR-type), because XFOIL does not converge on these
+#   thin sections beyond a few degrees (free or tripped transition): lift from thin-airfoil theory of the mean line
+#   (zero-lift angle; slope 0.90 * 2 pi (1 + 0.77 t/c) /rad), smooth stall at cl_0 +- c(t/c) (Re/3e6)^0.1 (estimate
+#   after the smooth NACA 6-series maxima, Abbott & von Doenhoff 1959); drag 2 Cf (1 + 2 t/c + 60 (t/c)^4) +
+#   0.02 (cl - cl_0)^2 + post-stall rise, Cf transitional flat plate (extraction/marine_common.py parametric_polar).
+#   Parametric rows have no ncrit; cm there is the thin-airfoil value.
 re,alpha_deg,cl,cd,cm,ncrit,source
-100000.00000,-4.50000,-0.52990,0.04033,-0.02010,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-100000.00000,-4.00000,-0.48420,0.03567,-0.01840,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-100000.00000,-3.50000,-0.43580,0.03271,-0.01670,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-100000.00000,-3.00000,-0.38750,0.03039,-0.01590,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-100000.00000,-2.50000,-0.33890,0.02904,-0.01510,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-100000.00000,-2.00000,-0.29020,0.02812,-0.01470,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-100000.00000,-1.50000,-0.19850,0.02588,-0.02010,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-100000.00000,-1.00000,-0.11660,0.02730,-0.02750,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-100000.00000,-0.50000,-0.03950,0.02873,-0.03370,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-100000.00000,0.00000,0.01830,0.02958,-0.03600,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-100000.00000,0.50000,0.08090,0.03068,-0.03920,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-100000.00000,1.00000,0.14490,0.03182,-0.04260,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-100000.00000,1.50000,0.20150,0.03287,-0.04450,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-100000.00000,2.00000,0.25670,0.03381,-0.04600,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-100000.00000,2.50000,0.32270,0.03477,-0.04930,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-100000.00000,3.00000,0.37240,0.03573,-0.04980,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-100000.00000,3.50000,0.43570,0.03646,-0.05230,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-100000.00000,4.00000,0.48980,0.03721,-0.05320,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-100000.00000,4.50000,0.55830,0.03746,-0.05600,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-100000.00000,5.00000,0.61500,0.03769,-0.05660,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-100000.00000,6.00000,0.76100,0.03530,-0.06020,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-100000.00000,6.50000,0.89990,0.02603,-0.06490,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-100000.00000,7.00000,0.97180,0.02160,-0.06190,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-100000.00000,7.50000,0.97510,0.02266,-0.04920,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-100000.00000,8.00000,0.94580,0.02804,-0.03650,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-100000.00000,8.50000,0.95670,0.03158,-0.03010,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-100000.00000,9.00000,1.00660,0.03498,-0.02920,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-100000.00000,9.50000,1.10940,0.03991,-0.03640,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-100000.00000,10.00000,1.18640,0.04695,-0.03980,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-100000.00000,10.50000,1.21030,0.05302,-0.03510,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-100000.00000,11.00000,1.20750,0.06081,-0.02670,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-100000.00000,11.50000,1.22880,0.07130,-0.02400,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-100000.00000,12.00000,1.07340,0.07290,0.00120,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-100000.00000,12.50000,1.01070,0.08256,0.00860,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-200000.00000,-7.50000,-0.55830,0.06935,-0.05610,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-200000.00000,-6.50000,-0.51810,0.05340,-0.05740,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-200000.00000,-5.50000,-0.43360,0.03532,-0.05470,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-200000.00000,-5.00000,-0.37850,0.03042,-0.05430,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-200000.00000,-4.50000,-0.31530,0.02782,-0.05540,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-200000.00000,-4.00000,-0.25550,0.02563,-0.05680,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-200000.00000,-3.50000,-0.19640,0.02418,-0.05800,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-200000.00000,-3.00000,-0.14200,0.02328,-0.05840,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-200000.00000,-2.50000,-0.08430,0.02000,-0.06070,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-200000.00000,-1.50000,0.05480,0.02037,-0.06390,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-200000.00000,-1.00000,0.19810,0.02136,-0.08310,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-200000.00000,-0.50000,0.22700,0.02101,-0.07950,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-200000.00000,0.00000,0.26880,0.02093,-0.07780,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-200000.00000,1.00000,0.36670,0.02105,-0.07650,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-200000.00000,1.50000,0.43920,0.02082,-0.08040,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-200000.00000,2.00000,0.48940,0.02088,-0.07980,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-200000.00000,3.50000,0.68600,0.01940,-0.08580,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-200000.00000,4.00000,0.76120,0.01824,-0.08910,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-200000.00000,4.50000,0.84900,0.01607,-0.09400,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-200000.00000,5.00000,0.91630,0.01393,-0.09400,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-200000.00000,5.50000,0.96910,0.01318,-0.09230,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-200000.00000,6.00000,1.01110,0.01308,-0.08840,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-200000.00000,6.50000,1.00460,0.01449,-0.07510,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-200000.00000,7.00000,0.97080,0.01755,-0.05870,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-200000.00000,7.50000,0.95430,0.02143,-0.04740,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-200000.00000,8.00000,0.96350,0.02432,-0.04050,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-200000.00000,8.50000,0.98150,0.02687,-0.03510,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-200000.00000,9.00000,1.00510,0.02952,-0.03090,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-200000.00000,9.50000,1.04370,0.03195,-0.02860,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-200000.00000,10.00000,1.10670,0.03522,-0.02990,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-200000.00000,10.50000,1.16990,0.03945,-0.03120,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-200000.00000,11.00000,1.21410,0.04388,-0.03060,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-200000.00000,11.50000,1.22050,0.05151,-0.02350,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-200000.00000,12.00000,1.19550,0.06040,-0.01390,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-200000.00000,12.50000,1.16740,0.06824,-0.00640,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-200000.00000,13.00000,1.06840,0.07530,0.00660,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-400000.00000,-6.00000,-0.29690,0.02079,-0.08690,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-400000.00000,-5.50000,-0.23410,0.01923,-0.08920,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-400000.00000,-5.00000,-0.17020,0.01745,-0.09160,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-400000.00000,-4.50000,-0.12630,0.01676,-0.08950,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-400000.00000,-4.00000,-0.06460,0.01561,-0.09130,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-400000.00000,-3.50000,-0.00080,0.01446,-0.09350,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-400000.00000,-3.00000,0.03530,0.01281,-0.09070,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-400000.00000,-2.50000,0.08680,0.01127,-0.09030,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-400000.00000,-2.00000,0.13370,0.01115,-0.08830,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-400000.00000,-1.50000,0.19330,0.01067,-0.08870,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-400000.00000,-1.00000,0.24420,0.01075,-0.08690,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-400000.00000,-0.50000,0.31550,0.01070,-0.09020,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-400000.00000,0.00000,0.39670,0.01056,-0.09600,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-400000.00000,0.50000,0.47380,0.01063,-0.10140,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-400000.00000,1.00000,0.55730,0.01041,-0.10800,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-400000.00000,1.50000,0.63750,0.01038,-0.11410,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-400000.00000,2.00000,0.72240,0.00999,-0.12100,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-400000.00000,2.50000,0.76790,0.00966,-0.11940,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-400000.00000,3.00000,0.81220,0.00936,-0.11720,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-400000.00000,3.50000,0.85790,0.00895,-0.11490,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-400000.00000,4.00000,0.90160,0.00868,-0.11200,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-400000.00000,4.50000,0.94180,0.00882,-0.10860,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-400000.00000,5.00000,0.97060,0.00930,-0.10280,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-400000.00000,5.50000,0.97460,0.01039,-0.09180,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-400000.00000,6.00000,0.95450,0.01209,-0.07630,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-400000.00000,6.50000,0.94760,0.01449,-0.06500,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-400000.00000,7.00000,0.95540,0.01691,-0.05730,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-400000.00000,7.50000,0.97670,0.01881,-0.05200,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-400000.00000,8.00000,1.00140,0.02061,-0.04730,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-400000.00000,8.50000,1.02320,0.02266,-0.04240,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-400000.00000,9.00000,1.04920,0.02452,-0.03840,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-400000.00000,9.50000,1.06800,0.02714,-0.03370,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-400000.00000,10.00000,1.09770,0.02920,-0.03040,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-400000.00000,10.50000,1.12860,0.03124,-0.02770,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-400000.00000,11.00000,1.16160,0.03371,-0.02530,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-400000.00000,11.50000,1.19990,0.03704,-0.02350,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-400000.00000,12.00000,1.22480,0.04031,-0.02020,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-400000.00000,12.50000,1.24320,0.04433,-0.01660,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-400000.00000,13.00000,1.25190,0.04881,-0.01240,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-400000.00000,13.50000,1.24560,0.05473,-0.00750,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-400000.00000,14.00000,1.22190,0.06210,-0.00230,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-700000.00000,-8.50000,-0.45910,0.02076,-0.10490,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-700000.00000,-8.00000,-0.41530,0.01913,-0.10370,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-700000.00000,-7.50000,-0.36820,0.01729,-0.10260,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-700000.00000,-7.00000,-0.32290,0.01548,-0.10130,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-700000.00000,-6.50000,-0.27220,0.01475,-0.10090,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-700000.00000,-6.00000,-0.22300,0.01342,-0.10010,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-700000.00000,-5.50000,-0.17250,0.01289,-0.09960,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-700000.00000,-5.00000,-0.12210,0.01195,-0.09900,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-700000.00000,-4.50000,-0.06980,0.01127,-0.09880,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-700000.00000,-4.00000,-0.01750,0.01075,-0.09850,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-700000.00000,-3.50000,0.03740,0.01016,-0.09870,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-700000.00000,-3.00000,0.08480,0.00908,-0.09790,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-700000.00000,-2.50000,0.12990,0.00752,-0.09670,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-700000.00000,-2.00000,0.18110,0.00718,-0.09610,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-700000.00000,-1.50000,0.23680,0.00696,-0.09620,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-700000.00000,-1.00000,0.28860,0.00675,-0.09540,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-700000.00000,-0.50000,0.34470,0.00655,-0.09550,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-700000.00000,0.00000,0.39940,0.00648,-0.09530,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-700000.00000,0.50000,0.46120,0.00650,-0.09670,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-700000.00000,1.00000,0.52810,0.00654,-0.09960,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-700000.00000,1.50000,0.59970,0.00661,-0.10360,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-700000.00000,2.00000,0.67330,0.00663,-0.10810,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-700000.00000,2.50000,0.74800,0.00664,-0.11290,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-700000.00000,3.50000,0.87180,0.00687,-0.11660,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-700000.00000,4.00000,0.90860,0.00722,-0.11290,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-700000.00000,4.50000,0.93300,0.00790,-0.10640,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-700000.00000,5.00000,0.93780,0.00907,-0.09590,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-700000.00000,5.50000,0.92710,0.01053,-0.08220,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-700000.00000,6.00000,0.92900,0.01233,-0.07210,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-700000.00000,6.50000,0.94470,0.01409,-0.06520,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-700000.00000,7.00000,0.97230,0.01543,-0.06080,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-700000.00000,7.50000,1.00240,0.01675,-0.05680,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-700000.00000,8.00000,1.03380,0.01806,-0.05320,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-700000.00000,8.50000,1.06600,0.01934,-0.04990,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-700000.00000,9.00000,1.09220,0.02105,-0.04570,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-700000.00000,9.50000,1.12190,0.02256,-0.04230,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-700000.00000,10.00000,1.14890,0.02429,-0.03880,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-700000.00000,10.50000,1.16460,0.02700,-0.03380,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-700000.00000,11.00000,1.19320,0.02878,-0.03080,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-700000.00000,11.50000,1.21840,0.03086,-0.02760,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-700000.00000,12.00000,1.24040,0.03325,-0.02430,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-700000.00000,12.50000,1.25680,0.03679,-0.02030,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-700000.00000,13.00000,1.27510,0.03977,-0.01700,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-700000.00000,13.50000,1.28820,0.04326,-0.01350,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-700000.00000,14.00000,1.29730,0.04694,-0.01040,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-700000.00000,14.50000,1.30210,0.05115,-0.00760,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-700000.00000,15.00000,1.29110,0.05776,-0.00420,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-700000.00000,15.50000,1.26420,0.06652,-0.00170,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-700000.00000,16.00000,1.23870,0.07579,-0.00160,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-700000.00000,16.50000,1.20450,0.08748,-0.00370,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-700000.00000,17.00000,1.16400,0.10183,-0.00910,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-700000.00000,17.50000,1.11990,0.11905,-0.01810,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-700000.00000,18.00000,1.07060,0.14003,-0.03110,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-1000000.00000,-10.00000,-0.60380,0.02286,-0.10400,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-1000000.00000,-9.50000,-0.57020,0.01980,-0.10150,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-1000000.00000,-9.00000,-0.52850,0.01772,-0.09990,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-1000000.00000,-8.50000,-0.48440,0.01601,-0.09880,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-1000000.00000,-8.00000,-0.43520,0.01500,-0.09830,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-1000000.00000,-7.50000,-0.38640,0.01381,-0.09760,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-1000000.00000,-7.00000,-0.33710,0.01278,-0.09710,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-1000000.00000,-6.50000,-0.28380,0.01224,-0.09720,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-1000000.00000,-6.00000,-0.23340,0.01135,-0.09670,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-1000000.00000,-5.50000,-0.18170,0.01063,-0.09650,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-1000000.00000,-5.00000,-0.12690,0.01022,-0.09680,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-1000000.00000,-4.50000,-0.07370,0.00965,-0.09680,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-1000000.00000,-4.00000,-0.01920,0.00919,-0.09700,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-1000000.00000,-3.50000,0.03650,0.00878,-0.09750,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-1000000.00000,-3.00000,0.08900,0.00811,-0.09750,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-1000000.00000,-2.50000,0.13690,0.00673,-0.09700,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-1000000.00000,-2.00000,0.18720,0.00601,-0.09650,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-1000000.00000,-1.50000,0.24290,0.00576,-0.09680,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-1000000.00000,-1.00000,0.29750,0.00561,-0.09680,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-1000000.00000,-0.50000,0.35340,0.00545,-0.09710,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-1000000.00000,0.00000,0.40800,0.00530,-0.09710,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-1000000.00000,0.50000,0.46260,0.00521,-0.09700,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-1000000.00000,1.00000,0.52070,0.00523,-0.09770,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-1000000.00000,1.50000,0.58320,0.00530,-0.09950,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-1000000.00000,2.00000,0.65070,0.00540,-0.10260,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-1000000.00000,2.50000,0.72160,0.00555,-0.10660,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-1000000.00000,3.00000,0.79010,0.00580,-0.11000,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-1000000.00000,3.50000,0.85470,0.00638,-0.11260,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-1000000.00000,4.00000,0.90130,0.00701,-0.11140,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-1000000.00000,4.50000,0.91510,0.00807,-0.10290,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-1000000.00000,5.00000,0.91740,0.00946,-0.09200,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-1000000.00000,5.50000,0.91370,0.01076,-0.08000,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-1000000.00000,6.00000,0.92600,0.01225,-0.07190,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-1000000.00000,7.00000,0.98690,0.01442,-0.06360,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-1000000.00000,7.50000,1.02080,0.01548,-0.06020,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-1000000.00000,8.00000,1.05500,0.01657,-0.05700,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-1000000.00000,8.50000,1.09030,0.01763,-0.05420,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-1000000.00000,9.00000,1.11920,0.01912,-0.05040,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-1000000.00000,9.50000,1.15210,0.02037,-0.04740,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-1000000.00000,10.00000,1.18280,0.02179,-0.04420,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-1000000.00000,10.50000,1.20890,0.02354,-0.04060,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-1000000.00000,11.00000,1.22930,0.02576,-0.03630,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-1000000.00000,11.50000,1.25520,0.02763,-0.03300,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-1000000.00000,12.00000,1.27910,0.02969,-0.02970,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-1000000.00000,12.50000,1.29960,0.03203,-0.02630,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-1000000.00000,13.00000,1.30480,0.03594,-0.02120,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-1000000.00000,13.50000,1.32470,0.03850,-0.01850,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-1000000.00000,14.00000,1.33880,0.04170,-0.01540,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-1000000.00000,14.50000,1.34860,0.04543,-0.01260,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-1000000.00000,15.00000,1.35510,0.04965,-0.01010,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-1000000.00000,15.50000,1.35490,0.05482,-0.00780,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-1000000.00000,16.00000,1.33330,0.06282,-0.00530,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-1000000.00000,16.50000,1.31030,0.07179,-0.00460,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-1000000.00000,17.00000,1.29320,0.08080,-0.00580,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-1000000.00000,17.50000,1.26760,0.09191,-0.00890,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-1000000.00000,18.00000,1.23480,0.10539,-0.01430,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-1500000.00000,-10.00000,-0.65000,0.01648,-0.09550,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-1500000.00000,-9.50000,-0.60740,0.01461,-0.09410,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-1500000.00000,-9.00000,-0.55860,0.01359,-0.09370,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-1500000.00000,-8.50000,-0.50770,0.01284,-0.09350,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-1500000.00000,-8.00000,-0.45490,0.01227,-0.09360,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-1500000.00000,-7.50000,-0.40510,0.01122,-0.09320,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-1500000.00000,-7.00000,-0.35140,0.01070,-0.09340,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-1500000.00000,-6.50000,-0.29890,0.01003,-0.09340,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-1500000.00000,-6.00000,-0.24330,0.00971,-0.09390,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-1500000.00000,-5.50000,-0.18940,0.00914,-0.09410,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-1500000.00000,-5.00000,-0.13450,0.00872,-0.09450,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-1500000.00000,-4.50000,-0.07850,0.00840,-0.09510,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-1500000.00000,-4.00000,-0.02280,0.00801,-0.09560,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-1500000.00000,-3.50000,0.03330,0.00769,-0.09610,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-1500000.00000,-3.00000,0.08880,0.00726,-0.09670,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-1500000.00000,-2.50000,0.14150,0.00646,-0.09690,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-1500000.00000,-2.00000,0.19130,0.00537,-0.09670,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-1500000.00000,-1.50000,0.24600,0.00497,-0.09700,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-1500000.00000,-1.00000,0.30170,0.00476,-0.09740,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-1500000.00000,-0.50000,0.35750,0.00463,-0.09770,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-1500000.00000,0.00000,0.41450,0.00455,-0.09840,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-1500000.00000,0.50000,0.47020,0.00445,-0.09870,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-1500000.00000,1.00000,0.52460,0.00435,-0.09870,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-1500000.00000,1.50000,0.57830,0.00437,-0.09840,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-1500000.00000,2.00000,0.63570,0.00452,-0.09910,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-1500000.00000,2.50000,0.69530,0.00474,-0.10040,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-1500000.00000,3.00000,0.75820,0.00521,-0.10260,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-1500000.00000,3.50000,0.81630,0.00596,-0.10400,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-1500000.00000,4.00000,0.87190,0.00711,-0.10510,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-1500000.00000,4.50000,0.89750,0.00865,-0.09970,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-1500000.00000,5.00000,0.90660,0.00982,-0.09040,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-1500000.00000,5.50000,0.91040,0.01080,-0.07970,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-1500000.00000,6.00000,0.93480,0.01170,-0.07390,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-1500000.00000,6.50000,0.96840,0.01252,-0.07020,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-1500000.00000,7.00000,1.00390,0.01337,-0.06690,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-1500000.00000,7.50000,1.04100,0.01422,-0.06410,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-1500000.00000,8.00000,1.07810,0.01510,-0.06130,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-1500000.00000,8.50000,1.11560,0.01598,-0.05880,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-1500000.00000,9.00000,1.14900,0.01715,-0.05560,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-1500000.00000,9.50000,1.18300,0.01829,-0.05270,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-1500000.00000,10.00000,1.21720,0.01943,-0.05000,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-1500000.00000,10.50000,1.24920,0.02072,-0.04710,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-1500000.00000,11.00000,1.27510,0.02245,-0.04330,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-1500000.00000,11.50000,1.29700,0.02449,-0.03920,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-1500000.00000,12.00000,1.32450,0.02616,-0.03620,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-1500000.00000,12.50000,1.35010,0.02800,-0.03310,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-1500000.00000,13.00000,1.37360,0.03002,-0.03000,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-1500000.00000,13.50000,1.37240,0.03410,-0.02420,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-1500000.00000,14.00000,1.39570,0.03631,-0.02180,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-1500000.00000,14.50000,1.41300,0.03914,-0.01910,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-1500000.00000,15.00000,1.42590,0.04248,-0.01630,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-1500000.00000,15.50000,1.43620,0.04625,-0.01390,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-1500000.00000,16.00000,1.44380,0.05047,-0.01190,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-1500000.00000,16.50000,1.44750,0.05538,-0.01040,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-1500000.00000,17.00000,1.44240,0.06158,-0.00920,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-1500000.00000,17.50000,1.41870,0.07059,-0.00870,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
-1500000.00000,18.00000,1.38010,0.08250,-0.01000,9,"XFOIL 6.99 Ncrit=9, 200 panels, free transition"
+100000.00000,-4.50000,-0.52990,0.04033,-0.02010,9.00000,XFOIL 6.99 Ncrit=9 free transition
+100000.00000,-4.00000,-0.48420,0.03567,-0.01840,9.00000,XFOIL 6.99 Ncrit=9 free transition
+100000.00000,-3.50000,-0.43580,0.03271,-0.01670,9.00000,XFOIL 6.99 Ncrit=9 free transition
+100000.00000,-3.00000,-0.38750,0.03039,-0.01590,9.00000,XFOIL 6.99 Ncrit=9 free transition
+100000.00000,-2.50000,-0.33890,0.02904,-0.01510,9.00000,XFOIL 6.99 Ncrit=9 free transition
+100000.00000,-2.00000,-0.29020,0.02812,-0.01470,9.00000,XFOIL 6.99 Ncrit=9 free transition
+100000.00000,-1.50000,-0.19850,0.02588,-0.02010,9.00000,XFOIL 6.99 Ncrit=9 free transition
+100000.00000,-1.00000,-0.11660,0.02730,-0.02750,9.00000,XFOIL 6.99 Ncrit=9 free transition
+100000.00000,-0.50000,-0.03950,0.02873,-0.03370,9.00000,XFOIL 6.99 Ncrit=9 free transition
+100000.00000,0.00000,0.01830,0.02958,-0.03600,9.00000,XFOIL 6.99 Ncrit=9 free transition
+100000.00000,0.50000,0.08090,0.03068,-0.03920,9.00000,XFOIL 6.99 Ncrit=9 free transition
+100000.00000,1.00000,0.14490,0.03182,-0.04260,9.00000,XFOIL 6.99 Ncrit=9 free transition
+100000.00000,1.50000,0.20150,0.03287,-0.04450,9.00000,XFOIL 6.99 Ncrit=9 free transition
+100000.00000,2.00000,0.25670,0.03381,-0.04600,9.00000,XFOIL 6.99 Ncrit=9 free transition
+100000.00000,2.50000,0.32270,0.03477,-0.04930,9.00000,XFOIL 6.99 Ncrit=9 free transition
+100000.00000,3.00000,0.37240,0.03573,-0.04980,9.00000,XFOIL 6.99 Ncrit=9 free transition
+100000.00000,3.50000,0.43570,0.03646,-0.05230,9.00000,XFOIL 6.99 Ncrit=9 free transition
+100000.00000,4.00000,0.48980,0.03721,-0.05320,9.00000,XFOIL 6.99 Ncrit=9 free transition
+100000.00000,4.50000,0.55830,0.03746,-0.05600,9.00000,XFOIL 6.99 Ncrit=9 free transition
+100000.00000,5.00000,0.61500,0.03769,-0.05660,9.00000,XFOIL 6.99 Ncrit=9 free transition
+100000.00000,6.00000,0.76100,0.03530,-0.06020,9.00000,XFOIL 6.99 Ncrit=9 free transition
+100000.00000,6.50000,0.89990,0.02603,-0.06490,9.00000,XFOIL 6.99 Ncrit=9 free transition
+100000.00000,7.00000,0.97180,0.02160,-0.06190,9.00000,XFOIL 6.99 Ncrit=9 free transition
+100000.00000,7.50000,0.97510,0.02266,-0.04920,9.00000,XFOIL 6.99 Ncrit=9 free transition
+100000.00000,8.00000,0.94580,0.02804,-0.03650,9.00000,XFOIL 6.99 Ncrit=9 free transition
+100000.00000,8.50000,0.95670,0.03158,-0.03010,9.00000,XFOIL 6.99 Ncrit=9 free transition
+100000.00000,9.00000,1.00660,0.03498,-0.02920,9.00000,XFOIL 6.99 Ncrit=9 free transition
+100000.00000,9.50000,1.10940,0.03991,-0.03640,9.00000,XFOIL 6.99 Ncrit=9 free transition
+100000.00000,10.00000,1.18640,0.04695,-0.03980,9.00000,XFOIL 6.99 Ncrit=9 free transition
+100000.00000,10.50000,1.21030,0.05302,-0.03510,9.00000,XFOIL 6.99 Ncrit=9 free transition
+100000.00000,11.00000,1.20750,0.06081,-0.02670,9.00000,XFOIL 6.99 Ncrit=9 free transition
+100000.00000,11.50000,1.22880,0.07130,-0.02400,9.00000,XFOIL 6.99 Ncrit=9 free transition
+100000.00000,12.00000,1.07340,0.07290,0.00120,9.00000,XFOIL 6.99 Ncrit=9 free transition
+100000.00000,12.50000,1.01070,0.08256,0.00860,9.00000,XFOIL 6.99 Ncrit=9 free transition
+200000.00000,-10.00000,-0.38185,0.06091,-0.09207,,"parametric (thin-airfoil lift, transitional friction drag)"
+200000.00000,-9.50000,-0.40179,0.04839,-0.09207,,"parametric (thin-airfoil lift, transitional friction drag)"
+200000.00000,-9.00000,-0.42139,0.03761,-0.09207,,"parametric (thin-airfoil lift, transitional friction drag)"
+200000.00000,-8.50000,-0.43890,0.02891,-0.09207,,"parametric (thin-airfoil lift, transitional friction drag)"
+200000.00000,-8.00000,-0.44579,0.02303,-0.09207,,"parametric (thin-airfoil lift, transitional friction drag)"
+200000.00000,-7.50000,-0.42134,0.02092,-0.09207,,"parametric (thin-airfoil lift, transitional friction drag)"
+200000.00000,-7.00000,-0.37708,0.01920,-0.09207,,"parametric (thin-airfoil lift, transitional friction drag)"
+200000.00000,-6.50000,-0.32578,0.01761,-0.09207,,"parametric (thin-airfoil lift, transitional friction drag)"
+200000.00000,-6.00000,-0.27224,0.01613,-0.09207,,"parametric (thin-airfoil lift, transitional friction drag)"
+200000.00000,-5.50000,-0.21809,0.01477,-0.09207,,"parametric (thin-airfoil lift, transitional friction drag)"
+200000.00000,-5.00000,-0.16377,0.01353,-0.09207,,"parametric (thin-airfoil lift, transitional friction drag)"
+200000.00000,-4.50000,-0.10942,0.01241,-0.09207,,"parametric (thin-airfoil lift, transitional friction drag)"
+200000.00000,-4.00000,-0.05505,0.01140,-0.09207,,"parametric (thin-airfoil lift, transitional friction drag)"
+200000.00000,-3.50000,-0.00068,0.01051,-0.09207,,"parametric (thin-airfoil lift, transitional friction drag)"
+200000.00000,-3.00000,0.05369,0.00975,-0.09207,,"parametric (thin-airfoil lift, transitional friction drag)"
+200000.00000,-2.50000,0.10806,0.00910,-0.09207,,"parametric (thin-airfoil lift, transitional friction drag)"
+200000.00000,-2.00000,0.16243,0.00856,-0.09207,,"parametric (thin-airfoil lift, transitional friction drag)"
+200000.00000,-1.50000,0.21679,0.00815,-0.09207,,"parametric (thin-airfoil lift, transitional friction drag)"
+200000.00000,-1.00000,0.27116,0.00785,-0.09207,,"parametric (thin-airfoil lift, transitional friction drag)"
+200000.00000,-0.50000,0.32553,0.00768,-0.09207,,"parametric (thin-airfoil lift, transitional friction drag)"
+200000.00000,0.00000,0.37990,0.00762,-0.09207,,"parametric (thin-airfoil lift, transitional friction drag)"
+200000.00000,0.50000,0.43427,0.00768,-0.09207,,"parametric (thin-airfoil lift, transitional friction drag)"
+200000.00000,1.00000,0.48864,0.00785,-0.09207,,"parametric (thin-airfoil lift, transitional friction drag)"
+200000.00000,1.50000,0.54301,0.00815,-0.09207,,"parametric (thin-airfoil lift, transitional friction drag)"
+200000.00000,2.00000,0.59738,0.00856,-0.09207,,"parametric (thin-airfoil lift, transitional friction drag)"
+200000.00000,2.50000,0.65175,0.00910,-0.09207,,"parametric (thin-airfoil lift, transitional friction drag)"
+200000.00000,3.00000,0.70612,0.00975,-0.09207,,"parametric (thin-airfoil lift, transitional friction drag)"
+200000.00000,3.50000,0.76049,0.01051,-0.09207,,"parametric (thin-airfoil lift, transitional friction drag)"
+200000.00000,4.00000,0.81486,0.01140,-0.09207,,"parametric (thin-airfoil lift, transitional friction drag)"
+200000.00000,4.50000,0.86922,0.01241,-0.09207,,"parametric (thin-airfoil lift, transitional friction drag)"
+200000.00000,5.00000,0.92358,0.01353,-0.09207,,"parametric (thin-airfoil lift, transitional friction drag)"
+200000.00000,5.50000,0.97789,0.01477,-0.09207,,"parametric (thin-airfoil lift, transitional friction drag)"
+200000.00000,6.00000,1.03204,0.01613,-0.09207,,"parametric (thin-airfoil lift, transitional friction drag)"
+200000.00000,6.50000,1.08559,0.01761,-0.09207,,"parametric (thin-airfoil lift, transitional friction drag)"
+200000.00000,7.00000,1.13689,0.01920,-0.09207,,"parametric (thin-airfoil lift, transitional friction drag)"
+200000.00000,7.50000,1.18115,0.02092,-0.09207,,"parametric (thin-airfoil lift, transitional friction drag)"
+200000.00000,8.00000,1.20559,0.02303,-0.09207,,"parametric (thin-airfoil lift, transitional friction drag)"
+200000.00000,8.50000,1.19870,0.02891,-0.09207,,"parametric (thin-airfoil lift, transitional friction drag)"
+200000.00000,9.00000,1.18119,0.03761,-0.09207,,"parametric (thin-airfoil lift, transitional friction drag)"
+200000.00000,9.50000,1.16160,0.04839,-0.09207,,"parametric (thin-airfoil lift, transitional friction drag)"
+200000.00000,10.00000,1.14166,0.06091,-0.09207,,"parametric (thin-airfoil lift, transitional friction drag)"
+200000.00000,10.50000,1.12167,0.07496,-0.09207,,"parametric (thin-airfoil lift, transitional friction drag)"
+200000.00000,11.00000,1.10167,0.09039,-0.09207,,"parametric (thin-airfoil lift, transitional friction drag)"
+200000.00000,11.50000,1.08167,0.10708,-0.09207,,"parametric (thin-airfoil lift, transitional friction drag)"
+200000.00000,12.00000,1.06167,0.12494,-0.09207,,"parametric (thin-airfoil lift, transitional friction drag)"
+200000.00000,12.50000,1.04167,0.14390,-0.09207,,"parametric (thin-airfoil lift, transitional friction drag)"
+200000.00000,13.00000,1.02167,0.16390,-0.09207,,"parametric (thin-airfoil lift, transitional friction drag)"
+200000.00000,13.50000,1.00167,0.18488,-0.09207,,"parametric (thin-airfoil lift, transitional friction drag)"
+200000.00000,14.00000,0.98167,0.20682,-0.09207,,"parametric (thin-airfoil lift, transitional friction drag)"
+400000.00000,-6.00000,-0.29690,0.02079,-0.08690,9.00000,XFOIL 6.99 Ncrit=9 free transition
+400000.00000,-5.50000,-0.23410,0.01923,-0.08920,9.00000,XFOIL 6.99 Ncrit=9 free transition
+400000.00000,-5.00000,-0.17020,0.01745,-0.09160,9.00000,XFOIL 6.99 Ncrit=9 free transition
+400000.00000,-4.50000,-0.12630,0.01676,-0.08950,9.00000,XFOIL 6.99 Ncrit=9 free transition
+400000.00000,-4.00000,-0.06460,0.01561,-0.09130,9.00000,XFOIL 6.99 Ncrit=9 free transition
+400000.00000,-3.50000,-0.00080,0.01446,-0.09350,9.00000,XFOIL 6.99 Ncrit=9 free transition
+400000.00000,-3.00000,0.03530,0.01281,-0.09070,9.00000,XFOIL 6.99 Ncrit=9 free transition
+400000.00000,-2.50000,0.08680,0.01127,-0.09030,9.00000,XFOIL 6.99 Ncrit=9 free transition
+400000.00000,-2.00000,0.13370,0.01115,-0.08830,9.00000,XFOIL 6.99 Ncrit=9 free transition
+400000.00000,-1.50000,0.19330,0.01067,-0.08870,9.00000,XFOIL 6.99 Ncrit=9 free transition
+400000.00000,-1.00000,0.24420,0.01075,-0.08690,9.00000,XFOIL 6.99 Ncrit=9 free transition
+400000.00000,-0.50000,0.31550,0.01070,-0.09020,9.00000,XFOIL 6.99 Ncrit=9 free transition
+400000.00000,0.00000,0.39670,0.01056,-0.09600,9.00000,XFOIL 6.99 Ncrit=9 free transition
+400000.00000,0.50000,0.47380,0.01063,-0.10140,9.00000,XFOIL 6.99 Ncrit=9 free transition
+400000.00000,1.00000,0.55730,0.01041,-0.10800,9.00000,XFOIL 6.99 Ncrit=9 free transition
+400000.00000,1.50000,0.63750,0.01038,-0.11410,9.00000,XFOIL 6.99 Ncrit=9 free transition
+400000.00000,2.00000,0.72240,0.00999,-0.12100,9.00000,XFOIL 6.99 Ncrit=9 free transition
+400000.00000,2.50000,0.76790,0.00966,-0.11940,9.00000,XFOIL 6.99 Ncrit=9 free transition
+400000.00000,3.00000,0.81220,0.00936,-0.11720,9.00000,XFOIL 6.99 Ncrit=9 free transition
+400000.00000,3.50000,0.85790,0.00895,-0.11490,9.00000,XFOIL 6.99 Ncrit=9 free transition
+400000.00000,4.00000,0.90160,0.00868,-0.11200,9.00000,XFOIL 6.99 Ncrit=9 free transition
+400000.00000,4.50000,0.94180,0.00882,-0.10860,9.00000,XFOIL 6.99 Ncrit=9 free transition
+400000.00000,5.00000,0.97060,0.00930,-0.10280,9.00000,XFOIL 6.99 Ncrit=9 free transition
+400000.00000,5.50000,0.97460,0.01039,-0.09180,9.00000,XFOIL 6.99 Ncrit=9 free transition
+400000.00000,6.00000,0.95450,0.01209,-0.07630,9.00000,XFOIL 6.99 Ncrit=9 free transition
+400000.00000,6.50000,0.94760,0.01449,-0.06500,9.00000,XFOIL 6.99 Ncrit=9 free transition
+400000.00000,7.00000,0.95540,0.01691,-0.05730,9.00000,XFOIL 6.99 Ncrit=9 free transition
+400000.00000,7.50000,0.97670,0.01881,-0.05200,9.00000,XFOIL 6.99 Ncrit=9 free transition
+400000.00000,8.00000,1.00140,0.02061,-0.04730,9.00000,XFOIL 6.99 Ncrit=9 free transition
+400000.00000,8.50000,1.02320,0.02266,-0.04240,9.00000,XFOIL 6.99 Ncrit=9 free transition
+400000.00000,9.00000,1.04920,0.02452,-0.03840,9.00000,XFOIL 6.99 Ncrit=9 free transition
+400000.00000,9.50000,1.06800,0.02714,-0.03370,9.00000,XFOIL 6.99 Ncrit=9 free transition
+400000.00000,10.00000,1.09770,0.02920,-0.03040,9.00000,XFOIL 6.99 Ncrit=9 free transition
+400000.00000,10.50000,1.12860,0.03124,-0.02770,9.00000,XFOIL 6.99 Ncrit=9 free transition
+400000.00000,11.00000,1.16160,0.03371,-0.02530,9.00000,XFOIL 6.99 Ncrit=9 free transition
+400000.00000,11.50000,1.19990,0.03704,-0.02350,9.00000,XFOIL 6.99 Ncrit=9 free transition
+400000.00000,12.00000,1.22480,0.04031,-0.02020,9.00000,XFOIL 6.99 Ncrit=9 free transition
+400000.00000,12.50000,1.24320,0.04433,-0.01660,9.00000,XFOIL 6.99 Ncrit=9 free transition
+400000.00000,13.00000,1.25190,0.04881,-0.01240,9.00000,XFOIL 6.99 Ncrit=9 free transition
+400000.00000,13.50000,1.24560,0.05473,-0.00750,9.00000,XFOIL 6.99 Ncrit=9 free transition
+400000.00000,14.00000,1.22190,0.06210,-0.00230,9.00000,XFOIL 6.99 Ncrit=9 free transition
+700000.00000,-8.50000,-0.45910,0.02076,-0.10490,9.00000,XFOIL 6.99 Ncrit=9 free transition
+700000.00000,-8.00000,-0.41530,0.01913,-0.10370,9.00000,XFOIL 6.99 Ncrit=9 free transition
+700000.00000,-7.50000,-0.36820,0.01729,-0.10260,9.00000,XFOIL 6.99 Ncrit=9 free transition
+700000.00000,-7.00000,-0.32290,0.01548,-0.10130,9.00000,XFOIL 6.99 Ncrit=9 free transition
+700000.00000,-6.50000,-0.27220,0.01475,-0.10090,9.00000,XFOIL 6.99 Ncrit=9 free transition
+700000.00000,-6.00000,-0.22300,0.01342,-0.10010,9.00000,XFOIL 6.99 Ncrit=9 free transition
+700000.00000,-5.50000,-0.17250,0.01289,-0.09960,9.00000,XFOIL 6.99 Ncrit=9 free transition
+700000.00000,-5.00000,-0.12210,0.01195,-0.09900,9.00000,XFOIL 6.99 Ncrit=9 free transition
+700000.00000,-4.50000,-0.06980,0.01127,-0.09880,9.00000,XFOIL 6.99 Ncrit=9 free transition
+700000.00000,-4.00000,-0.01750,0.01075,-0.09850,9.00000,XFOIL 6.99 Ncrit=9 free transition
+700000.00000,-3.50000,0.03740,0.01016,-0.09870,9.00000,XFOIL 6.99 Ncrit=9 free transition
+700000.00000,-3.00000,0.08480,0.00908,-0.09790,9.00000,XFOIL 6.99 Ncrit=9 free transition
+700000.00000,-2.50000,0.12990,0.00752,-0.09670,9.00000,XFOIL 6.99 Ncrit=9 free transition
+700000.00000,-2.00000,0.18110,0.00718,-0.09610,9.00000,XFOIL 6.99 Ncrit=9 free transition
+700000.00000,-1.50000,0.23680,0.00696,-0.09620,9.00000,XFOIL 6.99 Ncrit=9 free transition
+700000.00000,-1.00000,0.28860,0.00675,-0.09540,9.00000,XFOIL 6.99 Ncrit=9 free transition
+700000.00000,-0.50000,0.34470,0.00655,-0.09550,9.00000,XFOIL 6.99 Ncrit=9 free transition
+700000.00000,0.00000,0.39940,0.00648,-0.09530,9.00000,XFOIL 6.99 Ncrit=9 free transition
+700000.00000,0.50000,0.46120,0.00650,-0.09670,9.00000,XFOIL 6.99 Ncrit=9 free transition
+700000.00000,1.00000,0.52810,0.00654,-0.09960,9.00000,XFOIL 6.99 Ncrit=9 free transition
+700000.00000,1.50000,0.59970,0.00661,-0.10360,9.00000,XFOIL 6.99 Ncrit=9 free transition
+700000.00000,2.00000,0.67330,0.00663,-0.10810,9.00000,XFOIL 6.99 Ncrit=9 free transition
+700000.00000,2.50000,0.74800,0.00664,-0.11290,9.00000,XFOIL 6.99 Ncrit=9 free transition
+700000.00000,3.50000,0.87180,0.00687,-0.11660,9.00000,XFOIL 6.99 Ncrit=9 free transition
+700000.00000,4.00000,0.90860,0.00722,-0.11290,9.00000,XFOIL 6.99 Ncrit=9 free transition
+700000.00000,4.50000,0.93300,0.00790,-0.10640,9.00000,XFOIL 6.99 Ncrit=9 free transition
+700000.00000,5.00000,0.93780,0.00907,-0.09590,9.00000,XFOIL 6.99 Ncrit=9 free transition
+700000.00000,5.50000,0.92710,0.01053,-0.08220,9.00000,XFOIL 6.99 Ncrit=9 free transition
+700000.00000,6.00000,0.92900,0.01233,-0.07210,9.00000,XFOIL 6.99 Ncrit=9 free transition
+700000.00000,6.50000,0.94470,0.01409,-0.06520,9.00000,XFOIL 6.99 Ncrit=9 free transition
+700000.00000,7.00000,0.97230,0.01543,-0.06080,9.00000,XFOIL 6.99 Ncrit=9 free transition
+700000.00000,7.50000,1.00240,0.01675,-0.05680,9.00000,XFOIL 6.99 Ncrit=9 free transition
+700000.00000,8.00000,1.03380,0.01806,-0.05320,9.00000,XFOIL 6.99 Ncrit=9 free transition
+700000.00000,8.50000,1.06600,0.01934,-0.04990,9.00000,XFOIL 6.99 Ncrit=9 free transition
+700000.00000,9.00000,1.09220,0.02105,-0.04570,9.00000,XFOIL 6.99 Ncrit=9 free transition
+700000.00000,9.50000,1.12190,0.02256,-0.04230,9.00000,XFOIL 6.99 Ncrit=9 free transition
+700000.00000,10.00000,1.14890,0.02429,-0.03880,9.00000,XFOIL 6.99 Ncrit=9 free transition
+700000.00000,10.50000,1.16460,0.02700,-0.03380,9.00000,XFOIL 6.99 Ncrit=9 free transition
+700000.00000,11.00000,1.19320,0.02878,-0.03080,9.00000,XFOIL 6.99 Ncrit=9 free transition
+700000.00000,11.50000,1.21840,0.03086,-0.02760,9.00000,XFOIL 6.99 Ncrit=9 free transition
+700000.00000,12.00000,1.24040,0.03325,-0.02430,9.00000,XFOIL 6.99 Ncrit=9 free transition
+700000.00000,12.50000,1.25680,0.03679,-0.02030,9.00000,XFOIL 6.99 Ncrit=9 free transition
+700000.00000,13.00000,1.27510,0.03977,-0.01700,9.00000,XFOIL 6.99 Ncrit=9 free transition
+700000.00000,13.50000,1.28820,0.04326,-0.01350,9.00000,XFOIL 6.99 Ncrit=9 free transition
+700000.00000,14.00000,1.29730,0.04694,-0.01040,9.00000,XFOIL 6.99 Ncrit=9 free transition
+700000.00000,14.50000,1.30210,0.05115,-0.00760,9.00000,XFOIL 6.99 Ncrit=9 free transition
+700000.00000,15.00000,1.29110,0.05776,-0.00420,9.00000,XFOIL 6.99 Ncrit=9 free transition
+700000.00000,15.50000,1.26420,0.06652,-0.00170,9.00000,XFOIL 6.99 Ncrit=9 free transition
+700000.00000,16.00000,1.23870,0.07579,-0.00160,9.00000,XFOIL 6.99 Ncrit=9 free transition
+700000.00000,16.50000,1.20450,0.08748,-0.00370,9.00000,XFOIL 6.99 Ncrit=9 free transition
+700000.00000,17.00000,1.16400,0.10183,-0.00910,9.00000,XFOIL 6.99 Ncrit=9 free transition
+700000.00000,17.50000,1.11990,0.11905,-0.01810,9.00000,XFOIL 6.99 Ncrit=9 free transition
+700000.00000,18.00000,1.07060,0.14003,-0.03110,9.00000,XFOIL 6.99 Ncrit=9 free transition
+1000000.00000,-10.00000,-0.60380,0.02286,-0.10400,9.00000,XFOIL 6.99 Ncrit=9 free transition
+1000000.00000,-9.50000,-0.57020,0.01980,-0.10150,9.00000,XFOIL 6.99 Ncrit=9 free transition
+1000000.00000,-9.00000,-0.52850,0.01772,-0.09990,9.00000,XFOIL 6.99 Ncrit=9 free transition
+1000000.00000,-8.50000,-0.48440,0.01601,-0.09880,9.00000,XFOIL 6.99 Ncrit=9 free transition
+1000000.00000,-8.00000,-0.43520,0.01500,-0.09830,9.00000,XFOIL 6.99 Ncrit=9 free transition
+1000000.00000,-7.50000,-0.38640,0.01381,-0.09760,9.00000,XFOIL 6.99 Ncrit=9 free transition
+1000000.00000,-7.00000,-0.33710,0.01278,-0.09710,9.00000,XFOIL 6.99 Ncrit=9 free transition
+1000000.00000,-6.50000,-0.28380,0.01224,-0.09720,9.00000,XFOIL 6.99 Ncrit=9 free transition
+1000000.00000,-6.00000,-0.23340,0.01135,-0.09670,9.00000,XFOIL 6.99 Ncrit=9 free transition
+1000000.00000,-5.50000,-0.18170,0.01063,-0.09650,9.00000,XFOIL 6.99 Ncrit=9 free transition
+1000000.00000,-5.00000,-0.12690,0.01022,-0.09680,9.00000,XFOIL 6.99 Ncrit=9 free transition
+1000000.00000,-4.50000,-0.07370,0.00965,-0.09680,9.00000,XFOIL 6.99 Ncrit=9 free transition
+1000000.00000,-4.00000,-0.01920,0.00919,-0.09700,9.00000,XFOIL 6.99 Ncrit=9 free transition
+1000000.00000,-3.50000,0.03650,0.00878,-0.09750,9.00000,XFOIL 6.99 Ncrit=9 free transition
+1000000.00000,-3.00000,0.08900,0.00811,-0.09750,9.00000,XFOIL 6.99 Ncrit=9 free transition
+1000000.00000,-2.50000,0.13690,0.00673,-0.09700,9.00000,XFOIL 6.99 Ncrit=9 free transition
+1000000.00000,-2.00000,0.18720,0.00601,-0.09650,9.00000,XFOIL 6.99 Ncrit=9 free transition
+1000000.00000,-1.50000,0.24290,0.00576,-0.09680,9.00000,XFOIL 6.99 Ncrit=9 free transition
+1000000.00000,-1.00000,0.29750,0.00561,-0.09680,9.00000,XFOIL 6.99 Ncrit=9 free transition
+1000000.00000,-0.50000,0.35340,0.00545,-0.09710,9.00000,XFOIL 6.99 Ncrit=9 free transition
+1000000.00000,0.00000,0.40800,0.00530,-0.09710,9.00000,XFOIL 6.99 Ncrit=9 free transition
+1000000.00000,0.50000,0.46260,0.00521,-0.09700,9.00000,XFOIL 6.99 Ncrit=9 free transition
+1000000.00000,1.00000,0.52070,0.00523,-0.09770,9.00000,XFOIL 6.99 Ncrit=9 free transition
+1000000.00000,1.50000,0.58320,0.00530,-0.09950,9.00000,XFOIL 6.99 Ncrit=9 free transition
+1000000.00000,2.00000,0.65070,0.00540,-0.10260,9.00000,XFOIL 6.99 Ncrit=9 free transition
+1000000.00000,2.50000,0.72160,0.00555,-0.10660,9.00000,XFOIL 6.99 Ncrit=9 free transition
+1000000.00000,3.00000,0.79010,0.00580,-0.11000,9.00000,XFOIL 6.99 Ncrit=9 free transition
+1000000.00000,3.50000,0.85470,0.00638,-0.11260,9.00000,XFOIL 6.99 Ncrit=9 free transition
+1000000.00000,4.00000,0.90130,0.00701,-0.11140,9.00000,XFOIL 6.99 Ncrit=9 free transition
+1000000.00000,4.50000,0.91510,0.00807,-0.10290,9.00000,XFOIL 6.99 Ncrit=9 free transition
+1000000.00000,5.00000,0.91740,0.00946,-0.09200,9.00000,XFOIL 6.99 Ncrit=9 free transition
+1000000.00000,5.50000,0.91370,0.01076,-0.08000,9.00000,XFOIL 6.99 Ncrit=9 free transition
+1000000.00000,6.00000,0.92600,0.01225,-0.07190,9.00000,XFOIL 6.99 Ncrit=9 free transition
+1000000.00000,7.00000,0.98690,0.01442,-0.06360,9.00000,XFOIL 6.99 Ncrit=9 free transition
+1000000.00000,7.50000,1.02080,0.01548,-0.06020,9.00000,XFOIL 6.99 Ncrit=9 free transition
+1000000.00000,8.00000,1.05500,0.01657,-0.05700,9.00000,XFOIL 6.99 Ncrit=9 free transition
+1000000.00000,8.50000,1.09030,0.01763,-0.05420,9.00000,XFOIL 6.99 Ncrit=9 free transition
+1000000.00000,9.00000,1.11920,0.01912,-0.05040,9.00000,XFOIL 6.99 Ncrit=9 free transition
+1000000.00000,9.50000,1.15210,0.02037,-0.04740,9.00000,XFOIL 6.99 Ncrit=9 free transition
+1000000.00000,10.00000,1.18280,0.02179,-0.04420,9.00000,XFOIL 6.99 Ncrit=9 free transition
+1000000.00000,10.50000,1.20890,0.02354,-0.04060,9.00000,XFOIL 6.99 Ncrit=9 free transition
+1000000.00000,11.00000,1.22930,0.02576,-0.03630,9.00000,XFOIL 6.99 Ncrit=9 free transition
+1000000.00000,11.50000,1.25520,0.02763,-0.03300,9.00000,XFOIL 6.99 Ncrit=9 free transition
+1000000.00000,12.00000,1.27910,0.02969,-0.02970,9.00000,XFOIL 6.99 Ncrit=9 free transition
+1000000.00000,12.50000,1.29960,0.03203,-0.02630,9.00000,XFOIL 6.99 Ncrit=9 free transition
+1000000.00000,13.00000,1.30480,0.03594,-0.02120,9.00000,XFOIL 6.99 Ncrit=9 free transition
+1000000.00000,13.50000,1.32470,0.03850,-0.01850,9.00000,XFOIL 6.99 Ncrit=9 free transition
+1000000.00000,14.00000,1.33880,0.04170,-0.01540,9.00000,XFOIL 6.99 Ncrit=9 free transition
+1000000.00000,14.50000,1.34860,0.04543,-0.01260,9.00000,XFOIL 6.99 Ncrit=9 free transition
+1000000.00000,15.00000,1.35510,0.04965,-0.01010,9.00000,XFOIL 6.99 Ncrit=9 free transition
+1000000.00000,15.50000,1.35490,0.05482,-0.00780,9.00000,XFOIL 6.99 Ncrit=9 free transition
+1000000.00000,16.00000,1.33330,0.06282,-0.00530,9.00000,XFOIL 6.99 Ncrit=9 free transition
+1000000.00000,16.50000,1.31030,0.07179,-0.00460,9.00000,XFOIL 6.99 Ncrit=9 free transition
+1000000.00000,17.00000,1.29320,0.08080,-0.00580,9.00000,XFOIL 6.99 Ncrit=9 free transition
+1000000.00000,17.50000,1.26760,0.09191,-0.00890,9.00000,XFOIL 6.99 Ncrit=9 free transition
+1000000.00000,18.00000,1.23480,0.10539,-0.01430,9.00000,XFOIL 6.99 Ncrit=9 free transition
+1500000.00000,-10.00000,-0.65000,0.01648,-0.09550,9.00000,XFOIL 6.99 Ncrit=9 free transition
+1500000.00000,-9.50000,-0.60740,0.01461,-0.09410,9.00000,XFOIL 6.99 Ncrit=9 free transition
+1500000.00000,-9.00000,-0.55860,0.01359,-0.09370,9.00000,XFOIL 6.99 Ncrit=9 free transition
+1500000.00000,-8.50000,-0.50770,0.01284,-0.09350,9.00000,XFOIL 6.99 Ncrit=9 free transition
+1500000.00000,-8.00000,-0.45490,0.01227,-0.09360,9.00000,XFOIL 6.99 Ncrit=9 free transition
+1500000.00000,-7.50000,-0.40510,0.01122,-0.09320,9.00000,XFOIL 6.99 Ncrit=9 free transition
+1500000.00000,-7.00000,-0.35140,0.01070,-0.09340,9.00000,XFOIL 6.99 Ncrit=9 free transition
+1500000.00000,-6.50000,-0.29890,0.01003,-0.09340,9.00000,XFOIL 6.99 Ncrit=9 free transition
+1500000.00000,-6.00000,-0.24330,0.00971,-0.09390,9.00000,XFOIL 6.99 Ncrit=9 free transition
+1500000.00000,-5.50000,-0.18940,0.00914,-0.09410,9.00000,XFOIL 6.99 Ncrit=9 free transition
+1500000.00000,-5.00000,-0.13450,0.00872,-0.09450,9.00000,XFOIL 6.99 Ncrit=9 free transition
+1500000.00000,-4.50000,-0.07850,0.00840,-0.09510,9.00000,XFOIL 6.99 Ncrit=9 free transition
+1500000.00000,-4.00000,-0.02280,0.00801,-0.09560,9.00000,XFOIL 6.99 Ncrit=9 free transition
+1500000.00000,-3.50000,0.03330,0.00769,-0.09610,9.00000,XFOIL 6.99 Ncrit=9 free transition
+1500000.00000,-3.00000,0.08880,0.00726,-0.09670,9.00000,XFOIL 6.99 Ncrit=9 free transition
+1500000.00000,-2.50000,0.14150,0.00646,-0.09690,9.00000,XFOIL 6.99 Ncrit=9 free transition
+1500000.00000,-2.00000,0.19130,0.00537,-0.09670,9.00000,XFOIL 6.99 Ncrit=9 free transition
+1500000.00000,-1.50000,0.24600,0.00497,-0.09700,9.00000,XFOIL 6.99 Ncrit=9 free transition
+1500000.00000,-1.00000,0.30170,0.00476,-0.09740,9.00000,XFOIL 6.99 Ncrit=9 free transition
+1500000.00000,-0.50000,0.35750,0.00463,-0.09770,9.00000,XFOIL 6.99 Ncrit=9 free transition
+1500000.00000,0.00000,0.41450,0.00455,-0.09840,9.00000,XFOIL 6.99 Ncrit=9 free transition
+1500000.00000,0.50000,0.47020,0.00445,-0.09870,9.00000,XFOIL 6.99 Ncrit=9 free transition
+1500000.00000,1.00000,0.52460,0.00435,-0.09870,9.00000,XFOIL 6.99 Ncrit=9 free transition
+1500000.00000,1.50000,0.57830,0.00437,-0.09840,9.00000,XFOIL 6.99 Ncrit=9 free transition
+1500000.00000,2.00000,0.63570,0.00452,-0.09910,9.00000,XFOIL 6.99 Ncrit=9 free transition
+1500000.00000,2.50000,0.69530,0.00474,-0.10040,9.00000,XFOIL 6.99 Ncrit=9 free transition
+1500000.00000,3.00000,0.75820,0.00521,-0.10260,9.00000,XFOIL 6.99 Ncrit=9 free transition
+1500000.00000,3.50000,0.81630,0.00596,-0.10400,9.00000,XFOIL 6.99 Ncrit=9 free transition
+1500000.00000,4.00000,0.87190,0.00711,-0.10510,9.00000,XFOIL 6.99 Ncrit=9 free transition
+1500000.00000,4.50000,0.89750,0.00865,-0.09970,9.00000,XFOIL 6.99 Ncrit=9 free transition
+1500000.00000,5.00000,0.90660,0.00982,-0.09040,9.00000,XFOIL 6.99 Ncrit=9 free transition
+1500000.00000,5.50000,0.91040,0.01080,-0.07970,9.00000,XFOIL 6.99 Ncrit=9 free transition
+1500000.00000,6.00000,0.93480,0.01170,-0.07390,9.00000,XFOIL 6.99 Ncrit=9 free transition
+1500000.00000,6.50000,0.96840,0.01252,-0.07020,9.00000,XFOIL 6.99 Ncrit=9 free transition
+1500000.00000,7.00000,1.00390,0.01337,-0.06690,9.00000,XFOIL 6.99 Ncrit=9 free transition
+1500000.00000,7.50000,1.04100,0.01422,-0.06410,9.00000,XFOIL 6.99 Ncrit=9 free transition
+1500000.00000,8.00000,1.07810,0.01510,-0.06130,9.00000,XFOIL 6.99 Ncrit=9 free transition
+1500000.00000,8.50000,1.11560,0.01598,-0.05880,9.00000,XFOIL 6.99 Ncrit=9 free transition
+1500000.00000,9.00000,1.14900,0.01715,-0.05560,9.00000,XFOIL 6.99 Ncrit=9 free transition
+1500000.00000,9.50000,1.18300,0.01829,-0.05270,9.00000,XFOIL 6.99 Ncrit=9 free transition
+1500000.00000,10.00000,1.21720,0.01943,-0.05000,9.00000,XFOIL 6.99 Ncrit=9 free transition
+1500000.00000,10.50000,1.24920,0.02072,-0.04710,9.00000,XFOIL 6.99 Ncrit=9 free transition
+1500000.00000,11.00000,1.27510,0.02245,-0.04330,9.00000,XFOIL 6.99 Ncrit=9 free transition
+1500000.00000,11.50000,1.29700,0.02449,-0.03920,9.00000,XFOIL 6.99 Ncrit=9 free transition
+1500000.00000,12.00000,1.32450,0.02616,-0.03620,9.00000,XFOIL 6.99 Ncrit=9 free transition
+1500000.00000,12.50000,1.35010,0.02800,-0.03310,9.00000,XFOIL 6.99 Ncrit=9 free transition
+1500000.00000,13.00000,1.37360,0.03002,-0.03000,9.00000,XFOIL 6.99 Ncrit=9 free transition
+1500000.00000,13.50000,1.37240,0.03410,-0.02420,9.00000,XFOIL 6.99 Ncrit=9 free transition
+1500000.00000,14.00000,1.39570,0.03631,-0.02180,9.00000,XFOIL 6.99 Ncrit=9 free transition
+1500000.00000,14.50000,1.41300,0.03914,-0.01910,9.00000,XFOIL 6.99 Ncrit=9 free transition
+1500000.00000,15.00000,1.42590,0.04248,-0.01630,9.00000,XFOIL 6.99 Ncrit=9 free transition
+1500000.00000,15.50000,1.43620,0.04625,-0.01390,9.00000,XFOIL 6.99 Ncrit=9 free transition
+1500000.00000,16.00000,1.44380,0.05047,-0.01190,9.00000,XFOIL 6.99 Ncrit=9 free transition
+1500000.00000,16.50000,1.44750,0.05538,-0.01040,9.00000,XFOIL 6.99 Ncrit=9 free transition
+1500000.00000,17.00000,1.44240,0.06158,-0.00920,9.00000,XFOIL 6.99 Ncrit=9 free transition
+1500000.00000,17.50000,1.41870,0.07059,-0.00870,9.00000,XFOIL 6.99 Ncrit=9 free transition
+1500000.00000,18.00000,1.38010,0.08250,-0.01000,9.00000,XFOIL 6.99 Ncrit=9 free transition

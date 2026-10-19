@@ -7,7 +7,8 @@ Sources (copies in ../sources/):
   Open water: (a) MOERI model D = 250 mm: 'openwater.txt' in the same archive (J, Kt, 10Kq, Eta0, 21 points).
               (b) NMRI model D = 104.6 mm: SIMMAN 2008 'KCS_POT_NMRI.zip' -> KCS_POT_NMRI.txt (32 rps, Rn = nD^2/nu =
                   3.68e5, 22.2 C, NMRI No.3 towing tank, 2005-09-12).
-Run: python3 build_kp505.py [--xfoil]
+Run: python3 build_kp505.py [--xfoil]   (--xfoil runs XFOIL for missing combinations; without it the polars are
+     rebuilt from the .pol files in extraction/xfoil_raw)
 """
 import os
 import sys
@@ -17,7 +18,8 @@ import pandas as pd
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
-from marine_common import naca66mod_a08, write_selig, run_xfoil_set, write_csv, propeller_beta_deg  # noqa
+from marine_common import (naca66mod_a08, write_selig, run_xfoil_set, write_csv, propeller_beta_deg,  # noqa
+                           complete_polars, polar_header_lines)
 
 CASE = os.path.dirname(HERE)
 REPO = os.path.abspath(os.path.join(CASE, '..', '..', '..'))
@@ -90,25 +92,26 @@ def main(do_xfoil):
         "airfoil: NACA 66 thickness + a=0.8 mean line sections built at the named stations; 'transition' (0.25R) between.",
         'Extra columns r_R, P_D, skew_deg, camber_ratio are documentation only.'], geo, float_format='%.6f')
 
-    foils = {}
+    foils, shapes = {}, {}
     for x in FOIL_STATIONS:
         s = g[np.isclose(g.r_R, x)].iloc[0]
         X, Y = naca66mod_a08(s.t_c, s.f_c)
         p = os.path.join(CASE, 'airfoils', fname(x) + '.dat')
         write_selig(p, f'KP505 r/R={x:.3f} NACA66mod t/c={s.t_c:.5f} a=0.8 f/c={s.f_c:.5f}', X, Y)
         foils[fname(x)] = p
-    if do_xfoil:
-        pol = run_xfoil_set(XFOIL, os.path.join(HERE, 'xfoil_raw'), foils, RES, ncrit=NCRIT)
-        for name, df in pol.items():
-            df['source'] = f'XFOIL 6.99 Ncrit={NCRIT}, 200 panels, free transition'
-            s = g[np.isclose(g.r_R, float(name[-4:]) / 1000)].iloc[0]
-            write_csv(os.path.join(CASE, 'airfoils', name + '_polars.csv'), [
-                f'{name}: NACA 66 thickness t/c = {s.t_c:.5f} (KRISO: "NACA66 thickness form"; built with the DTMB-modified',
-                f'  ordinates of Brockett 1966), NACA a=0.8 mean line f/c = {s.f_c:.5f}.',
-                'COMPUTED polar: XFOIL 6.99 (repository binary), viscous, free transition, Ncrit = 9, 200 panels, ITER 150-300,',
-                '  sweeps 0 -> +18 and 0 -> -10 deg (0.5 deg); only converged points. No measured polars exist.',
-                '  Script: extraction/build_kp505.py --xfoil (helpers extraction/marine_common.py).'], df, float_format='%.5f')
-            print(name, df.groupby('re').alpha_deg.agg(['count', 'min', 'max']).to_dict('index'))
+        shapes[fname(x)] = (X, Y, s.t_c, s.f_c)
+    pol = run_xfoil_set(XFOIL, os.path.join(HERE, 'xfoil_raw'), foils, RES, ncrit=NCRIT, run=do_xfoil)
+    for name, xf in pol.items():
+        X, Y, t_c, f_c = shapes[name]
+        df, kinds = complete_polars(xf, X, Y, t_c, RES, NCRIT, friction='transitional')
+        write_csv(os.path.join(CASE, 'airfoils', name + '_polars.csv'), [
+            f'{name}: NACA 66 thickness t/c = {t_c:.5f} (KRISO: "NACA66 thickness form"; built with the DTMB-modified',
+            f'  ordinates of Brockett 1966), NACA a=0.8 mean line f/c = {f_c:.5f}. No measured polars exist.',
+            'XFOIL rows: XFOIL 6.99 (repository binary), viscous, free transition, Ncrit = 9, 200 panels, ITER 150-300,',
+            '  sweeps 0 -> +18 and 0 -> -10 deg (0.5 deg) plus 0 -> +12 / -6 deg (0.25 deg); only converged points',
+            '  (raw output in extraction/xfoil_raw). Script: extraction/build_kp505.py (helpers extraction/marine_common.py).',
+            *polar_header_lines(kinds, 'transitional')], df, float_format='%.5f')
+        print(name, kinds)
 
     moeri = [(0.000, 0.518, 0.725), (0.100, 0.482, 0.677), (0.150, 0.458, 0.646), (0.200, 0.435, 0.622),
              (0.250, 0.412, 0.589), (0.300, 0.387, 0.557), (0.350, 0.361, 0.531), (0.400, 0.336, 0.497),

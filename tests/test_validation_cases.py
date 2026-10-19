@@ -59,7 +59,8 @@ def test_case_is_consistent(path):
     R = float(case.meta["R"])
     assert np.all(np.diff(g["r_m"]) > 0), "radius must increase"
     assert g["r_m"].iloc[-1] <= R * 1.001
-    assert np.all(g["chord_m"] > 0) and g["chord_m"].max() < R
+    # a pointed tip (zero chord at r = R, as in the DTMB 4119 table) is real geometry; inboard chords must be > 0
+    assert np.all(g["chord_m"].iloc[:-1] > 0) and g["chord_m"].iloc[-1] >= 0 and g["chord_m"].max() < R
     for f in set(g["airfoil"]) - {"transition"}:
         assert f in case.airfoils, "geometry names airfoil %s which case.json does not define" % f
     airfoils = bv.build_airfoils(case)
@@ -73,8 +74,10 @@ def test_solver_runs_on_first_point(path):
     case = bv.load_case(path)
     runner = bv.CaseRunner(case, "prop_prandtl" if case.is_propeller else "buhl_prandtl", n_sections=12)
     exp = next(e for e in case.experiments if e.kind in AERO_KINDS)
-    # a well-loaded point: the solver drops propeller points with negative thrust by design
-    row = exp.data.loc[exp.data["ct"].idxmax()] if "ct" in exp.data else exp.data.iloc[len(exp.data) // 2]
+    # a well-loaded point: the solver drops propeller points with negative thrust by design, and static (J = 0)
+    # rows need v > 0, which the solver's equations do not allow (the runner reports them as a note)
+    data = exp.data[exp.data["J"] > 0] if "J" in exp.data else exp.data
+    row = data.loc[data["ct"].idxmax()] if "ct" in data else data.iloc[len(data) // 2]
     v, rpm, pitch, yaw, rho, nu = runner.conditions(exp, row)
     res = runner.run_point(v, rpm, pitch, yaw, rho, nu)
     assert res is not None and "error" not in res, res

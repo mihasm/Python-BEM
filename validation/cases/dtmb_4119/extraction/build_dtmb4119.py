@@ -8,7 +8,8 @@ Sources (copies in ../sources/):
   Open water: same appendix, Table 1.3.1 'Open water test results for DTRC4119' (p. 72), Jessup's experiment,
              DTMB towing basin; Fig. 1.3.1 (p. 75) says Rn = 1 x 10^6.
   Sections : NACA 66 (TMB modified nose and tail) + a = 0.8 mean line, Brockett (1966) DTMB Report 1780 Tables 1/3.
-Run: python3 build_dtmb4119.py [--xfoil]
+Run: python3 build_dtmb4119.py [--xfoil]   (--xfoil runs XFOIL for missing combinations; without it the polars
+     are rebuilt from the .pol files in extraction/xfoil_raw)
 """
 import json
 import os
@@ -19,7 +20,8 @@ import pandas as pd
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
-from marine_common import naca66mod_a08, write_selig, run_xfoil_set, write_csv, propeller_beta_deg  # noqa
+from marine_common import (naca66mod_a08, write_selig, run_xfoil_set, write_csv, propeller_beta_deg,  # noqa
+                           complete_polars, polar_header_lines)
 
 CASE = os.path.dirname(HERE)
 REPO = os.path.abspath(os.path.join(CASE, '..', '..', '..'))
@@ -85,28 +87,29 @@ def main(do_xfoil):
         '  neighbouring named sections; rows 0.975..1.0 use the 0.95R section (t/c 0.032 is nearly constant there).',
         'Extra columns r_R, P_D, camber_ratio are documentation only.'], geo, float_format='%.6f')
 
-    foils = {}
+    foils, shapes = {}, {}
     for x in FOIL_STATIONS:
         s = g[np.isclose(g.r_R, x)].iloc[0]
         X, Y = naca66mod_a08(s.t_c, s.f_c)
         p = os.path.join(CASE, 'airfoils', fname(x) + '.dat')
         write_selig(p, f'DTMB4119 r/R={x:.3f} NACA66mod t/c={s.t_c:.5f} a=0.8 f/c={s.f_c:.5f}', X, Y)
         foils[fname(x)] = p
+        shapes[fname(x)] = (X, Y, s.t_c, s.f_c)
 
-    if do_xfoil:
-        pol = run_xfoil_set(XFOIL, os.path.join(HERE, 'xfoil_raw'), foils, RES, ncrit=NCRIT)
-        for name, df in pol.items():
-            df['source'] = f'XFOIL 6.99 Ncrit={NCRIT}, 200 panels, free transition'
-            s = g[np.isclose(g.r_R, float(name[-4:]) / 1000)].iloc[0]
-            write_csv(os.path.join(CASE, 'airfoils', name + '_polars.csv'), [
-                f'{name}: NACA 66 (TMB modified) thickness t/c = {s.t_c:.5f}, NACA a=0.8 mean line f/c = {s.f_c:.5f}',
-                'COMPUTED polar: XFOIL 6.99 (repository binary xfoil_executables/xfoil), viscous, free transition,',
-                f'  Ncrit = {NCRIT}, 200 panels, ITER 150-300, sweeps 0 -> +18 / -10 deg (0.5 deg) plus 0 -> +12 / -6 deg (0.25 deg) where the first did not converge; only converged points.',
-                '  No measured 2D polars of these sections at Re 2e5-1.5e6 exist. Coordinates: airfoils/' + name + '.dat',
-                '  (Brockett 1966 ordinates, see extraction/marine_common.py). Script: extraction/build_dtmb4119.py --xfoil.',
-                '  Ncrit 9 chosen because Jessup reports laminar flow over much of the untripped model blades at Rn ~1e6.'],
-                df, float_format='%.5f')
-            print(name, df.groupby('re').alpha_deg.agg(['count', 'min', 'max']).to_dict('index'))
+    pol = run_xfoil_set(XFOIL, os.path.join(HERE, 'xfoil_raw'), foils, RES, ncrit=NCRIT, run=do_xfoil)
+    for name, xf in pol.items():
+        X, Y, t_c, f_c = shapes[name]
+        # transitional friction: Jessup reports laminar flow over much of the untripped model blades at Rn ~1e6
+        df, kinds = complete_polars(xf, X, Y, t_c, RES, NCRIT, friction='transitional')
+        write_csv(os.path.join(CASE, 'airfoils', name + '_polars.csv'), [
+            f'{name}: NACA 66 (TMB modified) thickness t/c = {t_c:.5f}, NACA a=0.8 mean line f/c = {f_c:.5f}',
+            '  No measured 2D polars of these sections at Re 2e5-1.5e6 exist. Coordinates: airfoils/' + name + '.dat',
+            '  (Brockett 1966 ordinates, see extraction/marine_common.py). Script: extraction/build_dtmb4119.py.',
+            'XFOIL rows: XFOIL 6.99 (repository binary xfoil_executables/xfoil), viscous, free transition,',
+            f'  Ncrit = {NCRIT} (Jessup reports laminar flow over much of the untripped model blades at Rn ~1e6), 200 panels,',
+            '  ITER 150-300, sweeps 0 -> +18 / -10 deg (0.5 deg) plus 0 -> +12 / -6 deg (0.25 deg); only converged points.',
+            *polar_header_lines(kinds, 'transitional')], df, float_format='%.5f')
+        print(name, kinds)
 
     # Open water, Koyama 1993 Table 1.3.1
     ow = pd.DataFrame({'J': [0.5, 0.7, 0.833, 0.9, 1.1], 'kt': [0.285, 0.200, 0.146, 0.120, 0.034],
